@@ -1,35 +1,148 @@
-//Mon Jan 06 2025 13:36:15 GMT+0000 (Coordinated Universal Time)
+//Mon Jan 06 2025 13:38:50 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
-var _0x164fb0 = 10;
-var _0xde71fe = $response.body;
-_0x164fb0 = 12;
-let _0x1e123d = JSON.parse($response.body);
-_0x1e123d = {
-  success: true,
-  result: {
-    remainTimeSeconds: 99999,
-    realnameStatus: "NO",
-    wordage: 7777777,
-    mobile: "https://t.me/GieGie777",
-    inviteCode: "000000",
-    vipGroupInfos: [{
-      groupType: "TYPE_ONE",
-      vipType: "VIP",
-      autoPay: "NO"
-    }],
-    type: "VIP",
-    vipExpireTime: "2777-07-07 07:07:07",
-    vipExpireDays: 99999999,
-    registerTime: "2022-09-09 03:20:32",
-    nickname: "https://t.me/GieGie777",
-    times: 77777777,
-    headImg: "https://zdimg.lifeweek.com.cn/app/20230410/16811146599505136.jpg",
-    dataId: "00000000000000000000"
+var n,
+  t = ["ZnVuY3Rpb24gKlwoICpcKQ==", "XCtcKyAqKD86XzB4KD86W2EtZjAtOV0pezQsNn18KD86XGJ8XGQpW2EtejAtOV17MSw0fSg/OlxifFxkKSk=", "aW5pdA==", "dGVzdA==", "Y2hhaW4=", "aW5wdXQ=", "cmV0dXJuIChmdW5jdGlvbigpIA==", "e30uY29uc3RydWN0b3IoInJldHVybiB0aGlzIikoICk=", "Y29uc29sZQ==", "d2Fybg==", "ZGVidWc=", "aW5mbw==", "ZXJyb3I=", "ZXhjZXB0aW9u", "dHJhY2U=", "dW5kZWZpbmVk", "YXBwX2lk", "Y29tLmx5cmViaXJkc3R1ZGlvLmZhY2VsYWI=", "ZGF0YQ==", "c3RhcnRfZGF0ZQ==", "ZW5kX2RhdGU=", "dXNlcl9pZA==", "MTJGQ0EzRTZGNkM2ODhFRjg3Qjc3RDAyMjg4QzFDMjM=", "dHlwZQ==", "QXV0by1SZW5ld2FibGUgU3Vic2NyaXB0aW9u", "bWFpbl9zdGF0dXNfY29kZQ==", "bW1wX2lk", "MTY0NjAxMDAwMDAwMC0wNTkxMDk1", "c3ViX3N0YXR1c19uYW1l", "UFJFTUlVTQ==", "YXBwX3BsYXRmb3Jt", "SU9T", "aW52b2ljZV90b2tlbg==", "dXBkYXRlZF9hdA==", "c3RhdHVzX25hbWU=", "QUNUSVZFX0FVVE9fUkVOX09O", "UFVSQ0hBU0VE", "c3RhdHVz", "c3RyaW5naWZ5", "c3RyaW5n", "Y29uc3RydWN0b3I=", "d2hpbGUgKHRydWUpIHt9", "YXBwbHk=", "Y291bnRlcg==", "bGVuZ3Ro", "ZGVidQ==", "Y2FsbA==", "YWN0aW9u", "Z2dlcg==", "c3RhdGVPYmplY3Q="],
+  x = function (n, c) {
+    n -= 0;
+    var e,
+      r = t[n];
+    if (0 === x.HclLTk) {
+      e = function () {
+        var n;
+        try {
+          n = Function('return (function() {}.constructor("return this")( ));')();
+        } catch (t) {
+          n = window;
+        }
+        return n;
+      }();
+      e.atob || (e.atob = function (n) {
+        for (var t, x, c = String(n).replace(/=+$/, ""), e = 0, r = 0, o = ""; x = c.charAt(r++); ~x && (e % 4 ? t = 64 * t + x : t = x, e++ % 4) ? o += String.fromCharCode(255 & t >> (-2 * e & 6)) : 0) x = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".indexOf(x);
+        return o;
+      });
+      x.RXlOGd = function (n) {
+        for (var t = atob(n), x = [], c = 0, e = t.length; c < e; c++) x += "%" + ("00" + t.charCodeAt(c).toString(16)).slice(-2);
+        return decodeURIComponent(x);
+      };
+      x.YIZYsv = {};
+      x.HclLTk = !0;
+    }
+    var o = x.YIZYsv[n];
+    0 === o ? (r = x.RXlOGd(r), x.YIZYsv[n] = r) : r = o;
+    return r;
   },
-  returnCode: "200",
-  timeOut: false
-};
-$done({
-  body: JSON.stringify(_0x1e123d)
+  c = (n = !0, function (t, x) {
+    var c = n ? function () {
+      if (x) {
+        var n = x.apply(t, arguments);
+        x = null;
+        return n;
+      }
+    } : function () {};
+    n = !1;
+    return c;
+  });
+!function () {
+  c(this, function () {
+    var n = new RegExp(x("0x0")),
+      t = new RegExp(x("0x1"), "i"),
+      c = u(x("0x2"));
+    n[x("0x3")](c + x("0x4")) && t[x("0x3")](c + x("0x5")) ? u() : c("0");
+  })();
+}();
+var e,
+  r = (e = !0, function (n, t) {
+    var x = e ? function () {
+      if (t) {
+        var x = t.apply(n, arguments);
+        t = null;
+        return x;
+      }
+    } : function () {};
+    e = !1;
+    return x;
+  });
+setInterval(function () {
+  u();
+}, 4e3);
+var o = r(this, function () {
+  var n = function () {},
+    t = function () {
+      var n;
+      try {
+        n = Function(x("0x6") + x("0x7") + ");")();
+      } catch (t) {
+        n = window;
+      }
+      return n;
+    }();
+  t[x("0x8")] ? (t[x("0x8")].log = n, t[x("0x8")][x("0x9")] = n, t[x("0x8")][x("0xa")] = n, t.console[x("0xb")] = n, t[x("0x8")][x("0xc")] = n, t[x("0x8")][x("0xd")] = n, t[x("0x8")][x("0xe")] = n) : t.console = function (n) {
+    var t = {};
+    t.log = n;
+    t[x("0x9")] = n;
+    t[x("0xa")] = n;
+    t[x("0xb")] = n;
+    t[x("0xc")] = n;
+    t[x("0xd")] = n;
+    t[x("0xe")] = n;
+    return t;
+  }(n);
 });
+function u(n) {
+  function t(n) {
+    if (typeof n === x("0x27")) {
+      return function (n) {}[x("0x28")](x("0x29"))[x("0x2a")](x("0x2b"));
+    }
+    1 !== ("" + n / n)[x("0x2c")] || n % 20 == 0 ? function () {
+      return !0;
+    }[x("0x28")](x("0x2d") + "gger")[x("0x2e")](x("0x2f")) : function () {
+      return !1;
+    }.constructor(x("0x2d") + x("0x30")).apply(x("0x31"));
+    t(++n);
+  }
+  try {
+    if (n) {
+      return t;
+    }
+    t(0);
+  } catch (n) {}
+}
+{
+  o();
+  (() => {
+    const n = typeof $task !== x("0xf");
+    let t = {};
+    t[x("0x12")] = {};
+    t[x("0x12")][x("0x10")] = x("0x11");
+    t[x("0x12")].quantity = 1;
+    t[x("0x12")][x("0x13")] = 164601e7;
+    t[x("0x12")][x("0x14")] = 32503338e6;
+    t[x("0x12")].created_at = 164601e7;
+    t[x("0x12")][x("0x15")] = x("0x16");
+    t[x("0x12")][x("0x17")] = x("0x18");
+    t[x("0x12")][x("0x19")] = 3.1;
+    t[x("0x12")][x("0x1a")] = x("0x1b");
+    t[x("0x12")][x("0x1c")] = x("0x1d");
+    t[x("0x12")][x("0x1e")] = x("0x1f");
+    t[x("0x12")].product_id = "com.lyrebirdstudio.facelab.iap.subscription.yearly3999";
+    t[x("0x12")][x("0x20")] = "120002368123666";
+    t[x("0x12")][x("0x21")] = 164601e7;
+    t[x("0x12")][x("0x22")] = x("0x23");
+    t[x("0x12")].ownership_type = x("0x24");
+    t[x("0x12")].country = "US";
+    if (/\/verify|\/status/[x("0x3")]($request.url)) {
+      const c = {};
+      n ? c[x("0x25")] = "HTTP/1.1 200 OK" : c[x("0x25")] = 200;
+      c.headers = $response.headers;
+      c.body = JSON.stringify(t);
+      $done(n ? c : {
+        response: c
+      });
+    } else {
+      /\/decode-apple-receipt/.test($request.url) ? $done({
+        body: JSON[x("0x26")](t)
+      }) : $done({});
+    }
+  })();
+}
