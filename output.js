@@ -1,4 +1,4 @@
-//Fri Jan 10 2025 03:33:28 GMT+0000 (Coordinated Universal Time)
+//Fri Jan 10 2025 03:45:50 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
 var encode_version = "jsjiami.com.v5";
