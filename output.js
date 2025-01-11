@@ -1,196 +1,577 @@
-//Fri Jan 10 2025 03:45:50 GMT+0000 (Coordinated Universal Time)
+//Sat Jan 11 2025 01:32:55 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
-var encode_version = "jsjiami.com.v5";
-if (typeof $rocket !== "undefined") {
-  function getBoxJSValue(_0x2f991f) {
-    try {
-      if (typeof $persistentStore !== "undefined" && typeof $persistentStore.read === "function") {
-        const _0x5bf0d6 = $persistentStore.read(_0x2f991f);
-        console.log("🔍 成功读取 BoxJS 值（$persistentStore）：" + _0x2f991f + " = " + _0x5bf0d6);
-        return _0x5bf0d6;
-      } else {
-        if (typeof $prefs !== "undefined" && typeof $prefs.valueForKey === "function") {
-          const _0xd4e30d = $prefs.valueForKey(_0x2f991f);
-          console.log("🔍 成功读取 BoxJS 值（$prefs）：" + _0x2f991f + " = " + _0xd4e30d);
-          return _0xd4e30d;
-        } else {
-          {
-            console.log("⚠️ 无法检测到可用的 BoxJS 环境！");
+const ill11iii = new Env("酷狗概念版自动领取VIP-Eric");
+if ($request.url) {
+  let i1lIIii1 = $request.url,
+    i1lIllI1 = $request.headers,
+    Il11lI1 = new URLSearchParams(i1lIIii1.split("?")[1]),
+    IIIiiili = {
+      "appid": Il11lI1.get("appid"),
+      "clientver": Il11lI1.get("clientver"),
+      "clienttime": Il11lI1.get("clienttime"),
+      "mid": Il11lI1.get("mid"),
+      "uuid": Il11lI1.get("uuid"),
+      "dfid": Il11lI1.get("dfid"),
+      "token": Il11lI1.get("token"),
+      "userid": Il11lI1.get("userid"),
+      "srcappid": Il11lI1.get("srcappid"),
+      "signature": Il11lI1.get("signature")
+    },
+    IIlii = {
+      ":authority": i1lIllI1[":authority"],
+      "content-type": i1lIllI1["content-type"],
+      "kg-rf": i1lIllI1["kg-rf"],
+      "accept": i1lIllI1.accept,
+      "kg-thash": i1lIllI1["kg-thash"],
+      "accept-language": i1lIllI1["accept-language"],
+      "accept-encoding": i1lIllI1["accept-encoding"],
+      "kg-rec": i1lIllI1["kg-rec"],
+      "user-agent": i1lIllI1["user-agent"],
+      "kg-rc": i1lIllI1["kg-rc"],
+      "kg-fake": i1lIllI1["kg-fake"],
+      "content-length": i1lIllI1["content-length"],
+      "uni-useragent": i1lIllI1["uni-useragent"]
+    };
+  function IlI1Illi(iliIlii, IiiI1lI) {
+    if (typeof $prefs !== "undefined") return $prefs.setValueForKey(JSON.stringify(IiiI1lI), iliIlii);else {
+      if (typeof $persistentStore !== "undefined") return $persistentStore.write(JSON.stringify(IiiI1lI), iliIlii);else {
+        if (typeof $persistent !== "undefined") {
+          return $persistent.setItem(iliIlii, JSON.stringify(IiiI1lI));
+        }
+      }
+    }
+  }
+  IlI1Illi("urlParams", IIIiiili);
+  IlI1Illi("headerParams", IIlii);
+  IlI1Illi("originalUrl", i1lIIii1);
+  ill11iii.log("保存的 URL Params:", JSON.stringify(IIIiiili));
+  ill11iii.log("保存的 Header Params:", JSON.stringify(IIlii));
+  ill11iii.log("保存的 Original URL:", i1lIIii1);
+  ill11iii.log("数据已保存到持久化存储-Eric为您提供");
+  ill11iii.msg("获取数据成功", "数据已持久化保存", "");
+  ill11iii.done();
+}
+function Env(t, e) {
+  class s {
+    constructor(t) {
+      this.env = t;
+    }
+    send(t, e = "GET") {
+      t = "string" == typeof t ? {
+        url: t
+      } : t;
+      let s = this.get;
+      "POST" === e && (s = this.post);
+      return new Promise((e, a) => {
+        s.call(this, t, (t, s, r) => {
+          t ? a(t) : e(s);
+        });
+      });
+    }
+    get(t) {
+      return this.send.call(this.env, t);
+    }
+    post(t) {
+      return this.send.call(this.env, t, "POST");
+    }
+  }
+  return new class {
+    constructor(t, e) {
+      this.name = t;
+      this.http = new s(this);
+      this.data = null;
+      this.dataFile = "box.dat";
+      this.logs = [];
+      this.isMute = false;
+      this.isNeedRewrite = false;
+      this.logSeparator = "\n";
+      this.encoding = "utf-8";
+      this.startTime = new Date().getTime();
+      Object.assign(this, e);
+      this.log("", `🔔${this.name}, 开始!`);
+    }
+    getEnv() {
+      return "undefined" != typeof $environment && $environment["surge-version"] ? "Surge" : "undefined" != typeof $environment && $environment["stash-version"] ? "Stash" : "undefined" != typeof module && module.exports ? "Node.js" : "undefined" != typeof $task ? "Quantumult X" : "undefined" != typeof $loon ? "Loon" : "undefined" != typeof $rocket ? "Shadowrocket" : undefined;
+    }
+    isNode() {
+      return "Node.js" === this.getEnv();
+    }
+    isQuanX() {
+      return "Quantumult X" === this.getEnv();
+    }
+    isSurge() {
+      return "Surge" === this.getEnv();
+    }
+    isLoon() {
+      return "Loon" === this.getEnv();
+    }
+    isShadowrocket() {
+      return "Shadowrocket" === this.getEnv();
+    }
+    isStash() {
+      return "Stash" === this.getEnv();
+    }
+    toObj(t, e = null) {
+      try {
+        return JSON.parse(t);
+      } catch {
+        return e;
+      }
+    }
+    toStr(t, e = null) {
+      try {
+        return JSON.stringify(t);
+      } catch {
+        return e;
+      }
+    }
+    getjson(t, e) {
+      let s = e;
+      const a = this.getdata(t);
+      if (a) try {
+        s = JSON.parse(this.getdata(t));
+      } catch {}
+      return s;
+    }
+    setjson(t, e) {
+      try {
+        return this.setdata(JSON.stringify(t), e);
+      } catch {
+        return false;
+      }
+    }
+    getScript(t) {
+      return new Promise(e => {
+        this.get({
+          url: t
+        }, (t, s, a) => e(a));
+      });
+    }
+    runScript(t, e) {
+      return new Promise(s => {
+        let a = this.getdata("@chavy_boxjs_userCfgs.httpapi");
+        a = a ? a.replace(/\n/g, "").trim() : a;
+        let r = this.getdata("@chavy_boxjs_userCfgs.httpapi_timeout");
+        r = r ? 1 * r : 20;
+        r = e && e.timeout ? e.timeout : r;
+        const [i, o] = a.split("@"),
+          n = {
+            url: `http://${o}/v1/scripting/evaluate`,
+            body: {
+              script_text: t,
+              mock_type: "cron",
+              timeout: r
+            },
+            headers: {
+              "X-Key": i,
+              Accept: "*/*"
+            },
+            timeout: r
+          };
+        this.post(n, (t, e, a) => s(a));
+      }).catch(t => this.logErr(t));
+    }
+    loaddata() {
+      if (!this.isNode()) return {};
+      {
+        this.fs = this.fs ? this.fs : require("fs");
+        this.path = this.path ? this.path : require("path");
+        const t = this.path.resolve(this.dataFile),
+          e = this.path.resolve(process.cwd(), this.dataFile),
+          s = this.fs.existsSync(t),
+          a = !s && this.fs.existsSync(e);
+        if (!s && !a) return {};
+        {
+          const a = s ? t : e;
+          try {
+            return JSON.parse(this.fs.readFileSync(a));
+          } catch (t) {
+            return {};
           }
         }
       }
-    } catch (_0x5d99ef) {
-      {
-        console.log("⚠️ 读取 BoxJS 配置失败：" + _0x5d99ef.message);
+    }
+    writedata() {
+      if (this.isNode()) {
+        this.fs = this.fs ? this.fs : require("fs");
+        this.path = this.path ? this.path : require("path");
+        const t = this.path.resolve(this.dataFile),
+          e = this.path.resolve(process.cwd(), this.dataFile),
+          s = this.fs.existsSync(t),
+          a = !s && this.fs.existsSync(e),
+          r = JSON.stringify(this.data);
+        s ? this.fs.writeFileSync(t, r) : a ? this.fs.writeFileSync(e, r) : this.fs.writeFileSync(t, r);
       }
     }
-    return null;
-  }
-  const scriptSwitch = getBoxJSValue("ddm.app_switch");
-  const isScriptEnabled = scriptSwitch === "true" || scriptSwitch === true;
-  console.log("BoxJS 配置读取：ddm.app_switch = " + scriptSwitch);
-  if (!isScriptEnabled) {
-    console.log("⛔️ BoxJS 配置禁用脚本，脚本停止运行");
-    $notification.post("⚠️ 脚本异常已终止运行", "检测到脚本开关未开启", "📌 【Boxjs 配置指南】\n1️⃣ 配置地址： https://github.com/chavyleung/scripts\n2️⃣ 订阅链接： https://raw.githubusercontent.com/chxm1023/Script_X/main/ddm1023.boxjs.json\n\n📋 【使用说明】\n1️⃣ 添加订阅链接到 Boxjs\n2️⃣ 启用 [脚本开关] 并保存设置\n\n⚠️ 【注意事项】\n- 开关用于防止非法售卖脚本\n- 仅供学习体验，请勿传播或滥用\n- 建议 24 小时内删除，避免不必要问题\n\n🙏 感谢理解与支持！");
-    $done();
-  }
-}
-var ddm = JSON.parse($response.body);
-const expireAt = "2099-09-09 09:09:09";
-function calculateDaysToEnd(_0xc9e12e) {
-  const _0x56d245 = new Date(_0xc9e12e.replace(" ", "T"));
-  const _0x5a168f = new Date();
-  const _0x4c9bcd = _0x56d245 - _0x5a168f;
-  return _0x4c9bcd > 0 ? Math.ceil(_0x4c9bcd / 86400000) : 0;
-}
-const daysLeft = calculateDaysToEnd(expireAt);
-if (/getUserData/.test($request.url)) {
-  Object.assign(ddm.data.data, {
-    vip: {
-      is_open_vip: 2,
-      is_vip: 2
-    },
-    headPortraitPath: "https://raw.githubusercontent.com/chxm1023/Script_X/main/icon/ddm.png",
-    buy_num: "1",
-    reg_date: "2024-01-23",
-    nickName: "叮当猫の分享频道"
-  });
-}
-if (/pay\/home/.test($request.url)) {
-  Object.assign(ddm.data.user, {
-    expireDate: expireAt,
-    img: "https://raw.githubusercontent.com/chxm1023/Script_X/main/icon/ddm.png",
-    nickname: "叮当猫の分享频道",
-    isVip: "2"
-  });
-}
-if (/home\/getUser/.test($request.url)) {
-  ddm.data.nickName = "叮当猫の分享频道";
-  ddm.data.img = "https://raw.githubusercontent.com/chxm1023/Script_X/main/icon/ddm.png";
-  Object.assign(ddm.data.vip, {
-    first_time: "2024-01-23",
-    expired_day: "0",
-    subTitle: "",
-    isVip: 2,
-    vipState: "2",
-    maturity_time: "2099-09-09",
-    color: "#866100",
-    level: "2",
-    title: "我的会员",
-    titleColor: "#866100",
-    last_time: "2024-01-23",
-    text: "2099-09-09到期",
-    xiangdou: 9999,
-    maturity_day: "" + daysLeft
-  });
-}
-if (/user\/info/.test($request.url)) {
-  Object.assign(ddm.data, {
-    nickName: "叮当猫の分享频道",
-    img: "https://raw.githubusercontent.com/chxm1023/Script_X/main/icon/ddm.png",
-    vipInfo: {
-      isVip: "2",
-      url: "xiangha://welcome?VipWebView.app?url=https://appweb.xiangha.com/vip/myvip?payset=2&fullScreen=2&vipFrom=我的页面会员续费按钮",
-      vipState: "4"
+    lodash_get(t, e, s) {
+      const a = e.replace(/\[(\d+)\]/g, ".$1").split(".");
+      let r = t;
+      for (const t of a) if (r = Object(r)[t], undefined === r) return s;
+      return r;
     }
-  });
-}
-if (/(dish|school)/.test($request.url)) {
-  const Params = {
-    is_open_vip: 2,
-    is_vip: 2,
-    isBuy: "2",
-    isCollection: 2,
-    status: true,
-    isShow: "2",
-    isVideo: "2",
-    isVip: "2"
-  };
-  searchAndModify(ddm, Params);
-}
-$done({
-  body: JSON.stringify(ddm)
-});
-function searchAndModify(_0x5b2f2e, _0x50ad52) {
-  for (const _0x31a5fc in _0x5b2f2e) {
-    if (typeof _0x5b2f2e[_0x31a5fc] === "object" && _0x5b2f2e[_0x31a5fc] !== null) {
-      {
-        searchAndModify(_0x5b2f2e[_0x31a5fc], _0x50ad52);
-      }
-    } else {
-      if (_0x31a5fc in _0x50ad52) {
-        _0x5b2f2e[_0x31a5fc] = _0x50ad52[_0x31a5fc];
-      }
+    lodash_set(t, e, s) {
+      return Object(t) !== t ? t : (Array.isArray(e) || (e = e.toString().match(/[^.[\]]+/g) || []), e.slice(0, -1).reduce((t, s, a) => Object(t[s]) === t[s] ? t[s] : t[s] = Math.abs(e[a + 1]) >> 0 == +e[a + 1] ? [] : {}, t)[e[e.length - 1]] = s, t);
     }
-  }
-}
-(function (_0x73f202, _0x19b20f, _0x934f8a) {
-  var _0x291cb9 = function () {
-    var _0x2bccf7 = true;
-    return function (_0x3021b5, _0x76dfa5) {
-      var _0x156753 = _0x2bccf7 ? function () {
-        if (_0x76dfa5) {
-          var _0x178fb3 = _0x76dfa5.apply(_0x3021b5, arguments);
-          _0x76dfa5 = null;
-          return _0x178fb3;
+    getdata(t) {
+      let e = this.getval(t);
+      if (/^@/.test(t)) {
+        const [, s, a] = /^@(.*?)\.(.*?)$/.exec(t),
+          r = s ? this.getval(s) : "";
+        if (r) try {
+          const t = JSON.parse(r);
+          e = t ? this.lodash_get(t, a, "") : e;
+        } catch (t) {
+          e = "";
         }
-      } : function () {};
-      _0x2bccf7 = false;
-      return _0x156753;
-    };
-  }();
-  var _0x4121ed = _0x291cb9(this, function () {
-    var _0x165ce5 = function () {
-      return "dev";
-    };
-    var _0x1764ff = function () {
-      return "window";
-    };
-    var _0x3739c0 = function () {
-      var _0x5b7590 = new RegExp("\\w+ *\\(\\) *{\\w+ *['|\"].+['|\"];? *}");
-      return !_0x5b7590.test(_0x165ce5.toString());
-    };
-    var _0x59c6a4 = function () {
-      var _0x2908ab = new RegExp("(\\\\[x|u](\\w){2,4})+");
-      return _0x2908ab.test(_0x1764ff.toString());
-    };
-    var _0x26086e = function (_0x5ab44c) {
-      var _0x558e75 = 0 >> 1 + NaN;
-      if (_0x5ab44c.indexOf("i" === _0x558e75)) {
-        _0x46b716(_0x5ab44c);
       }
-    };
-    var _0x46b716 = function (_0x44285a) {
-      var _0xd1e5cc = 3 >> 1 + NaN;
-      if (_0x44285a.indexOf("true"[3]) !== _0xd1e5cc) {
-        _0x26086e(_0x44285a);
-      }
-    };
-    if (!_0x3739c0()) {
-      if (!_0x59c6a4()) {
-        _0x26086e("indеxOf");
-      } else {
-        _0x26086e("indexOf");
-      }
-    } else {
-      _0x26086e("indеxOf");
+      return e;
     }
-  });
-  _0x4121ed();
-  _0x934f8a = "al";
-  try {
-    _0x934f8a += "ert";
-    _0x19b20f = encode_version;
-    if (!(typeof _0x19b20f !== "undefined" && _0x19b20f === "jsjiami.com.v5")) {
-      {
-        _0x73f202[_0x934f8a]("删除版本号，js会定期弹窗，还请支持我们的工作");
+    setdata(t, e) {
+      let s = false;
+      if (/^@/.test(e)) {
+        const [, a, r] = /^@(.*?)\.(.*?)$/.exec(e),
+          i = this.getval(a),
+          o = a ? "null" === i ? null : i || "{}" : "{}";
+        try {
+          const e = JSON.parse(o);
+          this.lodash_set(e, r, t);
+          s = this.setval(JSON.stringify(e), a);
+        } catch (e) {
+          const i = {};
+          this.lodash_set(i, r, t);
+          s = this.setval(JSON.stringify(i), a);
+        }
+      } else s = this.setval(t, e);
+      return s;
+    }
+    getval(t) {
+      switch (this.getEnv()) {
+        case "Surge":
+        case "Loon":
+        case "Stash":
+        case "Shadowrocket":
+          return $persistentStore.read(t);
+        case "Quantumult X":
+          return $prefs.valueForKey(t);
+        case "Node.js":
+          this.data = this.loaddata();
+          return this.data[t];
+        default:
+          return this.data && this.data[t] || null;
       }
     }
-  } catch (_0x4db422) {
-    {
-      _0x73f202[_0x934f8a]("删除版本号，js会定期弹窗");
+    setval(t, e) {
+      switch (this.getEnv()) {
+        case "Surge":
+        case "Loon":
+        case "Stash":
+        case "Shadowrocket":
+          return $persistentStore.write(t, e);
+        case "Quantumult X":
+          return $prefs.setValueForKey(t, e);
+        case "Node.js":
+          this.data = this.loaddata();
+          this.data[e] = t;
+          this.writedata();
+          return true;
+        default:
+          return this.data && this.data[e] || null;
+      }
     }
-  }
-})(window);
-encode_version = "jsjiami.com.v5";
+    initGotEnv(t) {
+      this.got = this.got ? this.got : require("got");
+      this.cktough = this.cktough ? this.cktough : require("tough-cookie");
+      this.ckjar = this.ckjar ? this.ckjar : new this.cktough.CookieJar();
+      t && (t.headers = t.headers ? t.headers : {}, undefined === t.headers.Cookie && undefined === t.cookieJar && (t.cookieJar = this.ckjar));
+    }
+    get(t, e = () => {}) {
+      switch (t.headers && (delete t.headers["Content-Type"], delete t.headers["Content-Length"], delete t.headers["content-type"], delete t.headers["content-length"]), t.params && (t.url += "?" + this.queryStr(t.params)), this.getEnv()) {
+        case "Surge":
+        case "Loon":
+        case "Stash":
+        case "Shadowrocket":
+        default:
+          this.isSurge() && this.isNeedRewrite && (t.headers = t.headers || {}, Object.assign(t.headers, {
+            "X-Surge-Skip-Scripting": false
+          }));
+          $httpClient.get(t, (t, s, a) => {
+            !t && s && (s.body = a, s.statusCode = s.status ? s.status : s.statusCode, s.status = s.statusCode);
+            e(t, s, a);
+          });
+          break;
+        case "Quantumult X":
+          this.isNeedRewrite && (t.opts = t.opts || {}, Object.assign(t.opts, {
+            hints: false
+          }));
+          $task.fetch(t).then(t => {
+            const {
+              statusCode: s,
+              statusCode: a,
+              headers: r,
+              body: i,
+              bodyBytes: o
+            } = t;
+            e(null, {
+              status: s,
+              statusCode: a,
+              headers: r,
+              body: i,
+              bodyBytes: o
+            }, i, o);
+          }, t => e(t && t.error || "UndefinedError"));
+          break;
+        case "Node.js":
+          let s = require("iconv-lite");
+          this.initGotEnv(t);
+          this.got(t).on("redirect", (t, e) => {
+            try {
+              if (t.headers["set-cookie"]) {
+                const s = t.headers["set-cookie"].map(this.cktough.Cookie.parse).toString();
+                s && this.ckjar.setCookieSync(s, null);
+                e.cookieJar = this.ckjar;
+              }
+            } catch (t) {
+              this.logErr(t);
+            }
+          }).then(t => {
+            const {
+                statusCode: a,
+                statusCode: r,
+                headers: i,
+                rawBody: o
+              } = t,
+              n = s.decode(o, this.encoding);
+            e(null, {
+              status: a,
+              statusCode: r,
+              headers: i,
+              rawBody: o,
+              body: n
+            }, n);
+          }, t => {
+            const {
+              message: a,
+              response: r
+            } = t;
+            e(a, r, r && s.decode(r.rawBody, this.encoding));
+          });
+      }
+    }
+    post(t, e = () => {}) {
+      const s = t.method ? t.method.toLocaleLowerCase() : "post";
+      switch (t.body && t.headers && !t.headers["Content-Type"] && !t.headers["content-type"] && (t.headers["content-type"] = "application/x-www-form-urlencoded"), t.headers && (delete t.headers["Content-Length"], delete t.headers["content-length"]), this.getEnv()) {
+        case "Surge":
+        case "Loon":
+        case "Stash":
+        case "Shadowrocket":
+        default:
+          this.isSurge() && this.isNeedRewrite && (t.headers = t.headers || {}, Object.assign(t.headers, {
+            "X-Surge-Skip-Scripting": false
+          }));
+          $httpClient[s](t, (t, s, a) => {
+            !t && s && (s.body = a, s.statusCode = s.status ? s.status : s.statusCode, s.status = s.statusCode);
+            e(t, s, a);
+          });
+          break;
+        case "Quantumult X":
+          t.method = s;
+          this.isNeedRewrite && (t.opts = t.opts || {}, Object.assign(t.opts, {
+            hints: false
+          }));
+          $task.fetch(t).then(t => {
+            const {
+              statusCode: s,
+              statusCode: a,
+              headers: r,
+              body: i,
+              bodyBytes: o
+            } = t;
+            e(null, {
+              status: s,
+              statusCode: a,
+              headers: r,
+              body: i,
+              bodyBytes: o
+            }, i, o);
+          }, t => e(t && t.error || "UndefinedError"));
+          break;
+        case "Node.js":
+          let a = require("iconv-lite");
+          this.initGotEnv(t);
+          const {
+            url: r,
+            ...i
+          } = t;
+          this.got[s](r, i).then(t => {
+            const {
+                statusCode: s,
+                statusCode: r,
+                headers: i,
+                rawBody: o
+              } = t,
+              n = a.decode(o, this.encoding);
+            e(null, {
+              status: s,
+              statusCode: r,
+              headers: i,
+              rawBody: o,
+              body: n
+            }, n);
+          }, t => {
+            const {
+              message: s,
+              response: r
+            } = t;
+            e(s, r, r && a.decode(r.rawBody, this.encoding));
+          });
+      }
+    }
+    time(t, e = null) {
+      const s = e ? new Date(e) : new Date();
+      let a = {
+        "M+": s.getMonth() + 1,
+        "d+": s.getDate(),
+        "H+": s.getHours(),
+        "m+": s.getMinutes(),
+        "s+": s.getSeconds(),
+        "q+": Math.floor((s.getMonth() + 3) / 3),
+        S: s.getMilliseconds()
+      };
+      /(y+)/.test(t) && (t = t.replace(RegExp.$1, (s.getFullYear() + "").substr(4 - RegExp.$1.length)));
+      for (let e in a) new RegExp("(" + e + ")").test(t) && (t = t.replace(RegExp.$1, 1 == RegExp.$1.length ? a[e] : ("00" + a[e]).substr(("" + a[e]).length)));
+      return t;
+    }
+    queryStr(t) {
+      let e = "";
+      for (const s in t) {
+        let a = t[s];
+        null != a && "" !== a && ("object" == typeof a && (a = JSON.stringify(a)), e += `${s}=${a}&`);
+      }
+      e = e.substring(0, e.length - 1);
+      return e;
+    }
+    msg(e = t, s = "", a = "", r) {
+      const i = t => {
+        switch (typeof t) {
+          case undefined:
+            return t;
+          case "string":
+            switch (this.getEnv()) {
+              case "Surge":
+              case "Stash":
+              default:
+                return {
+                  url: t
+                };
+              case "Loon":
+              case "Shadowrocket":
+                return t;
+              case "Quantumult X":
+                return {
+                  "open-url": t
+                };
+              case "Node.js":
+                return;
+            }
+          case "object":
+            switch (this.getEnv()) {
+              case "Surge":
+              case "Stash":
+              case "Shadowrocket":
+              default:
+                {
+                  let e = t.url || t.openUrl || t["open-url"];
+                  return {
+                    url: e
+                  };
+                }
+              case "Loon":
+                {
+                  let e = t.openUrl || t.url || t["open-url"],
+                    s = t.mediaUrl || t["media-url"];
+                  return {
+                    openUrl: e,
+                    mediaUrl: s
+                  };
+                }
+              case "Quantumult X":
+                {
+                  let e = t["open-url"] || t.url || t.openUrl,
+                    s = t["media-url"] || t.mediaUrl,
+                    a = t["update-pasteboard"] || t.updatePasteboard;
+                  return {
+                    "open-url": e,
+                    "media-url": s,
+                    "update-pasteboard": a
+                  };
+                }
+              case "Node.js":
+                return;
+            }
+          default:
+            return;
+        }
+      };
+      if (!this.isMute) switch (this.getEnv()) {
+        case "Surge":
+        case "Loon":
+        case "Stash":
+        case "Shadowrocket":
+        default:
+          $notification.post(e, s, a, i(r));
+          break;
+        case "Quantumult X":
+          $notify(e, s, a, i(r));
+          break;
+        case "Node.js":
+      }
+      if (!this.isMuteLog) {
+        let t = ["", "==============📣系统通知📣=============="];
+        t.push(e);
+        s && t.push(s);
+        a && t.push(a);
+        console.log(t.join("\n"));
+        this.logs = this.logs.concat(t);
+      }
+    }
+    log(...t) {
+      t.length > 0 && (this.logs = [...this.logs, ...t]);
+      console.log(t.join(this.logSeparator));
+    }
+    logErr(t, e) {
+      switch (this.getEnv()) {
+        case "Surge":
+        case "Loon":
+        case "Stash":
+        case "Shadowrocket":
+        case "Quantumult X":
+        default:
+          this.log("", `❗️${this.name}, 错误!`, t);
+          break;
+        case "Node.js":
+          this.log("", `❗️${this.name}, 错误!`, t.stack);
+      }
+    }
+    wait(t) {
+      return new Promise(e => setTimeout(e, t));
+    }
+    done(t = {}) {
+      const e = new Date().getTime(),
+        s = (e - this.startTime) / 1000;
+      switch (this.log("", `🔔${this.name}, 结束! 🕛 ${s} 秒`), this.log(), this.getEnv()) {
+        case "Surge":
+        case "Loon":
+        case "Stash":
+        case "Shadowrocket":
+        case "Quantumult X":
+        default:
+          $done(t);
+          break;
+        case "Node.js":
+          process.exit(1);
+      }
+    }
+  }(t, e);
+}
+去;
