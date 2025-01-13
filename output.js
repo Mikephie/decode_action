@@ -111,130 +111,43 @@ function _0x719e(_0x14064c, _0x231250) {
     return !_0x1a2fc3 ? (_0x719e["doLSPo"] === undefined && (_0x719e["doLSPo"] = true), _0x3d9818 = _0x719e["Mqfvew"](_0x3d9818, _0x1b5cc8), _0x14064c[_0x38005a] = _0x3d9818) : _0x3d9818 = _0x1a2fc3, _0x3d9818;
   }, _0x719e(_0x14064c, _0x231250);
 }
-let status;
-status = (status = $["getval"]("kuwostatus") || "1") > 1 ? "" + status : "";
-let loginUidArr = [],
-  kuwoNameArr = [],
-  tz = $[_0x5a6816(384, "IV%4")]("tz") || "1";
+// Initialize status variable
+let status = "";
+status = (status = getVal("kuwostatus") || "1") > 1 ? status.toString() : "";
+
+// Initialize arrays and timezone
+let loginUidArr = [];
+let kuwoNameArr = [];
+let tz = getVal("tz") || "1";
+
 const logs = 0;
-var message = "";
-!(async () => {
-  const _0x1e882 = _0x5a6816,
-    _0x3de433 = {
-      "MrvIa": function (_0x5b9b83, _0x376afd) {
-        return _0x5b9b83 == _0x376afd;
-      },
-      "VlHse": function (_0x49b6c3, _0x4f20eb) {
-        return _0x49b6c3(_0x4f20eb);
-      },
-      "KXkjl": function (_0x42c0ca, _0x3710d6) {
-        return _0x42c0ca + _0x3710d6;
-      },
-      "DmAiX": function (_0x505b96, _0x1967ca) {
-        return _0x505b96 + _0x1967ca;
-      },
-      "rjLDe": function (_0x517d81, _0x5745dc) {
-        return _0x517d81 + _0x5745dc;
-      },
-      "qbRqZ": function (_0x35daa8, _0x2f975c) {
-        return _0x35daa8 + _0x2f975c;
-      },
-      "lmNeD": _0x1e882(132, "KSBU"),
-      "JatmZ": _0x1e882(376, "v9T8"),
-      "wsYYZ": _0x1e882(401, "kEiQ"),
-      "lgKle": function (_0x506a0f, _0x457577) {
-        return _0x506a0f(_0x457577);
-      },
-      "XugtV": function (_0x2fddbd, _0x2ddf55) {
-        return _0x2fddbd + _0x2ddf55;
-      },
-      "vOVAQ": _0x1e882(206, ")ivc"),
-      "VZSWV": _0x1e882(227, "VTVG"),
-      "IyVyK": _0x1e882(244, ")G4J"),
-      "sWpil": function (_0x2bd44a, _0x2eaf1f) {
-        return _0x2bd44a !== _0x2eaf1f;
-      },
-      "udESX": "CxiqW",
-      "NnFYA": function (_0x2c750c) {
-        return _0x2c750c();
-      },
-      "WIEjT": _0x1e882(247, "r7Dq"),
-      "LOKWx": function (_0x1a66c2, _0x5edc76) {
-        return _0x1a66c2 === _0x5edc76;
-      },
-      "lgrdv": "Lmzsk",
-      "BjQEN": function (_0x3c2ae3, _0x4bd58e) {
-        return _0x3c2ae3 < _0x4bd58e;
-      },
-      "XhKlq": function (_0xda9a85, _0x30dfff) {
-        return _0xda9a85 + _0x30dfff;
-      },
-      "VkFOA": function (_0xe2943f, _0x2543b1) {
-        return _0xe2943f * _0x2543b1;
-      },
-      "qVrZV": function (_0x1557a5, _0x13af0d) {
-        return _0x1557a5 * _0x13af0d;
-      },
-      "gNYNR": function (_0x8aef64, _0x44b897) {
-        return _0x8aef64 * _0x44b897;
-      },
-      "XbIYF": function (_0x44aa17, _0xd7d79c) {
-        return _0x44aa17 < _0xd7d79c;
-      },
-      "QdPfl": function (_0x5d7683, _0x463121) {
-        return _0x5d7683(_0x463121);
-      },
-      "fMUWn": "tfUhb",
-      "GEUrh": "YqXOO",
-      "bTuCK": _0x1e882(239, "a9AK"),
-      "XaGKj": function (_0x56ac37, _0x2b3608) {
-        return _0x56ac37 < _0x2b3608;
-      },
-      "cfMbo": _0x1e882(320, "4PeQ"),
-      "jJaCk": "ZaNbK",
-      "JzoEV": function (_0x40c7c1, _0x476640) {
-        return _0x40c7c1(_0x476640);
-      },
-      "bEWLE": function (_0x46f54a, _0x4c8e31) {
-        return _0x46f54a / _0x4c8e31;
-      }
-    };
-  if (Clear == 1) {
-    if (_0x3de433[_0x1e882(190, "$DMm")](_0x3de433[_0x1e882(363, "2tNu")], _0x3de433[_0x1e882(258, "aOBr")])) {
-      _0x22adde = _0x58ae81[_0x1e882(393, "m]wh")](_0x33b449);
-      if (_0x3de433[_0x1e882(154, "v9T8")](_0x2a9de8["code"], 200)) {
-        let _0x409a06 = _0x2cc707[_0x1e882(346, "zxh)")]["endTime"],
-          _0x189708 = new _0x4cfe85(_0x3de433[_0x1e882(161, ")ivc")](_0x3c506b, _0x409a06)),
-          _0x31df6c = _0x189708[_0x1e882(292, ")ivc")]();
-        _0x25cb52["log"](_0x3de433[_0x1e882(294, "r7Dq")](_0x3de433[_0x1e882(223, "KSBU")](_0x3de433["DmAiX"](_0x3de433["rjLDe"](_0x3de433[_0x1e882(350, "GWen")](_0x2aadc5[_0x1e882(145, "KSBU")], _0x1e882(158, "VTVG")), _0x3de433[_0x1e882(357, "iM!b")]), _0x45c9e2[_0x1e882(404, ")G4J")][_0x1e882(183, "Yb]O")]) + _0x3de433["JatmZ"], _0x3de433[_0x1e882(362, "GWen")]), _0x31df6c)), _0x3de433["lgKle"](_0x2d4c97, {
-          "success": true,
-          "singleTime": _0x3de433["VlHse"](_0xb42bf8, _0x5100d6["data"]["singleTime"]),
-          "expiryTime": _0x31df6c,
-          "message": _0x3de433[_0x1e882(310, "Cl^W")](_0x567208["msg"], "!\u2705")
-        });
-      } else _0x32cc08[_0x1e882(347, "%Bo9")] === -1 ? (_0x4acf2a["log"](_0x3de433[_0x1e882(149, "]vxk")](_0x5a6cef[_0x1e882(290, "tznY")], _0x3de433["vOVAQ"])), _0x3de433[_0x1e882(194, "j*@O")](_0xa598fe, {
-        "success": false,
-        "singleTime": 0,
-        "expiryTime": "",
-        "message": _0x18a713["msg"] + _0x1e882(245, "$@!f")
-      })) : (_0x4727ab[_0x1e882(164, "oPVz")](_0x4df897[_0x1e882(137, "5W^u")] + _0x3de433[_0x1e882(160, "tznY")]), _0x3de433[_0x1e882(156, "$@!f")](_0xe3a9d7, {
-        "success": false,
-        "singleTime": 0,
-        "expiryTime": "",
-        "message": _0x3de433["XugtV"](_0x437b34[_0x1e882(200, "$DMm")], _0x3de433[_0x1e882(230, "qOFG")])
-      }));
-    } else {
-      _0x3de433[_0x1e882(334, "iM!b")](clearEnvVars), $[_0x1e882(287, "zzf*")]($[_0x1e882(242, "zzf*")], "", _0x3de433[_0x1e882(270, "UzZM")]);
-      return;
+let message = "";
+
+// Main async function
+(async () => {
+  // Handle clear condition
+  if (Clear === 1) {
+    clearEnvVars();
+    $.msg($.name, "", "Environment variables cleared");
+    return;
+  }
+
+  // Handle request condition
+  if (typeof $request !== "undefined") {
+    await kuwock();
+  } else {
+    // Process login UIDs
+    const storedUids = $.getval("kuwo_data");
+    if (storedUids) {
+      loginUidArr = storedUids.split("&");
+    }
+
+    // Generate user names array
+    for (let i = 0; i < loginUidArr.length; i++) {
+      kuwoNameArr.push(`用户${i + 1}`);
     }
   }
-  if (typeof $request !== _0x1e882(284, "1gsg")) await kuwock();else {
-    if (_0x3de433["LOKWx"]("xhDzX", _0x3de433[_0x1e882(143, "gLXf")])) _0x53ebe1 += _0x21f27f[_0x1e882(207, "tznY")], _0x46e00c = _0x44a26f[_0x1e882(186, "$@!f")], _0x5d58f0 = _0x5c426d[_0x1e882(170, "Q*aQ")];else {
-      const _0x2b6d5e = $[_0x1e882(388, "1gsg")](_0x3de433["IyVyK"]);
-      _0x2b6d5e && (loginUidArr = _0x2b6d5e[_0x1e882(163, "GWen")]("&"));
-      for (let _0x2850e6 = 0; _0x3de433["BjQEN"](_0x2850e6, loginUidArr["length"]); _0x2850e6++) {
-        kuwoNameArr[_0x1e882(369, "]xp]")]("\u7528\u6237" + _0x3de433[_0x1e882(139, "GWen")](_0x2850e6, 1));
-      }
+})();
       $[_0x1e882(383, "GWen")]("\n\n============General\u2121========================= \u811A\u672C\u6267\u884C - \u5317\u4EAC\u65F6\u95F4(UTC+8)\uFF1A" + new Date(_0x3de433[_0x1e882(191, "v9T8")](_0x3de433[_0x1e882(271, "qOFG")](new Date()[_0x1e882(241, "Yb]O")](), _0x3de433["VkFOA"](_0x3de433[_0x1e882(341, "GaoH")](new Date()[_0x1e882(233, "]xp]")](), 60), 1000)), _0x3de433[_0x1e882(167, "r7Dq")](_0x3de433[_0x1e882(343, "a9AK")](_0x3de433[_0x1e882(324, "4PeQ")](8, 60), 60), 1000)))[_0x1e882(142, "eHu!")]() + _0x1e882(228, "5W^u")), $["log"](_0x1e882(217, "zxh)") + loginUidArr[_0x1e882(260, "tznY")] + " \u4E2A\u6709\u6548\u7528\u6237\u6570\u636E");
       for (let _0xe10b93 = 0; _0x3de433[_0x1e882(251, "^*zT")](_0xe10b93, loginUidArr[_0x1e882(201, "jXnh")]); _0xe10b93++) {
         let _0x51a0c = loginUidArr[_0xe10b93];
