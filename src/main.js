@@ -21,6 +21,7 @@ const PluginSojsonV7 = sojsonv7Module.default || sojsonv7Module;
 const PluginObfuscator = obfuscatorModule.default || obfuscatorModule;
 const PluginAwsc = awscModule.default || awscModule;
 const PluginJsconfuser = jsconfuserModule.default || jsconfuserModule;
+const PluginaAencodeModule = aaencodeModuleModule.default || aaencodeModuleModule;
 // Read command-line arguments
 let encodeFile = 'input.js';
 let decodeFile = 'output.js';
