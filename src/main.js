@@ -11,6 +11,7 @@ const sojsonv7Module = await import('./plugin/sojsonv7.js');
 const obfuscatorModule = await import('./plugin/obfuscator.js');
 const awscModule = await import('./plugin/awsc.js');
 const jsconfuserModule = await import('./plugin/jsconfuser.js');
+const jsaaencodeModule = await import('./plugin/aaencode.js');
 
 // Provide default exports if necessary
 const PluginCommon = commonModule.default || commonModule;
