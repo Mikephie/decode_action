@@ -21,7 +21,7 @@ const PluginSojsonV7 = sojsonv7Module.default || sojsonv7Module;
 const PluginObfuscator = obfuscatorModule.default || obfuscatorModule;
 const PluginAwsc = awscModule.default || awscModule;
 const PluginJsconfuser = jsconfuserModule.default || jsconfuserModule;
-const PluginaAencodeModule = aaencodeModuleModule.default || aaencodeModuleModule;
+const PluginAaencode = jsaaencodeModule.default || jsaaencodeModule;
 // Read command-line arguments
 let encodeFile = 'input.js';
 let decodeFile = 'output.js';
@@ -48,12 +48,12 @@ let time;
 const plugins = [
   { name: 'obfuscator', plugin: PluginObfuscator },
   { name: 'sojsonv7', plugin: PluginSojsonV7 },
-    { name: 'sojson', plugin: PluginSojson },
-
+  { name: 'sojson', plugin: PluginSojson },
   { name: 'jsconfuser', plugin: PluginJsconfuser },
   { name: 'awsc', plugin: PluginAwsc },
   { name: 'jjencode', plugin: PluginJjencode },
-  { name: 'common', plugin: PluginCommon }, // Use common plugin last
+  { name: 'aaencode', plugin: PluginAaencode },
+  { name: 'common', plugin: PluginCommon }, // 最后兜底
 ];
 
 for (const plugin of plugins) {
