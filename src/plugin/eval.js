@@ -1,36 +1,113 @@
-import { isKaomojiFuck, simpleFormat } from './common.js'
+import { parse } from '@babel/parser';
+import _generate from '@babel/generator';
+const generator = _generate.default;
+import _traverse from '@babel/traverse';
+const traverse = _traverse.default;
+import * as t from '@babel/types';
 
-export function unpack(code) {
-  if (isKaomojiFuck(code)) {
-    console.log('检测到 Kaomoji / JSFuck 混淆代码，eval 解包跳过！直接返回原始代码')
+function unpack(packedCode) {
+  let unpacked = '';
+  const fakeEval = (code) => {
+    unpacked = code;
     return code;
-  }
+  };
 
-  let unpacked = ''
-  const fakeEval = (payload) => {
-    unpacked = payload
-    return payload
-  }
-
-  const safeCode = code.replace(/eval\s*\(/, 'fakeEval(')
+  const modifiedCode = packedCode.replace(/eval\s*\(/, 'fakeEval(');
 
   try {
-    const func = new Function('fakeEval', 'String', 'RegExp', safeCode)
-    func(fakeEval, String, RegExp)
-
-    if (unpacked && unpacked !== code) {
-      console.log('eval 解包成功')
-      return unpacked
-    }
-
-    console.log('eval 解包失败，自动 fallback 原始 code')
-    return code;
+    const func = new Function('fakeEval', 'String', 'RegExp', modifiedCode);
+    func(fakeEval, String, RegExp);
+    return unpacked;
   } catch (e) {
-    console.log(`eval 解包异常: ${e.message}，fallback 原始 code`)
+    console.log('解包错误:', e);
+    return null;
+  }
+}
+
+function formatCode(code) {
+  try {
+    const ast = parse(code, { sourceType: 'module', plugins: ['jsx'] });
+
+    let hasBaseConfig = false;
+
+    traverse(ast, {
+      VariableDeclaration(path) {
+        const firstDecl = path.node.declarations[0];
+        if (firstDecl && ['names', 'productName', 'productType'].includes(firstDecl.id.name)) {
+          if (!hasBaseConfig) {
+            path.addComment('leading', ' 基础配置变量');
+            hasBaseConfig = true;
+          }
+        }
+      },
+      AssignmentExpression(path) {
+        if (path.node.left.object?.name === 'obj' && path.node.left.property?.name === 'subscriber') {
+          path.addComment('leading', ' 订阅配置');
+        }
+      },
+      CallExpression(path) {
+        if (path.node.callee.property?.name === 'notify') {
+          path.addComment('leading', ' 通知配置');
+        }
+      },
+    });
+
+    let formatted = generator(ast, {
+      retainLines: false,
+      comments: true,
+      compact: false,
+      indent: { style: '  ' },
+    }).code;
+
+    formatted = formatted
+      .replace(/;/g, ';\n')
+      .replace(/([{}])/g, '$1\n')
+      .replace(/,\s*/g, ', ')
+      .replace(/:\s*/g, ': ')
+      .replace(/\n{2,}/g, '\n\n')
+      .replace(/(let|var|const)\s+/g, '\n$1 ')
+      .replace(/\/\/\s*([^\n]+)\n/g, '// $1\n')
+      .replace(/\$done\(\{\s*(.*?)\s*\}\);/g, '\n$done({ $1 });\n')
+      .replace(/\{\n+/g, '{\n')
+      .replace(/\[\s*\n\s*/g, '[\n  ')
+      .replace(/\n\s*\]/g, '\n]')
+      .replace(/([a-zA-Z_$][0-9a-zA-Z_$]*)\s*=\s*/g, '$1 = ')
+      .replace(/,\s*([^\s])/g, ', $1')
+      .replace(/\s+$/gm, '')
+      .replace(/^\s+$/gm, '');
+
+    const header =
+      `// Generated at ${new Date().toISOString()}\n` +
+      '// Base: https://github.com/echo094/decode-js\n' +
+      '// Modify: https://github.com/smallfawn/decode_action\n\n';
+
+    return header + formatted;
+  } catch (e) {
+    console.log('格式化错误:', e);
     return code;
   }
+}
+
+function recursiveUnpack(code, depth = 0) {
+  if (depth > 10) return code;
+  console.log(`进行第 ${depth + 1} 层解包...`);
+
+  try {
+    let result = unpack(code);
+    if (result && result !== code) {
+      if (result.includes('eval(')) {
+        return recursiveUnpack(result, depth + 1);
+      }
+      return result;
+    }
+  } catch (e) {
+    console.log(`第 ${depth + 1} 层解包失败:`, e);
+  }
+
+  return code;
 }
 
 export default {
-  unpack
-}
+  unpack: recursiveUnpack,
+  formatCode,
+};
