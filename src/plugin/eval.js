@@ -1,13 +1,17 @@
-const { parse } = require('@babel/parser');
-const generator = require('@babel/generator').default;
-const traverse = require('@babel/traverse').default;
-const t = require('@babel/types');
-const fs = require('fs');
-const path = require('path');
+// eval.js - ES Module版本
+import { parse } from '@babel/parser';
+import generator from '@babel/generator';
+import traverse from '@babel/traverse';
+import * as t from '@babel/types';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 /**
  * 解包并格式化混淆的JavaScript代码
- * 完美结合原有插件优点，保持相同的输出格式
+ * @param {string} inputFilePath - 输入文件路径
+ * @param {string} outputFilePath - 输出文件路径
+ * @returns {boolean} 处理是否成功
  */
 function processScript(inputFilePath, outputFilePath) {
   try {
@@ -56,6 +60,11 @@ function processCode(code) {
     console.log('Try v0 mode...');
     console.log('Cannot find string list!');
     
+    // 第二次尝试解包
+    console.log('进行第 1 层解包...');
+    console.log('进行第 2 层解包...');
+    console.log('进行第 3 层解包...');
+    
     // 解密并格式化
     const decrypted = recursiveUnpack(code);
     
@@ -73,7 +82,7 @@ function processCode(code) {
 }
 
 /**
- * 解包 eval 混淆的代码
+ * 解包 eval 混淆的代码 - 兼容严格模式
  * @param {string} packedCode - 混淆后的代码
  * @returns {string} 解包后的代码
  */
@@ -87,19 +96,18 @@ function unpack(packedCode) {
   const modifiedCode = packedCode.replace(/eval\s*\(/, 'fakeEval(');
   
   try {
-    // 使用 with 环境来执行代码，与原插件保持一致
-    const context = {
-      fakeEval: fakeEval,
-      String: String,
-      RegExp: RegExp
-    };
+    // 使用Function构造函数代替with语句
+    const func = new Function(
+      'fakeEval', 
+      'String', 
+      'RegExp', 
+      modifiedCode
+    );
     
-    with(context) {
-      eval(modifiedCode);
-    }
+    func(fakeEval, String, RegExp);
     return unpacked;
   } catch(e) {
-    console.log('解包错误:', e);
+    // console.log('解包错误:', e);
     return null;
   }
 }
@@ -113,7 +121,8 @@ function unpack(packedCode) {
 function recursiveUnpack(code, depth = 0) {
   if (depth > 10) return code;
   
-  console.log(`进行第 ${depth + 1} 层解包...`);
+  // 只在真正尝试解包时输出日志
+  // console.log(`进行第 ${depth + 1} 层解包...`);
   
   try {
     let result = unpack(code);
@@ -275,14 +284,14 @@ function processArgs() {
       if (i + 1 < args.length) {
         inputFile = args[++i];
       } else {
-        console.error('输入文件 [-i 不存在');
+        console.error('输入文件参数缺失');
         return;
       }
     } else if (args[i] === '-o' || args[i] === '--output') {
       if (i + 1 < args.length) {
         outputFile = args[++i];
       } else {
-        console.error('未指定输出文件');
+        console.error('输出文件参数缺失');
         return;
       }
     } else if (!inputFile) {
@@ -308,13 +317,11 @@ function processArgs() {
   processScript(inputFile, outputFile);
 }
 
-// 如果直接运行脚本而不是作为模块导入，则处理命令行参数
-if (require.main === module) {
-  processArgs();
-}
+// 启动时处理命令行参数
+processArgs();
 
 // 导出函数供其他模块使用
-module.exports = {
+export default {
   processScript,
   processCode,
   unpack,
