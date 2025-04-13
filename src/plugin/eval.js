@@ -59,25 +59,22 @@ function formatCode(code) {
       indent: { style: '  ' },
     }).code;
 
-    // 下面插入你的原始正则链美化处理（保留你自定义的所有处理）
     formatted = formatted
-      .replace(/;\s*/g, ';\n')
-      .replace(/({|})\s*/g, '$1\n')
+      .replace(/;/g, ';\n')
+      .replace(/([{}])/g, '$1\n')
       .replace(/,\s*/g, ', ')
       .replace(/:\s*/g, ': ')
       .replace(/\n{2,}/g, '\n\n')
       .replace(/(let|var|const)\s+/g, '\n$1 ')
-      .replace(/\/\/\s*([^\n]+)\n/g, '// $1\n') // 注释优化示例
-      .replace(/\n{3,}/g, '\n\n')
-      .replace(/(\$done\(\{.*?\}\);)/, '\n$1\n') // $done前后换行优化
-      .replace(/({)\s*\n+/g, '{\n') // 花括号后紧跟换行优化
-      .replace(/\[\s*\n\s*/g, '[\n  ') // 数组内换行与缩进优化
-      .replace(/\n\s*\]/g, '\n]')    // 数组结尾缩进优化
-      .replace(/([a-zA-Z_$][0-9a-zA-Z_$]*)\s*=\s*/g, '$1 = ') // 等号左右空格统一
-      .replace(/,([^\s])/g, ', $1') // 逗号后空格优化
-      .replace(/\n{3,}/g, '\n\n')   // 连续空行压缩
-      .replace(/\s+$/gm, '')        // 移除行尾空格
-      .replace(/^\s+$/gm, '')       // 移除空行空白
+      .replace(/\/\/\s*([^\n]+)\n/g, '// $1\n')
+      .replace(/\$done\(\{\s*(.*?)\s*\}\);/g, '\n$done({ $1 });\n')
+      .replace(/\{\n+/g, '{\n')
+      .replace(/\[\s*\n\s*/g, '[\n  ')
+      .replace(/\n\s*\]/g, '\n]')
+      .replace(/([a-zA-Z_$][0-9a-zA-Z_$]*)\s*=\s*/g, '$1 = ')
+      .replace(/,\s*([^\s])/g, ', $1')
+      .replace(/\s+$/gm, '')
+      .replace(/^\s+$/gm, '');
 
     const header =
       `// Generated at ${new Date().toISOString()}\n` +
