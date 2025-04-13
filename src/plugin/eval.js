@@ -105,15 +105,7 @@ function recursiveUnpack(code, depth = 0) {
   return code;
 }
 
-export default function(code) {
-  try {
-    const decrypted = recursiveUnpack(code);
-    if (decrypted && decrypted !== code) {
-      return formatCode(decrypted);
-    }
-    return code;
-  } catch (error) {
-    console.error('part2ai 处理失败:', error);
-    return code;
-  }
-}
+export default {
+  unpack: recursiveUnpack,
+  formatCode,
+};
