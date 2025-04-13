@@ -1,8 +1,20 @@
-import beautify from 'js-beautify';
+/**
+ * js-beautify 插件 (ES Module 写法)
+ * decode-js 专用格式化工具
+ */
+
+import fs from 'fs';
 
 export async function ensureBeautifyInstalled() {
-  console.log('已检测到 js-beautify 模块');
-  return true;
+  console.log('自动检测 js-beautify 模块中...');
+  try {
+    await import('js-beautify');
+    console.log('已检测到 js-beautify 模块');
+    return true;
+  } catch (e) {
+    console.log('未检测到 js-beautify，请先执行: npm install js-beautify --save');
+    return false;
+  }
 }
 
 export function simpleFormat(code) {
@@ -19,7 +31,7 @@ export function addSectionComments(code) {
     { pattern: /^\s*obj\.subscriber\s*=/m, comment: '// 订阅配置信息' },
     { pattern: /^\s*\$\.notify\(/m, comment: '// 通知配置' },
     { pattern: /^\s*\$done\(/m, comment: '// 完成处理' },
-    { pattern: /^\s*function\s+Env\s*\(/m, comment: '// Env环境函数定义' }
+    { pattern: /^\s*function\s+Env\s*\(/m, comment: '// Env 环境函数定义' }
   ];
 
   let lines = code.split('\n');
@@ -40,6 +52,9 @@ export function addSectionComments(code) {
 
 export async function formatCode(code) {
   try {
+    const beautifyModule = await import('js-beautify');
+    const beautify = beautifyModule.default || beautifyModule;
+
     const options = {
       indent_size: 2,
       indent_char: ' ',
@@ -53,6 +68,7 @@ export async function formatCode(code) {
     return formatted;
   } catch (e) {
     console.error('js-beautify 格式化失败:', e);
+    console.log('自动降级使用 simpleFormat');
     return simpleFormat(code);
   }
 }
