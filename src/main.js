@@ -1,9 +1,7 @@
 import fs from 'fs';
-import { fileURLToPath } from 'url';
-import * as path from 'path';
 import process from 'process';
 
-// Dynamically import ESM modules
+// 动态加载 ESM 插件
 const commonModule = await import('./plugin/common.js');
 const jjencodeModule = await import('./plugin/jjencode.js');
 const sojsonModule = await import('./plugin/sojson.js');
@@ -12,8 +10,9 @@ const obfuscatorModule = await import('./plugin/obfuscator.js');
 const awscModule = await import('./plugin/awsc.js');
 const jsconfuserModule = await import('./plugin/jsconfuser.js');
 const jsaaencodeModule = await import('./plugin/aaencode.js');
+const optimizeModule = await import('./plugin/optimize.js');
 
-// Provide default exports if necessary
+// 兼容 default / module.exports
 const PluginCommon = commonModule.default || commonModule;
 const PluginJjencode = jjencodeModule.default || jjencodeModule;
 const PluginSojson = sojsonModule.default || sojsonModule;
@@ -22,7 +21,9 @@ const PluginObfuscator = obfuscatorModule.default || obfuscatorModule;
 const PluginAwsc = awscModule.default || awscModule;
 const PluginJsconfuser = jsconfuserModule.default || jsconfuserModule;
 const PluginAaencode = jsaaencodeModule.default || jsaaencodeModule;
-// Read command-line arguments
+const PluginOptimize = optimizeModule.optimize || optimizeModule;
+
+// 命令行参数
 let encodeFile = 'input.js';
 let decodeFile = 'output.js';
 
@@ -37,14 +38,13 @@ for (let i = 2; i < process.argv.length; i += 2) {
 console.log(`输入: ${encodeFile}`);
 console.log(`输出: ${decodeFile}`);
 
-// Read source code
 const sourceCode = fs.readFileSync(encodeFile, { encoding: 'utf-8' });
 
 let processedCode = sourceCode;
 let pluginUsed = '';
 let time;
 
-// Try plugins in sequence until the processed code differs from the original
+// 插件执行顺序（新增 optimize）
 const plugins = [
   { name: 'obfuscator', plugin: PluginObfuscator },
   { name: 'sojsonv7', plugin: PluginSojsonV7 },
@@ -53,14 +53,12 @@ const plugins = [
   { name: 'awsc', plugin: PluginAwsc },
   { name: 'jjencode', plugin: PluginJjencode },
   { name: 'aaencode', plugin: PluginAaencode },
-  { name: 'common', plugin: PluginCommon }, // 最后兜底
+  { name: 'optimize', plugin: PluginOptimize },  // 优化 AST
+  { name: 'common', plugin: PluginCommon },      // 最后格式美化
 ];
 
 for (const plugin of plugins) {
-  // Check for specific string in sourceCode to break early
-  if (sourceCode.indexOf('smEcV') !== -1) {
-    break;
-  }
+  if (sourceCode.indexOf('smEcV') !== -1) break; // 特殊处理
 
   try {
     const code = plugin.plugin(sourceCode);
@@ -74,25 +72,19 @@ for (const plugin of plugins) {
   }
 }
 
-// Check if processed code differs from source code
 if (processedCode !== sourceCode) {
   time = new Date();
   const header = [
     `//${time}`,
-    "//Base:<url id=\"cv1cref6o68qmpt26ol0\" type=\"url\" status=\"parsed\" title=\"GitHub - echo094/decode-js: JS混淆代码的AST分析工具 AST analysis tool for obfuscated JS code\" wc=\"2165\">https://github.com/echo094/decode-js</url>",
-    "//Modify:<url id=\"cv1cref6o68qmpt26olg\" type=\"url\" status=\"parsed\" title=\"GitHub - smallfawn/decode_action: 世界上本来不存在加密，加密的人多了，也便成就了解密\" wc=\"741\">https://github.com/smallfawn/decode_action</url>"
+    "//Base:https://github.com/echo094/decode-js",
+    "//Modify:https://github.com/smallfawn/decode_action"
   ].join('\n');
 
-  // Combine header and processed code
   const outputCode = header + '\n' + processedCode;
 
-  // Write to file
   fs.writeFile(decodeFile, outputCode, (err) => {
-    if (err) {
-      throw err;
-    } else {
-      console.log(`使用插件 ${pluginUsed} 成功处理并写入文件 ${decodeFile}`);
-    }
+    if (err) throw err;
+    console.log(`使用插件 ${pluginUsed} 成功处理并写入文件 ${decodeFile}`);
   });
 } else {
   console.log(`所有插件处理后的代码与原代码一致，未写入文件。`);
