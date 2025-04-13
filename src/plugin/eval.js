@@ -1,117 +1,113 @@
-// 最基础的eval解混淆插件 - 专注于核心功能
 import { parse } from '@babel/parser';
-import generator from '@babel/generator';
-import traverse from '@babel/traverse';
+import _generate from '@babel/generator';
+const generator = _generate.default;
+import _traverse from '@babel/traverse';
+const traverse = _traverse.default;
+import * as t from '@babel/types';
 
-/**
- * 最简单的eval解包函数
- */
-function unpackEval(code) {
-    // 如果没有eval，直接返回
-    if (!code.includes('eval(')) {
-        return code;
-    }
-    
-    let result = code;
-    
-    try {
-        // 1. 替换eval为捕获函数
-        let unpacked = '';
-        const captureEval = function(str) {
-            unpacked = str;
-            return str;
-        };
-        
-        // 2. 用Function构造器执行，避免污染全局作用域
-        const funcBody = result.replace(/eval\(/g, 'captureEval(');
-        new Function('captureEval', funcBody)(captureEval);
-        
-        // 3. 如果成功捕获，使用结果
-        if (unpacked && typeof unpacked === 'string') {
-            result = unpacked;
-        }
-    } catch (e) {
-        console.error('基本解包失败:', e);
-    }
-    
-    return result;
-}
+function unpack(packedCode) {
+  let unpacked = '';
+  const fakeEval = (code) => {
+    unpacked = code;
+    return code;
+  };
 
-/**
- * 简单的递归解包
- */
-function recursiveUnpack(code, depth = 0) {
-    // 限制最大深度
-    if (depth > 10) {
-        return code;
-    }
-    
-    console.log('解包层级:', depth + 1);
-    
-    const unpacked = unpackEval(code);
-    
-    // 如果解包结果中还有eval，继续解包
-    if (unpacked !== code && unpacked.includes('eval(')) {
-        return recursiveUnpack(unpacked, depth + 1);
-    }
-    
+  const modifiedCode = packedCode.replace(/eval\s*\(/, 'fakeEval(');
+
+  try {
+    const func = new Function('fakeEval', 'String', 'RegExp', modifiedCode);
+    func(fakeEval, String, RegExp);
     return unpacked;
+  } catch (e) {
+    console.log('解包错误:', e);
+    return null;
+  }
 }
 
-/**
- * 最基本的代码格式化
- */
 function formatCode(code) {
-    try {
-        // 使用babel解析和生成格式化代码
-        const ast = parse(code, {
-            sourceType: "module"
-        });
-        
-        const formatted = generator(ast, {
-            comments: true,
-            compact: false,
-            retainLines: false,
-            indent: {
-                style: '  '
-            }
-        }).code;
-        
-        return formatted;
-    } catch (e) {
-        console.error('格式化失败:', e);
-        return code;
-    }
-}
+  try {
+    const ast = parse(code, { sourceType: 'module', plugins: ['jsx'] });
 
-/**
- * 插件主函数
- */
-function plugin(code) {
-    try {
-        // 1. 解包
-        const unpacked = recursiveUnpack(code);
-        
-        // 2. 如果解包成功，格式化
-        if (unpacked !== code) {
-            return formatCode(unpacked);
+    let hasBaseConfig = false;
+
+    traverse(ast, {
+      VariableDeclaration(path) {
+        const firstDecl = path.node.declarations[0];
+        if (firstDecl && ['names', 'productName', 'productType'].includes(firstDecl.id.name)) {
+          if (!hasBaseConfig) {
+            path.addComment('leading', ' 基础配置变量');
+            hasBaseConfig = true;
+          }
         }
-        
-        return code;
-    } catch (e) {
-        console.error('插件执行出错:', e);
-        return code;
-    }
+      },
+      AssignmentExpression(path) {
+        if (path.node.left.object?.name === 'obj' && path.node.left.property?.name === 'subscriber') {
+          path.addComment('leading', ' 订阅配置');
+        }
+      },
+      CallExpression(path) {
+        if (path.node.callee.property?.name === 'notify') {
+          path.addComment('leading', ' 通知配置');
+        }
+      },
+    });
+
+    let formatted = generator(ast, {
+      retainLines: false,
+      comments: true,
+      compact: false,
+      indent: { style: '  ' },
+    }).code;
+
+    formatted = formatted
+      .replace(/;/g, ';\n')
+      .replace(/([{}])/g, '$1\n')
+      .replace(/,\s*/g, ', ')
+      .replace(/:\s*/g, ': ')
+      .replace(/\n{2,}/g, '\n\n')
+      .replace(/(let|var|const)\s+/g, '\n$1 ')
+      .replace(/\/\/\s*([^\n]+)\n/g, '// $1\n')
+      .replace(/\$done\(\{\s*(.*?)\s*\}\);/g, '\n$done({ $1 });\n')
+      .replace(/\{\n+/g, '{\n')
+      .replace(/\[\s*\n\s*/g, '[\n  ')
+      .replace(/\n\s*\]/g, '\n]')
+      .replace(/([a-zA-Z_$][0-9a-zA-Z_$]*)\s*=\s*/g, '$1 = ')
+      .replace(/,\s*([^\s])/g, ', $1')
+      .replace(/\s+$/gm, '')
+      .replace(/^\s+$/gm, '');
+
+    const header =
+      `// Generated at ${new Date().toISOString()}\n` +
+      '// Base: https://github.com/echo094/decode-js\n' +
+      '// Modify: https://github.com/smallfawn/decode_action\n\n';
+
+    return header + formatted;
+  } catch (e) {
+    console.log('格式化错误:', e);
+    return code;
+  }
 }
 
-// 创建导出对象
-const PluginEval = function(code) {
-    return plugin(code);
+function recursiveUnpack(code, depth = 0) {
+  if (depth > 10) return code;
+  console.log(`进行第 ${depth + 1} 层解包...`);
+
+  try {
+    let result = unpack(code);
+    if (result && result !== code) {
+      if (result.includes('eval(')) {
+        return recursiveUnpack(result, depth + 1);
+      }
+      return result;
+    }
+  } catch (e) {
+    console.log(`第 ${depth + 1} 层解包失败:`, e);
+  }
+
+  return code;
+}
+
+export default {
+  unpack: recursiveUnpack,
+  formatCode,
 };
-
-// 添加方法
-PluginEval.unpack = unpackEval;
-PluginEval.recursiveUnpack = recursiveUnpack;
-PluginEval.formatCode = formatCode;
-
-export default PluginEval;
