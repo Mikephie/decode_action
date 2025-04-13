@@ -1,9 +1,9 @@
-const { parse } = require('@babel/parser')
-const generator = require('@babel/generator').default
-const traverse = require('@babel/traverse').default
-const t = require('@babel/types')
+import { parse } from '@babel/parser'
+import generator from '@babel/generator'
+import traverse from '@babel/traverse'
+import * as t from '@babel/types'
 
-function formatCode(code) {
+export function formatCode(code) {
   const ast = parse(code, {
     sourceType: 'module',
     plugins: ['jsx'],
@@ -28,16 +28,13 @@ function formatCode(code) {
     },
   })
 
-  let formatted = generator(ast, {
+  let formatted = generator.default(ast, {
     retainLines: false,
     comments: true,
     compact: false,
-    indent: {
-      style: '  ',
-    },
+    indent: { style: '  ' },
   }).code
 
-  // Beautify 正则链 - 保留版
   formatted = formatted
     .replace(/\/\* (.*?)\*\/\s*/g, '// $1\n')
     .replace(/(\/\/.*?\n)+/g, '$1')
@@ -56,8 +53,4 @@ function formatCode(code) {
   const header = `//Generated at ${new Date().toISOString()}\n//Base:https://github.com/echo094/decode-js\n//Modify:https://github.com/smallfawn/decode_action\n\n`
 
   return header + formatted
-}
-
-module.exports = {
-  formatCode,
 }
