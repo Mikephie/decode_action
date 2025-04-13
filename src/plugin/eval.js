@@ -236,7 +236,6 @@ async function main() {
 
 // 如果直接运行此脚本，则执行main函数
 main().catch(console.error);
-}
 
 // 导出模块
 export {
