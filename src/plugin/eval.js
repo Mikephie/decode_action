@@ -9,16 +9,20 @@ export const name = 'eval'
 export function handle(code) {
   function safeUnpack(code) {
     let unpacked = ''
-    const fakeEval = function (code) {
-      unpacked = code
-      return code
+    const fakeEval = function (input) {
+      unpacked = input
+      return input
     }
-    const modifiedCode = code.replace(/eval\s*\(/, 'fakeEval(')
-    const context = { fakeEval, String, RegExp }
     try {
-      with (context) {
-        eval(modifiedCode)
-      }
+      const modifiedCode = code.replace(/eval\s*\(/, 'fakeEval(')
+      const context = { fakeEval, String, RegExp }
+
+      const contextKeys = Object.keys(context)
+      const contextValues = Object.values(context)
+
+      const runner = new Function(...contextKeys, modifiedCode)
+      runner(...contextValues)
+
       return unpacked
     } catch {
       return null
