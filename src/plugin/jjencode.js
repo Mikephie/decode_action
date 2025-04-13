@@ -1,66 +1,100 @@
 /**
- * Check the format and decode if possible
- *
- * @param {string} code the encoded code
- * @returns null or string
+ * js-beautify 插件 (ES Module 写法)
+ * decode-js 专用格式化工具
  */
-function getCode(code) {
-  // split the code by semicolon
-  let blocks = []
-  for (let line of code.split(';')) {
-    if (line.length && line !== '\n') {
-      blocks.push(line)
-    }
+
+import fs from 'fs';
+
+export async function ensureBeautifyInstalled() {
+  console.log('自动检测 js-beautify 模块中...');
+  try {
+    await import('js-beautify');
+    console.log('已检测到 js-beautify 模块');
+    return true;
+  } catch (e) {
+    console.log('未检测到 js-beautify，请先执行: npm install js-beautify --save');
+    return false;
   }
-  if (blocks.length !== 6) {
-    console.error('The number of code blocks is incorrect!')
-    return null
-  }
-  // try to get the global variable name
-  const line1 = blocks[0].split('=')
-  if (line1.length !== 2 || line1[1].indexOf('~[]') === -1) {
-    console.error('Cannot find variable name!')
-    return null
-  }
-  // extract the target code
-  const target = blocks[5]
-  const variable = line1[0]
-  const left = `${variable}.$(${variable}.$(${variable}.$$+"\\""+`
-  let i = 0
-  let s = 0
-  while (i < left.length && s < target.length) {
-    if (left[i] === target[s]) {
-      ++i
-    }
-    ++s
-  }
-  const right = '"\\"")())()'
-  let j = right.length - 1
-  let e = target.length - 1
-  while (j >= 0 && e >= 0) {
-    if (right[j] === target[e]) {
-      --j
-    }
-    --e
-  }
-  if (s >= e) {
-    console.error('Cannot find the target code!')
-    return null
-  }
-  const selected = target.substring(s, e)
-  blocks[5] = `${variable}.$(${variable}.$$+"\\""+${selected}+"\\"")()`
-  const result = eval(blocks.join(';'))
-  return result
 }
 
-/**
- * This encoding method originates from http://utf-8.jp/public/jjencode.html,
- * and it does not change the original code (encoder, not obfuscation).
- */
-export default function (code) {
-  code = getCode(code)
-  if (!code) {
-    return null
-  }
+export function simpleFormat(code) {
   return code
+    .replace(/;/g, ';\n')
+    .replace(/{/g, '{\n')
+    .replace(/}/g, '\n}')
+    .replace(/\n\s*\n\s*\n/g, '\n\n');
 }
+
+export function addSectionComments(code) {
+  const sections = [
+    { pattern: /^\s*let\s+(names|productName|productType|appVersion)/m, comment: '// 基础配置变量' },
+    { pattern: /^\s*obj\.subscriber\s*=/m, comment: '// 订阅配置信息' },
+    { pattern: /^\s*\$\.notify\(/m, comment: '// 通知配置' },
+    { pattern: /^\s*\$done\(/m, comment: '// 完成处理' },
+    { pattern: /^\s*function\s+Env\s*\(/m, comment: '// Env 环境函数定义' }
+  ];
+
+  let lines = code.split('\n');
+  sections.forEach(section => {
+    for (let i = 0; i < lines.length; i++) {
+      if (section.pattern.test(lines[i])) {
+        if (i === 0 || (i > 0 && !lines[i - 1].includes(section.comment))) {
+          lines.splice(i, 0, section.comment);
+          i++;
+        }
+        break;
+      }
+    }
+  });
+
+  return lines.join('\n');
+}
+
+export async function formatCode(code) {
+  try {
+    const beautifyModule = await import('js-beautify');
+    const beautify = beautifyModule.default || beautifyModule;
+
+    const options = {
+      indent_size: 2,
+      indent_char: ' ',
+      max_preserve_newlines: 2,
+      preserve_newlines: true,
+      end_with_newline: true
+    };
+
+    console.log('使用 js-beautify 格式化代码...');
+    const formatted = beautify.js(code, options);
+    return formatted;
+  } catch (e) {
+    console.error('js-beautify 格式化失败:', e);
+    console.log('自动降级使用 simpleFormat');
+    return simpleFormat(code);
+  }
+}
+
+export async function process(inputFile, outputFile) {
+  console.log(`使用 beautify 格式化文件: ${inputFile}`);
+  const code = fs.readFileSync(inputFile, 'utf8');
+  const formatted = await formatCode(code);
+  const commented = addSectionComments(formatted);
+
+  const header = [
+    `// Generated at ${new Date().toISOString()}`,
+    '// Base: https://github.com/echo094/decode-js',
+    '// Modify: https://github.com/smallfawn/decode_action',
+    '// Formatted with js-beautify',
+    ''
+  ].join('\n');
+
+  fs.writeFileSync(outputFile, header + commented, 'utf8');
+  console.log(`beautify 格式化完成，已写入: ${outputFile}`);
+}
+
+export default {
+  ensureBeautifyInstalled,
+  simpleFormat,
+  addSectionComments,
+  formatCode,
+  process
+};
