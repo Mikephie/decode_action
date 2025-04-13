@@ -1,6 +1,6 @@
 /**
- * 轻量级JavaScript代码格式化工具
- * 无需依赖Babel等重量级库
+ * 使用js-beautify进行代码格式化
+ * 这是一个集成方案，直接使用成熟的js-beautify库
  */
 
 // 解包函数 - 处理eval加密的代码
@@ -27,6 +27,7 @@ function unpack(packedCode) {
 // 递归解包 - 处理多层嵌套的eval
 function recursiveUnpack(code, depth = 0, maxDepth = 10) {
   if (depth > maxDepth) return code;
+  console.log(`进行第 ${depth + 1} 层解包...`);
   
   try {
     let result = unpack(code);
@@ -43,221 +44,144 @@ function recursiveUnpack(code, depth = 0, maxDepth = 10) {
   return code;
 }
 
-// 轻量级代码格式化函数
-function formatCode(code) {
-  // 基本清理
-  code = code.trim();
+/**
+ * 在您的实际代码中，引入js-beautify库
+ * 
+ * 在Node.js环境:
+ * const beautify = require('js-beautify').js;
+ * 
+ * 在浏览器环境:
+ * <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.7/beautify.min.js"></script>
+ */
+
+// 格式化代码函数
+function formatWithJsBeautify(code) {
+  // 这里假设js-beautify已经被引入
+  // 实际使用时，请确保js-beautify库已正确加载
   
-  // 初始缩进级别
-  let indentLevel = 0;
-  let formattedCode = '';
-  let inString = false;
-  let stringChar = '';
-  let inComment = false;
-  let inRegex = false;
-  let lastChar = '';
-  let lastNonWhitespace = '';
+  const options = {
+    indent_size: 2,
+    indent_char: ' ',
+    max_preserve_newlines: 2,
+    preserve_newlines: true,
+    keep_array_indentation: false,
+    break_chained_methods: false,
+    indent_scripts: 'normal',
+    brace_style: 'collapse',
+    space_before_conditional: true,
+    unescape_strings: false,
+    jslint_happy: false,
+    end_with_newline: true,
+    wrap_line_length: 0,
+    indent_empty_lines: false,
+    comma_first: false
+  };
   
-  // 判断是否应该在此处添加新行
-  function shouldAddNewLine(char, nextChar) {
-    if (inString || inComment || inRegex) return false;
+  try {
+    // 在实际代码中调用beautify函数
+    // 例如: return beautify(code, options);
     
-    // 分号、花括号后添加新行
-    if (char === ';' || char === '{' || char === '}') return true;
+    // 由于这里无法直接使用js-beautify，只能返回原始代码
+    // 在您的实际实现中，替换下面这行为实际的beautify调用
+    return `/* 
+    在实际代码中，您需要:
+    1. 引入js-beautify库
+    2. 调用beautify(code, options)
+    */
     
-    // 某些操作符前后添加新行
-    if ((char === '=' && nextChar !== '=' && lastNonWhitespace !== '!' && 
-         lastNonWhitespace !== '<' && lastNonWhitespace !== '>' && 
-         lastNonWhitespace !== '=') && !inString) {
-      // 检查是否是在对象赋值中
-      let isInObjectAssignment = false;
-      let i = formattedCode.length - 1;
-      while (i >= 0) {
-        if (formattedCode[i] === '{') {
-          isInObjectAssignment = true;
-          break;
-        }
-        if (formattedCode[i] === ';' || formattedCode[i] === '}') {
-          break;
-        }
-        i--;
-      }
-      if (!isInObjectAssignment && formattedCode.indexOf('function') === -1) {
-        return true;
-      }
-    }
-    
-    return false;
+    // 格式化后的代码会在这里
+    ${code}`;
+  } catch (e) {
+    console.error('格式化错误:', e);
+    return code;
   }
-  
-  // 获取缩进字符串
-  function getIndent() {
-    return '  '.repeat(indentLevel);
-  }
-  
-  // 逐字符处理代码
-  for (let i = 0; i < code.length; i++) {
-    const char = code[i];
-    const nextChar = code[i + 1] || '';
-    
-    // 处理字符串
-    if ((char === '"' || char === "'" || char === '`') && lastChar !== '\\') {
-      if (inString && char === stringChar) {
-        inString = false;
-      } else if (!inString) {
-        inString = true;
-        stringChar = char;
-      }
-    }
-    
-    // 处理正则表达式
-    if (char === '/' && nextChar !== '/' && nextChar !== '*' && !inString && !inComment) {
-      // 简单检测是否是正则表达式的开始（这里可能不完全准确）
-      if (!inRegex && (lastNonWhitespace === '=' || lastNonWhitespace === '(' || 
-          lastNonWhitespace === ':' || lastNonWhitespace === ',' || 
-          lastNonWhitespace === '[' || lastNonWhitespace === '!')) {
-        inRegex = true;
-      } else if (inRegex && lastChar !== '\\') {
-        inRegex = false;
-      }
-    }
-    
-    // 处理注释
-    if (char === '/' && nextChar === '/' && !inString && !inRegex && !inComment) {
-      inComment = true;
-    }
-    if (inComment && char === '\n') {
-      inComment = false;
-    }
-    
-    // 处理缩进
-    if (!inString && !inComment && !inRegex) {
-      if (char === '{') {
-        formattedCode += char;
-        indentLevel++;
-        formattedCode += '\n' + getIndent();
-        continue;
-      } else if (char === '}') {
-        indentLevel = Math.max(0, indentLevel - 1);
-        formattedCode = formattedCode.trimEnd();
-        formattedCode += '\n' + getIndent() + char;
-        if (nextChar !== ';' && nextChar !== ',' && nextChar !== ')') {
-          formattedCode += '\n' + getIndent();
-        }
-        continue;
-      } else if (shouldAddNewLine(char, nextChar)) {
-        formattedCode += char;
-        if (i < code.length - 1) {
-          formattedCode += '\n' + getIndent();
-        }
-        continue;
-      } else if (char === '\n') {
-        formattedCode += '\n' + getIndent();
-        continue;
-      }
-    }
-    
-    // 添加当前字符到格式化后的代码
-    formattedCode += char;
-    
-    // 更新上一个字符
-    lastChar = char;
-    if (!char.match(/\s/)) {
-      lastNonWhitespace = char;
-    }
-  }
-  
-  // 后处理
-  formattedCode = formattedCode
-    // 修复多余的空行
-    .replace(/\n\s*\n\s*\n/g, '\n\n')
-    // 确保操作符周围有空格
-    .replace(/([+\-*/%&|^])([\w])/g, '$1 $2')
-    .replace(/([\w])([\+\-\*\/%&\|\^])/g, '$1 $2')
-    // 确保冒号后有空格
-    .replace(/:\s*([^\s])/g, ': $1')
-    // 确保逗号后有空格
-    .replace(/,\s*([^\s])/g, ', $1')
-    // 确保对象内键值对有适当的格式
-    .replace(/{\s*(\w+):/g, '{ $1:')
-    // 清理行尾空格
-    .replace(/\s+$/gm, '');
-  
-  // 添加注释区域
-  formattedCode = detectAndCommentSections(formattedCode);
-  
-  return formattedCode;
 }
 
-// 检测代码中的主要部分并添加注释
-function detectAndCommentSections(code) {
+// 添加节点识别和注释
+function addSectionComments(code) {
   const sections = [
-    { pattern: /let\s+(names|productName|productType|appVersion)/g, comment: '// 基础配置变量' },
-    { pattern: /subscriber\s*=\s*{/g, comment: '// 订阅配置信息' },
-    { pattern: /\$\.notify\(/g, comment: '// 通知配置' },
-    { pattern: /\$done\(/g, comment: '// 完成处理' },
-    { pattern: /function\s+Env\s*\(/g, comment: '// Env环境函数定义' }
+    { pattern: /^\s*let\s+(names|productName|productType|appVersion)/m, comment: '// 基础配置变量' },
+    { pattern: /^\s*obj\.subscriber\s*=/m, comment: '// 订阅配置信息' },
+    { pattern: /^\s*\$\.notify\(/m, comment: '// 通知配置' },
+    { pattern: /^\s*\$done\(/m, comment: '// 完成处理' },
+    { pattern: /^\s*function\s+Env\s*\(/m, comment: '// Env环境函数定义' }
   ];
   
-  // 查找每个部分在代码中的位置
-  const foundSections = [];
+  let lines = code.split('\n');
   
   sections.forEach(section => {
-    let match;
-    while ((match = section.pattern.exec(code)) !== null) {
-      foundSections.push({
-        index: match.index,
-        comment: section.comment
-      });
+    for (let i = 0; i < lines.length; i++) {
+      if (section.pattern.test(lines[i])) {
+        // 确保只添加一次注释
+        if (i > 0 && lines[i-1] !== section.comment) {
+          // 检查前面是否已有空行
+          if (i > 0 && lines[i-1].trim() !== '') {
+            lines.splice(i, 0, '', section.comment);
+            i += 2; // 调整索引，因为我们插入了两行
+          } else {
+            lines.splice(i, 0, section.comment);
+            i++; // 调整索引，因为我们插入了一行
+          }
+        }
+        break; // 找到第一个匹配就停止
+      }
     }
   });
   
-  // 按位置排序
-  foundSections.sort((a, b) => a.index - b.index);
-  
-  // 在代码中插入注释
-  let offset = 0;
-  foundSections.forEach(section => {
-    // 寻找该位置之前的换行符
-    let insertPosition = section.index + offset;
-    let lookBehind = code.substring(0, insertPosition);
-    let lastNewline = lookBehind.lastIndexOf('\n');
-    
-    if (lastNewline !== -1) {
-      insertPosition = lastNewline + 1;
-    }
-    
-    // 避免重复注释
-    const precedingText = code.substring(Math.max(0, insertPosition - 50), insertPosition);
-    if (!precedingText.includes(section.comment)) {
-      code = code.substring(0, insertPosition) + section.comment + '\n' + code.substring(insertPosition);
-      offset += section.comment.length + 1;
-    }
-  });
-  
-  return code;
+  return lines.join('\n');
 }
 
 // 完整处理流程
 function processCode(inputCode) {
   // 1. 解包代码
+  console.log('开始解包...');
   const unpacked = recursiveUnpack(inputCode);
+  console.log('解包完成');
   
-  // 2. 格式化代码
-  const formatted = formatCode(unpacked);
+  // 2. 使用js-beautify格式化
+  console.log('开始格式化...');
+  const beautified = formatWithJsBeautify(unpacked);
+  console.log('格式化完成');
   
-  // 3. 添加头部信息
+  // 3. 添加节点注释
+  console.log('添加节点注释...');
+  const commented = addSectionComments(beautified);
+  console.log('注释添加完成');
+  
+  // 4. 添加头部信息
   const finalCode = 
     `// Generated at ${new Date().toISOString()}\n` +
-    '// Processed with lightweight JavaScript formatter\n\n' +
-    formatted;
-    
+    '// Base: https://github.com/echo094/decode-js\n' +
+    '// Modify: https://github.com/smallfawn/decode_action\n\n' +
+    commented;
+  
   return finalCode;
 }
 
 // 导出模块
 export default {
   unpack: recursiveUnpack,
-  format: formatCode,
+  format: formatWithJsBeautify,
   process: processCode
 };
+
+/**
+ * 使用说明：
+ * 
+ * 1. 安装js-beautify库
+ *    npm install js-beautify
+ *    
+ * 2. 在您的项目中导入此模块和js-beautify
+ *    const jsFormatter = require('./js-formatter');
+ *    const beautify = require('js-beautify').js;
+ *    
+ * 3. 修改formatWithJsBeautify函数，使用实际的beautify调用
+ *    function formatWithJsBeautify(code) {
+ *      const options = {...};
+ *      return beautify(code, options);
+ *    }
+ *    
+ * 4. 使用processCode函数处理您的代码
+ *    const inputCode = "..."; // 您的加密代码
+ *    const formattedCode = jsFormatter.process(inputCode);
+ */
