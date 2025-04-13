@@ -1,4 +1,4 @@
-import { isKaomojiFuck } from './common.js'
+import { isKaomojiFuck, simpleFormat } from './common.js'
 
 export function handle(code) {
   if (!isKaomojiFuck(code)) {
@@ -8,6 +8,9 @@ export function handle(code) {
   console.log('检测到 JSFuck 或 Kaomoji 混淆，尝试解密...');
 
   try {
+    const fakeWindow = {};
+    const fakeEval = (payload) => payload;
+
     const evalCode = `
       (function(window, self) {
         return ${code}
@@ -21,7 +24,8 @@ export function handle(code) {
       return result;
     }
   } catch (e) {
-    console.log('解密失败:', e);
+    console.log('解密失败，自动使用 simpleFormat 降级处理');
+    return simpleFormat(code);
   }
 
   return code;
