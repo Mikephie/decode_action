@@ -1,17 +1,36 @@
-// plugin/jsfuck.js
-export default function decodeJSFuck(code) {
-  // 检测是否为 JSFuck 混淆代码
-  const jsfuckPattern = /^[\[\]\(\)\!\+]+$/;
-  if (!jsfuckPattern.test(code.replace(/\s+/g, ''))) {
-    return null;
+import { isKaomojiFuck, simpleFormat } from './common.js'
+
+export function handle(code) {
+  if (!isKaomojiFuck(code)) {
+    return code;
   }
 
+  console.log('检测到 JSFuck 或 Kaomoji 混淆，尝试解密...');
+
   try {
-    // 使用 Function 构造函数安全地解析代码
-    const decoded = Function(`"use strict"; return (${code})`)();
-    return typeof decoded === 'string' ? decoded : null;
+    const fakeWindow = {};
+    const fakeEval = (payload) => payload;
+
+    const evalCode = `
+      (function(window, self) {
+        return ${code}
+      })(Object.create(null), Object.create(null))
+    `;
+
+    const result = Function('"use strict";return (' + evalCode + ')')();
+
+    if (typeof result === 'string' && result.length > 0) {
+      console.log('解密成功');
+      return result;
+    }
   } catch (e) {
-    console.error('JSFuck 解密失败:', e);
-    return null;
+    console.log('解密失败，自动使用 simpleFormat 降级处理');
+    return simpleFormat(code);
   }
+
+  return code;
+}
+
+export default {
+  handle
 }
