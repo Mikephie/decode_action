@@ -1,23 +1,13 @@
-/**
- * JSFuck 解密插件 (decode-js 专用)
- * Author: Mikephie
- */
+import { isKaomojiFuck } from './common.js'
 
 export function handle(code) {
-  const detectPattern = /^[\s\n]*[\[\]\(\)\!\+]{10,}[\s\S]*$/;
-
-  if (!detectPattern.test(code)) {
+  if (!isKaomojiFuck(code)) {
     return code;
   }
 
+  console.log('检测到 JSFuck 或 Kaomoji 混淆，尝试解密...');
+
   try {
-    console.log('检测到 JSFuck 混淆代码，开始尝试解密...');
-
-    const fakeWindow = {};
-    const fakeEval = (payload) => {
-      return payload;
-    };
-
     const evalCode = `
       (function(window, self) {
         return ${code}
@@ -27,11 +17,11 @@ export function handle(code) {
     const result = Function('"use strict";return (' + evalCode + ')')();
 
     if (typeof result === 'string' && result.length > 0) {
-      console.log('JSFuck 解密成功');
+      console.log('解密成功');
       return result;
     }
   } catch (e) {
-    console.log('JSFuck 解密失败:', e);
+    console.log('解密失败:', e);
   }
 
   return code;
@@ -39,4 +29,4 @@ export function handle(code) {
 
 export default {
   handle
-};
+}
