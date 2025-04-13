@@ -7,9 +7,6 @@ const { optimize } = require('./optimize.js')
 
 const name = 'eval'
 
-/**
- * 复杂版 safeUnpack
- */
 function safeUnpack(code) {
   let unpacked = ''
   const fakeEval = function (input) {
@@ -32,9 +29,6 @@ function safeUnpack(code) {
   }
 }
 
-/**
- * 递归解包
- */
 function recursiveUnpack(code, depth = 0) {
   if (depth > 10) return code
   const result = safeUnpack(code)
@@ -47,9 +41,6 @@ function recursiveUnpack(code, depth = 0) {
   return code
 }
 
-/**
- * 简洁版 AST 解包（保留原始逻辑）
- */
 function simpleUnpack(code) {
   const ast = parse(code, { errorRecovery: true })
   const lines = ast.program.body
@@ -72,9 +63,6 @@ function simpleUnpack(code) {
   return eval(generator(data, { minified: true }).code)
 }
 
-/**
- * 插件入口
- */
 function handle(code) {
   try {
     const result = recursiveUnpack(code)
@@ -101,3 +89,6 @@ module.exports = {
   name,
   handle
 }
+
+// 兼容 ES Module 导入
+module.exports.default = module.exports
