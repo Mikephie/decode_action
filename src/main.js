@@ -1,6 +1,4 @@
 import fs from 'fs';
-import { fileURLToPath } from 'url';
-import * as path from 'path';
 import process from 'process';
 
 // Dynamically import ESM modules
@@ -12,6 +10,7 @@ const obfuscatorModule = await import('./plugin/obfuscator.js');
 const awscModule = await import('./plugin/awsc.js');
 const jsconfuserModule = await import('./plugin/jsconfuser.js');
 const jsaaencodeModule = await import('./plugin/aaencode.js');
+const evalModule = await import('./plugin/eval.js'); // <-- 添加这行
 
 // Provide default exports if necessary
 const PluginCommon = commonModule.default || commonModule;
@@ -22,6 +21,8 @@ const PluginObfuscator = obfuscatorModule.default || obfuscatorModule;
 const PluginAwsc = awscModule.default || awscModule;
 const PluginJsconfuser = jsconfuserModule.default || jsconfuserModule;
 const PluginAaencode = jsaaencodeModule.default || jsaaencodeModule;
+const PluginEval = evalModule.default || evalModule; // <-- 添加这行
+
 // Read command-line arguments
 let encodeFile = 'input.js';
 let decodeFile = 'output.js';
@@ -47,17 +48,17 @@ let time;
 // Try plugins in sequence until the processed code differs from the original
 const plugins = [
   { name: 'obfuscator', plugin: PluginObfuscator },
+  { name: 'eval', plugin: PluginEval.unpack }, // <-- eval插件放在合适的位置
   { name: 'sojsonv7', plugin: PluginSojsonV7 },
   { name: 'sojson', plugin: PluginSojson },
   { name: 'jsconfuser', plugin: PluginJsconfuser },
   { name: 'awsc', plugin: PluginAwsc },
   { name: 'jjencode', plugin: PluginJjencode },
   { name: 'aaencode', plugin: PluginAaencode },
-  { name: 'common', plugin: PluginCommon }, // 最后兜底
+  { name: 'common', plugin: PluginCommon },
 ];
 
 for (const plugin of plugins) {
-  // Check for specific string in sourceCode to break early
   if (sourceCode.indexOf('smEcV') !== -1) {
     break;
   }
@@ -79,14 +80,12 @@ if (processedCode !== sourceCode) {
   time = new Date();
   const header = [
     `//${time}`,
-    "//Base:<url id=\"cv1cref6o68qmpt26ol0\" type=\"url\" status=\"parsed\" title=\"GitHub - echo094/decode-js: JS混淆代码的AST分析工具 AST analysis tool for obfuscated JS code\" wc=\"2165\">https://github.com/echo094/decode-js</url>",
-    "//Modify:<url id=\"cv1cref6o68qmpt26olg\" type=\"url\" status=\"parsed\" title=\"GitHub - smallfawn/decode_action: 世界上本来不存在加密，加密的人多了，也便成就了解密\" wc=\"741\">https://github.com/smallfawn/decode_action</url>"
+    "//Base:https://github.com/echo094/decode-js",
+    "//Modify:https://github.com/smallfawn/decode_action"
   ].join('\n');
 
-  // Combine header and processed code
   const outputCode = header + '\n' + processedCode;
 
-  // Write to file
   fs.writeFile(decodeFile, outputCode, (err) => {
     if (err) {
       throw err;
