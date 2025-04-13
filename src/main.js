@@ -88,10 +88,7 @@ if (processedCode !== sourceCode) {
   ].join('\n');
 
   // 最后一步执行 js-beautify 格式化
-  const finalCode = beautify(processedCode, {
-    indent_size: 2,
-    space_in_empty_paren: true
-  });
+  const finalCode = await beautify.formatCode(processedCode); // <-- 正确调用
 
   const outputCode = header + '\n' + finalCode;
 
