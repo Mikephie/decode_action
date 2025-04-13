@@ -20,5 +20,5 @@ export function optimize(code) {
   traverse(ast, calculateConstantExp)
   traverse(ast, calculateRString)
 
-  return generator(ast).code
+  return generator.default(ast).code
 }
