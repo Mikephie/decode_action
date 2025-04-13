@@ -1,41 +1,30 @@
-/**
- * decode-js 项目专用通用函数库
- * Author: Mikephie
- */
-
 import fs from 'fs'
 
 /**
- * 判断是否为 JSFuck / 颜文字混淆代码
- * @param {string} code
- * @returns {boolean}
+ * 检测是否为 Kaomoji 或 JSFuck 混淆
  */
 export function isKaomojiFuck(code) {
-  // 特征1：全是符号、日文、特殊字符 且 长度较大
-  if (
+  return (
     code.length > 200 &&
-    /^[\[\]\(\)\!\+\-\*\?\/\_\|\<\>\^\~\=\{\}\\\'\"\:\;\s\n\r\u0000-\u00ff\u3000-\u303F\u3040-\u30FF\u31F0-\u31FF\uFF00-\uFFEF]+$/.test(
-      code
-    )
-  ) {
+    /^[\[\]\(\)\!\+\-\*\?\/\_\|\<\>\^\~\=\{\}\\\'\"\:\;\s\n\r\u0000-\u00ff\u3000-\u303F\u3040-\u30FF\u31F0-\u31FF\uFF00-\uFFEF]+$/.test(code)
+  )
+}
+
+/**
+ * 检测是否为不需要解包的脚本（自动跳过）
+ */
+export function isNeverDecode(code) {
+  if (isKaomojiFuck(code) && !/eval|new Function/.test(code)) {
     return true
   }
-
-  // 特征2：连续出现大量颜文字结构 ()
-  const kaomojiPattern = /[（(][^A-Za-z0-9]{1,20}[）)]/g
-  const match = code.match(kaomojiPattern)
-
-  if (match && match.length >= 5) {
+  if (code.includes('Mix、Mix2解锁Vip')) {
     return true
   }
-
   return false
 }
 
 /**
- * 简单格式化备用方案（用于 js-beautify 失败时）
- * @param {string} code
- * @returns {string}
+ * 简单格式化备用
  */
 export function simpleFormat(code) {
   return code
@@ -46,42 +35,23 @@ export function simpleFormat(code) {
 }
 
 /**
- * 添加头部信息
- * @param {string} code
- * @returns {string}
- */
-export function addHeader(code) {
-  const header = [
-    `// Generated at ${new Date().toISOString()}`,
-    '// Base: https://github.com/echo094/decode-js',
-    '// Modify: https://github.com/smallfawn/decode_action',
-    ''
-  ].join('\n')
-  return header + code
-}
-
-/**
- * 读取文件
- * @param {string} filePath
- * @returns {string}
+ * 文件读取
  */
 export function readFile(filePath) {
-  return fs.readFileSync(filePath, 'utf8')
+  return fs.readFileSync(filePath, 'utf-8')
 }
 
 /**
- * 写入文件
- * @param {string} filePath
- * @param {string} content
+ * 文件写入
  */
 export function writeFile(filePath, content) {
-  fs.writeFileSync(filePath, content, 'utf8')
+  fs.writeFileSync(filePath, content, 'utf-8')
 }
 
 export default {
   isKaomojiFuck,
+  isNeverDecode,
   simpleFormat,
-  addHeader,
   readFile,
   writeFile
 }
