@@ -14,12 +14,9 @@ function unpack(packedCode) {
 
   const modifiedCode = packedCode.replace(/eval\s*\(/, 'fakeEval(');
 
-  const context = { fakeEval, String, RegExp };
-
   try {
-    with (context) {
-      eval(modifiedCode);
-    }
+    const func = new Function('fakeEval', 'String', 'RegExp', modifiedCode);
+    func(fakeEval, String, RegExp);
     return unpacked;
   } catch (e) {
     console.log('解包错误:', e);
