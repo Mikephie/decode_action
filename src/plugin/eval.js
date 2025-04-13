@@ -235,7 +235,7 @@ async function main() {
 }
 
 // 如果直接运行此脚本，则执行main函数
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === import.meta.resolve(process.argv[1] || '.')) {
   main();
 }
 
