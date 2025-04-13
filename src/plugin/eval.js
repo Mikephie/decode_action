@@ -59,20 +59,25 @@ function formatCode(code) {
       indent: { style: '  ' },
     }).code;
 
+    // 下面插入你的原始正则链美化处理（保留你自定义的所有处理）
     formatted = formatted
-      .replace(/\/\* (.*?)\*\/\s*/g, '// $1\n')
-      .replace(/(\/\/.*?\n)+/g, '$1')
+      .replace(/;\s*/g, ';\n')
+      .replace(/({|})\s*/g, '$1\n')
+      .replace(/,\s*/g, ', ')
+      .replace(/:\s*/g, ': ')
+      .replace(/\n{2,}/g, '\n\n')
+      .replace(/(let|var|const)\s+/g, '\n$1 ')
+      .replace(/\/\/\s*([^\n]+)\n/g, '// $1\n') // 注释优化示例
       .replace(/\n{3,}/g, '\n\n')
-      .replace(/\/\/ .*?\/\//g, '//')
-      .replace(/;(?=\s*(?:let|\/\/|obj\.|function))/g, ';\n')
-      .replace(/\/\/ 订阅配置\s*obj\.subscriber =/, '// 订阅配置\nobj.subscriber =')
-      .replace(/\/\/ 通知配置\s*\$\.notify/, '// 通知配置\n$.notify')
-      .replace(/(obj\.subscriber\.non_subscriptions\[.*?\];)/, '$1\n')
-      .replace(/(obj\.subscriber\.entitlements\[.*?\];)/, '$1\n')
-      .replace(/\s+$/gm, '')
-      .replace(/^\s+$/gm, '')
-      .replace(/let.*?;\n\n(?=let)/g, '$&')
-      .replace(/^(\s*[a-zA-Z_$][a-zA-Z0-9_$]*:)/gm, '  $1');
+      .replace(/(\$done\(\{.*?\}\);)/, '\n$1\n') // $done前后换行优化
+      .replace(/({)\s*\n+/g, '{\n') // 花括号后紧跟换行优化
+      .replace(/\[\s*\n\s*/g, '[\n  ') // 数组内换行与缩进优化
+      .replace(/\n\s*\]/g, '\n]')    // 数组结尾缩进优化
+      .replace(/([a-zA-Z_$][0-9a-zA-Z_$]*)\s*=\s*/g, '$1 = ') // 等号左右空格统一
+      .replace(/,([^\s])/g, ', $1') // 逗号后空格优化
+      .replace(/\n{3,}/g, '\n\n')   // 连续空行压缩
+      .replace(/\s+$/gm, '')        // 移除行尾空格
+      .replace(/^\s+$/gm, '')       // 移除空行空白
 
     const header =
       `// Generated at ${new Date().toISOString()}\n` +
