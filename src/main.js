@@ -12,6 +12,7 @@ const jsconfuserModule = await import('./plugin/jsconfuser.js');
 const jsaaencodeModule = await import('./plugin/aaencode.js');
 const evalModule = await import('./plugin/eval.js');
 const beautifyModule = await import('./plugin/js-beautify.js'); // <-- 引入格式化模块
+const jsfuckModule = await import('./plugin/jsfuck.js');
 
 // 提取 default 导出
 const PluginCommon = commonModule.default || commonModule;
@@ -24,6 +25,7 @@ const PluginJsconfuser = jsconfuserModule.default || jsconfuserModule;
 const PluginAaencode = jsaaencodeModule.default || jsaaencodeModule;
 const PluginEval = evalModule.default || evalModule;
 const beautify = beautifyModule.default || beautifyModule;  // <-- 提取 js-beautify
+const PluginJsfuck = jsfuckModule.default || jsfuckModule;
 
 // 读取命令行参数
 let encodeFile = 'input.js';
@@ -51,6 +53,7 @@ let time;
 const plugins = [
   { name: 'obfuscator', plugin: PluginObfuscator },
   { name: 'eval', plugin: PluginEval.unpack },
+  { name: 'jsfuck', plugin: PluginJsfuck.handle }, // 插在这里比较合理
   { name: 'sojsonv7', plugin: PluginSojsonV7 },
   { name: 'sojson', plugin: PluginSojson },
   { name: 'jsconfuser', plugin: PluginJsconfuser },
