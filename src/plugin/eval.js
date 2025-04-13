@@ -216,13 +216,13 @@ if (require.main === module) {
   main();
 } else {
   // 导出为模块使用
-  module.exports = {
-    unpackEval,
-    ensureBeautifyInstalled,
-    formatWithBeautify,
-    addSectionComments,
-    evalPlugin
-  };
+  export {
+  unpackEval,
+  ensureBeautifyInstalled,
+  formatWithBeautify,
+  addSectionComments,
+  evalPlugin
+};
 }
 
 /**
