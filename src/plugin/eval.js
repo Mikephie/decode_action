@@ -52,7 +52,7 @@ function recursiveUnpack(code, depth = 0, stats = { layers: 0, startTime: Date.n
         };
     }
     
-    console.log(`正在解码第${depth + 1}次...`);
+    console.log("正在解码第" + (depth + 1) + "次...");
     const layerStartTime = Date.now();
     
     try {
@@ -61,7 +61,7 @@ function recursiveUnpack(code, depth = 0, stats = { layers: 0, startTime: Date.n
             // 记录此层的统计信息
             stats.layers++;
             const layerTime = Date.now() - layerStartTime;
-            console.log(`第 ${depth + 1} 层解包完成，用时 ${layerTime} 毫秒`);
+            console.log("第 " + (depth + 1) + " 层解包完成，用时 " + layerTime + " 毫秒");
             
             if (result.includes('eval(')) {
                 return recursiveUnpack(result, depth + 1, stats);
@@ -74,7 +74,7 @@ function recursiveUnpack(code, depth = 0, stats = { layers: 0, startTime: Date.n
             };
         }
     } catch(e) {
-        console.log(`第 ${depth + 1} 层解包失败: ${e.message}`);
+        console.log("第 " + (depth + 1) + " 层解包失败: " + (e.message || e));
     }
     
     return { 
@@ -132,67 +132,12 @@ function detectAndHandle(code) {
 }
 
 /**
- * 处理字符串数组混淆 (简化实现)
- * @param {string} code - 混淆后的代码
- * @returns {string} 处理后的代码
- */
-function deobfuscateStringArray(code) {
-    // 实现字符串数组混淆的还原逻辑
-    // 这里仅为示例框架，实际实现需要更复杂的处理
-    try {
-        const ast = parse(code, {
-            sourceType: "module"
-        });
-        
-        // 查找字符串数组定义
-        let stringArrayName = null;
-        let stringArray = null;
-        
-        // 使用traverse查找字符串数组
-        traverse(ast, {
-            VariableDeclarator(path) {
-                if (path.node.init && 
-                    path.node.init.type === 'ArrayExpression' && 
-                    path.node.init.elements.length > 10 &&
-                    path.node.init.elements.every(el => el && el.type === 'StringLiteral')) {
-                    
-                    stringArrayName = path.node.id.name;
-                    stringArray = path.node.init.elements.map(el => el.value);
-                    path.stop();
-                }
-            }
-        });
-        
-        if (stringArrayName && stringArray) {
-            console.log(`找到字符串数组: ${stringArrayName}，包含 ${stringArray.length} 个字符串`);
-            
-            // 替换所有对数组的引用
-            let newCode = code;
-            const accessPattern = new RegExp(`${stringArrayName}\\[(\\d+)\\]`, 'g');
-            newCode = newCode.replace(accessPattern, (match, index) => {
-                const idx = parseInt(index);
-                if (idx >= 0 && idx < stringArray.length) {
-                    return `"${stringArray[idx]}"`;
-                }
-                return match;
-            });
-            
-            return newCode;
-        }
-        
-        return code;
-    } catch (e) {
-        console.log('字符串数组处理错误:', e);
-        return code;
-    }
-}
-
-/**
  * 格式化代码，添加结构和注释
  * @param {string} code - 需要格式化的代码
+ * @param {object} stats - 统计信息对象 (可选)
  * @returns {string} 格式化后的代码
  */
-function formatCode(code) {
+function formatCode(code, stats) {
     try {
         const ast = parse(code, {
             sourceType: "module",
@@ -213,14 +158,14 @@ function formatCode(code) {
                 }
             },
             AssignmentExpression(path) {
-                if (path.node.left.object?.name === 'obj') {
-                    if (path.node.left.property?.name === 'subscriber') {
+                if (path.node.left.object && path.node.left.object.name === 'obj') {
+                    if (path.node.left.property && path.node.left.property.name === 'subscriber') {
                         path.addComment('leading', ' 订阅配置');
                     }
                 }
             },
             CallExpression(path) {
-                if (path.node.callee.property?.name === 'notify') {
+                if (path.node.callee.property && path.node.callee.property.name === 'notify') {
                     path.addComment('leading', ' 通知配置');
                 }
             }
@@ -259,12 +204,30 @@ function formatCode(code) {
             // 移除空行开头的空白
             .replace(/^\s+$/gm, '')
             // 减少连续let声明之间的空行
-            .replace(/let.*?;\n\n(?=let)/g, '                if (path.node.left.object?.name === 'obj') {
-                    if (path.node')
+            .replace(/let.*?;\n\n(?=let)/g, '/**
+ * 处理字符串数组混淆 (简化实现)
+ * @param {string} code - 混淆后的代码
+ * @returns {string} 处理后的代码
+ */')
             // 保持对象属性的缩进
             .replace(/^(\s*[a-zA-Z_$][a-zA-Z0-9_$]*:)/gm, '  $1');
 
-        return formatted;
+        // 添加文件头注释和统计信息
+        const now = new Date().toISOString();
+        let header = "//Generated at " + now + "\n" +
+                     "//Base:https://github.com/echo094/decode-js\n" +
+                     "//Modify:https://github.com/smallfawn/decode_action\n\n";
+        
+        // 添加统计信息
+        if (stats) {
+            const techniques = stats.techniques ? stats.techniques.join(', ') : 'eval';
+            header += "//解包统计信息:\n" +
+                      "//- 混淆层数: " + stats.layers + " 层\n" +
+                      "//- 混淆类型: " + techniques + "\n" +
+                      "//- 处理用时: " + stats.time + " 毫秒\n\n";
+        }
+
+        return header + formatted;
 
     } catch(e) {
         console.log('格式化错误:', e);
@@ -302,7 +265,7 @@ function analyzeCode(code) {
                         // 提取关键配置变量
                         if (path.node.init && path.node.init.type === 'StringLiteral') {
                             analysis.variables.push({
-                                name,
+                                name: name,
                                 value: path.node.init.value
                             });
                         }
@@ -321,7 +284,7 @@ function analyzeCode(code) {
                     path.node.key.type === 'Identifier') {
                     // 记录对象属性名称
                     const objectName = path.parent.type === 'ObjectExpression' ? 
-                        path.parent.properties[0]?.key?.name : '';
+                        (path.parent.properties[0] && path.parent.properties[0].key && path.parent.properties[0].key.name) : '';
                     
                     if (objectName && !analysis.objects.includes(objectName)) {
                         analysis.objects.push(objectName);
@@ -332,11 +295,11 @@ function analyzeCode(code) {
             // 检测API调用
             CallExpression(path) {
                 if (path.node.callee.type === 'MemberExpression') {
-                    const obj = path.node.callee.object?.name;
-                    const method = path.node.callee.property?.name;
+                    const obj = path.node.callee.object && path.node.callee.object.name;
+                    const method = path.node.callee.property && path.node.callee.property.name;
                     
                     if (obj && method) {
-                        const api = `${obj}.${method}`;
+                        const api = obj + "." + method;
                         if (!analysis.apis.includes(api)) {
                             analysis.apis.push(api);
                         }
@@ -375,7 +338,7 @@ function plugin(code) {
             const result = detectAndHandle(code);
             if (result.code !== code) {
                 // 解混淆成功
-                console.log(`解包成功，使用了 ${result.techniques.join(', ')} 技术，共处理 ${result.layers} 层混淆`);
+                console.log("解包成功，使用了 " + result.techniques.join(', ') + " 技术，共处理 " + result.layers + " 层混淆");
                 const analysis = analyzeCode(result.code);
                 
                 // 格式化并添加统计信息
@@ -394,18 +357,18 @@ function plugin(code) {
         
         if (result.code && result.code !== code) {
             // 解密成功后进行分析和格式化
-            console.log(`解包成功，共解包 ${result.layers} 层，总用时 ${result.time} 毫秒`);
+            console.log("解包成功，共解包 " + result.layers + " 层，总用时 " + result.time + " 毫秒");
             
             // 分析代码结构
             const analysis = analyzeCode(result.code);
             console.log('代码分析完成，发现以下信息:');
-            console.log(`- 关键变量: ${analysis.variables.length} 个`);
-            console.log(`- 函数: ${analysis.functions} 个`);
-            console.log(`- 对象: ${analysis.objects.length} 个`);
-            console.log(`- API调用: ${analysis.apis.length} 个`);
+            console.log("- 关键变量: " + analysis.variables.length + " 个");
+            console.log("- 函数: " + analysis.functions + " 个");
+            console.log("- 对象: " + analysis.objects.length + " 个");
+            console.log("- API调用: " + analysis.apis.length + " 个");
             
             if (analysis.suspicious.length > 0) {
-                console.log(`- 发现可疑API: ${analysis.suspicious.join(', ')}`);
+                console.log("- 发现可疑API: " + analysis.suspicious.join(', '));
             }
             
             // 格式化代码并添加统计信息
@@ -442,3 +405,58 @@ PluginEval.deobfuscateStringArray = deobfuscateStringArray;
 
 // 导出插件
 export default PluginEval;
+/**
+ * 处理字符串数组混淆 (简化实现)
+ * @param {string} code - 混淆后的代码
+ * @returns {string} 处理后的代码
+ */
+function deobfuscateStringArray(code) {
+    // 实现字符串数组混淆的还原逻辑
+    // 这里仅为示例框架，实际实现需要更复杂的处理
+    try {
+        const ast = parse(code, {
+            sourceType: "module"
+        });
+        
+        // 查找字符串数组定义
+        let stringArrayName = null;
+        let stringArray = null;
+        
+        // 使用traverse查找字符串数组
+        traverse(ast, {
+            VariableDeclarator(path) {
+                if (path.node.init && 
+                    path.node.init.type === 'ArrayExpression' && 
+                    path.node.init.elements.length > 10 &&
+                    path.node.init.elements.every(el => el && el.type === 'StringLiteral')) {
+                    
+                    stringArrayName = path.node.id.name;
+                    stringArray = path.node.init.elements.map(el => el.value);
+                    path.stop();
+                }
+            }
+        });
+        
+        if (stringArrayName && stringArray) {
+            console.log("找到字符串数组: " + stringArrayName + "，包含 " + stringArray.length + " 个字符串");
+            
+            // 替换所有对数组的引用
+            let newCode = code;
+            const accessPattern = new RegExp(stringArrayName + "\\[(\\d+)\\]", 'g');
+            newCode = newCode.replace(accessPattern, function(match, index) {
+                const idx = parseInt(index);
+                if (idx >= 0 && idx < stringArray.length) {
+                    return '"' + stringArray[idx] + '"';
+                }
+                return match;
+            });
+            
+            return newCode;
+        }
+        
+        return code;
+    } catch (e) {
+        console.log('字符串数组处理错误:', e);
+        return code;
+    }
+}
