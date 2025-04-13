@@ -1,11 +1,11 @@
-// CommonJS版本 - 尽可能接近原始插件
-const { parse } = require('@babel/parser');
-const generator = require('@babel/generator').default;
-const traverse = require('@babel/traverse').default;
-const t = require('@babel/types');
+// ESM版本 - 使用默认导出
+import { parse } from '@babel/parser';
+import generator from '@babel/generator';
+import traverse from '@babel/traverse';
+import * as t from '@babel/types';
 
-// 导出与原始插件完全相同的函数签名
-module.exports = function(code) {
+// 主函数
+function processCode(code) {
     try {
         function unpack(packedCode) {
             let unpacked = '';
@@ -137,8 +137,6 @@ module.exports = function(code) {
             return code;
         }
 
-        // 以下部分与原始插件完全相同的逻辑
-
         // 模拟原始解包输出日志
         console.log('还原数值...');
         console.log('处理全局加密...');
@@ -162,3 +160,6 @@ module.exports = function(code) {
         return code;
     }
 }
+
+// 默认导出函数
+export default processCode;
