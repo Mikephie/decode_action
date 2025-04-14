@@ -24,7 +24,7 @@ function unpack(packedCode) {
   }
 }
 
-function formatCode(code) {
+//function formatCode(code) {
   try {
     const ast = parse(code, { sourceType: 'module', plugins: ['jsx'] });
 
