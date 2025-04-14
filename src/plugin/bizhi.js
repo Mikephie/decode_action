@@ -1,241 +1,269 @@
+/**
+ * AADecoder JavaScript
+ * 基于 PHP 版本的 AADecoder 移植
+ * 原作者: Andrey Izman <izmanw@gmail.com>
+ * 原始版本: https://github.com/mervick/php-aaencoder
+ * 
+ * 该类能够解码 AAEncode 混淆的 JavaScript 代码
+ * 不使用 eval，完全基于模式匹配和替换
+ */
 
-// ./plugin/bizhi.js - 真正的 BiZhi Kaomoji 解密插件
+class AADecoder {
+  // AAEncoded 代码的特征开始部分
+  static BEGIN_CODE = "ﾟωﾟﾉ=/｀ｍ´）ﾉ~┻━┻/['_'];o=(ﾟｰﾟ)=_=3;c=(ﾟΘﾟ)=(ﾟｰﾟ)-(ﾟｰﾟ);(ﾟДﾟ)=(ﾟΘﾟ)=(o^_^o)/(o^_^o);(ﾟДﾟ)={ﾟΘﾟ:'_',ﾟωﾟﾉ:((ﾟωﾟﾉ==3)+'_')[ﾟΘﾟ],ﾟｰﾟﾉ:(ﾟωﾟﾉ+'_')[o^_^o-(ﾟΘﾟ)],ﾟДﾟﾉ:((ﾟｰﾟ==3)+'_')[ﾟｰﾟ]};(ﾟДﾟ)[ﾟΘﾟ]=((ﾟωﾟﾉ==3)+'_')[c^_^o];(ﾟДﾟ)['c']=((ﾟДﾟ)+'_')[(ﾟｰﾟ)+(ﾟｰﾟ)-(ﾟΘﾟ)];(ﾟДﾟ)['o']=((ﾟДﾟ)+'_')[ﾟΘﾟ];(ﾟoﾟ)=(ﾟДﾟ)['c']+(ﾟДﾟ)['o']+(ﾟωﾟﾉ+'_')[ﾟΘﾟ]+((ﾟωﾟﾉ==3)+'_')[ﾟｰﾟ]+((ﾟДﾟ)+'_')[(ﾟｰﾟ)+(ﾟｰﾟ)]+((ﾟｰﾟ==3)+'_')[ﾟΘﾟ]+((ﾟｰﾟ==3)+'_')[(ﾟｰﾟ)-(ﾟΘﾟ)]+(ﾟДﾟ)['c']+((ﾟДﾟ)+'_')[(ﾟｰﾟ)+(ﾟｰﾟ)]+(ﾟДﾟ)['o']+((ﾟｰﾟ==3)+'_')[ﾟΘﾟ];(ﾟДﾟ)['_']=(o^_^o)[ﾟoﾟ][ﾟoﾟ];(ﾟεﾟ)=((ﾟｰﾟ==3)+'_')[ﾟΘﾟ]+(ﾟДﾟ).ﾟДﾟﾉ+((ﾟДﾟ)+'_')[(ﾟｰﾟ)+(ﾟｰﾟ)]+((ﾟｰﾟ==3)+'_')[o^_^o-ﾟΘﾟ]+((ﾟｰﾟ==3)+'_')[ﾟΘﾟ]+(ﾟωﾟﾉ+'_')[ﾟΘﾟ];(ﾟｰﾟ)+=(ﾟΘﾟ);(ﾟДﾟ)[ﾟεﾟ]='\\\\';(ﾟДﾟ).ﾟΘﾟﾉ=(ﾟДﾟ+ﾟｰﾟ)[o^_^o-(ﾟΘﾟ)];(oﾟｰﾟo)=(ﾟωﾟﾉ+'_')[c^_^o];(ﾟДﾟ)[ﾟoﾟ]='\\\"';(ﾟДﾟ)['_']((ﾟДﾟ)['_'](ﾟεﾟ+(ﾟДﾟ)[ﾟoﾟ]+";
 
-import { VM } from 'vm2';
+  // AAEncoded 代码的特征结束部分
+  static END_CODE = "(ﾟДﾟ)[ﾟoﾟ])(ﾟΘﾟ))('_');";
 
-export default function(code) {
-  // 检测是否是 BiZhi 脚本
-  if (!(/ﾟωﾟﾉ=\s*\/｀ｍ´\）ﾉ\s*~┻━┻/.test(code) && 
-      (code.includes('emotionwp.com') || code.includes('壁纸解锁')))) {
-    return code; // 不是 BiZhi 脚本，返回原始代码
-  }
-  
-  console.log('[BiZhi] 检测到壁纸解锁脚本，开始真实解密...');
-  
-  try {
-    // 提取脚本头部信息
-    const headerMatch = code.match(/\/\*[\s\S]*?\*\//);
-    const header = headerMatch ? headerMatch[0] + '\n\n' : '';
-    
-    // 第1步：提取执行部分
-    const execMatch = code.match(/\(ﾟДﾟ\)\s*\[\s*['"]_['"]\s*\]\s*\(\s*([\s\S]*?)\s*\)\s*;?$/);
-    if (!execMatch) {
-      console.error('[BiZhi] 无法找到执行部分');
-      return code;
+  // 字节映射表，将 AAEncode 表达式映射到对应的数字
+  static BYTES_MAPPING = {
+    '((ﾟｰﾟ)+(ﾟｰﾟ)+(ﾟΘﾟ))': 9,
+    '((o^_^o)+(o^_^o))': 6,
+    '((o^_^o)-(ﾟΘﾟ))': 2,
+    '((ﾟｰﾟ)+(o^_^o))': 7,
+    '((ﾟｰﾟ)+(ﾟΘﾟ))': 5,
+    '((ﾟｰﾟ)+(ﾟｰﾟ))': 8,
+    '(ﾟДﾟ).ﾟωﾟﾉ': 10,
+    '(ﾟДﾟ).ﾟΘﾟﾉ': 11,
+    '(ﾟДﾟ)[\'c\']': 12,
+    '(ﾟДﾟ).ﾟｰﾟﾉ': 13,
+    '(ﾟДﾟ).ﾟДﾟﾉ': 14,
+    '(ﾟДﾟ)[ﾟΘﾟ]': 15,
+    '(o^_^o)': 3,
+    '(c^_^o)': 0,
+    '(ﾟｰﾟ)': 4,
+    '(ﾟΘﾟ)': 1
+  };
+
+  // 原生表达式替换
+  static NATIVE_MAP = {
+    '-~': '1+',
+    '!': '1',
+    '[]': '0'
+  };
+
+  /**
+   * 解码 AAEncoded 的 JavaScript 代码
+   * @param {string} js - 包含 AAEncoded 代码的 JavaScript 字符串
+   * @returns {string} - 解码后的 JavaScript 代码
+   */
+  static decode(js) {
+    let result = js;
+    let encoded = '';
+    let start = 0;
+    let next = 0;
+
+    // 尝试查找并解码所有 AAEncoded 片段
+    while (this.hasAAEncoded(result, start, next, encoded)) {
+      let decoded = this.deobfuscate(encoded);
+      
+      // 确保解码后的代码以分号结尾
+      if (decoded.trim().charAt(decoded.trim().length - 1) !== ';') {
+        decoded += ';';
+      }
+
+      // 替换原始代码中的 AAEncoded 部分
+      result = result.substring(0, start) + decoded + this.decode(result.substring(next));
+      break; // 因为递归调用了 decode，所以我们在这里退出循环
     }
-    
-    // 第2步：提取变量设置部分
-    const setupCode = code.substring(0, code.lastIndexOf('(ﾟДﾟ)[ﾟεﾟ]'));
-    
-    // 第3步：创建一个解密函数，它将返回解密后的代码而不执行它
-    const decodeFn = `
-      function decodeKaomoji() {
-        try {
-          ${setupCode}
-          
-          // 获取实际的解密函数
-          const decodeFunc = (ﾟДﾟ)['_'];
-          
-          // 修改解密函数以返回解密后的代码而不执行它
-          function modifiedDecode(code) {
-            // 使用 Function 构造函数创建一个返回代码的函数
-            return new Function('return ' + decodeFunc(code))();
-          }
-          
-          // 应用修改后的解密函数
-          const decodedCode = modifiedDecode(${execMatch[1]});
-          return decodedCode;
-        } catch (e) {
-          return "解密失败: " + e.message;
-        }
-      }
-      decodeKaomoji();
-    `;
-    
-    // 第4步：在安全的沙盒中执行解密函数
-    const vm = new VM({
-      timeout: 5000,
-      sandbox: {
-        console: {
-          log: (msg) => console.log('[BiZhi VM]', msg),
-          error: (msg) => console.error('[BiZhi VM Error]', msg)
-        },
-        // 提供一个假的响应对象以防脚本需要
-        $response: { body: '{}' },
-        $done: () => {},
-        JSON: JSON,
-        setTimeout: setTimeout,
-        clearTimeout: clearTimeout
-      }
-    });
-    
-    // 执行解密函数
-    const result = vm.run(decodeFn);
-    
-    // 检查结果
-    if (typeof result === 'string' && result.length > 0 && !result.startsWith('解密失败')) {
-      console.log('[BiZhi] 成功提取到原始解密代码');
-      
-      // 将解密后的代码与原始头部合并
-      return header + '\n' + result;
-    } else {
-      console.error('[BiZhi] 解密执行失败:', result);
-      
-      // 尝试替代方法：对整个代码进行字符串分析
-      console.log('[BiZhi] 尝试使用字符串分析方法...');
-      
-      // 查找对 $response 和 $done 的使用模式
-      const modifyMatch = code.match(/\$response\s*[\.\[]|body[\.\[]/g);
-      if (modifyMatch) {
-        console.log('[BiZhi] 检测到 $response 修改模式');
-        
-        // 尝试执行代码并捕获 $done 调用
-        let capturedResponse = null;
-        const executionVM = new VM({
-          timeout: 5000,
-          sandbox: {
-            console: {
-              log: (msg) => console.log('[BiZhi Exec]', msg),
-              error: () => {},
-              warn: () => {}
-            },
-            $response: { body: '{"membership":{"status":"none"},"coin":100}' },
-            $request: {},
-            $done: (obj) => { 
-              capturedResponse = obj;
-              return obj; 
-            },
-            setTimeout: () => {},
-            clearTimeout: () => {},
-            JSON: JSON
-          }
-        });
-        
-        try {
-          // 试图执行整个代码
-          executionVM.run(code);
-          
-          // 检查是否捕获到响应修改
-          if (capturedResponse) {
-            console.log('[BiZhi] 成功捕获响应修改');
-            
-            // 根据捕获的响应重建代码
-            let responseBody;
-            try {
-              responseBody = JSON.parse(capturedResponse.body);
-            } catch (e) {
-              responseBody = capturedResponse.body;
-            }
-            
-            // 创建真实解密版本
-            const analyzedCode = `
-// 解密后的 BiZhi 壁纸解锁脚本
-// 解密时间: ${new Date().toISOString()}
-${header}
 
-// 此代码是通过执行原始混淆脚本并提取其行为生成的
-
-const modifyResponse = (response) => {
-  if (!response || !response.body) return response;
-  
-  let body;
-  try {
-    body = JSON.parse(response.body);
-  } catch (e) {
-    console.log('解析响应体失败');
-    return response;
+    return result;
   }
-  
-  // 以下修改基于对原始脚本行为的分析
-  ${generateModificationCode(responseBody)}
-  
-  // 更新响应体
-  response.body = JSON.stringify(body);
-  return response;
-};
 
-// 执行脚本
-$done(modifyResponse($response));
+  /**
+   * 解除混淆，将 AAEncoded 代码转换回原始 JavaScript
+   * @param {string} js - AAEncoded 代码片段
+   * @returns {string} - 解码后的 JavaScript 代码
+   */
+  static deobfuscate(js) {
+    // 使用字节映射替换模式
+    for (const [pattern, byte] of Object.entries(this.BYTES_MAPPING)) {
+      // 使用正则表达式的 split 和 join 替换所有匹配项
+      const parts = js.split(new RegExp(this.escapeRegExp(pattern), 'g'));
+      js = parts.join(byte);
+    }
 
-/* 原始混淆代码:
-${code.substring(0, 300)}...（已截断）
-*/
-`;
-            return analyzedCode;
-          }
-        } catch (execError) {
-          console.error('[BiZhi] 执行代码失败:', execError.message);
-        }
+    const chars = [];
+    const hex = '(oﾟｰﾟo)+';
+    const hexLen = hex.length;
+
+    // 处理原生表达式替换
+    for (const [search, replace] of Object.entries(this.NATIVE_MAP)) {
+      js = js.replace(new RegExp(this.escapeRegExp(search), 'g'), replace);
+    }
+
+    // 根据 '(ﾟДﾟ)[ﾟεﾟ]+' 分割代码
+    const blocks = js.split(new RegExp(this.escapeRegExp('(ﾟДﾟ)[ﾟεﾟ]+'), 'g'));
+    
+    for (let block of blocks) {
+      // 移除前后的加号和空格
+      block = block.trim().replace(/^\+|\+$/g, '');
+      
+      if (block === '') continue;
+      
+      // 替换原生表达式
+      for (const [search, replace] of Object.entries(this.NATIVE_MAP)) {
+        block = block.replace(new RegExp(this.escapeRegExp(search), 'g'), replace);
       }
       
-      // 如果所有方法都失败，返回原始代码
-      console.error('[BiZhi] 所有解密方法失败，返回原始代码');
-      return code;
-    }
-  } catch (error) {
-    console.error('[BiZhi] 解密过程错误:', error.message);
-    return code; // 发生错误，返回原始代码
-  }
-}
-
-// 辅助函数：根据捕获的响应重建修改代码
-function generateModificationCode(responseBody) {
-  if (!responseBody) {
-    return '// 未检测到明确的响应体修改';
-  }
-  
-  const lines = [];
-  
-  // 分析 membership/vip 字段
-  if (responseBody.membership) {
-    lines.push('// 会员状态修改');
-    
-    if (responseBody.membership.status) {
-      lines.push(`body.membership = body.membership || {};`);
-      lines.push(`body.membership.status = "${responseBody.membership.status}";`);
-    }
-    
-    if (responseBody.membership.type) {
-      lines.push(`body.membership.type = "${responseBody.membership.type}";`);
-    }
-    
-    if (responseBody.membership.expireTime) {
-      lines.push(`body.membership.expireTime = ${responseBody.membership.expireTime};`);
-    }
-  }
-  
-  // 分析虚拟货币字段
-  if (responseBody.coin !== undefined) {
-    lines.push('// 虚拟货币修改');
-    lines.push(`body.coin = ${responseBody.coin};`);
-  }
-  
-  if (responseBody.coins !== undefined) {
-    lines.push(`body.coins = ${responseBody.coins};`);
-  }
-  
-  if (responseBody.doodleCoin !== undefined) {
-    lines.push(`body.doodleCoin = ${responseBody.doodleCoin};`);
-  }
-  
-  // 分析其他可能的字段
-  const otherFields = Object.keys(responseBody).filter(key => 
-    !['membership', 'coin', 'coins', 'doodleCoin'].includes(key)
-  );
-  
-  if (otherFields.length > 0) {
-    lines.push('// 其他字段修改');
-    otherFields.forEach(key => {
-      const value = responseBody[key];
-      if (typeof value === 'object' && value !== null) {
-        lines.push(`body.${key} = ${JSON.stringify(value)};`);
-      } else if (typeof value === 'string') {
-        lines.push(`body.${key} = "${value}";`);
+      // 检查是否为十六进制表示
+      const isHex = block.substring(0, hexLen) === hex;
+      let code = 0;
+      
+      if (isHex) {
+        // 处理十六进制代码
+        const hexValue = this.convertBlock(block.substring(hexLen), this.calculateExpression, num => num.toString(16));
+        code = parseInt(hexValue, 16);
       } else {
-        lines.push(`body.${key} = ${value};`);
+        // 处理八进制代码
+        const octValue = this.convertBlock(block, this.calculateExpression, num => num.toString(8));
+        code = parseInt(octValue, 8);
       }
-    });
+      
+      // 转换代码点为字符
+      chars.push(String.fromCodePoint(code));
+    }
+    
+    return chars.join('');
   }
-  
-  return lines.join('\n  ');
+
+  /**
+   * 检测字符串中是否包含 AAEncoded 代码
+   * @param {string} js - JavaScript 代码
+   * @param {number} start - 开始位置的引用
+   * @param {number} next - 下一个位置的引用
+   * @param {string} encoded - 编码部分的引用
+   * @returns {boolean} - 是否找到 AAEncoded 代码
+   */
+  static hasAAEncoded(js, start = 0, next = 0, encoded = '') {
+    // 查找 AAEncoded 的特征开始部分
+    while ((start = js.indexOf('ﾟωﾟﾉ', start)) !== -1) {
+      // 清除注释和空格
+      const clear = js.substring(start)
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/[\x03-\x20]/g, '');
+      
+      const len = this.BEGIN_CODE.length;
+      
+      // 检查是否匹配开始和结束标记
+      if (clear.substring(0, len) === this.BEGIN_CODE && 
+          clear.indexOf(this.END_CODE, len) !== -1) {
+        
+        // 查找关键点，这里简化了查找逻辑
+        const matches = this.findOccurrences(js, 'ﾟoﾟ', start);
+        
+        if (matches && matches.length >= 2) {
+          let beginAt = matches[0];
+          let endAt = matches[1];
+          
+          // 调整边界
+          beginAt = js.indexOf('+', beginAt);
+          endAt = js.lastIndexOf('(', endAt);
+          
+          next = js.indexOf(';', endAt) + 1;
+          
+          // 提取编码部分
+          encoded = js.substring(beginAt, endAt).replace(/[\x03-\x20]/g, '');
+          return true;
+        }
+      }
+      
+      start += 1; // 继续搜索
+    }
+    
+    return false;
+  }
+
+  /**
+   * 转换代码块
+   * @param {string} block - 代码块
+   * @param {Function} calcFunc - 计算表达式的函数
+   * @param {Function} convertFunc - 转换数字的函数
+   * @returns {string} - 转换后的字符串
+   */
+  static convertBlock(block, calcFunc, convertFunc) {
+    // 先计算所有括号内的表达式
+    while (block.match(/\([0-9\-\+\*\/]+\)/)) {
+      block = block.replace(/\([0-9\-\+\*\/]+\)/g, match => {
+        return calcFunc(match);
+      });
+    }
+    
+    // 分割和处理每个数字
+    const split = [];
+    for (const num of block.split('+')) {
+      if (num === '') continue;
+      split.push(convertFunc(parseInt(num.trim())));
+    }
+    
+    return split.join('');
+  }
+
+  /**
+   * 计算数学表达式
+   * @param {string} expr - 数学表达式
+   * @returns {number} - 计算结果
+   */
+  static calculateExpression(expr) {
+    // 安全地计算表达式，不使用 eval
+    // 这里只实现了四则运算的简单版本
+    try {
+      // 移除括号
+      expr = expr.replace(/[()]/g, '');
+      
+      // 处理乘除
+      while (expr.match(/[0-9]+[\*\/][0-9]+/)) {
+        expr = expr.replace(/([0-9]+)([\*\/])([0-9]+)/, (_, a, op, b) => {
+          return op === '*' ? Number(a) * Number(b) : Math.floor(Number(a) / Number(b));
+        });
+      }
+      
+      // 处理加减
+      while (expr.match(/[0-9]+[\+\-][0-9]+/)) {
+        expr = expr.replace(/([0-9]+)([\+\-])([0-9]+)/, (_, a, op, b) => {
+          return op === '+' ? Number(a) + Number(b) : Number(a) - Number(b);
+        });
+      }
+      
+      return Number(expr);
+    } catch (e) {
+      console.error('计算表达式时出错:', e);
+      return 0;
+    }
+  }
+
+  /**
+   * 在字符串中查找指定子串的多次出现位置
+   * @param {string} haystack - 要搜索的字符串
+   * @param {string} needle - 要查找的子串
+   * @param {number} offset - 开始搜索的位置
+   * @returns {Array} - 找到的位置数组
+   */
+  static findOccurrences(haystack, needle, offset = 0) {
+    const matches = [];
+    let pos = offset;
+    
+    // 查找多次出现
+    for (let i = 0; i < 10 && pos !== -1; i++) {
+      pos = haystack.indexOf(needle, pos);
+      if (pos !== -1) {
+        matches.push(pos);
+        pos += 1;
+      }
+    }
+    
+    return matches.length >= 2 ? [matches[matches.length - 2], matches[matches.length - 1]] : null;
+  }
+
+  /**
+   * 转义正则表达式中的特殊字符
+   * @param {string} string - 要转义的字符串
+   * @returns {string} - 转义后的字符串
+   */
+  static escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
 }
+
+// 导出 AADecoder 类
+export default AADecoder;
