@@ -14,11 +14,28 @@ const evalModule = await import('./plugin/eval.js');
 const beautifyModule = await import('./plugin/js-beautify.js');
 const jsfuckModule = await import('./plugin/jsfuck.js');
 
-// 尝试导入备选的直接执行插件（如果存在）
+// 尝试导入特殊处理插件（如果存在）
 let directExecutionModule = null;
+let rawExecutionModule = null;
+let manualExtractorModule = null;
+
 try {
   directExecutionModule = await import('./plugin/direct-execution.js');
   console.log('已加载备选的直接执行插件');
+} catch (e) {
+  // 忽略错误，表示插件不存在
+}
+
+try {
+  rawExecutionModule = await import('./plugin/raw-execution.js');
+  console.log('已加载特殊原始执行插件');
+} catch (e) {
+  // 忽略错误，表示插件不存在
+}
+
+try {
+  manualExtractorModule = await import('./plugin/manual-extractor.js');
+  console.log('已加载手动提取器插件');
 } catch (e) {
   // 忽略错误，表示插件不存在
 }
@@ -36,6 +53,8 @@ const PluginEval = evalModule.default || evalModule;
 const beautify = beautifyModule.default || beautifyModule;
 const PluginJsfuck = jsfuckModule.default || jsfuckModule;
 const PluginDirectExecution = directExecutionModule?.default || directExecutionModule;
+const PluginRawExecution = rawExecutionModule?.default || rawExecutionModule;
+const PluginManualExtractor = manualExtractorModule?.default || manualExtractorModule;
 
 // 参数读取
 let encodeFile = 'input.js';
@@ -109,6 +128,22 @@ if (forcePlugin) {
           console.log('未找到直接执行插件，跳过');
         }
         break;
+      case 'raw':
+        if (PluginRawExecution) {
+          processedCode = PluginRawExecution.executeRaw(sourceCode);
+          pluginUsed = 'raw-execution';
+        } else {
+          console.log('未找到原始执行插件，跳过');
+        }
+        break;
+      case 'manual':
+        if (PluginManualExtractor) {
+          processedCode = PluginManualExtractor.extractCode(sourceCode);
+          pluginUsed = 'manual-extractor';
+        } else {
+          console.log('未找到手动提取器插件，跳过');
+        }
+        break;
       default:
         console.log(`未知插件: ${forcePlugin}，将正常执行解包流程`);
         forcePlugin = null;
@@ -128,47 +163,32 @@ if (forcePlugin) {
 
 // 只有在未指定强制插件或强制插件失败时才执行自动检测流程
 if (!forcePlugin || processedCode === sourceCode) {
-  // 首先尝试 AAEncode 解码（包含 Kaomoji 格式）
+  // 首先尝试 AAEncode/Kaomoji 解码
   if (/ﾟωﾟ|ﾟДﾟ|ﾟΘﾟ/.test(sourceCode)) {
     console.log('检测到 AAEncode/Kaomoji 混淆，尝试解密...');
     
-    // 首先尝试专用的 AAEncode 插件
-    try {
-      const result = PluginAaencode(sourceCode);
-      if (result && result !== sourceCode) {
-        processedCode = result;
-        pluginUsed = 'aaencode';
-        console.log('AAEncode/Kaomoji 解密成功');
-      }
-    } catch (error) {
-      console.error(`AAEncode 处理时发生错误: ${error.message}`);
-    }
+    // 按优先级尝试不同方法解码
+    const kaomoji_plugins = [
+      { name: 'aaencode', handler: PluginAaencode, enabled: true },
+      { name: 'jsfuck', handler: PluginJsfuck?.handle, enabled: true },
+      { name: 'raw-execution', handler: PluginRawExecution?.executeRaw, enabled: !!PluginRawExecution },
+      { name: 'direct-execution', handler: PluginDirectExecution?.executeKaomoji, enabled: !!PluginDirectExecution },
+      { name: 'manual-extractor', handler: PluginManualExtractor?.extractCode, enabled: !!PluginManualExtractor }
+    ].filter(plugin => plugin.enabled);
     
-    // 如果 AAEncode 失败，尝试 JSFuck 插件
-    if (processedCode === sourceCode) {
+    // 尝试所有可用的插件
+    for (const plugin of kaomoji_plugins) {
       try {
-        const result = PluginJsfuck.handle(sourceCode);
+        console.log(`尝试使用 ${plugin.name} 插件解密...`);
+        const result = plugin.handler(sourceCode);
         if (result && result !== sourceCode) {
           processedCode = result;
-          pluginUsed = 'jsfuck';
-          console.log('使用 JSFuck 插件解密 Kaomoji 成功');
+          pluginUsed = plugin.name;
+          console.log(`使用 ${plugin.name} 插件解密成功`);
+          break;
         }
       } catch (error) {
-        console.error(`JSFuck 处理 Kaomoji 时发生错误: ${error.message}`);
-      }
-    }
-    
-    // 如果前两个方法都失败，尝试直接执行方法（如果可用）
-    if (processedCode === sourceCode && PluginDirectExecution) {
-      try {
-        const result = PluginDirectExecution.executeKaomoji(sourceCode);
-        if (result && result !== sourceCode) {
-          processedCode = result;
-          pluginUsed = 'direct-execution';
-          console.log('使用直接执行方法解密 Kaomoji 成功');
-        }
-      } catch (error) {
-        console.error(`直接执行方法处理 Kaomoji 时发生错误: ${error.message}`);
+        console.error(`${plugin.name} 处理时发生错误: ${error.message}`);
       }
     }
   }
@@ -213,7 +233,11 @@ if (processedCode !== sourceCode) {
     "// Modify: https://github.com/smallfawn/decode_action"
   ].join('\n');
 
-  const finalCode = await beautify.formatCode(processedCode);
+  // 确保我们有一个有效的字符串进行格式化
+  const finalCode = typeof processedCode === 'string' 
+    ? await beautify.formatCode(processedCode)
+    : String(processedCode);
+    
   const outputCode = header + '\n\n' + finalCode;
 
   fs.writeFileSync(decodeFile, outputCode, 'utf-8');
