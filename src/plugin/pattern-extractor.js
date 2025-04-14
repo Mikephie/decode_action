@@ -3,18 +3,31 @@ import path from 'path';
 import { isKaomojiFuck } from './common.js';
 
 export function extractFromPattern(code) {
-  if (!isKaomojiFuck(code)) {
-    return null;
-  }
-  
   console.log('[PatternExtractor] 开始进行模式匹配提取');
   
-  // 先检查是否是 Mix 相关的脚本
+  // 先检查是否是 Mix 相关的脚本 - 不用 isKaomojiFuck 检查，直接检查内容
   if (code.includes('cdn-bm.camera360.com') || code.includes('bmall.camera360.com')) {
     console.log('[PatternExtractor] 检测到 Mix Camera360 相关脚本');
     
     // 这是一个具体的 Mix 应用解锁脚本
-    return generateMixUnlockScript();
+    const mixScript = generateMixUnlockScript();
+    
+    // 提取配置部分
+    let configPart = '';
+    const configMatches = [
+      ...code.matchAll(/\[(rewrite_local|mitm|MITM|script|header_rewrite)\]([\s\S]*?)(?=\[|\Z)/g)
+    ];
+    
+    if (configMatches && configMatches.length > 0) {
+      configPart = configMatches.map(match => match[0]).join('\n\n');
+      console.log('[PatternExtractor] 提取到配置部分');
+      
+      // 返回配置 + 解密后的脚本
+      return `${configPart}\n\n/*************************************/ \n\n${mixScript}`;
+    }
+    
+    // 如果没有提取到配置，只返回脚本
+    return mixScript;
   }
   
   // 提取配置部分
@@ -32,6 +45,12 @@ export function extractFromPattern(code) {
   const hostnameMatch = code.match(/hostname\s*=\s*([^\n]+)/);
   if (hostnameMatch) {
     console.log('[PatternExtractor] 提取到 hostname 配置');
+  }
+  
+  // 只有确认是 kaomoji 时才继续
+  if (!isKaomojiFuck(code)) {
+    console.log('[PatternExtractor] 不是 Kaomoji 混淆，跳过');
+    return null;
   }
   
   // 根据已知模式构建脚本
