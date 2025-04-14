@@ -1,8 +1,7 @@
-
 import fs from 'fs';
 import process from 'process';
 
-// 动态导入插件模块
+// 动态导入 ESM 插件模块
 const commonModule = await import('./plugin/common.js');
 const jjencodeModule = await import('./plugin/jjencode.js');
 const sojsonModule = await import('./plugin/sojson.js');
@@ -12,45 +11,8 @@ const awscModule = await import('./plugin/awsc.js');
 const jsconfuserModule = await import('./plugin/jsconfuser.js');
 const jsaaencodeModule = await import('./plugin/aaencode.js');
 const evalModule = await import('./plugin/eval.js');
-const beautifyModule = await import('./plugin/js-beautify.js');
+const beautifyModule = await import('./plugin/js-beautify.js'); // <-- 引入格式化模块
 const jsfuckModule = await import('./plugin/jsfuck.js');
-
-// 新增 BiZhi 插件导入
-const bizhiModule = await import('./plugin/bizhi.js');
-
-// 尝试导入特殊处理插件（如果存在）
-let directExecutionModule = null;
-let rawExecutionModule = null;
-let manualExtractorModule = null;
-let patternExtractorModule = null;
-
-try {
-  directExecutionModule = await import('./plugin/direct-execution.js');
-  console.log('已加载备选的直接执行插件');
-} catch (e) {
-  // 忽略错误，表示插件不存在
-}
-
-try {
-  rawExecutionModule = await import('./plugin/raw-execution.js');
-  console.log('已加载特殊原始执行插件');
-} catch (e) {
-  // 忽略错误，表示插件不存在
-}
-
-try {
-  manualExtractorModule = await import('./plugin/manual-extractor.js');
-  console.log('已加载手动提取器插件');
-} catch (e) {
-  // 忽略错误，表示插件不存在
-}
-
-try {
-  patternExtractorModule = await import('./plugin/pattern-extractor.js');
-  console.log('已加载模式提取器插件');
-} catch (e) {
-  // 忽略错误，表示插件不存在
-}
 
 // 提取 default 导出
 const PluginCommon = commonModule.default || commonModule;
@@ -62,251 +24,80 @@ const PluginAwsc = awscModule.default || awscModule;
 const PluginJsconfuser = jsconfuserModule.default || jsconfuserModule;
 const PluginAaencode = jsaaencodeModule.default || jsaaencodeModule;
 const PluginEval = evalModule.default || evalModule;
-const beautify = beautifyModule.default || beautifyModule;
+const beautify = beautifyModule.default || beautifyModule;  // <-- 提取 js-beautify
 const PluginJsfuck = jsfuckModule.default || jsfuckModule;
-const PluginBizhi = bizhiModule.default || bizhiModule; // 新增 BiZhi 插件引用
-const PluginDirectExecution = directExecutionModule?.default || directExecutionModule;
-const PluginRawExecution = rawExecutionModule?.default || rawExecutionModule;
-const PluginManualExtractor = manualExtractorModule?.default || manualExtractorModule;
-const PluginPatternExtractor = patternExtractorModule?.default || patternExtractorModule;
 
-// 参数读取
+// 读取命令行参数
 let encodeFile = 'input.js';
 let decodeFile = 'output.js';
-let forcePlugin = null;
 
-for (let i = 2; i < process.argv.length; i++) {
-  if (process.argv[i] === '-i' && i + 1 < process.argv.length) encodeFile = process.argv[++i];
-  else if (process.argv[i] === '-o' && i + 1 < process.argv.length) decodeFile = process.argv[++i];
-  else if (process.argv[i] === '-p' && i + 1 < process.argv.length) forcePlugin = process.argv[++i];
+for (let i = 2; i < process.argv.length; i += 2) {
+  if (process.argv[i] === '-i') {
+    encodeFile = process.argv[i + 1];
+  } else if (process.argv[i] === '-o') {
+    decodeFile = process.argv[i + 1];
+  }
 }
 
 console.log(`输入: ${encodeFile}`);
 console.log(`输出: ${decodeFile}`);
-if (forcePlugin) console.log(`强制使用插件: ${forcePlugin}`);
 
+// 读取源代码
 const sourceCode = fs.readFileSync(encodeFile, { encoding: 'utf-8' });
 
 let processedCode = sourceCode;
 let pluginUsed = '';
 let time;
 
-// 特定插件强制处理
-if (forcePlugin) {
-  console.log(`按照要求强制使用插件: ${forcePlugin}`);
-  
+// 插件顺序执行
+const plugins = [
+  { name: 'obfuscator', plugin: PluginObfuscator },
+  { name: 'eval', plugin: PluginEval.unpack },
+  { name: 'jsfuck', plugin: PluginJsfuck.handle }, // 插在这里比较合理
+  { name: 'sojsonv7', plugin: PluginSojsonV7 },
+  { name: 'sojson', plugin: PluginSojson },
+  { name: 'jsconfuser', plugin: PluginJsconfuser },
+  { name: 'awsc', plugin: PluginAwsc },
+  { name: 'jjencode', plugin: PluginJjencode },
+  { name: 'aaencode', plugin: PluginAaencode },
+];
+
+for (const plugin of plugins) {
+  if (sourceCode.indexOf('smEcV') !== -1) {
+    break;
+  }
+
   try {
-    switch (forcePlugin.toLowerCase()) {
-      case 'jsfuck':
-        processedCode = PluginJsfuck.handle(sourceCode);
-        pluginUsed = 'jsfuck';
-        break;
-      case 'aaencode':
-      case 'kaomoji':
-        processedCode = PluginAaencode(sourceCode);
-        pluginUsed = 'aaencode';
-        break;
-      case 'jjencode':
-        processedCode = PluginJjencode(sourceCode);
-        pluginUsed = 'jjencode';
-        break;
-      case 'eval':
-        processedCode = PluginEval.unpack(sourceCode);
-        pluginUsed = 'eval';
-        break;
-      case 'obfuscator':
-        processedCode = PluginObfuscator(sourceCode);
-        pluginUsed = 'obfuscator';
-        break;
-      case 'sojson':
-        processedCode = PluginSojson(sourceCode);
-        pluginUsed = 'sojson';
-        break;
-      case 'sojsonv7':
-        processedCode = PluginSojsonV7(sourceCode);
-        pluginUsed = 'sojsonv7';
-        break;
-      case 'jsconfuser':
-        processedCode = PluginJsconfuser(sourceCode);
-        pluginUsed = 'jsconfuser';
-        break;
-      case 'awsc':
-        processedCode = PluginAwsc(sourceCode);
-        pluginUsed = 'awsc';
-        break;
-      case 'bizhi': // 新增 BiZhi 插件支持
-        processedCode = PluginBizhi(sourceCode);
-        pluginUsed = 'bizhi';
-        break;
-      case 'direct':
-        if (PluginDirectExecution) {
-          processedCode = PluginDirectExecution.executeKaomoji(sourceCode);
-          pluginUsed = 'direct-execution';
-        } else {
-          console.log('未找到直接执行插件，跳过');
-        }
-        break;
-      case 'raw':
-        if (PluginRawExecution) {
-          processedCode = PluginRawExecution.executeRaw(sourceCode);
-          pluginUsed = 'raw-execution';
-        } else {
-          console.log('未找到原始执行插件，跳过');
-        }
-        break;
-      case 'manual':
-        if (PluginManualExtractor) {
-          processedCode = PluginManualExtractor.extractCode(sourceCode);
-          pluginUsed = 'manual-extractor';
-        } else {
-          console.log('未找到手动提取器插件，跳过');
-        }
-        break;
-      case 'pattern':
-        if (PluginPatternExtractor) {
-          processedCode = PluginPatternExtractor.extractFromPattern(sourceCode);
-          pluginUsed = 'pattern-extractor';
-        } else {
-          console.log('未找到模式提取器插件，跳过');
-        }
-        break;
-      default:
-        console.log(`未知插件: ${forcePlugin}，将正常执行解包流程`);
-        forcePlugin = null;
-    }
-    
-    if (processedCode && processedCode !== sourceCode) {
-      console.log(`强制使用插件 ${pluginUsed} 成功`);
-    } else {
-      console.log(`强制使用插件 ${forcePlugin} 未产生不同结果，将尝试其他插件`);
-      forcePlugin = null;
+    const code = plugin.plugin(sourceCode);
+    if (code && code !== processedCode) {
+      processedCode = code;
+      pluginUsed = plugin.name;
+      break;
     }
   } catch (error) {
-    console.error(`强制使用插件 ${forcePlugin} 时出错: ${error.message}`);
-    forcePlugin = null;
+    console.error(`插件 ${plugin.name} 处理时发生错误: ${error.message}`);
   }
 }
 
-// 只有在未指定强制插件或强制插件失败时才执行自动检测流程
-if (!forcePlugin || processedCode === sourceCode) {
-  // 首先检查是否是 BiZhi 脚本 - 添加特定检测
-  if (/ﾟωﾟﾉ=\s*\/｀ｍ´\）ﾉ\s*~┻━┻/.test(sourceCode) && 
-      (sourceCode.includes('emotionwp.com') || sourceCode.includes('壁纸解锁'))) {
-    console.log('检测到 BiZhi 壁纸解锁脚本，尝试使用专用插件...');
-    try {
-      const result = PluginBizhi(sourceCode);
-      if (result && result !== sourceCode) {
-        processedCode = result;
-        pluginUsed = 'bizhi';
-        console.log('使用 BiZhi 专用插件解密成功');
-      }
-    } catch (error) {
-      console.error(`BiZhi 插件处理错误: ${error.message}`);
-    }
-  }
-  // 然后尝试常规 AAEncode/Kaomoji 解码
-  else if (/ﾟωﾟ|ﾟДﾟ|ﾟΘﾟ/.test(sourceCode)) {
-    console.log('检测到 AAEncode/Kaomoji 混淆，尝试解密...');
-    
-    // 检查是否是 Mix 相关的脚本
-    if (sourceCode.includes('cdn-bm.camera360.com') || 
-        sourceCode.includes('bmall.camera360.com') || 
-        sourceCode.includes('mix-api.camera360.com')) {
-      console.log('检测到 Mix Camera360 相关配置，尝试使用模式提取器');
-      
-      // 直接使用模式提取器
-      if (PluginPatternExtractor) {
-        try {
-          const result = PluginPatternExtractor.extractFromPattern(sourceCode);
-          if (result && result !== sourceCode) {
-            processedCode = result;
-            pluginUsed = 'pattern-extractor (Auto)';
-            console.log('使用模式提取器解密成功');
-          }
-        } catch (error) {
-          console.error('模式提取器处理时发生错误:', error.message);
-        }
-      }
-    }
-    
-    // 如果模式提取器未能处理，按优先级尝试其他方法
-    if (processedCode === sourceCode) {
-      const kaomoji_plugins = [
-        { name: 'aaencode', handler: PluginAaencode, enabled: true },
-        { name: 'jsfuck', handler: PluginJsfuck?.handle, enabled: true },
-        { name: 'raw-execution', handler: PluginRawExecution?.executeRaw, enabled: !!PluginRawExecution },
-        { name: 'direct-execution', handler: PluginDirectExecution?.executeKaomoji, enabled: !!PluginDirectExecution },
-        { name: 'manual-extractor', handler: PluginManualExtractor?.extractCode, enabled: !!PluginManualExtractor },
-        { name: 'pattern-extractor', handler: PluginPatternExtractor?.extractFromPattern, enabled: !!PluginPatternExtractor }
-      ].filter(plugin => plugin.enabled);
-      
-      // 尝试所有可用的插件
-      for (const plugin of kaomoji_plugins) {
-        try {
-          console.log(`尝试使用 ${plugin.name} 插件解密...`);
-          const result = plugin.handler(sourceCode);
-          if (result && result !== sourceCode) {
-            processedCode = result;
-            pluginUsed = plugin.name;
-            console.log(`使用 ${plugin.name} 插件解密成功`);
-            break;
-          }
-        } catch (error) {
-          console.error(`${plugin.name} 处理时发生错误: ${error.message}`);
-        }
-      }
-    }
-  }
-  // 跳过无需解包的脚本
-  else if (PluginCommon.isNeverDecode(sourceCode)) {
-    console.log('检测到无需解包的脚本，直接格式化...');
-  } 
-  // 尝试其他插件
-  else {
-    const plugins = [
-      { name: 'obfuscator', plugin: PluginObfuscator },
-      { name: 'eval', plugin: PluginEval.unpack },
-      { name: 'sojsonv7', plugin: PluginSojsonV7 },
-      { name: 'sojson', plugin: PluginSojson },
-      { name: 'jsconfuser', plugin: PluginJsconfuser },
-      { name: 'awsc', plugin: PluginAwsc },
-      { name: 'jjencode', plugin: PluginJjencode },
-    ];
-
-    for (const plugin of plugins) {
-      try {
-        const code = plugin.plugin(processedCode);
-        if (code && code !== processedCode) {
-          processedCode = code;
-          pluginUsed = plugin.name;
-          console.log(`插件 ${plugin.name} 成功处理`);
-          break;
-        }
-      } catch (error) {
-        console.error(`插件 ${plugin.name} 处理时发生错误: ${error.message}`);
-      }
-    }
-  }
-}
-
+// 处理结果
 if (processedCode !== sourceCode) {
   time = new Date();
 
   const header = [
-    `// ${time.toISOString()}`,
-    "// Base: https://github.com/echo094/decode-js",
-    "// Modify: https://github.com/smallfawn/decode_action"
+    `//${time}`,
+    "//Base:https://github.com/echo094/decode-js",
+    "//Modify:https://github.com/smallfawn/decode_action"
   ].join('\n');
 
-  // 确保我们有一个有效的字符串进行格式化
-  const finalCode = typeof processedCode === 'string' 
-    ? await beautify.formatCode(processedCode)
-    : String(processedCode);
-    
-  const outputCode = header + '\n\n' + finalCode;
+  // 最后一步执行 js-beautify 格式化
+  const finalCode = await beautify.formatCode(processedCode); // <-- 正确调用
 
-  fs.writeFileSync(decodeFile, outputCode, 'utf-8');
-  console.log(`使用插件 ${pluginUsed} 成功处理并写入文件 ${decodeFile}`);
+  const outputCode = header + '\n' + finalCode;
+
+  fs.writeFile(decodeFile, outputCode, (err) => {
+    if (err) throw err;
+    console.log(`使用插件 ${pluginUsed} 成功处理并格式化写入文件 ${decodeFile}`);
+  });
 } else {
   console.log(`所有插件处理后的代码与原代码一致，未写入文件。`);
 }
