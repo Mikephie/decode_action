@@ -24,6 +24,58 @@ function unpack(packedCode) {
   }
 }
 
+function formatCode(code) {
+  try {
+    const ast = parse(code, { sourceType: 'module', plugins: ['jsx'] });
+
+    let hasBaseConfig = false;
+
+    traverse(ast, {
+      VariableDeclaration(path) {
+        const firstDecl = path.node.declarations[0];
+        if (firstDecl && ['names', 'productName', 'productType'].includes(firstDecl.id.name)) {
+          if (!hasBaseConfig) {
+            path.addComment('leading', ' 基础配置变量');
+            hasBaseConfig = true;
+          }
+        }
+      },
+      AssignmentExpression(path) {
+        if (path.node.left.object?.name === 'obj' && path.node.left.property?.name === 'subscriber') {
+          path.addComment('leading', ' 订阅配置');
+        }
+      },
+      CallExpression(path) {
+        if (path.node.callee.property?.name === 'notify') {
+          path.addComment('leading', ' 通知配置');
+        }
+      },
+    });
+
+    let formatted = generator(ast, {
+      retainLines: false,
+      comments: true,
+      compact: false,
+      indent: { style: '  ' },
+    }).code;
+
+    formatted = formatted
+      .replace(/;/g, ';\n')
+      .replace(/([{}])/g, '$1\n')
+      .replace(/,\s*/g, ', ')
+      .replace(/:\s*/g, ': ')
+      .replace(/\n{2,}/g, '\n\n')
+      .replace(/(let|var|const)\s+/g, '\n$1 ')
+      .replace(/\/\/\s*([^\n]+)\n/g, '// $1\n')
+      .replace(/\$done\(\{\s*(.*?)\s*\}\);/g, '\n$done({ $1 });\n')
+      .replace(/\{\n+/g, '{\n')
+      .replace(/\[\s*\n\s*/g, '[\n  ')
+      .replace(/\n\s*\]/g, '\n]')
+      .replace(/([a-zA-Z_$][0-9a-zA-Z_$]*)\s*=\s*/g, '$1 = ')
+      .replace(/,\s*([^\s])/g, ', $1')
+      .replace(/\s+$/gm, '')
+      .replace(/^\s+$/gm, '');
+
     const header =
       `// Generated at ${new Date().toISOString()}\n` +
       '// Base: https://github.com/echo094/decode-js\n' +
