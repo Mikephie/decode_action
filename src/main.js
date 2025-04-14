@@ -51,9 +51,9 @@ let time;
 
 // 插件顺序执行
 const plugins = [
+  { name: 'jsfuck', plugin: PluginJsfuck.handle }, // 必须放前面优先识别
   { name: 'obfuscator', plugin: PluginObfuscator },
   { name: 'eval', plugin: PluginEval.unpack },
-  { name: 'jsfuck', plugin: PluginJsfuck.handle }, // 插在这里比较合理
   { name: 'sojsonv7', plugin: PluginSojsonV7 },
   { name: 'sojson', plugin: PluginSojson },
   { name: 'jsconfuser', plugin: PluginJsconfuser },
