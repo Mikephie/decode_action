@@ -1,265 +1,269 @@
 /**
- * 增强版AAEncode解密插件
- * 用于解密使用日语颜文字(Kaomoji)混淆的JavaScript
- * 支持多种变体和模式
+ * AADecoder JavaScript
+ * 基于 PHP 版本的 AADecoder 移植
+ * 原作者: Andrey Izman <izmanw@gmail.com>
+ * 原始版本: https://github.com/mervick/php-aaencoder
+ * 
+ * 该类能够解码 AAEncode 混淆的 JavaScript 代码
+ * 不使用 eval，完全基于模式匹配和替换
  */
 
-import { VM } from 'vm2';
+class AADecoder {
+  // AAEncoded 代码的特征开始部分
+  static BEGIN_CODE = "ﾟωﾟﾉ=/｀ｍ´）ﾉ~┻━┻/['_'];o=(ﾟｰﾟ)=_=3;c=(ﾟΘﾟ)=(ﾟｰﾟ)-(ﾟｰﾟ);(ﾟДﾟ)=(ﾟΘﾟ)=(o^_^o)/(o^_^o);(ﾟДﾟ)={ﾟΘﾟ:'_',ﾟωﾟﾉ:((ﾟωﾟﾉ==3)+'_')[ﾟΘﾟ],ﾟｰﾟﾉ:(ﾟωﾟﾉ+'_')[o^_^o-(ﾟΘﾟ)],ﾟДﾟﾉ:((ﾟｰﾟ==3)+'_')[ﾟｰﾟ]};(ﾟДﾟ)[ﾟΘﾟ]=((ﾟωﾟﾉ==3)+'_')[c^_^o];(ﾟДﾟ)['c']=((ﾟДﾟ)+'_')[(ﾟｰﾟ)+(ﾟｰﾟ)-(ﾟΘﾟ)];(ﾟДﾟ)['o']=((ﾟДﾟ)+'_')[ﾟΘﾟ];(ﾟoﾟ)=(ﾟДﾟ)['c']+(ﾟДﾟ)['o']+(ﾟωﾟﾉ+'_')[ﾟΘﾟ]+((ﾟωﾟﾉ==3)+'_')[ﾟｰﾟ]+((ﾟДﾟ)+'_')[(ﾟｰﾟ)+(ﾟｰﾟ)]+((ﾟｰﾟ==3)+'_')[ﾟΘﾟ]+((ﾟｰﾟ==3)+'_')[(ﾟｰﾟ)-(ﾟΘﾟ)]+(ﾟДﾟ)['c']+((ﾟДﾟ)+'_')[(ﾟｰﾟ)+(ﾟｰﾟ)]+(ﾟДﾟ)['o']+((ﾟｰﾟ==3)+'_')[ﾟΘﾟ];(ﾟДﾟ)['_']=(o^_^o)[ﾟoﾟ][ﾟoﾟ];(ﾟεﾟ)=((ﾟｰﾟ==3)+'_')[ﾟΘﾟ]+(ﾟДﾟ).ﾟДﾟﾉ+((ﾟДﾟ)+'_')[(ﾟｰﾟ)+(ﾟｰﾟ)]+((ﾟｰﾟ==3)+'_')[o^_^o-ﾟΘﾟ]+((ﾟｰﾟ==3)+'_')[ﾟΘﾟ]+(ﾟωﾟﾉ+'_')[ﾟΘﾟ];(ﾟｰﾟ)+=(ﾟΘﾟ);(ﾟДﾟ)[ﾟεﾟ]='\\\\';(ﾟДﾟ).ﾟΘﾟﾉ=(ﾟДﾟ+ﾟｰﾟ)[o^_^o-(ﾟΘﾟ)];(oﾟｰﾟo)=(ﾟωﾟﾉ+'_')[c^_^o];(ﾟДﾟ)[ﾟoﾟ]='\\\"';(ﾟДﾟ)['_']((ﾟДﾟ)['_'](ﾟεﾟ+(ﾟДﾟ)[ﾟoﾟ]+";
 
-/**
- * 检测脚本是否为AAEncode混淆
- * @param {string} code - 要检测的代码
- * @returns {boolean} - 是否为AAEncode混淆
- */
-function isAAEncode(code) {
-  if (typeof code !== 'string') return false;
-  
-  // 基本特征检测 - AAEncode通常包含特定的颜文字模式
-  const hasBasicPattern = /ﾟωﾟﾉ\s*=/.test(code) || 
-                         (/ﾟДﾟ/.test(code) && /ﾟΘﾟ/.test(code));
-  
-  // 结构特征检测 - 典型的AAEncode有特定的函数调用模式
-  const hasStructurePattern = /\(ﾟДﾟ\)\s*\[\s*['"]?_['"]?\s*\]/.test(code) || 
-                             /\(ﾟДﾟ\)\s*\[\s*ﾟoﾟ\s*\]/.test(code);
-  
-  return hasBasicPattern && hasStructurePattern;
-}
+  // AAEncoded 代码的特征结束部分
+  static END_CODE = "(ﾟДﾟ)[ﾟoﾟ])(ﾟΘﾟ))('_');";
 
-/**
- * 提取AAEncode混淆中最终执行的字符串
- * @param {string} code - AAEncode混淆代码
- * @returns {string|null} - 提取的字符串或null
- */
-function extractFinalString(code) {
-  // 尝试多种模式匹配
-  const patterns = [
-    // 模式1: 标准AAEncode结尾模式
-    /\(ﾟДﾟ\)\s*\[\s*ﾟoﾟ\s*\]\s*\)\s*\(\s*ﾟΘﾟ\s*\)\s*\)\s*\(\s*['"](.+?)['"]\s*\)/,
-    
-    // 模式2: Function._调用模式
-    /\(ﾟДﾟ\)\s*\[\s*['"]?_['"]?\s*\]\s*\(\s*\(ﾟДﾟ\)\s*\[\s*['"]?_['"]?\s*\][^)]*\)\s*\(\s*ﾟΘﾟ\s*\)\s*\)\s*\(\s*['"](.+?)['"]\s*\)/,
-    
-    // 模式3: 简单的结尾字符串模式
-    /\(['"]([^'"]+)['"]\)\s*;?\s*$/,
-    
-    // 模式4: 另一种Function._调用变体
-    /\(ﾟДﾟ\)\s*\[\s*'_'\s*\]\s*\([^)]+\)\s*\(ﾟΘﾟ\)\)\s*\(\s*['"]([^"']+)['"]\s*\)/
-  ];
-  
-  for (const pattern of patterns) {
-    try {
-      const match = code.match(pattern);
-      if (match && match[1] && match[1].length > 0) {
-        return match[1];
+  // 字节映射表，将 AAEncode 表达式映射到对应的数字
+  static BYTES_MAPPING = {
+    '((ﾟｰﾟ)+(ﾟｰﾟ)+(ﾟΘﾟ))': 9,
+    '((o^_^o)+(o^_^o))': 6,
+    '((o^_^o)-(ﾟΘﾟ))': 2,
+    '((ﾟｰﾟ)+(o^_^o))': 7,
+    '((ﾟｰﾟ)+(ﾟΘﾟ))': 5,
+    '((ﾟｰﾟ)+(ﾟｰﾟ))': 8,
+    '(ﾟДﾟ).ﾟωﾟﾉ': 10,
+    '(ﾟДﾟ).ﾟΘﾟﾉ': 11,
+    '(ﾟДﾟ)[\'c\']': 12,
+    '(ﾟДﾟ).ﾟｰﾟﾉ': 13,
+    '(ﾟДﾟ).ﾟДﾟﾉ': 14,
+    '(ﾟДﾟ)[ﾟΘﾟ]': 15,
+    '(o^_^o)': 3,
+    '(c^_^o)': 0,
+    '(ﾟｰﾟ)': 4,
+    '(ﾟΘﾟ)': 1
+  };
+
+  // 原生表达式替换
+  static NATIVE_MAP = {
+    '-~': '1+',
+    '!': '1',
+    '[]': '0'
+  };
+
+  /**
+   * 解码 AAEncoded 的 JavaScript 代码
+   * @param {string} js - 包含 AAEncoded 代码的 JavaScript 字符串
+   * @returns {string} - 解码后的 JavaScript 代码
+   */
+  static decode(js) {
+    let result = js;
+    let encoded = '';
+    let start = 0;
+    let next = 0;
+
+    // 尝试查找并解码所有 AAEncoded 片段
+    while (this.hasAAEncoded(result, start, next, encoded)) {
+      let decoded = this.deobfuscate(encoded);
+      
+      // 确保解码后的代码以分号结尾
+      if (decoded.trim().charAt(decoded.trim().length - 1) !== ';') {
+        decoded += ';';
       }
-    } catch (e) {
-      // 忽略单个正则匹配错误，继续尝试其他模式
-      console.error(`[AADecode] 模式匹配错误: ${e.message}`);
+
+      // 替换原始代码中的 AAEncoded 部分
+      result = result.substring(0, start) + decoded + this.decode(result.substring(next));
+      break; // 因为递归调用了 decode，所以我们在这里退出循环
     }
-  }
-  
-  return null;
-}
 
-/**
- * 使用修改过的沙箱环境执行AAEncode代码
- * @param {string} code - AAEncode混淆代码
- * @returns {string|null} - 执行结果或null
- */
-function executeInSandbox(code) {
-  try {
-    // 创建一个安全的VM2沙箱
-    const vm = new VM({
-      timeout: 5000,
-      sandbox: {
-        console: {
-          log: () => {},
-          error: () => {},
-          warn: () => {}
+    return result;
+  }
+
+  /**
+   * 解除混淆，将 AAEncoded 代码转换回原始 JavaScript
+   * @param {string} js - AAEncoded 代码片段
+   * @returns {string} - 解码后的 JavaScript 代码
+   */
+  static deobfuscate(js) {
+    // 使用字节映射替换模式
+    for (const [pattern, byte] of Object.entries(this.BYTES_MAPPING)) {
+      // 使用正则表达式的 split 和 join 替换所有匹配项
+      const parts = js.split(new RegExp(this.escapeRegExp(pattern), 'g'));
+      js = parts.join(byte);
+    }
+
+    const chars = [];
+    const hex = '(oﾟｰﾟo)+';
+    const hexLen = hex.length;
+
+    // 处理原生表达式替换
+    for (const [search, replace] of Object.entries(this.NATIVE_MAP)) {
+      js = js.replace(new RegExp(this.escapeRegExp(search), 'g'), replace);
+    }
+
+    // 根据 '(ﾟДﾟ)[ﾟεﾟ]+' 分割代码
+    const blocks = js.split(new RegExp(this.escapeRegExp('(ﾟДﾟ)[ﾟεﾟ]+'), 'g'));
+    
+    for (let block of blocks) {
+      // 移除前后的加号和空格
+      block = block.trim().replace(/^\+|\+$/g, '');
+      
+      if (block === '') continue;
+      
+      // 替换原生表达式
+      for (const [search, replace] of Object.entries(this.NATIVE_MAP)) {
+        block = block.replace(new RegExp(this.escapeRegExp(search), 'g'), replace);
+      }
+      
+      // 检查是否为十六进制表示
+      const isHex = block.substring(0, hexLen) === hex;
+      let code = 0;
+      
+      if (isHex) {
+        // 处理十六进制代码
+        const hexValue = this.convertBlock(block.substring(hexLen), this.calculateExpression, num => num.toString(16));
+        code = parseInt(hexValue, 16);
+      } else {
+        // 处理八进制代码
+        const octValue = this.convertBlock(block, this.calculateExpression, num => num.toString(8));
+        code = parseInt(octValue, 8);
+      }
+      
+      // 转换代码点为字符
+      chars.push(String.fromCodePoint(code));
+    }
+    
+    return chars.join('');
+  }
+
+  /**
+   * 检测字符串中是否包含 AAEncoded 代码
+   * @param {string} js - JavaScript 代码
+   * @param {number} start - 开始位置的引用
+   * @param {number} next - 下一个位置的引用
+   * @param {string} encoded - 编码部分的引用
+   * @returns {boolean} - 是否找到 AAEncoded 代码
+   */
+  static hasAAEncoded(js, start = 0, next = 0, encoded = '') {
+    // 查找 AAEncoded 的特征开始部分
+    while ((start = js.indexOf('ﾟωﾟﾉ', start)) !== -1) {
+      // 清除注释和空格
+      const clear = js.substring(start)
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/[\x03-\x20]/g, '');
+      
+      const len = this.BEGIN_CODE.length;
+      
+      // 检查是否匹配开始和结束标记
+      if (clear.substring(0, len) === this.BEGIN_CODE && 
+          clear.indexOf(this.END_CODE, len) !== -1) {
+        
+        // 查找关键点，这里简化了查找逻辑
+        const matches = this.findOccurrences(js, 'ﾟoﾟ', start);
+        
+        if (matches && matches.length >= 2) {
+          let beginAt = matches[0];
+          let endAt = matches[1];
+          
+          // 调整边界
+          beginAt = js.indexOf('+', beginAt);
+          endAt = js.lastIndexOf('(', endAt);
+          
+          next = js.indexOf(';', endAt) + 1;
+          
+          // 提取编码部分
+          encoded = js.substring(beginAt, endAt).replace(/[\x03-\x20]/g, '');
+          return true;
         }
       }
-    });
+      
+      start += 1; // 继续搜索
+    }
     
-    // 修改代码以捕获结果
-    const modifiedCode = `
-      (function() {
-        // 设置捕获变量
-        let result = null;
-        
-        // 修改Function和eval来捕获结果
-        const originalFunction = Function;
-        const originalEval = eval;
-        
-        // 替换eval函数
-        eval = function(str) {
-          if (typeof str === 'string') {
-            result = str;
-          }
-          return str;
-        };
-        
-        // 替换Function.prototype._方法
-        Function.prototype._ = function(str) {
-          if (typeof str === 'string') {
-            result = str;
-          }
-          return this;
-        };
-        
-        // 包装AAEncode代码
-        try {
-          ${code}
-        } catch(e) {
-          // 忽略执行错误
-        }
-        
-        // 返回捕获的结果
-        return result;
-      })()
-    `;
-    
-    return vm.run(modifiedCode);
-  } catch (e) {
-    console.error(`[AADecode] 沙箱执行错误: ${e.message}`);
-    return null;
+    return false;
   }
-}
 
-/**
- * 通过替换关键部分来解码AAEncode
- * @param {string} code - AAEncode混淆代码
- * @returns {string|null} - 解码结果或null
- */
-function decodeByReplacement(code) {
-  try {
-    // 替换最终执行部分，从而捕获要执行的字符串
-    const modifiedCode = code.replace(
-      /\(ﾟДﾟ\)\s*\[\s*ﾟoﾟ\s*\]\s*\)\s*\(\s*ﾟΘﾟ\s*\)\s*\)\s*\(\s*['"](.+?)['"]\s*\)/g,
-      "return '$1';"
-    );
-    
-    if (modifiedCode !== code) {
-      // 如果代码被成功修改，创建一个函数来执行它
-      const vm = new VM({
-        timeout: 3000,
-        sandbox: {}
+  /**
+   * 转换代码块
+   * @param {string} block - 代码块
+   * @param {Function} calcFunc - 计算表达式的函数
+   * @param {Function} convertFunc - 转换数字的函数
+   * @returns {string} - 转换后的字符串
+   */
+  static convertBlock(block, calcFunc, convertFunc) {
+    // 先计算所有括号内的表达式
+    while (block.match(/\([0-9\-\+\*\/]+\)/)) {
+      block = block.replace(/\([0-9\-\+\*\/]+\)/g, match => {
+        return calcFunc(match);
       });
+    }
+    
+    // 分割和处理每个数字
+    const split = [];
+    for (const num of block.split('+')) {
+      if (num === '') continue;
+      split.push(convertFunc(parseInt(num.trim())));
+    }
+    
+    return split.join('');
+  }
+
+  /**
+   * 计算数学表达式
+   * @param {string} expr - 数学表达式
+   * @returns {number} - 计算结果
+   */
+  static calculateExpression(expr) {
+    // 安全地计算表达式，不使用 eval
+    // 这里只实现了四则运算的简单版本
+    try {
+      // 移除括号
+      expr = expr.replace(/[()]/g, '');
       
-      const wrappedCode = `
-        (function() {
-          try {
-            ${modifiedCode}
-          } catch(e) {
-            return null;
-          }
-        })()
-      `;
+      // 处理乘除
+      while (expr.match(/[0-9]+[\*\/][0-9]+/)) {
+        expr = expr.replace(/([0-9]+)([\*\/])([0-9]+)/, (_, a, op, b) => {
+          return op === '*' ? Number(a) * Number(b) : Math.floor(Number(a) / Number(b));
+        });
+      }
       
-      return vm.run(wrappedCode);
+      // 处理加减
+      while (expr.match(/[0-9]+[\+\-][0-9]+/)) {
+        expr = expr.replace(/([0-9]+)([\+\-])([0-9]+)/, (_, a, op, b) => {
+          return op === '+' ? Number(a) + Number(b) : Number(a) - Number(b);
+        });
+      }
+      
+      return Number(expr);
+    } catch (e) {
+      console.error('计算表达式时出错:', e);
+      return 0;
     }
-  } catch (e) {
-    console.error(`[AADecode] 替换解码错误: ${e.message}`);
   }
-  
-  return null;
-}
 
-/**
- * 使用Function.prototype._补丁方法解码
- * @param {string} code - AAEncode混淆代码
- * @returns {string|null} - 解码结果或null
- */
-function decodeWithFunctionPatch(code) {
-  try {
-    const patchedCode = `
-      (function() {
-        // 创建捕获变量
-        var capturedResult = null;
-        
-        // 给Function.prototype打补丁
-        Function.prototype._ = function(str) {
-          capturedResult = str;
-          return this;
-        };
-        
-        // 执行原始代码
-        try {
-          ${code}
-        } catch(e) {
-          // 忽略错误
-        }
-        
-        return capturedResult;
-      })()
-    `;
+  /**
+   * 在字符串中查找指定子串的多次出现位置
+   * @param {string} haystack - 要搜索的字符串
+   * @param {string} needle - 要查找的子串
+   * @param {number} offset - 开始搜索的位置
+   * @returns {Array} - 找到的位置数组
+   */
+  static findOccurrences(haystack, needle, offset = 0) {
+    const matches = [];
+    let pos = offset;
     
-    const vm = new VM({
-      timeout: 3000,
-      sandbox: {}
-    });
+    // 查找多次出现
+    for (let i = 0; i < 10 && pos !== -1; i++) {
+      pos = haystack.indexOf(needle, pos);
+      if (pos !== -1) {
+        matches.push(pos);
+        pos += 1;
+      }
+    }
     
-    return vm.run(patchedCode);
-  } catch (e) {
-    console.error(`[AADecode] Function补丁错误: ${e.message}`);
-    return null;
+    return matches.length >= 2 ? [matches[matches.length - 2], matches[matches.length - 1]] : null;
+  }
+
+  /**
+   * 转义正则表达式中的特殊字符
+   * @param {string} string - 要转义的字符串
+   * @returns {string} - 转义后的字符串
+   */
+  static escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 }
 
-/**
- * 主解码函数 - 尝试多种方法解码AAEncode
- * @param {string} code - 要解码的代码
- * @returns {string|null} - 解码后的代码或null
- */
-function decodeAAencode(code) {
-  if (!code || typeof code !== 'string') {
-    console.log('[AADecode] 无效的输入');
-    return null;
-  }
-  
-  // 检查是否为AAEncode
-  if (!isAAEncode(code)) {
-    console.log('[AADecode] 不是AAEncode混淆的代码');
-    return null;
-  }
-  
-  console.log('[AADecode] 检测到AAEncode混淆，开始解密...');
-  
-  try {
-    // 方法1: 直接从代码中提取最终字符串
-    const extractedString = extractFinalString(code);
-    if (extractedString) {
-      console.log('[AADecode] 通过模式匹配成功提取字符串');
-      return extractedString;
-    }
-    
-    // 方法2: 通过替换关键部分解码
-    const replacementResult = decodeByReplacement(code);
-    if (replacementResult && typeof replacementResult === 'string' && replacementResult.length > 0) {
-      console.log('[AADecode] 通过替换方法成功解码');
-      return replacementResult;
-    }
-    
-    // 方法3: 在沙箱中执行并捕获结果
-    const sandboxResult = executeInSandbox(code);
-    if (sandboxResult && typeof sandboxResult === 'string' && sandboxResult.length > 0) {
-      console.log('[AADecode] 通过沙箱执行成功解码');
-      return sandboxResult;
-    }
-    
-    // 方法4: 使用Function.prototype._补丁
-    const patchResult = decodeWithFunctionPatch(code);
-    if (patchResult && typeof patchResult === 'string' && patchResult.length > 0) {
-      console.log('[AADecode] 通过Function原型补丁成功解码');
-      return patchResult;
-    }
-    
-    console.log('[AADecode] 所有解码方法均失败');
-    return null;
-  } catch (error) {
-    console.error('[AADecode] 解码过程中发生错误:', error);
-    return null;
-  }
-}
-
-// 导出解码函数
-export default decodeAAencode;
+// 导出 AADecoder 类
+export default AADecoder;
