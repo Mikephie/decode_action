@@ -1,7 +1,6 @@
 import fs from 'fs';
 import process from 'process';
 
-// 动态导入插件模块
 const commonModule = await import('./plugin/common.js');
 const jjencodeModule = await import('./plugin/jjencode.js');
 const sojsonModule = await import('./plugin/sojson.js');
@@ -14,7 +13,6 @@ const evalModule = await import('./plugin/eval.js');
 const beautifyModule = await import('./plugin/js-beautify.js');
 const jsfuckModule = await import('./plugin/jsfuck.js');
 
-// 提取 default 导出
 const PluginCommon = commonModule.default || commonModule;
 const PluginJjencode = jjencodeModule.default || jjencodeModule;
 const PluginSojson = sojsonModule.default || sojsonModule;
@@ -27,7 +25,6 @@ const PluginEval = evalModule.default || evalModule;
 const beautify = beautifyModule.default || beautifyModule;
 const PluginJsfuck = jsfuckModule.default || jsfuckModule;
 
-// 参数读取
 let encodeFile = 'input.js';
 let decodeFile = 'output.js';
 
@@ -45,22 +42,23 @@ let processedCode = sourceCode;
 let pluginUsed = '';
 let time;
 
-// 跳过无需解包的脚本
-if (PluginCommon.isNeverDecode(sourceCode)) {
-  console.log('检测到无需解包的脚本，直接格式化...');
-} else {
-  const plugins = [
-    { name: 'jsfuck', plugin: PluginJsfuck.handle },
-    { name: 'obfuscator', plugin: PluginObfuscator },
-    { name: 'eval', plugin: PluginEval.unpack },
-    { name: 'sojsonv7', plugin: PluginSojsonV7 },
-    { name: 'sojson', plugin: PluginSojson },
-    { name: 'jsconfuser', plugin: PluginJsconfuser },
-    { name: 'awsc', plugin: PluginAwsc },
-    { name: 'jjencode', plugin: PluginJjencode },
-    { name: 'aaencode', plugin: PluginAaencode },
-  ];
+const plugins = [
+  { name: 'jsfuck', plugin: PluginJsfuck.handle },
+  { name: 'obfuscator', plugin: PluginObfuscator },
+  { name: 'eval', plugin: PluginEval.unpack },
+  { name: 'sojsonv7', plugin: PluginSojsonV7 },
+  { name: 'sojson', plugin: PluginSojson },
+  { name: 'jsconfuser', plugin: PluginJsconfuser },
+  { name: 'awsc', plugin: PluginAwsc },
+  { name: 'jjencode', plugin: PluginJjencode },
+  { name: 'aaencode', plugin: PluginAaencode },
+];
 
+if (PluginCommon.isNeverDecode(sourceCode)) {
+  console.log('检测到无需解包的脚本，尝试走 jsfuck handle...');
+  processedCode = PluginJsfuck.handle(sourceCode);
+  pluginUsed = 'jsfuck';
+} else {
   for (const plugin of plugins) {
     try {
       const code = plugin.plugin(processedCode);
