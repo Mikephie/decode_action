@@ -1,6 +1,4 @@
-// plugin/jsfuck.js
-
-import { isKaomojiFuck, simpleFormat } from './common.js';
+import { isKaomojiFuck, simpleFormat } from './common.js'
 
 export function handle(code) {
   if (!isKaomojiFuck(code)) {
@@ -26,7 +24,7 @@ export function handle(code) {
       return result;
     }
   } catch (e) {
-    console.log('解密失败，自动使用 simpleFormat 降级处理:', e.message);
+    console.log('解密失败，自动使用 simpleFormat 降级处理');
     return simpleFormat(code);
   }
 
@@ -35,4 +33,4 @@ export function handle(code) {
 
 export default {
   handle
-};
+}
