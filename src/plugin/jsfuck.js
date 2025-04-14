@@ -1,18 +1,34 @@
-if (isKaomojiFuck(code)) {
-   try {
-      const fakeWindow = {};  // 无副作用环境
-      const fakeEval = (payload) => payload;
+export function handle(code) {
+  if (!isKaomojiFuck(code)) {
+    return code;
+  }
 
-      const evalCode = `
-        (function(window, self) {
-          return ${code}
-        })(Object.create(null), Object.create(null))
-      `;
+  console.log('检测到 JSFuck 或 Kaomoji 混淆，尝试解密...');
 
-      const result = Function('"use strict";return (' + evalCode + ')')();
+  try {
+    const fakeWindow = {};
+    const fakeEval = (payload) => payload;
 
+    const evalCode = `
+      (function(window, self) {
+        return ${code}
+      })(Object.create(null), Object.create(null))
+    `;
+
+    const result = Function('"use strict";return (' + evalCode + ')')();
+
+    if (typeof result === 'string' && result.length > 0) {
+      console.log('解密成功');
       return result;
-   } catch(e) {
-      return simpleFormat(code);
-   }
+    }
+  } catch (e) {
+    console.log('解密失败，自动使用 simpleFormat 降级处理');
+    return simpleFormat(code);
+  }
+
+  return code;
+}
+
+export default {
+  handle
 }
