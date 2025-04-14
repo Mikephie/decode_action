@@ -11,6 +11,17 @@ export function isKaomojiFuck(code) {
 }
 
 /**
+ * 简单格式化备用
+ */
+export function simpleFormat(code) {
+  return code
+    .replace(/;/g, ';\n')
+    .replace(/{/g, '{\n')
+    .replace(/}/g, '\n}')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+}
+
+/**
  * 检测是否为不需要解包的脚本（自动跳过）
  */
 export function isNeverDecode(code) {
@@ -21,17 +32,6 @@ export function isNeverDecode(code) {
     return true
   }
   return false
-}
-
-/**
- * 简单格式化备用
- */
-export function simpleFormat(code) {
-  return code
-    .replace(/;/g, ';\n')
-    .replace(/{/g, '{\n')
-    .replace(/}/g, '\n}')
-    .replace(/\n\s*\n\s*\n/g, '\n\n')
 }
 
 /**
