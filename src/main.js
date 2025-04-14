@@ -24,7 +24,7 @@ const PluginAwsc = awscModule.default || awscModule;
 const PluginJsconfuser = jsconfuserModule.default || jsconfuserModule;
 const PluginAaencode = jsaaencodeModule.default || jsaaencodeModule;
 const PluginEval = evalModule.default || evalModule;
-const PluginBeautify = beautifyModule.default || beautifyModule;  // <-- 提取 js-beautify
+const beautify = beautifyModule.default || beautifyModule;  // <-- 提取 js-beautify
 const PluginJsfuck = jsfuckModule.default || jsfuckModule;
 
 // 读取命令行参数
