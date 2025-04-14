@@ -1,6 +1,6 @@
 // plugin/jsfuck.js
 
-import { isKaomojiFuck, simpleFormat } from './common.js'
+import { isKaomojiFuck, simpleFormat } from './common.js';
 
 export function handle(code) {
   if (!isKaomojiFuck(code)) {
@@ -35,4 +35,4 @@ export function handle(code) {
 
 export default {
   handle
-}
+};
