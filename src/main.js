@@ -18,6 +18,7 @@ const jsfuckModule = await import('./plugin/jsfuck.js');
 let directExecutionModule = null;
 let rawExecutionModule = null;
 let manualExtractorModule = null;
+let patternExtractorModule = null;
 
 try {
   directExecutionModule = await import('./plugin/direct-execution.js');
@@ -40,6 +41,13 @@ try {
   // 忽略错误，表示插件不存在
 }
 
+try {
+  patternExtractorModule = await import('./plugin/pattern-extractor.js');
+  console.log('已加载模式提取器插件');
+} catch (e) {
+  // 忽略错误，表示插件不存在
+}
+
 // 提取 default 导出
 const PluginCommon = commonModule.default || commonModule;
 const PluginJjencode = jjencodeModule.default || jjencodeModule;
@@ -55,6 +63,7 @@ const PluginJsfuck = jsfuckModule.default || jsfuckModule;
 const PluginDirectExecution = directExecutionModule?.default || directExecutionModule;
 const PluginRawExecution = rawExecutionModule?.default || rawExecutionModule;
 const PluginManualExtractor = manualExtractorModule?.default || manualExtractorModule;
+const PluginPatternExtractor = patternExtractorModule?.default || patternExtractorModule;
 
 // 参数读取
 let encodeFile = 'input.js';
@@ -144,6 +153,14 @@ if (forcePlugin) {
           console.log('未找到手动提取器插件，跳过');
         }
         break;
+      case 'pattern':
+        if (PluginPatternExtractor) {
+          processedCode = PluginPatternExtractor.extractFromPattern(sourceCode);
+          pluginUsed = 'pattern-extractor';
+        } else {
+          console.log('未找到模式提取器插件，跳过');
+        }
+        break;
       default:
         console.log(`未知插件: ${forcePlugin}，将正常执行解包流程`);
         forcePlugin = null;
@@ -167,28 +184,52 @@ if (!forcePlugin || processedCode === sourceCode) {
   if (/ﾟωﾟ|ﾟДﾟ|ﾟΘﾟ/.test(sourceCode)) {
     console.log('检测到 AAEncode/Kaomoji 混淆，尝试解密...');
     
-    // 按优先级尝试不同方法解码
-    const kaomoji_plugins = [
-      { name: 'aaencode', handler: PluginAaencode, enabled: true },
-      { name: 'jsfuck', handler: PluginJsfuck?.handle, enabled: true },
-      { name: 'raw-execution', handler: PluginRawExecution?.executeRaw, enabled: !!PluginRawExecution },
-      { name: 'direct-execution', handler: PluginDirectExecution?.executeKaomoji, enabled: !!PluginDirectExecution },
-      { name: 'manual-extractor', handler: PluginManualExtractor?.extractCode, enabled: !!PluginManualExtractor }
-    ].filter(plugin => plugin.enabled);
-    
-    // 尝试所有可用的插件
-    for (const plugin of kaomoji_plugins) {
-      try {
-        console.log(`尝试使用 ${plugin.name} 插件解密...`);
-        const result = plugin.handler(sourceCode);
-        if (result && result !== sourceCode) {
-          processedCode = result;
-          pluginUsed = plugin.name;
-          console.log(`使用 ${plugin.name} 插件解密成功`);
-          break;
+    // 检查是否是 Mix 相关的脚本
+    if (sourceCode.includes('cdn-bm.camera360.com') || 
+        sourceCode.includes('bmall.camera360.com') || 
+        sourceCode.includes('mix-api.camera360.com')) {
+      console.log('检测到 Mix Camera360 相关配置，尝试使用模式提取器');
+      
+      // 直接使用模式提取器
+      if (PluginPatternExtractor) {
+        try {
+          const result = PluginPatternExtractor.extractFromPattern(sourceCode);
+          if (result && result !== sourceCode) {
+            processedCode = result;
+            pluginUsed = 'pattern-extractor (Auto)';
+            console.log('使用模式提取器解密成功');
+          }
+        } catch (error) {
+          console.error('模式提取器处理时发生错误:', error.message);
         }
-      } catch (error) {
-        console.error(`${plugin.name} 处理时发生错误: ${error.message}`);
+      }
+    }
+    
+    // 如果模式提取器未能处理，按优先级尝试其他方法
+    if (processedCode === sourceCode) {
+      const kaomoji_plugins = [
+        { name: 'aaencode', handler: PluginAaencode, enabled: true },
+        { name: 'jsfuck', handler: PluginJsfuck?.handle, enabled: true },
+        { name: 'raw-execution', handler: PluginRawExecution?.executeRaw, enabled: !!PluginRawExecution },
+        { name: 'direct-execution', handler: PluginDirectExecution?.executeKaomoji, enabled: !!PluginDirectExecution },
+        { name: 'manual-extractor', handler: PluginManualExtractor?.extractCode, enabled: !!PluginManualExtractor },
+        { name: 'pattern-extractor', handler: PluginPatternExtractor?.extractFromPattern, enabled: !!PluginPatternExtractor }
+      ].filter(plugin => plugin.enabled);
+      
+      // 尝试所有可用的插件
+      for (const plugin of kaomoji_plugins) {
+        try {
+          console.log(`尝试使用 ${plugin.name} 插件解密...`);
+          const result = plugin.handler(sourceCode);
+          if (result && result !== sourceCode) {
+            processedCode = result;
+            pluginUsed = plugin.name;
+            console.log(`使用 ${plugin.name} 插件解密成功`);
+            break;
+          }
+        } catch (error) {
+          console.error(`${plugin.name} 处理时发生错误: ${error.message}`);
+        }
       }
     }
   }
