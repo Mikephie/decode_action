@@ -17,10 +17,10 @@ export function executeRaw(code) {
     const tempFixedFile = path.join(process.cwd(), 'temp_fixed_kaomoji.js');
     fs.writeFileSync(tempFixedFile, fixedCode);
     
-    // 创建一个专门的执行脚本
+    // 创建一个专门的执行脚本 - 使用 ES Module 语法
     const executeScript = `
-    const fs = require('fs');
-    const path = require('path');
+    import fs from 'fs';
+    import path from 'path';
 
     // 读取修复后的代码
     const fixedCode = fs.readFileSync('${tempFixedFile.replace(/\\/g, '\\\\')}', 'utf-8');
@@ -28,13 +28,13 @@ export function executeRaw(code) {
     // 创建一个骨架结构，模拟执行环境
     try {
       // 创建全局变量作为结果容器
-      global._captured_result = null;
+      globalThis._captured_result = null;
       
       // 重新定义 Function.prototype._
       const originalFunctionPrototype_ = Function.prototype._;
       Function.prototype._ = function(arg) {
         // 捕获传递给方法的参数
-        global._captured_result = arg;
+        globalThis._captured_result = arg;
         return this;
       };
       
@@ -42,9 +42,9 @@ export function executeRaw(code) {
       eval(fixedCode);
       
       // 如果 _captured_result 有内容，打印出来
-      if (typeof global._captured_result === 'string') {
+      if (typeof globalThis._captured_result === 'string') {
         console.log("RESULT_START");
-        console.log(global._captured_result);
+        console.log(globalThis._captured_result);
         console.log("RESULT_END");
       } else {
         console.log("NO_RESULT_CAPTURED");
