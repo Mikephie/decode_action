@@ -9,7 +9,7 @@ const sojsonv7Module = await import('./plugin/sojsonv7.js');
 const obfuscatorModule = await import('./plugin/obfuscator.js');
 const awscModule = await import('./plugin/awsc.js');
 const jsconfuserModule = await import('./plugin/jsconfuser.js');
-const aaencodeModule = await import('./plugin/aaencode.js');
+const aadecodeModule = await import('./plugin/aadecode.js');
 const evalModule = await import('./plugin/eval.js');
 const beautifyModule = await import('./plugin/js-beautify.js');
 const jsfuckModule = await import('./plugin/jsfuck.js');
@@ -22,7 +22,7 @@ const PluginSojsonV7 = sojsonv7Module.default || sojsonv7Module;
 const PluginObfuscator = obfuscatorModule.default || obfuscatorModule;
 const PluginAwsc = awscModule.default || awscModule;
 const PluginJsconfuser = jsconfuserModule.default || jsconfuserModule;
-const PluginAaencode = aaencodeModule.default || aaencodeModule;
+const PluginAadecode = aadecodeModule.default || aadecodeModule;
 const PluginEval = evalModule.default || evalModule;
 const beautify = beautifyModule.default || beautifyModule;
 const PluginJsfuck = jsfuckModule.default || jsfuckModule;
@@ -52,7 +52,7 @@ let time;
 // 插件顺序执行
 const plugins = [
   { name: 'eval', plugin: PluginEval.unpack },
-  { name: 'aaencode', plugin: PluginAaencode.plugin },
+  { name: 'aadecode', plugin: PluginAadecode.plugin },
   { name: 'obfuscator', plugin: PluginObfuscator.plugin },
   { name: 'jsfuck', plugin: PluginJsfuck.handle },
   { name: 'sojsonv7', plugin: PluginSojsonV7.plugin },
