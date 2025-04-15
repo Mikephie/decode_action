@@ -1,24 +1,47 @@
 // AADecode Plugin (ES Module)
+
 /**
  * Decodes AA-encoded JavaScript
- * AADecode is a JavaScript obfuscation technique that encodes JavaScript code
- * into Japanese-style ASCII art
- * 
- * @param {string} t - The encoded string to decode
- * @returns {string} - The decoded string
+ * @param {string} code - The encoded string to decode
+ * @returns {string|null} - The decoded string or null if failed
  */
-function aadecode(t) {
-  // Remove unnecessary parts of the encoded string
-  t = t.replace(") ('_')", "");
-  t = t.replace("(ﾟДﾟ) ['_'] (", "return ");
-  
-  // Create a function from the modified string and execute it
-  const x = new Function(t);
-  const r = x();
-  
-  return r;
+function aadecode(code) {
+  try {
+    // Check if this is likely AA-encoded content
+    if (!(code.includes('ﾟДﾟ') || code.includes('(ﾟΘﾟ)'))) {
+      return null;
+    }
+    
+    // Remove unnecessary parts of the encoded string
+    code = code.replace(") ('_')", "");
+    code = code.replace("(ﾟДﾟ) ['_'] (", "return ");
+    
+    // Create a function from the modified string and execute it
+    const x = new Function(code);
+    const r = x();
+    
+    return r;
+  } catch (error) {
+    console.error('AADecode error:', error);
+    return null;
+  }
 }
 
-// Export the function
-export { aadecode };
-export default aadecode;
+/**
+ * The main.js code creates objects like { name: 'aaencode', plugin: PluginAaencode.plugin }
+ * and then calls plugin.plugin(), where plugin is PluginAaencode.plugin
+ * So PluginAaencode.plugin needs to have a .plugin property that is a function
+ */
+function pluginFunction(code) {
+  return aadecode(code);
+}
+
+// Add the plugin property to the plugin function itself
+pluginFunction.plugin = function(code) {
+  return aadecode(code);
+};
+
+// Export the plugin in the format expected by main.js
+export default {
+  plugin: pluginFunction
+};
