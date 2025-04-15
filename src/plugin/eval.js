@@ -7,73 +7,65 @@ const traverse = _traverse.default;
 import * as t from '@babel/types';
 
 /**
- * Plugin function for unpacking eval-based obfuscation
- * @param {string} code - Input code to unpack
- * @returns {string|null} - Unpacked code or null if not applicable
+ * Simple unpack function that replaces eval with a fake eval to capture the code
+ * @param {string} packedCode - Input code to unpack
+ * @returns {string|null} - Unpacked code or null if failed
  */
-async function plugin(code) {
+function unpack(packedCode) {
+  let unpacked = '';
+  const fakeEval = (code) => {
+    unpacked = code;
+    return code;
+  };
+
+  const modifiedCode = packedCode.replace(/eval\s*\(/, 'fakeEval(');
+
   try {
-    let ast = parse(code, { errorRecovery: true });
-    let lines = ast.program.body;
-    let data = null;
-    
-    for (let line of lines) {
-      if (t.isEmptyStatement(line)) {
-        continue;
-      }
-      if (data) {
-        return null;
-      }
-      if (
-        t.isCallExpression(line?.expression) &&
-        line.expression.callee?.name === 'eval' &&
-        line.expression.arguments.length === 1 &&
-        t.isCallExpression(line.expression.arguments[0])
-      ) {
-        data = t.expressionStatement(line.expression.arguments[0]);
-        continue;
-      }
-      return null;
-    }
-    
-    if (!data) {
-      return null;
-    }
-    
-    code = generator(data, { minified: true }).code;
-    return eval(code);
-  } catch (error) {
-    console.error('Error in eval unpack:', error);
+    const func = new Function('fakeEval', 'String', 'RegExp', modifiedCode);
+    func(fakeEval, String, RegExp);
+    return unpacked;
+  } catch (e) {
+    console.log('解包错误:', e);
     return null;
   }
 }
 
 /**
- * Packs code into a function expression
- * @param {string} code - The code to pack
- * @returns {string} - The packed code
+ * Recursively unpacks code with multiple layers of eval
+ * @param {string} code - Code to unpack
+ * @param {number} depth - Current recursion depth
+ * @returns {string} - Fully unpacked code or original if failed
  */
-function pack(code) {
-  let ast1 = parse('(function(){}())');
-  let ast2 = parse(code);
-  
-  traverse(ast1, {
-    FunctionExpression(path) {
-      let body = t.blockStatement(ast2.program.body);
-      path.replaceWith(t.functionExpression(null, [], body));
-      path.stop();
-    },
-  });
-  
-  code = generator(ast1, { minified: false }).code;
+function recursiveUnpack(code, depth = 0) {
+  if (depth > 10) return code;
+  console.log(`进行第 ${depth + 1} 层解包...`);
+
+  try {
+    let result = unpack(code);
+    if (result && result !== code) {
+      if (result.includes('eval(')) {
+        return recursiveUnpack(result, depth + 1);
+      }
+      return result;
+    }
+  } catch (e) {
+    console.log(`第 ${depth + 1} 层解包失败:`, e);
+  }
+
   return code;
 }
 
-// The main plugin export structured to be used in your application
-const unpack = plugin;
+/**
+ * The unpack property is actually a function directly
+ * The main.js code creates objects like { name: 'eval', plugin: PluginEval.unpack }
+ * and then calls plugin.plugin(), where plugin is PluginEval.unpack
+ * So PluginEval.unpack needs to have a .plugin property that is a function
+ */
+recursiveUnpack.plugin = function(code) {
+  return recursiveUnpack(code);
+};
 
-export default { 
-  plugin,
-  unpack,
-  pack
+// Export the plugin in the format expected by main.js
+export default {
+  unpack: recursiveUnpack
 };
