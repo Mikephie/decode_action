@@ -7,11 +7,11 @@ const traverse = _traverse.default;
 import * as t from '@babel/types';
 
 /**
- * Unpacks code that uses eval
- * @param {string} code - The code to unpack
- * @returns {*} - The result of evaluating the unpacked code, or null if unpacking fails
+ * Plugin function for unpacking eval-based obfuscation
+ * @param {string} code - Input code to unpack
+ * @returns {string|null} - Unpacked code or null if not applicable
  */
-async function unpackImpl(code) {
+async function plugin(code) {
   try {
     let ast = parse(code, { errorRecovery: true });
     let lines = ast.program.body;
@@ -53,7 +53,7 @@ async function unpackImpl(code) {
  * @param {string} code - The code to pack
  * @returns {string} - The packed code
  */
-function packImpl(code) {
+function pack(code) {
   let ast1 = parse('(function(){}())');
   let ast2 = parse(code);
   
@@ -69,8 +69,11 @@ function packImpl(code) {
   return code;
 }
 
-// This is the structure expected by the application
-export default {
-  unpack: unpackImpl,
-  pack: packImpl
+// The main plugin export structured to be used in your application
+const unpack = plugin;
+
+export default { 
+  plugin,
+  unpack,
+  pack
 };
