@@ -1,5 +1,10 @@
-// 这是 aadecode.js 文件的原始内容
-function aadecode(text) {
+/**
+ * 直接集成 jamtg 的 AA 解码器到插件系统
+ * 确保导出格式完全符合你的主脚本期望
+ */
+
+// 这是 jamtg 的原始解码函数，没有任何修改
+function jamtgAAdecode(text) {
   var evalPreamble = "(\uFF9F\u0414\uFF9F) ['_'] ( (\uFF9F\u0414\uFF9F) ['_'] (";
   var decodePreamble = "( (\uFF9F\u0414\uFF9F) ['_'] (";
   var evalPostamble = ") (\uFF9F\u0398\uFF9F)) ('_');";
@@ -86,3 +91,40 @@ function aadecode(text) {
     }
   }
 }
+
+// 检查代码是否是 AA 编码
+function isAAEncoded(code) {
+  return code.includes("ﾟωﾟﾉ") || code.includes("(ﾟДﾟ)");
+}
+
+// 插件接口 - 确保命名为 plugin，符合你的插件系统期望
+async function plugin(code) {
+  // 首先检查是否是 AA 编码
+  if (!isAAEncoded(code)) {
+    console.log("不是 AA 编码，跳过处理");
+    return null;
+  }
+  
+  try {
+    console.log("使用 jamtg 的原始函数进行 AA 解码...");
+    const result = jamtgAAdecode(code);
+    
+    if (result && result !== code) {
+      console.log("AA 解码成功");
+      return result;
+    } else {
+      console.log("解码结果与输入相同，可能不是 AA 编码");
+      return null;
+    }
+  } catch (error) {
+    console.error("AA 解码错误:", error.message);
+    return null;
+  }
+}
+
+// 导出插件，确保格式正确
+// ESM 格式导出
+export default { plugin };
+
+// 如果你的主脚本使用 CommonJS 格式，取消下面的注释
+// module.exports = { plugin };
