@@ -1,21 +1,121 @@
-//Tue Apr 15 2025 21:44:43 GMT+0000 (Coordinated Universal Time)
+//Tue Apr 15 2025 21:48:09 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
-eval(function(p, a, c, k, e, d) {
-  e = function(c) {
-    return (c < a ? "" : e(parseInt(c / a))) + ((c = c % a) > 35 ? String.fromCharCode(c + 29) : c.toString(36))
+let names = "ColorIdentifier";
+let productName = "proversion";
+let productType = "color_identifier_pro";
+let appVersion = null;
+let notifyState = true;
+let ua = true;
+let obj = JSON.parse($response.body);
+let $ = new Env(names);
+obj.subscriber = {
+  non_subscriptions: {},
+  first_seen: "2024-03-08T04:44:30Z",
+  original_application_version: appVersion,
+  other_purchases: {
+    [productType]: {
+      price: {
+        amount: 0,
+        currency: "USD",
+      },
+      display_name: null,
+      purchase_date: "2024-03-08T04:44:44Z",
+    },
+  },
+  management_url: null,
+  subscriptions: {},
+  entitlements: {},
+  original_purchase_date: "2024-03-08T04:44:14Z",
+  original_app_user_id: "$RCAnonymousID:0400000000000000000000000000000",
+  last_seen: "2024-03-08T04:44:30Z",
+};
+obj.subscriber.non_subscriptions[productType] = [{
+  id: "aaaaaaaaaa",
+  is_sandbox: false,
+  price: {
+    amount: 0,
+    currency: "USD",
+  },
+  display_name: null,
+  purchase_date: "2024-03-08T04:44:44Z",
+  original_purchase_date: "2024-03-08T04:44:44Z",
+  store: "app_store",
+  store_transaction_id: "280000000000000",
+}, ];
+obj.subscriber.entitlements[productName] = {
+  grace_period_expires_date: null,
+  purchase_date: "2024-03-08T04:44:44Z",
+  product_identifier: productType,
+  expires_date: null,
+};
+$.notify("XiaoMao_" + names + " 执行成功！", "", "Nice!已解锁成功，可关掉此脚本。", "https://i.pixiv.re/img-original/img/2022/12/19/00/06/12/103718184_p0.png");
+$done({
+  body: JSON.stringify(obj)
+});
+
+function Env(name) {
+  const isLoon = typeof $loon !== "undefined";
+  const isSurge = typeof $httpClient !== "undefined" && !isLoon;
+  const isQX = typeof $task !== "undefined";
+  const read = (key) => {
+    if (isLoon || isSurge) return $persistentStore.read(key);
+    if (isQX) return $prefs.valueForKey(key)
   };
-  if (!''.replace(/^/, String)) {
-    while (c--) d[e(c)] = k[c] || e(c);
-    k = [function(e) {
-      return d[e]
-    }];
-    e = function() {
-      return '\\w+'
-    };
-    c = 1
+  const write = (key, value) => {
+    if (isLoon || isSurge) return $persistentStore.write(key, value);
+    if (isQX) return $prefs.setValueForKey(key, value)
   };
-  while (c--)
-    if (k[c]) p = p.replace(new RegExp('\\b' + e(c) + '\\b', 'g'), k[c]);
-  return p
-}('2G(25(p,a,c,k,e,d){e=25(c){26(c<a?"":e(2J(c/a)))+((c=c%a)>35?28.2L(c+29):c.2K(36))};27(!\'\'.2b(/^/,28)){2c(c--)d[e(c)]=k[c]||e(c);k=[25(e){26 d[e]}];e=25(){26\'\\\\w+\'};c=1};2c(c--)27(k[c])p=p.2b(2a 2I(\'\\\\b\'+e(c)+\'\\\\b\',\'g\'),k[c]);26 p}(\'9 A="1Z";9 Y="24";9 q="1b";9 U=5;9 1a=Z;9 1g=Z;9 4=r.V($1f.l);9 $=1i J(A);4.I={L:{},1j:"a-d-f:e:K",1w:U,1s:{[q]:{N:{O:0,M:"S",},Q:5,F:"a-d-f:e:p",},},1u:5,1h:{},T:{},P:"a-d-f:e:1t",1r:"$1q:1p",1o:"a-d-f:e:K",};4.I.L[q]=[{1n:"1m",1l:1k,N:{O:0,M:"S",},Q:5,F:"a-d-f:e:p",P:"a-d-f:e:p",1v:"1e",1d:"1c",},];4.I.T[Y]={1P:5,F:"a-d-f:e:p",1y:q,1S:5,};$.n("1T"+A+" 1U！","","1V!1W，1X。","1Y://i.20.21/R-22/R/23/12/19/1x/1R/12/1Q.1O");$v({l:r.13(4)});1z J(14){2 8=z $1A!=="y";2 b=z $o!=="y"&&!8;2 c=z $s!=="y";2 B=(6)=>{3(8||b)j $W.B(6);3(c)j $18.1B(6)};2 C=(6,m)=>{3(8||b)j $W.C(6,m);3(c)j $18.1C(6,m)};2 n=(u="1D",t="",h="",1="",X=1)=>{3(8)$11.k(u,t,h,1);3(b)$11.k(u,t,h,{1});3(c)$n(u,t,h,{"1E-1":1,"1F-1":X})};2 D=(1,7)=>{3(8||b)$o.D(1,7);3(c){1.w=`1G`;$s.x(1).G((g)=>7(5,{},g.l))}};2 k=(1,7)=>{3(8||b)$o.k(1,7);3(c){1.w=`1H`;$s.x(1).G((g)=>7(5,{},g.l))}};2 E=(1,7)=>{3(8||b)$o.E(1,7);3(c){1.w="1I";$s.x(1).G((g)=>7(5,{},g.l))}};2 15=(10)=>r.V(10);2 16=(4)=>r.13(4);2 17=(4)=>{j 1J.1K(4).1L((6)=>`${6}=${4[6]}`).1M("&")};2 H=(h)=>1N.H(h);2 v=(m={})=>$v(m);j{14,B,C,n,D,k,E,15,16,17,H,v,}}\',2M,2N,\'|2O|2P|27|2Q|2R|2S|2T|2U|2W|3c|2X|2Y|2Z|44|30|31|32||26|33|34|37|38|39|3a|2H|2V|2F|2r|3e|2j|2d|2e|2f|2g|2o|2i|2k|2l|2m|2n|2h|2E|2q|2p|2s|2t|2u|2v|2w|2x|2y|2z|2A|2B|2C|2D|3b|3d|3E|3f|41|40||3Z|3Y|45|3W|42|3V||3T|3S|3R|3Q|3P|3O|3U|43|2a|47|46|4i|4h|4g|4f|4j|4d|4c|4b|4a|4e|49|48|3N|3X|25|3L|3u|3g|3h|3i|3j|3k|3l|3m|3n|3o|3p|3M|3q|3r|3s|3t|3v|3K|3w|3x|3y|3z|3A|3B|3C|3D|3F|3G|3H|3I\'.3J(\'|\'),0,{}))', 62, 268, '|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||function|return|if|String||new|replace|while|method|fetch|undefined|typeof|then|read|done|write|get|put|purchase_date|names|Env|subscriber|subtitle|30Z|non_subscriptions|currency|price|amount|original_purchase_date|display_name|img|USD|entitlements|appVersion|parse|log|task|eval|productType|RegExp|parseInt|toString|fromCharCode|62|129|url|const|obj|null|key|callback|isLoon|JSON|let|isSurge|isQX|03|08T04|resp|message|post|body|||value|notify|httpClient|44Z|persistentStore|2024|url2|title|true|setValueForKey|XiaoMao|open|media|GET|POST|PUT|Object|keys|map|console|png|grace_period_expires_date|103718184_p0|valueForKey|06|XiaoMao_|执行成功|Nice|已解锁成功|可关掉此脚本|https|ColorIdentifier|pixiv|productName|re|original|2022|proversion|split|expires_date|loon|join|00|response|app_store|store_transaction_id|280000000000000|color_identifier_pro|notifyState|ua|prefs|toStr|product_identifier|name|stringify|notification|str|queryStr|subscriptions||toObj|false|first_seen|original_application_version|store|14Z|other_purchases|original_app_user_id|RCAnonymousID|management_url|last_seen|id|aaaaaaaaaa|is_sandbox|0400000000000000000000000000000'.split('|'), 0, {}))
+  const notify = (title = "XiaoMao", subtitle = "", message = "", url = "", url2 = url) => {
+    if (isLoon) $notification.post(title, subtitle, message, url);
+    if (isSurge) $notification.post(title, subtitle, message, {
+      url
+    });
+    if (isQX) $notify(title, subtitle, message, {
+      "open-url": url,
+      "media-url": url2
+    })
+  };
+  const get = (url, callback) => {
+    if (isLoon || isSurge) $httpClient.get(url, callback);
+    if (isQX) {
+      url.method = `GET`;
+      $task.fetch(url).then((resp) => callback(null, {}, resp.body))
+    }
+  };
+  const post = (url, callback) => {
+    if (isLoon || isSurge) $httpClient.post(url, callback);
+    if (isQX) {
+      url.method = `POST`;
+      $task.fetch(url).then((resp) => callback(null, {}, resp.body))
+    }
+  };
+  const put = (url, callback) => {
+    if (isLoon || isSurge) $httpClient.put(url, callback);
+    if (isQX) {
+      url.method = "PUT";
+      $task.fetch(url).then((resp) => callback(null, {}, resp.body))
+    }
+  };
+  const toObj = (str) => JSON.parse(str);
+  const toStr = (obj) => JSON.stringify(obj);
+  const queryStr = (obj) => {
+    return Object.keys(obj).map((key) => `${key}=${obj[key]}`).join("&")
+  };
+  const log = (message) => console.log(message);
+  const done = (value = {}) => $done(value);
+  return {
+    name,
+    read,
+    write,
+    notify,
+    get,
+    post,
+    put,
+    toObj,
+    toStr,
+    queryStr,
+    log,
+    done,
+  }
+}
