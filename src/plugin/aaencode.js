@@ -1,43 +1,50 @@
-// aaencodeDecoder.mjs
+import { VM } from 'vm2';
 
-export function aaDecode(encoded) {
-  if (!encoded.match(/^ﾟωﾟ.+\('_'\);?$/)) {
-    throw new Error('Provided code is not valid AAEncode encoding');
-  }
+function isAAEncode(code) {
+  return /ﾟωﾟ|｀;´|´_ゝ`|＞＜|ﾟΘﾟ|ﾟｰﾟ|ﾟДﾟ|o\^_\^o|c\^_\^o/.test(code);
+}
 
-  const evalPreamble = 'return ';
-  encoded = encoded.replace(/^ﾟωﾟ.+\('_'\);?/, '');
-
-  const decodeMap = {
-    '(c^_^o)': '0',
-    '(ﾟΘﾟ)': '1',
-    '((o^_^o)-(ﾟΘﾟ))': '2',
-    '(o^_^o)': '3',
-    '(ﾟｰﾟ)': '4',
-    '((ﾟｰﾟ)+(ﾟΘﾟ))': '5',
-    '((o^_^o)+(o^_^o))': '6',
-    '((ﾟｰﾟ)+(o^_^o))': '7',
-    '((ﾟｰﾟ)+(ﾟｰﾟ))': '8',
-    '((ﾟｰﾟ)+(ﾟｰﾟ)+(ﾟΘﾟ))': '9'
-  };
-
-  const regex = /\(c\^_\^o\)|\(ﾟΘﾟ\)|\(o\^_\^o\)|\(ﾟｰﾟ\)|\(\(o\^_\^o\)-\(ﾟΘﾟ\)\)|\(\(ﾟｰﾟ\)\+\(ﾟΘﾟ\)\)|\(\(o\^_\^o\)\+\(o\^_\^o\)\)|\(\(ﾟｰﾟ\)\+\(o\^_\^o\)\)|\(\(ﾟｰﾟ\)\+\(ﾟｰﾟ\)\)|\(\(ﾟｰﾟ\)\+\(ﾟｰﾟ\)\+\(ﾟΘﾟ\)\)/g;
-
-  let decoded = encoded.replace(regex, match => decodeMap[match]);
-
-  decoded = decoded.replace(/\+/g, '');
-
-  const js = decoded.replace(/_/, evalPreamble);
-
+function sandboxEval(encodeCode) {
+  const vm = new VM({
+    timeout: 3000,
+    sandbox: {
+      console: {
+        log: () => {},
+        error: () => {},
+        warn: () => {}
+      }
+    }
+  });
   try {
-    return (new Function(js))();
-  } catch (e) {
-    throw new Error('Decoding failed: ' + e.message);
+    return vm.run(encodeCode);
+  } catch (error) {
+    console.error('[AAEncode] VM 执行失败:', error.message);
+    return null;
   }
 }
 
-// Usage Example
-// import { aaDecode } from './aaencodeDecoder.mjs';
-// const encodedCode = "AAEncode 编码的字符串";
-// const decodedCode = aaDecode(encodedCode);
-// console.log(decodedCode);
+export default function handle(sourceCode) {
+  if (!isAAEncode(sourceCode)) {
+    return sourceCode;
+  }
+
+  console.log('[AAEncode] 检测到混淆脚本，尝试解密...');
+
+  // 包裹执行环境
+  const wrappedCode = `
+    var result = "";
+    function print(text) { result += text; }
+    ${sourceCode}
+    result;
+  `;
+
+  const decoded = sandboxEval(wrappedCode);
+
+  if (decoded && decoded.length > 20) {
+    console.log('[AAEncode] 解密成功，返回解密结果');
+    return decoded;
+  }
+
+  console.log('[AAEncode] 解密失败或无变化');
+  return sourceCode;
+}
