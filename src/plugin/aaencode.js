@@ -1,3 +1,4 @@
+// plugin/aaencode.js
 import { VM } from 'vm2';
 
 function isAAEncode(code) {
