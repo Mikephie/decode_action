@@ -51,6 +51,7 @@ let time;
 
 // 插件顺序执行
 const plugins = [
+  { name: 'aaencode', plugin: PluginAaencode.plugin },
   { name: 'obfuscator', plugin: PluginObfuscator.plugin },
   { name: 'eval', plugin: PluginEval.unpack },
   { name: 'jsfuck', plugin: PluginJsfuck.handle },
@@ -59,7 +60,6 @@ const plugins = [
   { name: 'jsconfuser', plugin: PluginJsconfuser.plugin },
   { name: 'awsc', plugin: PluginAwsc.plugin },
   { name: 'jjencode', plugin: PluginJjencode.plugin },
-  { name: 'aaencode', plugin: PluginAaencode.plugin },
 ];
 
 for (const plugin of plugins) {
