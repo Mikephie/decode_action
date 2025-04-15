@@ -11,36 +11,41 @@ import * as t from '@babel/types';
  * @param {string} code - The code to unpack
  * @returns {*} - The result of evaluating the unpacked code, or null if unpacking fails
  */
-function unpack(code) {
-  let ast = parse(code, { errorRecovery: true });
-  let lines = ast.program.body;
-  let data = null;
-  
-  for (let line of lines) {
-    if (t.isEmptyStatement(line)) {
-      continue;
-    }
-    if (data) {
+async function unpack(code) {
+  try {
+    let ast = parse(code, { errorRecovery: true });
+    let lines = ast.program.body;
+    let data = null;
+    
+    for (let line of lines) {
+      if (t.isEmptyStatement(line)) {
+        continue;
+      }
+      if (data) {
+        return null;
+      }
+      if (
+        t.isCallExpression(line?.expression) &&
+        line.expression.callee?.name === 'eval' &&
+        line.expression.arguments.length === 1 &&
+        t.isCallExpression(line.expression.arguments[0])
+      ) {
+        data = t.expressionStatement(line.expression.arguments[0]);
+        continue;
+      }
       return null;
     }
-    if (
-      t.isCallExpression(line?.expression) &&
-      line.expression.callee?.name === 'eval' &&
-      line.expression.arguments.length === 1 &&
-      t.isCallExpression(line.expression.arguments[0])
-    ) {
-      data = t.expressionStatement(line.expression.arguments[0]);
-      continue;
+    
+    if (!data) {
+      return null;
     }
+    
+    code = generator(data, { minified: true }).code;
+    return eval(code);
+  } catch (error) {
+    console.error('Error in eval unpack:', error);
     return null;
   }
-  
-  if (!data) {
-    return null;
-  }
-  
-  code = generator(data, { minified: true }).code;
-  return eval(code);
 }
 
 /**
@@ -64,15 +69,5 @@ function pack(code) {
   return code;
 }
 
-/**
- * Plugin function that exposes unpack and pack methods
- */
-function plugin() {
-  return {
-    unpack,
-    pack
-  };
-}
-
-export { plugin };
-export default plugin;
+export { unpack, pack };
+export default { unpack, pack };
