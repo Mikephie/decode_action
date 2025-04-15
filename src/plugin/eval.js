@@ -11,7 +11,7 @@ import * as t from '@babel/types';
  * @param {string} code - The code to unpack
  * @returns {*} - The result of evaluating the unpacked code, or null if unpacking fails
  */
-async function unpack(code) {
+async function unpackImpl(code) {
   try {
     let ast = parse(code, { errorRecovery: true });
     let lines = ast.program.body;
@@ -53,7 +53,7 @@ async function unpack(code) {
  * @param {string} code - The code to pack
  * @returns {string} - The packed code
  */
-function pack(code) {
+function packImpl(code) {
   let ast1 = parse('(function(){}())');
   let ast2 = parse(code);
   
@@ -69,5 +69,8 @@ function pack(code) {
   return code;
 }
 
-export { unpack, pack };
-export default { unpack, pack };
+// This is the structure expected by the application
+export default {
+  unpack: unpackImpl,
+  pack: packImpl
+};
