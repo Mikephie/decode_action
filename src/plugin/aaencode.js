@@ -1,145 +1,93 @@
 /**
- * 符合主脚本接口的 AA 解码插件
- * 基于 jamtg 的原始实现
+ * 直接执行 AA 解码器
+ * 使用浏览器兼容的环境执行 AA 编码
  */
 
-// 核心解码函数
-function aadecode(text) {
-  var evalPreamble = "(\uFF9F\u0414\uFF9F) ['_'] ( (\uFF9F\u0414\uFF9F) ['_'] (";
-  var decodePreamble = "( (\uFF9F\u0414\uFF9F) ['_'] (";
-  var evalPostamble = ") (\uFF9F\u0398\uFF9F)) ('_');";
-  var decodePostamble = ") ());";
+import fs from 'fs';
+import vm from 'vm';
 
-  // 去除开头和结尾的空格
-  text = text.replace(/^\s*/, "").replace(/\s*$/, "");
+// 读取输入文件
+const inputFile = process.argv[2] || 'input.js';
+const outputFile = process.argv[3] || 'output_direct.js';
 
-  // 空输入返回空字符串
-  if (/^\s*$/.test(text)) {
-    return "";
-  }
+try {
+  const aaCode = fs.readFileSync(inputFile, 'utf8');
+
+  // 创建一个模拟浏览器环境的上下文
+  const browserContext = {
+    window: {},
+    document: {},
+    navigator: { userAgent: 'Node.js AA Decoder' },
+    console: console,
+    // 为浏览器环境提供一些函数
+    atob: (str) => Buffer.from(str, 'base64').toString('binary'),
+    btoa: (str) => Buffer.from(str, 'binary').toString('base64'),
+    setTimeout: setTimeout,
+    setInterval: setInterval,
+    clearTimeout: clearTimeout,
+    clearInterval: clearInterval,
+    result: null  // 将存储解码结果
+  };
+
+  // 添加一些浏览器属性
+  browserContext.window.window = browserContext.window;
+  browserContext.window.document = browserContext.document;
+  browserContext.window.navigator = browserContext.navigator;
+  browserContext.window.console = browserContext.console;
+
+  // 准备解码脚本
+  // 修改 AA 编码为直接返回解码结果，而不是执行它
+  let decodingScript = aaCode;
   
-  // 检查是否是 AA 编码
-  if (text.lastIndexOf(evalPreamble) < 0) {
-    throw new Error("Given code is not encoded as aaencode.");
-  }
+  // 将 AA 编码修改为可捕获结果的形式
+  decodingScript = decodingScript.replace(/\)\s*\(\s*ﾟΘﾟ\s*\)\s*\(\s*['"]_['"]\s*\)\s*;?\s*$/, ");");
+  decodingScript = decodingScript.replace(/\(ﾟДﾟ\)\s*\[\s*['"]_['"]\s*\]\s*\(/, "result = (");
   
-  // 处理 eval 或 decode 模式
-  if (text.lastIndexOf(evalPostamble) >= 0) {
-    text = text.replace(evalPreamble, decodePreamble);
-    text = text.replace(evalPostamble, decodePostamble);
-  }
-  
-  // 检查是否是高级解码模式
-  var matches = /\(c\^_\^o\)/.exec(text);
-  if (matches != null) {
-    var advanced = true;
-    var charcode = 2;
-  } else {
-    var advanced = false;
-  }
-  
-  // 高级解码模式处理
-  if (advanced) {
-    // 字符码转换函数
-    function _decode_string(value) {
-      var result = "";
-      for (var i = 0; i < value.length; i++) {
-        result += String.fromCharCode(value.charCodeAt(i) - charcode);
-      }
-      return result;
-    }
-    
-    // 解码字符串值
-    function _decode_value(value) {
-      var result = "";
-      var chunks = value.split(/(\(\d+\))/);
-      for (var i = 0; i < chunks.length; i++) {
-        if (/\(\d+\)/.test(chunks[i])) {
-          result += String.fromCharCode(parseInt(/\((\d+)\)/.exec(chunks[i])[1]));
-        } else {
-          result += _decode_string(chunks[i]);
-        }
-      }
-      return result;
-    }
-    
-    // 分割文本并处理
-    var text_chunks = text.split(/'([^']+)'/);
-    
-    // 重建代码
-    var code = "";
-    for (var i = 0; i < text_chunks.length; i++) {
-      if (i % 2) {
-        code += _decode_value(text_chunks[i]);
-      } else {
-        code += text_chunks[i];
-      }
-    }
-    
-    return code;
-  }
-  
-  // 标准模式处理
-  try {
-    // 使用安全的方式执行 eval
-    var evalFunc = Function;
-    return evalFunc("return " + text)();
-  } catch (e) {
-    // 如果失败，尝试备用方法
+  // 包装在 try-catch 中
+  decodingScript = `
     try {
-      var backupFunc = Function(text);
-      return backupFunc();
-    } catch (e2) {
-      throw new Error("Failed to evaluate code: " + e2.message);
+      ${decodingScript}
+      console.log('AA 解码执行成功');
+    } catch (error) {
+      console.error('AA 解码执行错误:', error.message);
+    }
+  `;
+
+  // 在虚拟机中执行解码
+  console.log('开始直接执行 AA 解码...');
+  vm.createContext(browserContext);
+  vm.runInContext(decodingScript, browserContext);
+
+  // 检查解码结果
+  if (browserContext.result) {
+    console.log('成功获取解码结果');
+    fs.writeFileSync(outputFile, browserContext.result);
+    console.log(`解码结果已保存到 ${outputFile}`);
+  } else {
+    console.log('未能获取解码结果，尝试备用方法...');
+    
+    // 备用方法：将代码转换为可评估的形式
+    const modifiedCode = `
+      function aadecode() {
+        ${aaCode.replace(/\)\s*\(\s*ﾟΘﾟ\s*\)\s*\(\s*['"]_['"]\s*\)\s*;?\s*$/, ")")}
+        return eval((ﾟДﾟ) ['_'] ((ﾟДﾟ) ['_'] ()));
+      }
+      result = aadecode();
+    `;
+    
+    try {
+      vm.runInContext(modifiedCode, browserContext);
+      if (browserContext.result) {
+        console.log('备用方法成功获取解码结果');
+        fs.writeFileSync(outputFile, browserContext.result);
+        console.log(`解码结果已保存到 ${outputFile}`);
+      } else {
+        console.log('所有方法均未获取到解码结果');
+      }
+    } catch (backupError) {
+      console.error('备用方法执行失败:', backupError.message);
     }
   }
+} catch (error) {
+  console.error('解码过程出错:', error.message);
 }
-
-/**
- * 检查代码是否可能是 AA 编码
- */
-function isAAEncoded(code) {
-  if (typeof code !== 'string') return false;
-  
-  // 检查 AA 编码的特征
-  var patterns = [
-    /ﾟωﾟﾉ/,
-    /\(ﾟДﾟ\)/,
-    /\(ﾟΘﾟ\)/,
-    /\(o\^_\^o\)/
-  ];
-  
-  return patterns.some(pattern => pattern.test(code));
-}
-
-/**
- * 插件接口，符合主脚本的期望
- */
-async function plugin(code) {
-  try {
-    // 首先检查是否可能是 AA 编码
-    if (!isAAEncoded(code)) {
-      console.log("不是 AA 编码，跳过处理");
-      return null;
-    }
-    
-    console.log("进行 AA 解码...");
-    const decoded = aadecode(code);
-    
-    if (decoded && decoded !== code) {
-      console.log("AA 解码成功");
-      return decoded;
-    } else {
-      console.log("解码结果与原内容相同，可能不是 AA 编码");
-      return null;
-    }
-  } catch (error) {
-    console.error("AA 解码错误:", error.message);
-    return null;
-  }
-}
-
-// 导出符合主脚本期望的接口
-export default {
-  plugin: plugin
-};
