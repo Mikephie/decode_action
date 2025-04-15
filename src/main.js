@@ -9,9 +9,9 @@ const sojsonv7Module = await import('./plugin/sojsonv7.js');
 const obfuscatorModule = await import('./plugin/obfuscator.js');
 const awscModule = await import('./plugin/awsc.js');
 const jsconfuserModule = await import('./plugin/jsconfuser.js');
-const jsaaencodeModule = await import('./plugin/aaencode.js');
+const aaencodeModule = await import('./plugin/aaencode.js');
 const evalModule = await import('./plugin/eval.js');
-const beautifyModule = await import('./plugin/js-beautify.js'); // <-- 引入格式化模块
+const beautifyModule = await import('./plugin/js-beautify.js');
 const jsfuckModule = await import('./plugin/jsfuck.js');
 
 // 提取 default 导出
@@ -22,9 +22,9 @@ const PluginSojsonV7 = sojsonv7Module.default || sojsonv7Module;
 const PluginObfuscator = obfuscatorModule.default || obfuscatorModule;
 const PluginAwsc = awscModule.default || awscModule;
 const PluginJsconfuser = jsconfuserModule.default || jsconfuserModule;
-const PluginAaencode = jsaaencodeModule.default || jsaaencodeModule;
+const PluginAaencode = aaencodeModule.default || aaencodeModule;
 const PluginEval = evalModule.default || evalModule;
-const beautify = beautifyModule.default || beautifyModule;  // <-- 提取 js-beautify
+const beautify = beautifyModule.default || beautifyModule;
 const PluginJsfuck = jsfuckModule.default || jsfuckModule;
 
 // 读取命令行参数
@@ -51,24 +51,22 @@ let time;
 
 // 插件顺序执行
 const plugins = [
-  { name: 'obfuscator', plugin: PluginObfuscator },
+  { name: 'obfuscator', plugin: PluginObfuscator.plugin },
   { name: 'eval', plugin: PluginEval.unpack },
-  { name: 'jsfuck', plugin: PluginJsfuck.handle }, // 插在这里比较合理
-  { name: 'sojsonv7', plugin: PluginSojsonV7 },
-  { name: 'sojson', plugin: PluginSojson },
-  { name: 'jsconfuser', plugin: PluginJsconfuser },
-  { name: 'awsc', plugin: PluginAwsc },
-  { name: 'jjencode', plugin: PluginJjencode },
-  { name: 'aaencode', plugin: PluginAaencode },
+  { name: 'jsfuck', plugin: PluginJsfuck.handle },
+  { name: 'sojsonv7', plugin: PluginSojsonV7.plugin },
+  { name: 'sojson', plugin: PluginSojson.plugin },
+  { name: 'jsconfuser', plugin: PluginJsconfuser.plugin },
+  { name: 'awsc', plugin: PluginAwsc.plugin },
+  { name: 'jjencode', plugin: PluginJjencode.plugin },
+  { name: 'aaencode', plugin: PluginAaencode.plugin },
 ];
 
 for (const plugin of plugins) {
-  if (sourceCode.indexOf('smEcV') !== -1) {
-    break;
-  }
+  if (sourceCode.includes('smEcV')) break;
 
   try {
-    const code = plugin.plugin(sourceCode);
+    const code = await plugin.plugin(processedCode);
     if (code && code !== processedCode) {
       processedCode = code;
       pluginUsed = plugin.name;
@@ -82,16 +80,13 @@ for (const plugin of plugins) {
 // 处理结果
 if (processedCode !== sourceCode) {
   time = new Date();
-
   const header = [
     `//${time}`,
     "//Base:https://github.com/echo094/decode-js",
     "//Modify:https://github.com/smallfawn/decode_action"
   ].join('\n');
 
-  // 最后一步执行 js-beautify 格式化
-  const finalCode = await beautify.formatCode(processedCode); // <-- 正确调用
-
+  const finalCode = await beautify.formatCode(processedCode);
   const outputCode = header + '\n' + finalCode;
 
   fs.writeFile(decodeFile, outputCode, (err) => {
@@ -99,5 +94,5 @@ if (processedCode !== sourceCode) {
     console.log(`使用插件 ${pluginUsed} 成功处理并格式化写入文件 ${decodeFile}`);
   });
 } else {
-  console.log(`所有插件处理后的代码与原代码一致，未写入文件。`);
+  console.log('所有插件处理后的代码与原代码一致，未写入文件。');
 }
