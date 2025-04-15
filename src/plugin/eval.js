@@ -64,5 +64,15 @@ function pack(code) {
   return code;
 }
 
-export { unpack, pack };
-export default { unpack, pack };
+/**
+ * Plugin function that exposes unpack and pack methods
+ */
+function plugin() {
+  return {
+    unpack,
+    pack
+  };
+}
+
+export { plugin };
+export default plugin;
