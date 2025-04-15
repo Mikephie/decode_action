@@ -1,121 +1,51 @@
-//Tue Apr 15 2025 21:49:42 GMT+0000 (Coordinated Universal Time)
+//Tue Apr 15 2025 21:50:23 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
-let names = "ColorIdentifier";
-let productName = "proversion";
-let productType = "color_identifier_pro";
-let appVersion = null;
-let notifyState = true;
-let ua = true;
-let obj = JSON.parse($response.body);
-let $ = new Env(names);
-obj.subscriber = {
-  non_subscriptions: {},
-  first_seen: "2024-03-08T04:44:30Z",
-  original_application_version: appVersion,
-  other_purchases: {
-    [productType]: {
-      price: {
-        amount: 0,
-        currency: "USD",
-      },
-      display_name: null,
-      purchase_date: "2024-03-08T04:44:44Z",
-    },
-  },
-  management_url: null,
-  subscriptions: {},
-  entitlements: {},
-  original_purchase_date: "2024-03-08T04:44:14Z",
-  original_app_user_id: "$RCAnonymousID:0400000000000000000000000000000",
-  last_seen: "2024-03-08T04:44:30Z",
-};
-obj.subscriber.non_subscriptions[productType] = [{
-  id: "aaaaaaaaaa",
-  is_sandbox: false,
-  price: {
-    amount: 0,
-    currency: "USD",
-  },
-  display_name: null,
-  purchase_date: "2024-03-08T04:44:44Z",
-  original_purchase_date: "2024-03-08T04:44:44Z",
-  store: "app_store",
-  store_transaction_id: "280000000000000",
-}, ];
-obj.subscriber.entitlements[productName] = {
-  grace_period_expires_date: null,
-  purchase_date: "2024-03-08T04:44:44Z",
-  product_identifier: productType,
-  expires_date: null,
-};
-$.notify("XiaoMao_" + names + " 执行成功！", "", "Nice!已解锁成功，可关掉此脚本。", "https://i.pixiv.re/img-original/img/2022/12/19/00/06/12/103718184_p0.png");
-$done({
-  body: JSON.stringify(obj)
-});
+var Mike = JSON.parse($response.body);
+const user = /classes\/wpf_account/;
+const xiazai = /classes/;
+const save = /batch\/save/;
 
-function Env(name) {
-  const isLoon = typeof $loon !== "undefined";
-  const isSurge = typeof $httpClient !== "undefined" && !isLoon;
-  const isQX = typeof $task !== "undefined";
-  const read = (key) => {
-    if (isLoon || isSurge) return $persistentStore.read(key);
-    if (isQX) return $prefs.valueForKey(key)
-  };
-  const write = (key, value) => {
-    if (isLoon || isSurge) return $persistentStore.write(key, value);
-    if (isQX) return $prefs.setValueForKey(key, value)
-  };
-  const notify = (title = "XiaoMao", subtitle = "", message = "", url = "", url2 = url) => {
-    if (isLoon) $notification.post(title, subtitle, message, url);
-    if (isSurge) $notification.post(title, subtitle, message, {
-      url
-    });
-    if (isQX) $notify(title, subtitle, message, {
-      "open-url": url,
-      "media-url": url2
-    })
-  };
-  const get = (url, callback) => {
-    if (isLoon || isSurge) $httpClient.get(url, callback);
-    if (isQX) {
-      url.method = `GET`;
-      $task.fetch(url).then((resp) => callback(null, {}, resp.body))
+if (user.test($request.url)) {
+  Mike.results = [{
+    "updatedAt": "2023-09-09T09:09:09Z",
+    "vipEndTime": 4092599349,
+    "svipEndTimeFormat": "2099-09-09",
+    "sex": "1",
+    "isSVIP": 1,
+    "isVIP": 1,
+    "userId": "A66666666_B6666666666666-C66",
+    "loginType": 1,
+    "nickName": "Tg频道@TrollStoreKios",
+    "headImageUrl": "https://star7-1301731293.cos.ap-shanghai.myqcloud.com/user_avatar/1721058054.416775.png",
+    "objectId": "666666666666666666666666",
+    "createdAt": "2023-09-09T09:09:09Z",
+    "svipEndTime": 4092599349,
+    "coin": 99999
+  }];
+}
+
+if (xiazai.test($request.url)) {
+  Mike.results.forEach(item => {
+    if ('needVIP' in item && 'needSVIP' in item && 'needCoin' in item && 'score' in item) {
+      item.score = 99999;
+      item.needVIP = 0;
+      item.needSVIP = 0;
+      item.needCoin = 0;
     }
-  };
-  const post = (url, callback) => {
-    if (isLoon || isSurge) $httpClient.post(url, callback);
-    if (isQX) {
-      url.method = `POST`;
-      $task.fetch(url).then((resp) => callback(null, {}, resp.body))
-    }
-  };
-  const put = (url, callback) => {
-    if (isLoon || isSurge) $httpClient.put(url, callback);
-    if (isQX) {
-      url.method = "PUT";
-      $task.fetch(url).then((resp) => callback(null, {}, resp.body))
-    }
-  };
-  const toObj = (str) => JSON.parse(str);
-  const toStr = (obj) => JSON.stringify(obj);
-  const queryStr = (obj) => {
-    return Object.keys(obj).map((key) => `${key}=${obj[key]}`).join("&")
-  };
-  const log = (message) => console.log(message);
-  const done = (value = {}) => $done(value);
-  return {
-    name,
-    read,
-    write,
-    notify,
-    get,
-    post,
-    put,
-    toObj,
-    toStr,
-    queryStr,
-    log,
-    done,
+  });
+}
+
+if (save.test($request.url)) {
+  Mike = {
+    "666666666666666666666666": {
+      "updatedAt": "2023-09-09T09:09:09Z",
+      "objectId": "666666666666666666666666"
+    },
+    "code": 1
   }
 }
+
+$done({
+  body: JSON.stringify(Mike)
+});
