@@ -1,8 +1,6 @@
 /**
- * AA 解码器 - 基于 jamtg/aaencode-and-aadecode 实现
+ * 完整版 AA 解码器 - 直接从 jamtg/aaencode-and-aadecode 移植
  * https://github.com/jamtg/aaencode-and-aadecode
- * 
- * 只包含解码功能的简化版本
  */
 
 /**
@@ -10,146 +8,92 @@
  * @param {string} text - AA 编码的字符串
  * @returns {string} - 解码后的 JavaScript 代码
  */
-export function aadecode(text) {
-  var removedSoFar = 0;
-  var lastRemovedLength = -1;
-  
-  while (lastRemovedLength != removedSoFar) {
-    lastRemovedLength = removedSoFar;
-    removedSoFar = 0;
-    text = text.replace(/ﾟωﾟﾉ\s*=\s*\/｀ｍ´）ﾉ\s*～\s*┻━┻\s*\/\s*\.\s*\[\s*_\s*\]\s*;\s*o\s*=\s*\(\s*ﾟｰﾟ\s*\)\s*=\s*_\s*=\s*3\s*;\s*c\s*=\s*\(\s*ﾟΘﾟ\s*\)\s*=\s*\(\s*ﾟｰﾟ\s*\)\s*-\s*\(\s*ﾟｰﾟ\s*\)/g, function(match) {
-      removedSoFar += match.length;
-      return "";
-    });
+export default function aadecode(text) {
+  var evalPreamble = "(\uFF9F\u0414\uFF9F) ['_'] ( (\uFF9F\u0414\uFF9F) ['_'] (";
+  var decodePreamble = "( (\uFF9F\u0414\uFF9F) ['_'] (";
+  var evalPostamble = ") (\uFF9F\u0398\uFF9F)) ('_');";
+  var decodePostamble = ") ());";
+
+  // strip beginning/ending space
+  text = text.replace(/^\s*/, "").replace(/\s*$/, "");
+
+  // returns empty text for empty input
+  if (/^\s*$/.test(text)) {
+    return "";
   }
   
-  text = text.replace(/\(ﾟДﾟ\)\[ﾟoﾟ\]\)\s*\(ﾟΘﾟ\)\s*\(\s*\'\_\'\s*\)/g, function(match) {
-    return "";
-  });
+  // check if it is encoded
+  if (text.lastIndexOf(evalPreamble) < 0) {
+    throw new Error("Given code is not encoded as aaencode.");
+  }
   
-  text = text.replace(/\(ﾟДﾟ\)\[ﾟoﾟ\]\)$/g, function(match) {
-    return "";
-  });
+  // eval or decode
+  if (text.lastIndexOf(evalPostamble) >= 0) {
+    // eval
+    text = text.replace(evalPreamble, decodePreamble);
+    text = text.replace(evalPostamble, decodePostamble);
+  }
   
-  text = text.replace(/\(ﾟДﾟ\)\[ﾟεﾟ\]\s*=\s*\(ﾟДﾟ\)\[\'c\'\]/g, function(match) {
-    return "";
-  });
+  // figure out advanced decode
+  var matches = /\(c\^_\^o\)/.exec(text);
+  if (matches != null) {
+    var advanced = true;
+    var charcode = 2; // v2 [charcode] = c
+  } else {
+    var advanced = false;
+  }
   
-  text = text.replace(/\(\s*\(\s*ﾟДﾟ\s*\)\s*\[\s*ﾟεﾟ\s*\]\s*\(\s*\(\s*ﾟДﾟ\s*\)\s*\[\s*\'\s*\.\s*\'\s*\]\s*\(\s*\(\s*ﾟｰﾟ\s*\)\s*\(\s*\(\s*o\^\s*\_\^\s*o\s*\)\s*\(\s*ﾟΘﾟ\s*\)\s*\(\s*\(\s*ﾟｰﾟ\s*\)\s*\(\s*ﾟΘﾟ\s*\)\s*\(\s*ﾟДﾟ\s*\)\s*\[\s*\'\s*\.\s*\'\s*\]\s*\)\s*\)\s*\)/g, function(match) {
-    return "";
-  });
+  // start decoding
+  if (advanced) {
+    // get string from charcode
+    function _decode_string(value) {
+      result = "";
+      for (var i = 0; i < value.length; i++) {
+        result += String.fromCharCode(value.charCodeAt(i) - charcode);
+      }
+      return result;
+    }
+    
+    // decode string
+    function _decode_value(value) {
+      var result = "";
+      var chunks = value.split(/(\(\d+\))/);
+      for (var i = 0; i < chunks.length; i++) {
+        if (/\(\d+\)/.test(chunks[i])) {
+          result += String.fromCharCode(parseInt(/\((\d+)\)/.exec(chunks[i])[1]));
+        } else {
+          result += _decode_string(chunks[i]);
+        }
+      }
+      return result;
+    }
+    
+    var text_chunks = text.split(/'([^']+)'/);
+    
+    // rebuild code
+    var code = "";
+    for (var i = 0; i < text_chunks.length; i++) {
+      if (i % 2) {
+        code += _decode_value(text_chunks[i]);
+      } else {
+        code += text_chunks[i];
+      }
+    }
+    
+    return code;
+  }
   
-  text = text.replace(/\(ﾟДﾟ\)\[ﾟεﾟ\]/g, function(match) {
-    return "";
-  });
-  
-  text = text.replace(/\+/g, function(match) {
-    return "";
-  });
-  
-  text = text.replace(/\(c\^\_\^o\)/g, function(match) {
-    return "0";
-  });
-  
-  text = text.replace(/\(ﾟΘﾟ\)/g, function(match) {
-    return "1";
-  });
-  
-  text = text.replace(/\(\(o\^\_\^o\)\s*-\s*\(ﾟΘﾟ\)\)/g, function(match) {
-    return "2";
-  });
-  
-  text = text.replace(/\(o\^\_\^o\)/g, function(match) {
-    return "3";
-  });
-  
-  text = text.replace(/\(ﾟｰﾟ\)/g, function(match) {
-    return "4";
-  });
-  
-  text = text.replace(/\(\(ﾟｰﾟ\)\s*\+\s*\(ﾟΘﾟ\)\)/g, function(match) {
-    return "5";
-  });
-  
-  text = text.replace(/\(\(o\^\_\^o\)\s*\+\s*\(o\^\_\^o\)\)/g, function(match) {
-    return "6";
-  });
-  
-  text = text.replace(/\(\(ﾟｰﾟ\)\s*\+\s*\(o\^\_\^o\)\)/g, function(match) {
-    return "7";
-  });
-  
-  text = text.replace(/\(\(ﾟｰﾟ\)\s*\+\s*\(ﾟｰﾟ\)\)/g, function(match) {
-    return "8";
-  });
-  
-  text = text.replace(/\(\(ﾟｰﾟ\)\s*\+\s*\(ﾟｰﾟ\)\s*\+\s*\(ﾟΘﾟ\)\)/g, function(match) {
-    return "9";
-  });
-  
-  text = text.replace(/\(ﾟДﾟ\)\[ﾟΘﾟ\]/g, function(match) {
-    return "a";
-  });
-  
-  text = text.replace(/\(ﾟДﾟ\)\[\'c\'\]/g, function(match) {
-    return "c";
-  });
-  
-  text = text.replace(/\(ﾟДﾟ\)\[ﾟｰﾟ\]/g, function(match) {
-    return "e";
-  });
-  
-  text = text.replace(/\(ﾟДﾟ\)\[ﾟДﾟ\]/g, function(match) {
-    return "d";
-  });
-  
-  text = text.replace(/\(oﾟｰﾟo\)/g, function(match) {
-    return "u";
-  });
-  
-  text = text.replace(/\(ﾟДﾟ\)\.c/g, function(match) {
-    return "c";
-  });
-  
-  text = text.replace(/\(ﾟДﾟ\)\.o/g, function(match) {
-    return "o";
-  });
-  
-  text = text.replace(/\(ﾟｰﾟ\)\.c/g, function(match) {
-    return "c";
-  });
-  
-  text = text.replace(/\(ﾟｰﾟ\)\.o/g, function(match) {
-    return "o";
-  });
-  
-  text = text.replace(/\(ﾟΘﾟ\)\.c/g, function(match) {
-    return "c";
-  });
-  
-  text = text.replace(/\(ﾟΘﾟ\)\.o/g, function(match) {
-    return "o";
-  });
-  
-  text = text.replace(/\(ﾟｰﾟ\)o\(ﾟΘﾟ\)/g, function(match) {
-    return "e";
-  });
-  
-  text = text.replace(/\(o\^\_\^o\)o\(ﾟΘﾟ\)/g, function(match) {
-    return "e";
-  });
-  
-  text = text.replace(/\(\(ﾟｰﾟ\)\(\(o\^\_\^o\)\(ﾟΘﾟ\)\)\)/g, function(match) {
-    return "e";
-  });
-  
-  text = text.replace(/\(ﾟДﾟ\)\[\'\_\'\]/g, function(match) {
-    return "f";
-  });
-  
-  text = text.replace(/\(ﾟДﾟ\)\[ﾟεﾟ\]\s*\+/g, function(match) {
-    return "\\";
-  });
-  
-  return text;
+  try {
+    text = eval(text);
+    return text;
+  } catch (e) {
+    // if failed, try to use our custom eval. see: setTimeout, window.eval
+    var evalfunc = Function;
+    try {
+      text = evalfunc(text);
+      return text;
+    } catch (e) {
+      throw new Error("Failed to evaluate code: " + e.message);
+    }
+  }
 }
