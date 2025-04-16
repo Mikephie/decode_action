@@ -1,4 +1,4 @@
-//Wed Apr 16 2025 11:09:28 GMT+0000 (Coordinated Universal Time)
+//Wed Apr 16 2025 12:19:10 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
 let names = "ColorIdentifier";
