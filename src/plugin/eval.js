@@ -35,12 +35,8 @@ function pluginFunction(code) {
   return evalDecode(code);
 }
 
-// 添加插件方法
-pluginFunction.unpack = function(code) {
-  return evalDecode(code);
-};
-
 // 导出插件（ES Module格式）
 export default {
-  unpack: evalDecode
+  plugin: pluginFunction,  // 保持与 aadecode 插件相同的模式
+  unpack: evalDecode      // 同时提供 unpack 方法以兼容现有调用
 };
