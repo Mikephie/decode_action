@@ -1,71 +1,62 @@
-// Babel Eval Plugin (ES Module)
-import { parse } from '@babel/parser';
-import _generate from '@babel/generator';
-const generator = _generate.default;
-import _traverse from '@babel/traverse';
-const traverse = _traverse.default;
-import * as t from '@babel/types';
+// EvalDecode 插件 (ES Module) - 模拟 eval 解包逻辑，保留头部注释
 
 /**
- * Simple unpack function that replaces eval with a fake eval to capture the code
- * @param {string} packedCode - Input code to unpack
- * @returns {string|null} - Unpacked code or null if failed
+ * 提取 eval 加密前的注释信息
+ * @param {string} code - 包含 eval 包裹的完整代码
+ * @returns {{header: string, encodedPart: string}}
  */
-function unpack(packedCode) {
-  let unpacked = '';
-  const fakeEval = (code) => {
-    unpacked = code;
-    return code;
-  };
+function extractHeader(code) {
+  const evalStartIndex = code.indexOf('eval(');
+  if (evalStartIndex > 0) {
+    const header = code.slice(0, evalStartIndex).trim();
+    const encodedPart = code.slice(evalStartIndex);
+    return { header, encodedPart };
+  }
+  return { header: '', encodedPart: code };
+}
 
-  const modifiedCode = packedCode.replace(/eval\s*\(/, 'fakeEval(');
-
+/**
+ * 解包 eval 加密代码
+ * @param {string} code - eval 加密的完整代码
+ * @returns {string|null} - 解密后的源码或 null
+ */
+function evalDecode(code) {
   try {
-    const func = new Function('fakeEval', 'String', 'RegExp', modifiedCode);
-    func(fakeEval, String, RegExp);
-    return unpacked;
-  } catch (e) {
-    console.log('解包错误:', e);
+    const { header, encodedPart } = extractHeader(code);
+
+    // 替换 eval 为 return，构建出原始代码
+    const patchedCode = encodedPart
+      .replace(/^eval\s*\(\s*/, 'return ')
+      .replace(/\)\s*;?\s*$/, '');
+
+    // 执行构造函数还原被 eval 包裹的真实代码
+    const decoded = new Function(patchedCode)();
+
+    if (typeof decoded === 'string') {
+      return header ? `${header}\n\n${decoded}` : decoded;
+    }
+
+    return null;
+  } catch (err) {
+    console.error('[EvalDecode] 解包失败:', err.message);
     return null;
   }
 }
 
 /**
- * Recursively unpacks code with multiple layers of eval
- * @param {string} code - Code to unpack
- * @param {number} depth - Current recursion depth
- * @returns {string} - Fully unpacked code or original if failed
+ * 插件主函数
+ * @param {string} code - 加密代码
+ * @returns {string|null} - 解密结果
  */
-function recursiveUnpack(code, depth = 0) {
-  if (depth > 10) return code;
-  console.log(`进行第 ${depth + 1} 层解包...`);
-
-  try {
-    let result = unpack(code);
-    if (result && result !== code) {
-      if (result.includes('eval(')) {
-        return recursiveUnpack(result, depth + 1);
-      }
-      return result;
-    }
-  } catch (e) {
-    console.log(`第 ${depth + 1} 层解包失败:`, e);
-  }
-
-  return code;
+function pluginFunction(code) {
+  return evalDecode(code);
 }
 
-/**
- * The unpack property is actually a function directly
- * The main.js code creates objects like { name: 'eval', plugin: PluginEval.unpack }
- * and then calls plugin.plugin(), where plugin is PluginEval.unpack
- * So PluginEval.unpack needs to have a .plugin property that is a function
- */
-recursiveUnpack.plugin = function(code) {
-  return recursiveUnpack(code);
+// 为 decode-js 项目添加统一插件导出结构
+pluginFunction.plugin = function(code) {
+  return evalDecode(code);
 };
 
-// Export the plugin in the format expected by main.js
 export default {
-  unpack: recursiveUnpack
+  plugin: pluginFunction
 };
