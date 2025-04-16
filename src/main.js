@@ -13,6 +13,7 @@ const aadecodeModule = await import('./plugin/aadecode.js');
 const evalModule = await import('./plugin/eval.js');
 const beautifyModule = await import('./plugin/js-beautify.js');
 const jsfuckModule = await import('./plugin/jsfuck.js');
+const jsjiamiModule = await import('./plugin/jsjiami.js');
 
 // 提取 default 导出
 const PluginCommon = commonModule.default || commonModule;
@@ -26,6 +27,7 @@ const PluginAadecode = aadecodeModule.default || aadecodeModule;
 const PluginEval = evalModule.default || evalModule;
 const beautify = beautifyModule.default || beautifyModule;
 const PluginJsfuck = jsfuckModule.default || jsfuckModule;
+const PluginJsjiami = jsfuckModule.default || jsjiamiModule;
 
 // 读取命令行参数
 let encodeFile = 'input.js';
@@ -51,6 +53,7 @@ let time;
 
 // 插件顺序执行
 const plugins = [
+  { name: 'jsjiami', plugin: PluginJsjiami.handle },
   { name: 'eval', plugin: PluginEval.unpack },
   { name: 'aadecode', plugin: PluginAadecode.plugin },
   { name: 'obfuscator', plugin: PluginObfuscator.plugin },
