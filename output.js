@@ -1,69 +1,21 @@
-//Wed Apr 16 2025 10:31:53 GMT+0000 (Coordinated Universal Time)
+//Wed Apr 16 2025 10:40:51 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
-/*************************************
-
->「 脚本名称 」         壁纸解锁Svip、Vip、无限涂鸦币
->「 脚本作者 」         M̆̈̆̈ĭ̈̆̈k̆̈̆̈ĕ̈
->「 电报频道 」         https://t.me/TrollStoreKios 
->「 更新时间 」         2025-01-09
->「 注意事项 」         如需引用请注明出处，谢谢合作！
->「 注意事项 」         使用此脚本，会导致AppleStore无法切换账户，解决方法[关闭QX切换账户，或关闭MITM，或删除脚本，或去设置媒体与购买项目处切换ID]
->「 额外说明 」         请勿传播或售卖此脚本
-
-[rewrite_local]
-^https?:\/\/leancloud\.emotionwp\.com\/.+\/(classes|batch\/save) url script-response-body https://raw.githubusercontent.com/Mike-offers/Rewrite/refs/heads/master/QuantumultX/BiZhi.js
-
-[mitm]
-hostname = leancloud.emotionwp.com
-
-*************************************/
-
-var Mike = JSON.parse($response.body);
-const user = /classes\/wpf_account/;
-const xiazai = /classes/;
-const save = /batch\/save/;
-
-if (user.test($request.url)) {
-  Mike.results = [{
-    "updatedAt": "2023-09-09T09:09:09Z",
-    "vipEndTime": 4092599349,
-    "svipEndTimeFormat": "2099-09-09",
-    "sex": "1",
-    "isSVIP": 1,
-    "isVIP": 1,
-    "userId": "A66666666_B6666666666666-C66",
-    "loginType": 1,
-    "nickName": "Tg频道@TrollStoreKios",
-    "headImageUrl": "https://star7-1301731293.cos.ap-shanghai.myqcloud.com/user_avatar/1721058054.416775.png",
-    "objectId": "666666666666666666666666",
-    "createdAt": "2023-09-09T09:09:09Z",
-    "svipEndTime": 4092599349,
-    "coin": 99999
-  }];
-}
-
-if (xiazai.test($request.url)) {
-  Mike.results.forEach(item => {
-    if ('needVIP' in item && 'needSVIP' in item && 'needCoin' in item && 'score' in item) {
-      item.score = 99999;
-      item.needVIP = 0;
-      item.needSVIP = 0;
-      item.needCoin = 0;
-    }
-  });
-}
-
-if (save.test($request.url)) {
-  Mike = {
-    "666666666666666666666666": {
-      "updatedAt": "2023-09-09T09:09:09Z",
-      "objectId": "666666666666666666666666"
-    },
-    "code": 1
-  }
-}
-
-$done({
-  body: JSON.stringify(Mike)
-});
+eval(function(p, a, c, k, e, d) {
+  e = function(c) {
+    return (c < a ? "" : e(parseInt(c / a))) + ((c = c % a) > 35 ? String.fromCharCode(c + 29) : c.toString(36))
+  };
+  if (!''.replace(/^/, String)) {
+    while (c--) d[e(c)] = k[c] || e(c);
+    k = [function(e) {
+      return d[e]
+    }];
+    e = function() {
+      return '\\w+'
+    };
+    c = 1
+  };
+  while (c--)
+    if (k[c]) p = p.replace(new RegExp('\\b' + e(c) + '\\b', 'g'), k[c]);
+  return p
+}('2G(25(p,a,c,k,e,d){e=25(c){26(c<a?"":e(2J(c/a)))+((c=c%a)>35?28.2L(c+29):c.2K(36))};27(!\'\'.2b(/^/,28)){2c(c--)d[e(c)]=k[c]||e(c);k=[25(e){26 d[e]}];e=25(){26\'\\\\w+\'};c=1};2c(c--)27(k[c])p=p.2b(2a 2I(\'\\\\b\'+e(c)+\'\\\\b\',\'g\'),k[c]);26 p}(\'9 A="1Z";9 Y="24";9 q="1b";9 U=5;9 1a=Z;9 1g=Z;9 4=r.V($1f.l);9 $=1i J(A);4.I={L:{},1j:"a-d-f:e:K",1w:U,1s:{[q]:{N:{O:0,M:"S",},Q:5,F:"a-d-f:e:p",},},1u:5,1h:{},T:{},P:"a-d-f:e:1t",1r:"$1q:1p",1o:"a-d-f:e:K",};4.I.L[q]=[{1n:"1m",1l:1k,N:{O:0,M:"S",},Q:5,F:"a-d-f:e:p",P:"a-d-f:e:p",1v:"1e",1d:"1c",},];4.I.T[Y]={1P:5,F:"a-d-f:e:p",1y:q,1S:5,};$.n("1T"+A+" 1U！","","1V!1W，1X。","1Y://i.20.21/R-22/R/23/12/19/1x/1R/12/1Q.1O");$v({l:r.13(4)});1z J(14){2 8=z $1A!=="y";2 b=z $o!=="y"&&!8;2 c=z $s!=="y";2 B=(6)=>{3(8||b)j $W.B(6);3(c)j $18.1B(6)};2 C=(6,m)=>{3(8||b)j $W.C(6,m);3(c)j $18.1C(6,m)};2 n=(u="1D",t="",h="",1="",X=1)=>{3(8)$11.k(u,t,h,1);3(b)$11.k(u,t,h,{1});3(c)$n(u,t,h,{"1E-1":1,"1F-1":X})};2 D=(1,7)=>{3(8||b)$o.D(1,7);3(c){1.w=`1G`;$s.x(1).G((g)=>7(5,{},g.l))}};2 k=(1,7)=>{3(8||b)$o.k(1,7);3(c){1.w=`1H`;$s.x(1).G((g)=>7(5,{},g.l))}};2 E=(1,7)=>{3(8||b)$o.E(1,7);3(c){1.w="1I";$s.x(1).G((g)=>7(5,{},g.l))}};2 15=(10)=>r.V(10);2 16=(4)=>r.13(4);2 17=(4)=>{j 1J.1K(4).1L((6)=>`${6}=${4[6]}`).1M("&")};2 H=(h)=>1N.H(h);2 v=(m={})=>$v(m);j{14,B,C,n,D,k,E,15,16,17,H,v,}}\',2M,2N,\'|2O|2P|27|2Q|2R|2S|2T|2U|2W|3c|2X|2Y|2Z|44|30|31|32||26|33|34|37|38|39|3a|2H|2V|2F|2r|3e|2j|2d|2e|2f|2g|2o|2i|2k|2l|2m|2n|2h|2E|2q|2p|2s|2t|2u|2v|2w|2x|2y|2z|2A|2B|2C|2D|3b|3d|3E|3f|41|40||3Z|3Y|45|3W|42|3V||3T|3S|3R|3Q|3P|3O|3U|43|2a|47|46|4i|4h|4g|4f|4j|4d|4c|4b|4a|4e|49|48|3N|3X|25|3L|3u|3g|3h|3i|3j|3k|3l|3m|3n|3o|3p|3M|3q|3r|3s|3t|3v|3K|3w|3x|3y|3z|3A|3B|3C|3D|3F|3G|3H|3I\'.3J(\'|\'),0,{}))', 62, 268, '|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||function|return|if|String||new|replace|while|method|fetch|undefined|typeof|then|read|done|write|get|put|purchase_date|names|Env|subscriber|subtitle|30Z|non_subscriptions|currency|price|amount|original_purchase_date|display_name|img|USD|entitlements|appVersion|parse|log|task|eval|productType|RegExp|parseInt|toString|fromCharCode|62|129|url|const|obj|null|key|callback|isLoon|JSON|let|isSurge|isQX|03|08T04|resp|message|post|body|||value|notify|httpClient|44Z|persistentStore|2024|url2|title|true|setValueForKey|XiaoMao|open|media|GET|POST|PUT|Object|keys|map|console|png|grace_period_expires_date|103718184_p0|valueForKey|06|XiaoMao_|执行成功|Nice|已解锁成功|可关掉此脚本|https|ColorIdentifier|pixiv|productName|re|original|2022|proversion|split|expires_date|loon|join|00|response|app_store|store_transaction_id|280000000000000|color_identifier_pro|notifyState|ua|prefs|toStr|product_identifier|name|stringify|notification|str|queryStr|subscriptions||toObj|false|first_seen|original_application_version|store|14Z|other_purchases|original_app_user_id|RCAnonymousID|management_url|last_seen|id|aaaaaaaaaa|is_sandbox|0400000000000000000000000000000'.split('|'), 0, {}))
