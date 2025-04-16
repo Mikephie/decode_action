@@ -1,119 +1,95 @@
-
-// 检查是否在 Node.js 环境
-const isNode = typeof process !== 'undefined' && 
-               process.versions != null && 
-               process.versions.node != null;
-
-// 动态导入 Node.js 模块（如果在 Node.js 环境中）
-let nodeVM;
-if (isNode) {
-  try {
-    nodeVM = (await import('node:vm')).default;
-  } catch (e) {
-    console.error('无法导入 vm 模块:', e);
-  }
-}
-
 /**
- * 替换代码中的 eval 函数调用，捕获其参数
- * @param {string} code - 包含 eval 调用的代码
- * @returns {string} - 修改后的代码
+ * Eval解包工具 - ES Module版本
+ * 
+ * 用法:
+ * import evalDecoder from './eval-decoder.js';
+ * 
+ * // 检测是否为eval加密的代码
+ * if (evalDecoder.detect(code)) {
+ *   // 解包代码
+ *   const deobfuscated = evalDecoder.plugin(code);
+ *   console.log(deobfuscated);
+ * }
  */
-function replaceEvalWithCapture(code) {
-  // 捕获 eval 的参数并返回它，而不是执行它
-  return code.replace(/eval\s*\(/g, '(function(x) { return x; })(');
-}
 
 /**
- * 创建模拟的浏览器环境
- * @returns {Object} - 模拟的浏览器对象
- */
-function createMockBrowser() {
-  return {
-    window: {
-      document: { createElement: () => ({}), addEventListener: () => {} },
-      navigator: { userAgent: "Mozilla/5.0" },
-      location: { href: "https://example.com" },
-      screen: { width: 1920, height: 1080 },
-      $response: {}, $request: {}, $done: () => {}, $notify: () => {}
-    },
-    document: { createElement: () => ({}), addEventListener: () => {} },
-    navigator: { userAgent: "Mozilla/5.0" },
-    location: { href: "https://example.com" },
-    screen: { width: 1920, height: 1080 },
-    console: { log: () => {}, error: () => {}, warn: () => {} },
-    $response: {}, $request: {}, $done: () => {}, $notify: () => {}
-  };
-}
-
-/**
- * 解包 eval 加密的代码
+ * 解包eval加密的代码
  * @param {string} code - 要解包的代码
  * @returns {string|null} - 解包后的代码或null（解包失败时）
  */
-function unpack(code) {
-  // 如果不包含 eval，直接返回
-  if (!code.includes('eval(') && !code.includes('eval (')) {
-    return null;
-  }
-  
+function plugin(code) {
   try {
-    // 替换 eval 为一个捕获函数
-    const modifiedCode = replaceEvalWithCapture(code);
-    
-    if (isNode && nodeVM) {
-      // 在 Node.js 环境中使用 vm 模块
-      const mockEnv = createMockBrowser();
-      const sandbox = { ...mockEnv, ...global };
-      
-      // 创建上下文并运行代码
-      const context = nodeVM.createContext(sandbox);
-      const result = nodeVM.runInContext(modifiedCode, context);
-      
-      // 返回结果，如果是字符串（可能是另一层加密）则递归解包
-      if (typeof result === 'string' && result.includes('eval(')) {
-        return unpack(result);
-      }
-      return result;
-    } else {
-      // 浏览器环境或备选方案
-      const mockEnv = createMockBrowser();
-      
-      // 使用 Function 构造函数创建一个函数并执行
-      // 传入所有必要的全局变量
-      const funcParams = ['window', 'document', 'navigator', 'location', 
-                          '$response', '$request', '$notify', '$done'];
-      const funcArgs = [
-        mockEnv.window, mockEnv.document, mockEnv.navigator, mockEnv.location,
-        mockEnv.$response, mockEnv.$request, mockEnv.$notify, mockEnv.$done
-      ];
-      
-      // 创建并执行函数
-      const func = new Function(...funcParams, `return ${modifiedCode}`);
-      const result = func(...funcArgs);
-      
-      // 递归解包多层加密
-      if (typeof result === 'string' && result.includes('eval(')) {
-        return unpack(result);
-      }
-      return result;
-    }
-  } catch (error) {
-    console.error('解包错误:', error);
-    // 在出错的情况下，尝试更直接的方法
-    try {
-      // 简单地替换 eval 并执行
-      const simpleReplaced = code.replace(/eval\s*\(/g, '(');
-      return simpleReplaced;
-    } catch (e) {
-      console.error('备选解包方法也失败:', e);
+    // 如果不包含eval，直接返回null
+    if (!code.includes('eval(') && !code.includes('eval (')) {
       return null;
     }
+    
+    // 替换eval为一个捕获函数
+    let modifiedCode = code.replace(/eval\s*\(/g, '(function(x) { return x; })(');
+    
+    // 尝试执行修改后的代码获取eval的参数
+    try {
+      // 创建一个执行环境
+      const env = {
+        window: {},
+        document: {},
+        navigator: { userAgent: "Mozilla/5.0" },
+        location: {}
+      };
+      
+      // 执行代码
+      const result = Function('window', 'document', 'navigator', 'location',
+                            `return ${modifiedCode}`)(
+                            env.window, env.document, env.navigator, env.location);
+      
+      // 如果结果是字符串且包含eval，递归解包
+      if (typeof result === 'string') {
+        if (result.includes('eval(')) {
+          return plugin(result);
+        }
+        return result;
+      }
+      
+      return String(result);
+    } catch (err) {
+      console.log("执行替换eval的方法失败，尝试直接替换方法");
+      
+      // 尝试直接替换eval
+      try {
+        modifiedCode = code.replace(/eval\s*\(/g, '(');
+        return modifiedCode;
+      } catch (replaceErr) {
+        console.error("直接替换eval方法也失败:", replaceErr);
+        return null;
+      }
+    }
+  } catch (error) {
+    console.error("Eval解包发生错误:", error);
+    return null;
   }
 }
 
-// 导出插件（ES Module格式）
+/**
+ * 检测代码是否使用eval混淆
+ * @param {string} code - 要检测的代码
+ * @returns {boolean} - 是否为eval混淆的代码
+ */
+function detect(code) {
+  return code.includes('eval(') || code.includes('eval (');
+}
+
+// 导出插件接口
 export default {
-  plugin: unpack,
-  unpack: unpack
+  plugin,
+  detect
 };
+
+// 自动注册为全局插件（如果在浏览器环境中）
+if (typeof window !== 'undefined') {
+  window.DecodePlugins = window.DecodePlugins || {};
+  window.DecodePlugins.eval = {
+    detect,
+    plugin
+  };
+  console.log("ES Module版Eval解包插件已加载");
+}
