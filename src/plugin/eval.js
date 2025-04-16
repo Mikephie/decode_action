@@ -19,7 +19,18 @@ function evalDecode(evalJsCode) {
       return null;
     }
     
-    return evalHolder.call(globalObj, evalJsCode);
+    // 处理常见的未定义变量
+    if (!globalObj.$response) globalObj.$response = {};
+    if (!globalObj.$request) globalObj.$request = {};
+    if (!globalObj.$done) globalObj.$done = function() {};
+    if (!globalObj.$notify) globalObj.$notify = function() {};
+    
+    // 尝试解码，但不执行代码
+    // 替换eval调用为字符串返回
+    const modifiedCode = evalJsCode.replace(/eval\s*\(/g, '(');
+    
+    // 捕获解码后的代码而不是执行它
+    return modifiedCode;
   } catch (error) {
     console.error('Eval 解码错误:', error);
     return null;
