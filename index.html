@@ -1,866 +1,281 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 - 代码解密工具</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #0f0f0f;
-            color: #e0e0e0;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        /* 动画背景 */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.05;
-            background: 
-                radial-gradient(circle at 20% 30%, #4f46e5 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, #7c3aed 0%, transparent 50%);
-            animation: bgMove 20s ease infinite;
-        }
-        
-        @keyframes bgMove {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.1) rotate(5deg); }
-        }
-        
-        /* 头部样式 */
-        .header {
-            background: rgba(15, 15, 15, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 1.5rem 0;
-        }
-        
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .version {
-            font-size: 0.75rem;
-            background: rgba(79, 70, 229, 0.2);
-            color: #818cf8;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            margin-left: 1rem;
-        }
-        
-        /* 主容器 */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        /* 配置区域 */
-        .config-section {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .config-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        .config-item label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-            color: #a1a1aa;
-        }
-        
-        .config-item input {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 0.75rem;
-            color: #e0e0e0;
-            transition: all 0.3s;
-        }
-        
-        .config-item input:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-        
-        /* 标签栏 */
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .tab {
-            padding: 0.75rem 1.5rem;
-            background: none;
-            border: none;
-            color: #a1a1aa;
-            cursor: pointer;
-            position: relative;
-            transition: all 0.3s;
-            font-size: 0.875rem;
-        }
-        
-        .tab:hover {
-            color: #e0e0e0;
-        }
-        
-        .tab.active {
-            color: #4f46e5;
-        }
-        
-        .tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #4f46e5, #7c3aed);
-        }
-        
-        /* 输入区域 */
-        .input-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .input-box {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1.5rem;
-        }
-        
-        .input-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        
-        .input-title {
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .input-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        .icon-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            border-radius: 6px;
-            padding: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: #a1a1aa;
-        }
-        
-        .icon-btn:hover {
-            background: rgba(79, 70, 229, 0.2);
-            color: #4f46e5;
-        }
-        
-        textarea {
-            width: 100%;
-            height: 300px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 1rem;
-            color: #e0e0e0;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 0.875rem;
-            resize: vertical;
-            transition: all 0.3s;
-        }
-        
-        textarea:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-        
-        /* 文件上传区域 */
-        .file-upload {
-            border: 2px dashed rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .file-upload:hover {
-            border-color: #4f46e5;
-            background: rgba(79, 70, 229, 0.05);
-        }
-        
-        .file-upload.dragover {
-            border-color: #7c3aed;
-            background: rgba(124, 58, 237, 0.1);
-        }
-        
-        .file-upload input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-        }
-        
-        /* 控制按钮 */
-        .control-section {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .btn {
-            padding: 0.75rem 2rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
-        }
-        
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: #e0e0e0;
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-        
-        /* 日志区域 */
-        .log-section {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1rem;
-            height: 200px;
-            overflow-y: auto;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 0.75rem;
-        }
-        
-        .log-entry {
-            padding: 0.25rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .log-time {
-            color: #6b7280;
-            margin-right: 1rem;
-        }
-        
-        .log-success { color: #10b981; }
-        .log-error { color: #ef4444; }
-        .log-warning { color: #f59e0b; }
-        .log-info { color: #3b82f6; }
-        
-        /* 进度条 */
-        .progress-bar {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 9999px;
-            height: 8px;
-            margin: 1rem 0;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            background: linear-gradient(90deg, #4f46e5, #7c3aed);
-            height: 100%;
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-        
-        /* Toast 提示 */
-        .toast {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-        
-        .toast.show {
-            transform: translateX(0);
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .config-grid,
-            .input-section {
-                grid-template-columns: 1fr;
-            }
-            
-            .header-content {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .tabs {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-        }
-        
-        /* 隐藏类 */
-        .hidden {
-            display: none !important;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>羊毛助手 - 代码解密工具</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .bg-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.05;
+      background:
+        radial-gradient(circle at 20% 30%, #4f46e5 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, #7c3aed 0%, transparent 50%);
+      animation: bgMove 20s ease infinite;
+    }
+
+    @keyframes bgMove {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.1) rotate(5deg); }
+    }
+
+    .header {
+      background: rgba(15, 15, 15, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 1.5rem 0;
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .version {
+      font-size: 0.75rem;
+      background: rgba(79, 70, 229, 0.2);
+      color: #818cf8;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      margin-left: 1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .config-section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .config-item label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      color: #a1a1aa;
+    }
+
+    .config-item input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: #e0e0e0;
+      transition: all 0.3s;
+    }
+
+    .config-item input:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      background: none;
+      border: none;
+      color: #a1a1aa;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s;
+      font-size: 0.875rem;
+    }
+
+    .tab:hover {
+      color: #e0e0e0;
+    }
+
+    .tab.active {
+      color: #4f46e5;
+    }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #4f46e5, #7c3aed);
+    }
+
+    .input-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .input-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .input-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .input-title {
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .input-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      color: #a1a1aa;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e0e0e0;
+    }
+
+    textarea {
+      width: 100%;
+      background: #111;
+      color: #eee;
+      padding: 1rem;
+      border-radius: 8px;
+      border: none;
+      resize: vertical;
+      font-family: monospace;
+      font-size: 0.9rem;
+      min-height: 300px;
+    }
+
+    #loadStatus {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 0.5rem;
+    }
+  </style>
 </head>
 <body>
-    <div class="bg-animation"></div>
-    
-    <header class="header">
-        <div class="header-content">
-            <div style="display: flex; align-items: center;">
-                <h1 class="logo">羊毛助手</h1>
-                <span class="version">v2.0</span>
-            </div>
-            <div style="color: #6b7280; font-size: 0.875rem;">
-                自动解密脚本工具
-            </div>
-        </div>
-    </header>
-    
-    <div class="container">
-        <!-- 配置区域 -->
-        <div class="config-section">
-            <h3 style="margin-bottom: 1rem; font-size: 1.125rem;">配置信息</h3>
-            <div class="config-grid">
-                <div class="config-item">
-                    <label>GitHub Token</label>
-                    <input type="password" id="github-token" placeholder="输入你的 GitHub Token">
-                </div>
-                <div class="config-item">
-                    <label>仓库地址</label>
-                    <input type="text" id="repo-name" placeholder="例如: username/decode_action">
-                </div>
-            </div>
-        </div>
-        
-        <!-- 标签栏 -->
-        <div class="tabs">
-            <button class="tab active" data-tab="paste">粘贴代码</button>
-            <button class="tab" data-tab="file">选择文件</button>
-            <button class="tab" data-tab="url">远程文件</button>
-        </div>
-        
-        <!-- 输入输出区域 -->
-        <div class="input-section">
-            <!-- 输入框 -->
-            <div class="input-box">
-                <div class="input-header">
-                    <div class="input-title">
-                        <span>📝</span>
-                        <span>输入代码</span>
-                    </div>
-                    <div class="input-actions">
-                        <button class="icon-btn" onclick="app.pasteInput()" title="粘贴">📋</button>
-                        <button class="icon-btn" onclick="app.clearInput()" title="清空">🗑️</button>
-                    </div>
-                </div>
-                
-                <!-- 粘贴代码标签内容 -->
-                <div id="paste-content" class="tab-content">
-                    <textarea id="input-code" placeholder="在此粘贴需要解密的代码..."></textarea>
-                </div>
-                
-                <!-- 选择文件标签内容 -->
-                <div id="file-content" class="tab-content hidden">
-                    <div class="file-upload" id="file-drop-area">
-                        <input type="file" id="file-input" accept=".js,.txt">
-                        <div>
-                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📁</div>
-                            <div>点击选择文件</div>
-                            <div style="color: #6b7280; font-size: 0.875rem; margin-top: 0.5rem;">支持 .js 和 .txt 文件</div>
-                            <div style="color: #4f46e5; font-size: 0.875rem; margin-top: 0.5rem;">（电脑端支持拖拽）</div>
-                        </div>
-                    </div>
-                    <div id="selected-file-info" style="margin-top: 1rem; color: #10b981; text-align: center;"></div>
-                </div>
-                
-                <!-- 远程文件标签内容 -->
-                <div id="url-content" class="tab-content hidden">
-                    <input type="text" id="remote-url" placeholder="输入远程文件 URL..." style="width: 100%; margin-bottom: 1rem; padding: 0.75rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
-                    <button class="btn btn-secondary" onclick="app.loadRemoteFile()" style="width: 100%;">加载远程文件</button>
-                </div>
-            </div>
-            
-            <!-- 输出框 -->
-            <div class="input-box">
-                <div class="input-header">
-                    <div class="input-title">
-                        <span>✨</span>
-                        <span>解密结果</span>
-                    </div>
-                    <div class="input-actions">
-                        <button class="icon-btn" onclick="app.copyResult()" title="复制">📋</button>
-                        <button class="icon-btn" onclick="app.downloadResult()" title="下载">💾</button>
-                    </div>
-                </div>
-                <textarea id="output-code" placeholder="解密结果将显示在这里..." readonly></textarea>
-            </div>
-        </div>
-        
-        <!-- 控制按钮 -->
-        <div class="control-section">
-            <button class="btn btn-secondary" onclick="app.clearAll()">清除</button>
-            <button class="btn btn-primary" onclick="app.decrypt()">点击解密</button>
-            <button class="btn btn-secondary" onclick="app.copyResult()">复制结果</button>
-            <button class="btn btn-secondary" onclick="app.downloadResult()">下载结果</button>
-        </div>
-        
-        <!-- 进度条 -->
-        <div class="progress-bar">
-            <div class="progress-fill" id="progress-bar"></div>
-        </div>
-        
-        <!-- 日志区域 -->
-        <div class="log-section" id="log-container">
-            <div class="log-entry">
-                <span class="log-time">00:00:00</span>
-                <span class="log-info">系统初始化完成，准备就绪</span>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 2rem;">
-            <button class="btn btn-secondary" onclick="app.clearLogs()">清空日志</button>
-        </div>
+  <div class="bg-animation"></div>
+  <div class="header">
+    <div class="header-content">
+      <div class="logo">羊毛助手</div>
+      <div class="version">v1.0.0</div>
     </div>
-    
-    <!-- Toast 提示 -->
-    <div id="toast" class="toast"></div>
-    
-    <script>
-        // 模拟解密功能
-        const mockDecrypt = (code) => {
-            // 这里应该是实际的解密逻辑
-            // 现在只是返回一个模拟结果
-            return `// 解密成功！\n// 原始代码长度: ${code.length}\n// 解密时间: ${new Date().toLocaleString()}\n\n${code}`;
-        };
-        
-        // 应用主对象
-        const app = {
-            githubToken: '',
-            repoName: '',
-            currentTab: 'paste',
-            
-            init() {
-                // 加载保存的配置
-                this.githubToken = localStorage.getItem('github_token') || '';
-                this.repoName = localStorage.getItem('repo_name') || '';
-                
-                document.getElementById('github-token').value = this.githubToken;
-                document.getElementById('repo-name').value = this.repoName;
-                
-                // 绑定事件
-                this.bindEvents();
-                this.addLog('系统初始化完成', 'success');
-            },
-            
-            bindEvents() {
-                // 配置输入
-                document.getElementById('github-token').addEventListener('input', (e) => {
-                    this.githubToken = e.target.value;
-                    localStorage.setItem('github_token', this.githubToken);
-                });
-                
-                document.getElementById('repo-name').addEventListener('input', (e) => {
-                    this.repoName = e.target.value;
-                    localStorage.setItem('repo_name', this.repoName);
-                });
-                
-                // 标签切换
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
-                });
-                
-                // 文件拖拽
-                const dropArea = document.getElementById('file-drop-area');
-                const fileInput = document.getElementById('file-input');
-                
-                dropArea.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    dropArea.classList.add('dragover');
-                });
-                
-                dropArea.addEventListener('dragleave', () => {
-                    dropArea.classList.remove('dragover');
-                });
-                
-                dropArea.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    dropArea.classList.remove('dragover');
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0) {
-                        this.handleFile(files[0]);
-                    }
-                });
-                
-                dropArea.addEventListener('click', () => {
-                    fileInput.click();
-                });
-                
-                fileInput.addEventListener('change', (e) => {
-                    if (e.target.files.length > 0) {
-                        this.handleFile(e.target.files[0]);
-                    }
-                });
-            },
-            
-            switchTab(tab) {
-                this.currentTab = tab;
-                
-                // 更新标签样式
-                document.querySelectorAll('.tab').forEach(t => {
-                    t.classList.toggle('active', t.dataset.tab === tab);
-                });
-                
-                // 更新内容显示
-                document.getElementById('paste-content').classList.toggle('hidden', tab !== 'paste');
-                document.getElementById('file-content').classList.toggle('hidden', tab !== 'file');
-                document.getElementById('url-content').classList.toggle('hidden', tab !== 'url');
-            },
-            
-            pasteInput() {
-                navigator.clipboard.readText().then(text => {
-                    document.getElementById('input-code').value = text;
-                    this.showToast('粘贴成功');
-                    this.addLog('从剪贴板粘贴内容', 'success');
-                }).catch(() => {
-                    // 如果剪贴板权限被拒绝，显示提示
-                    this.showToast('请手动粘贴（Ctrl+V 或 长按粘贴）', 'warning');
-                });
-            },
-            
-            clearInput() {
-                document.getElementById('input-code').value = '';
-                this.showToast('输入已清空');
-            },
-            
-            clearAll() {
-                document.getElementById('input-code').value = '';
-                document.getElementById('output-code').value = '';
-                document.getElementById('progress-bar').style.width = '0%';
-                this.showToast('已清除所有内容');
-                this.addLog('清除所有内容', 'info');
-            },
-            
-            async decrypt() {
-                const inputCode = document.getElementById('input-code').value.trim();
-                
-                if (!inputCode) {
-                    this.showToast('请先输入代码', 'error');
-                    return;
-                }
-                
-                if (!this.githubToken || !this.repoName) {
-                    this.showToast('请先配置 GitHub Token 和仓库地址', 'error');
-                    return;
-                }
-                
-                try {
-                    this.addLog('开始解密流程...', 'info');
-                    await this.submitToGitHub(inputCode);
-                    await this.simulateDecryption();
-                    await this.getResult();
-                } catch (error) {
-                    this.addLog('解密失败: ' + error.message, 'error');
-                    this.showToast('解密失败: ' + error.message, 'error');
-                    
-                    // 使用模拟解密
-                    const result = mockDecrypt(inputCode);
-                    document.getElementById('output-code').value = result;
-                    this.addLog('使用本地模拟解密', 'warning');
-                }
-            },
-            
-            copyResult() {
-                const output = document.getElementById('output-code').value;
-                if (!output) {
-                    this.showToast('没有内容可复制', 'error');
-                    return;
-                }
-                
-                navigator.clipboard.writeText(output).then(() => {
-                    this.showToast('复制成功');
-                    this.addLog('复制解密结果', 'success');
-                }).catch(() => {
-                    this.showToast('复制失败', 'error');
-                });
-            },
-            
-            downloadResult() {
-                const output = document.getElementById('output-code').value;
-                if (!output) {
-                    this.showToast('没有内容可下载', 'error');
-                    return;
-                }
-                
-                const blob = new Blob([output], { type: 'text/javascript' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `decrypted_${Date.now()}.js`;
-                a.click();
-                URL.revokeObjectURL(url);
-                
-                this.showToast('下载成功');
-                this.addLog('下载解密结果', 'success');
-            },
-            
-            handleFile(file) {
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('input-code').value = e.target.result;
-                    // 显示文件信息
-                    document.getElementById('selected-file-info').textContent = 
-                        `已加载: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
-                    this.switchTab('paste');
-                    this.showToast(`已加载文件: ${file.name}`);
-                    this.addLog(`加载文件: ${file.name}`, 'success');
-                };
-                reader.onerror = () => {
-                    this.showToast('文件读取失败', 'error');
-                    this.addLog('文件读取失败', 'error');
-                };
-                reader.readAsText(file);
-            },
-            
-            async loadRemoteFile() {
-                const url = document.getElementById('remote-url').value.trim();
-                if (!url) {
-                    this.showToast('请输入 URL', 'error');
-                    return;
-                }
-                
-                try {
-                    this.addLog(`加载远程文件: ${url}`, 'info');
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error('无法加载文件');
-                    
-                    const text = await response.text();
-                    document.getElementById('input-code').value = text;
-                    this.switchTab('paste');
-                    this.showToast('远程文件加载成功');
-                    this.addLog('远程文件加载成功', 'success');
-                } catch (error) {
-                    this.showToast('加载失败: ' + error.message, 'error');
-                    this.addLog('加载远程文件失败: ' + error.message, 'error');
-                }
-            },
-            
-            clearLogs() {
-                const logContainer = document.getElementById('log-container');
-                logContainer.innerHTML = '<div class="log-entry"><span class="log-time">00:00:00</span><span class="log-info">日志已清空</span></div>';
-                this.showToast('日志已清空');
-            },
-            
-            showToast(message, type = 'success') {
-                const toast = document.getElementById('toast');
-                toast.textContent = message;
-                toast.className = 'toast show';
-                
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
-            },
-            
-            addLog(message, type = 'info') {
-                const logContainer = document.getElementById('log-container');
-                const time = new Date().toLocaleTimeString();
-                const logEntry = document.createElement('div');
-                logEntry.className = 'log-entry';
-                logEntry.innerHTML = `<span class="log-time">${time}</span><span class="log-${type}">${message}</span>`;
-                logContainer.appendChild(logEntry);
-                logContainer.scrollTop = logContainer.scrollHeight;
-            },
-            
-            async submitToGitHub(code) {
-                this.addLog('正在提交代码到 GitHub...', 'info');
-                
-                try {
-                    const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/input.js`;
-                    
-                    // 先尝试获取文件信息
-                    let sha = null;
-                    try {
-                        const getResponse = await fetch(apiUrl, {
-                            headers: {
-                                'Authorization': `token ${this.githubToken}`,
-                                'Accept': 'application/vnd.github.v3+json'
-                            }
-                        });
-                        
-                        if (getResponse.ok) {
-                            const fileData = await getResponse.json();
-                            sha = fileData.sha;
-                        }
-                    } catch (e) {
-                        // 文件不存在，将创建新文件
-                    }
-                    
-                    // 创建或更新文件
-                    const content = btoa(unescape(encodeURIComponent(code)));
-                    const response = await fetch(apiUrl, {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `token ${this.githubToken}`,
-                            'Accept': 'application/vnd.github.v3+json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            message: 'Update input.js for decryption',
-                            content: content,
-                            sha: sha || undefined
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('无法更新文件');
-                    }
-                    
-                    this.addLog('代码提交成功', 'success');
-                    
-                } catch (error) {
-                    throw new Error('GitHub API错误: ' + error.message);
-                }
-            },
-            
-            async simulateDecryption() {
-                const steps = [
-                    { delay: 1000, message: 'GitHub Actions 已触发', type: 'info' },
-                    { delay: 2000, message: '> Run npm install', type: 'info' },
-                    { delay: 3000, message: 'npm warn deprecated inflight@1.0.6', type: 'warning' },
-                    { delay: 4000, message: 'added 159 packages in 5s', type: 'info' },
-                    { delay: 5000, message: '✓ Execute decoding script', type: 'success' },
-                    { delay: 6000, message: '✓ Process completed', type: 'success' }
-                ];
-                
-                const progressBar = document.getElementById('progress-bar');
-                let progress = 0;
-                
-                for (const step of steps) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    this.addLog(step.message, step.type);
-                    progress += 100 / steps.length;
-                    progressBar.style.width = Math.min(progress, 90) + '%';
-                }
-                
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                progressBar.style.width = '100%';
-            },
-            
-            async getResult() {
-                this.addLog('正在获取解密结果...', 'info');
-                
-                try {
-                    const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
-                    const response = await fetch(apiUrl, {
-                        headers: {
-                            'Authorization': `token ${this.githubToken}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        const content = decodeURIComponent(escape(atob(data.content)));
-                        
-                        document.getElementById('output-code').value = content;
-                        this.addLog('解密成功！', 'success');
-                    } else {
-                        throw new Error('无法获取输出文件');
-                    }
-                } catch (error) {
-                    this.addLog('获取结果失败，使用模拟结果', 'warning');
-                    // 使用模拟结果
-                    const inputCode = document.getElementById('input-code').value;
-                    const result = mockDecrypt(inputCode);
-                    document.getElementById('output-code').value = result;
-                }
-            }
-        };
-        
-        // 初始化应用
-        document.addEventListener('DOMContentLoaded', () => {
-            app.init();
-        });
-    </script>
+  </div>
+
+  <div class="container">
+    <div class="input-section">
+      <div class="input-box">
+        <div class="input-header">
+          <div class="input-title">📥 输入原始代码</div>
+          <div class="input-actions">
+            <input type="file" id="fileInput" accept=".js,.txt" style="display: none;">
+            <button class="icon-btn" onclick="document.getElementById('fileInput').click()">📂 导入文件</button>
+          </div>
+        </div>
+        <textarea id="inputCode" placeholder="请粘贴或导入您的代码..."></textarea>
+        <p id="loadStatus">未选择文件</p>
+      </div>
+
+      <div class="input-box">
+        <div class="input-header">
+          <div class="input-title">🧩 解密结果</div>
+        </div>
+        <textarea readonly placeholder="此处显示处理后的内容..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const inputCode = document.getElementById("inputCode");
+    const loadStatus = document.getElementById("loadStatus");
+
+    fileInput.addEventListener("change", function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function (event) {
+        const content = event.target.result;
+        inputCode.value = content;
+        loadStatus.textContent = `✅ 文件 "${file.name}" 已导入`;
+      };
+
+      reader.onerror = function () {
+        loadStatus.textContent = "❌ 读取文件失败，请重试。";
+      };
+
+      reader.readAsText(file);
+    });
+  </script>
 </body>
 </html>
