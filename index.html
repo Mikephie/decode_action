@@ -2,846 +2,935 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>QLScript 在线解密工具</title>
+    <title>QLScript Decoder - 在线JS解密工具</title>
     <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #6366f1;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --border: #475569;
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Icons', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: -apple-system, system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
             min-height: 100vh;
-            color: #333;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            min-height: 100vh;
+            padding: 20px;
         }
 
+        /* 头部 */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
+            background: var(--bg-card);
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
         }
 
-        .header h1 {
-            font-size: 1.8em;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .header p {
-            font-size: 0.95em;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 20px;
-        }
-
-        /* Token 配置区域 */
-        .token-section {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .token-section h3 {
-            margin-bottom: 12px;
-            color: #555;
-            font-size: 1.1em;
-            font-weight: 600;
-        }
-
-        .token-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px; /* 防止iOS缩放 */
-            transition: border-color 0.3s;
-            background: white;
-        }
-
-        .token-input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .token-help {
-            margin-top: 10px;
-            font-size: 0.85em;
-            color: #666;
-        }
-
-        .token-help a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        /* 编辑器容器 - 适配移动端 */
-        .editor-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        @media (min-width: 768px) {
-            .editor-container {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        .editor-section {
-            background: #2d2d30;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .editor-header {
-            background: #252526;
-            padding: 12px 16px;
-            color: white;
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .editor-title {
-            font-size: 1em;
-            font-weight: 500;
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
             display: flex;
             align-items: center;
+            gap: 10px;
+        }
+
+        .status {
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* 配置区 */
+        .config-section {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
             gap: 8px;
         }
 
-        .editor-actions {
+        .label {
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+
+        .input {
+            padding: 10px 15px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* 工作区 */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+        }
+
+        .panel-header {
+            background: var(--bg-input);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-actions {
             display: flex;
             gap: 10px;
-            align-items: center;
         }
 
-        .editor-status {
-            font-size: 0.85em;
-            color: #4ec9b0;
+        /* 标签 */
+        .tabs {
+            display: flex;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
         }
 
-        .action-btn {
-            padding: 6px 12px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
-            font-size: 0.85em;
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: var(--text-dim);
             cursor: pointer;
-            transition: all 0.2s;
+            font-size: 14px;
+            transition: all 0.3s;
+            position: relative;
         }
 
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+        .tab:hover {
+            color: var(--text);
         }
 
-        .action-btn:active {
-            transform: scale(0.95);
+        .tab.active {
+            color: var(--primary);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        /* 内容区 */
+        .content-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: flex;
         }
 
         .code-editor {
             width: 100%;
-            min-height: 300px;
-            padding: 16px;
-            background: #1e1e1e;
-            color: #d4d4d4;
+            height: 100%;
+            padding: 20px;
+            background: var(--bg-dark);
+            color: var(--text);
             border: none;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+            font-family: 'Monaco', 'Consolas', monospace;
             font-size: 14px;
             line-height: 1.6;
-            resize: vertical;
+            resize: none;
         }
 
         .code-editor:focus {
             outline: none;
         }
 
-        .code-display {
-            padding: 16px;
-            background: #1e1e1e;
-            color: #d4d4d4;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+        /* 文件上传 */
+        .upload-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .upload-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 60px 40px;
+            border: 2px dashed var(--border);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-box:hover {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .upload-box.dragover {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.1);
+        }
+
+        /* URL输入 */
+        .url-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            gap: 20px;
+        }
+
+        /* 输出区 */
+        .output-area {
+            flex: 1;
+            padding: 20px;
+            background: var(--bg-dark);
+            color: var(--text);
+            font-family: 'Monaco', 'Consolas', monospace;
             font-size: 14px;
             line-height: 1.6;
-            min-height: 300px;
             overflow: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        /* 提交按钮区域 */
-        .action-section {
-            text-align: center;
-            margin: 25px 0;
-        }
-
-        .submit-button {
-            padding: 14px 40px;
-            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(86, 171, 47, 0.4);
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .submit-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(86, 171, 47, 0.6);
-        }
-
-        .submit-button:active {
-            transform: translateY(0);
-        }
-
-        .submit-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        /* 状态显示区域 */
-        .status-section {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 25px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .status-header {
-            font-size: 1.1em;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #333;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .status-content {
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 16px;
-            border-radius: 10px;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
-            font-size: 13px;
-            line-height: 1.5;
-            max-height: 400px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* 运行日志样式 */
-        .log-line {
-            margin: 2px 0;
-            display: flex;
-            align-items: flex-start;
-        }
-
-        .log-line-number {
-            color: #858585;
-            margin-right: 15px;
-            min-width: 30px;
-            text-align: right;
-            user-select: none;
-        }
-
-        .log-content {
-            flex: 1;
             white-space: pre-wrap;
             word-break: break-all;
         }
 
-        .log-npm {
-            color: #569cd6;
+        /* 按钮 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .log-warn {
-            color: #ce9178;
+        .btn:hover {
+            transform: translateY(-2px);
         }
 
-        .log-deprecated {
-            color: #d7ba7d;
+        .btn:active {
+            transform: translateY(0);
         }
 
-        .log-success {
-            color: #4ec9b0;
+        .btn-primary {
+            background: var(--primary);
+            color: white;
         }
 
-        .log-error {
-            color: #f44747;
+        .btn-primary:hover {
+            background: var(--primary-hover);
         }
 
-        .log-info {
-            color: #9cdcfe;
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text);
+            border: 1px solid var(--border);
         }
 
-        .log-step {
-            color: #4ec9b0;
-            margin: 10px 0;
+        .btn-secondary:hover {
+            background: var(--border);
         }
 
-        /* 进度条和倒计时 */
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #e0e0e0;
-            border-radius: 3px;
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* 操作栏 */
+        .action-bar {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            border: 1px solid var(--border);
+        }
+
+        /* 日志 */
+        .logs-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             overflow: hidden;
-            margin-top: 20px;
         }
 
-        .progress-fill {
+        .logs-header {
+            background: var(--bg-input);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logs-content {
+            height: 400px;
+            overflow-y: auto;
+            background: #000;
+            padding: 20px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .log-time {
+            color: var(--text-dim);
+            min-width: 80px;
+        }
+
+        .log-message {
+            flex: 1;
+        }
+
+        .log-info { color: #3b82f6; }
+        .log-success { color: var(--success); }
+        .log-warning { color: var(--warning); }
+        .log-error { color: var(--danger); }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        .toast.info { border-color: var(--primary); }
+
+        /* 进度条 */
+        .progress {
+            height: 4px;
+            background: var(--bg-input);
+            margin-top: 20px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary);
             width: 0%;
             transition: width 1s ease;
         }
 
-        .countdown {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #667eea;
-            margin: 20px 0;
-            text-align: center;
-        }
-
         /* 加载动画 */
-        .loader {
+        .spinner {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            vertical-align: middle;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
         /* 空状态 */
         .empty-state {
-            text-align: center;
-            padding: 50px;
-            color: #999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-dim);
+            gap: 10px;
         }
 
-        /* Toast 提示 */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 0.9em;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s;
+        .empty-state-icon {
+            font-size: 48px;
+            opacity: 0.5;
         }
 
-        .toast.show {
-            opacity: 1;
-        }
-
-        /* iPad 优化 */
-        @media (min-width: 768px) and (max-width: 1024px) {
-            .container {
-                margin: 20px;
-                max-width: none;
-            }
-            
-            .header h1 {
-                font-size: 2.2em;
-            }
-            
-            .code-editor, .code-display {
-                min-height: 400px;
-                font-size: 15px;
-            }
-        }
-
-        /* iPhone 横屏优化 */
-        @media (max-width: 768px) and (orientation: landscape) {
-            .header {
-                padding: 15px;
-            }
-            
-            .header h1 {
-                font-size: 1.5em;
-            }
-            
-            .code-editor, .code-display {
-                min-height: 200px;
-            }
-        }
-
-        /* 深色模式支持 */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
-            }
-            
-            .container {
-                background: rgba(30, 30, 30, 0.98);
-            }
-            
-            .token-section, .status-section {
-                background: rgba(45, 45, 48, 0.8);
-            }
-            
-            .token-input {
-                background: #1e1e1e;
-                color: #d4d4d4;
-                border-color: #444;
-            }
+        /* 隐藏的文件输入 */
+        input[type="file"] {
+            display: none;
         }
     </style>
 </head>
 <body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span>🔐</span>
+                <span>QLScript Decoder</span>
+            </div>
+            <div class="status" id="status">Ready</div>
+        </div>
+    </header>
+
     <div class="container">
-        <div class="header">
-            <h1>🚀 QLScript 在线解密工具</h1>
-            <p>将加密的 JavaScript 代码粘贴到输入框，自动解密并显示结果</p>
+        <!-- 配置 -->
+        <div class="config-section">
+            <h3>⚙️ GitHub 配置</h3>
+            <div class="config-grid">
+                <div class="input-group">
+                    <label class="label">Personal Access Token</label>
+                    <input type="password" id="github-token" class="input" placeholder="ghp_xxxxxxxxxxxx">
+                </div>
+                <div class="input-group">
+                    <label class="label">仓库地址</label>
+                    <input type="text" id="repo-name" class="input" value="Mikephie/decode_action">
+                </div>
+            </div>
         </div>
 
-        <div class="content">
-            <!-- GitHub Token 配置 -->
-            <div class="token-section">
-                <h3>⚙️ GitHub 配置</h3>
-                <input type="password" 
-                       id="github-token" 
-                       class="token-input" 
-                       placeholder="输入你的 GitHub Personal Access Token"
-                       autocomplete="off">
-                <div class="token-help">
-                    <p>需要 repo 权限的 token。<a href="https://github.com/settings/tokens/new" target="_blank">创建新 token →</a></p>
-                    <p style="margin-top: 10px;">仓库地址：</p>
-                    <input type="text" 
-                           id="repo-name" 
-                           class="token-input" 
-                           placeholder="用户名/仓库名" 
-                           value="Mikephie/decode_action"
-                           autocomplete="off">
+        <!-- 工作区 -->
+        <div class="workspace">
+            <!-- 输入面板 -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span>📥</span>
+                        <span>输入</span>
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="app.clearInput()">清空</button>
+                    </div>
                 </div>
-            </div>
-
-            <!-- 编辑器区域 -->
-            <div class="editor-container">
-                <div class="editor-section">
-                    <div class="editor-header">
-                        <span class="editor-title">
-                            <span>📥 输入 (input.js)</span>
-                        </span>
-                        <div class="editor-actions">
-                            <span class="editor-status" id="input-status">准备就绪</span>
-                            <button class="action-btn" onclick="pasteContent()">粘贴</button>
+                
+                <div class="tabs">
+                    <button class="tab active" onclick="app.switchTab('paste')">粘贴代码</button>
+                    <button class="tab" onclick="app.switchTab('file')">选择文件</button>
+                    <button class="tab" onclick="app.switchTab('url')">远程文件</button>
+                </div>
+                
+                <div class="content-area">
+                    <div class="tab-content active" id="paste-tab">
+                        <textarea id="code-input" class="code-editor" placeholder="粘贴需要解密的 JavaScript 代码..."></textarea>
+                    </div>
+                    
+                    <div class="tab-content" id="file-tab">
+                        <div class="upload-area">
+                            <div class="upload-box" onclick="app.selectFile()" id="drop-zone">
+                                <div style="font-size: 48px; margin-bottom: 10px;">📁</div>
+                                <div>点击选择文件或拖拽到此处</div>
+                                <div style="font-size: 12px; color: var(--text-dim); margin-top: 10px;">支持 .js 文件</div>
+                            </div>
+                            <input type="file" id="file-input" accept=".js" onchange="app.handleFile(event)">
                         </div>
                     </div>
-                    <textarea id="input-editor" class="code-editor" placeholder="在这里粘贴需要解密的 JavaScript 代码...
-
-例如：
-- sojson 加密的代码
-- obfuscator 混淆的代码
-- 其他支持的加密格式"></textarea>
-                </div>
-
-                <div class="editor-section">
-                    <div class="editor-header">
-                        <span class="editor-title">
-                            <span>📤 输出 (output.js)</span>
-                        </span>
-                        <div class="editor-actions">
-                            <span class="editor-status" id="output-status">等待运行</span>
-                            <button class="action-btn" onclick="copyOutput()">复制</button>
-                        </div>
-                    </div>
-                    <div id="output-display" class="code-display">
-                        <div class="empty-state">
-                            <div style="font-size: 2.5em; margin-bottom: 20px;">⏸️</div>
-                            <p>解密结果将在这里显示</p>
+                    
+                    <div class="tab-content" id="url-tab">
+                        <div class="url-area">
+                            <div class="input-group" style="width: 100%; max-width: 400px;">
+                                <label class="label">文件 URL</label>
+                                <input type="text" id="url-input" class="input" placeholder="https://example.com/script.js">
+                            </div>
+                            <button class="btn btn-primary" onclick="app.loadFromUrl()">加载文件</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 提交按钮 -->
-            <div class="action-section">
-                <button id="submit-btn" class="submit-button" onclick="submitAndRun()">
-                    <span>🚀</span>
-                    <span>提交并运行解密</span>
-                </button>
-            </div>
-
-            <!-- 状态显示 -->
-            <div class="status-section" id="status-section" style="display: none;">
-                <div class="status-header">
-                    <span>📊 运行日志</span>
-                    <button class="action-btn" onclick="clearLogs()">清空</button>
+            <!-- 输出面板 -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span>📤</span>
+                        <span>输出</span>
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="app.copyOutput()">复制</button>
+                        <button class="btn btn-sm btn-secondary" onclick="app.downloadOutput()">下载</button>
+                    </div>
                 </div>
-                <div class="countdown" id="countdown" style="display: none;"></div>
-                <div class="progress-bar" id="progress-bar" style="display: none;">
-                    <div class="progress-fill" id="progress-fill"></div>
-                </div>
-                <div class="status-content" id="status-log">
+                <div class="output-area" id="output-content">
                     <div class="empty-state">
-                        <p>等待运行...</p>
+                        <div class="empty-state-icon">⏸️</div>
+                        <div>解密结果将在这里显示</div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- 操作栏 -->
+        <div class="action-bar">
+            <button class="btn btn-danger" onclick="app.clearAll()">🗑️ 清除</button>
+            <button class="btn btn-primary" id="decrypt-btn" onclick="app.startDecryption()">🚀 点击解密</button>
+            <button class="btn btn-secondary" onclick="app.copyResult()">📋 复制结果</button>
+            <button class="btn btn-secondary" onclick="app.downloadResult()">💾 下载结果</button>
+        </div>
+
+        <!-- 日志 -->
+        <div class="logs-section">
+            <div class="logs-header">
+                <div class="panel-title">
+                    <span>📊</span>
+                    <span>运行日志</span>
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="app.clearLogs()">清空</button>
+            </div>
+            <div class="logs-content" id="logs-content">
+                <div class="empty-state">
+                    <div>等待运行...</div>
+                </div>
+            </div>
+            <div class="progress" id="progress" style="display: none;">
+                <div class="progress-bar" id="progress-bar"></div>
             </div>
         </div>
     </div>
 
-    <!-- Toast 提示 -->
-    <div id="toast" class="toast"></div>
+    <!-- Toast容器 -->
+    <div class="toast-container" id="toast-container"></div>
 
     <script>
-        let githubToken = '';
-        let repoName = '';
-        let checkInterval;
-        let runId = null;
-        let logLineNumber = 1;
-
-        // 初始化
-        window.onload = function() {
-            // 从 localStorage 读取保存的配置
-            const savedToken = localStorage.getItem('github_token');
-            const savedRepo = localStorage.getItem('repo_name');
+        // 应用主对象
+        const app = {
+            // 配置
+            githubToken: '',
+            repoName: '',
+            currentTab: 'paste',
             
-            if (savedToken) {
-                document.getElementById('github-token').value = savedToken;
-                githubToken = savedToken;
-            }
-            
-            if (savedRepo) {
-                document.getElementById('repo-name').value = savedRepo;
-                repoName = savedRepo;
-            } else {
-                repoName = document.getElementById('repo-name').value;
-                if (repoName) {
-                    localStorage.setItem('repo_name', repoName);
+            // 初始化
+            init() {
+                // 加载保存的配置
+                this.githubToken = localStorage.getItem('github_token') || '';
+                this.repoName = localStorage.getItem('repo_name') || 'Mikephie/decode_action';
+                
+                if (this.githubToken) {
+                    document.getElementById('github-token').value = this.githubToken;
                 }
-            }
-        };
-
-        // 监听输入变化
-        document.getElementById('github-token').addEventListener('input', function(e) {
-            githubToken = e.target.value.trim();
-            localStorage.setItem('github_token', githubToken);
-        });
-
-        document.getElementById('repo-name').addEventListener('input', function(e) {
-            repoName = e.target.value.trim();
-            localStorage.setItem('repo_name', repoName);
-        });
-
-        // 粘贴功能
-        async function pasteContent() {
-            try {
-                const text = await navigator.clipboard.readText();
-                document.getElementById('input-editor').value = text;
-                showToast('已粘贴代码');
-            } catch (err) {
-                showToast('无法访问剪贴板');
-            }
-        }
-
-        // 复制功能
-        function copyOutput() {
-            const output = document.getElementById('output-display').textContent;
-            if (output && !output.includes('解密结果将在这里显示')) {
-                navigator.clipboard.writeText(output).then(() => {
-                    showToast('已复制到剪贴板');
-                }).catch(() => {
-                    showToast('复制失败');
+                document.getElementById('repo-name').value = this.repoName;
+                
+                // 监听输入
+                document.getElementById('github-token').addEventListener('input', (e) => {
+                    this.githubToken = e.target.value.trim();
+                    localStorage.setItem('github_token', this.githubToken);
                 });
-            } else {
-                showToast('没有可复制的内容');
-            }
-        }
-
-        // 清空日志
-        function clearLogs() {
-            document.getElementById('status-log').innerHTML = '<div class="empty-state"><p>日志已清空</p></div>';
-            logLineNumber = 1;
-        }
-
-        // 显示 Toast 提示
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 2000);
-        }
-
-        // 提交并运行
-        async function submitAndRun() {
-            const inputCode = document.getElementById('input-editor').value;
+                
+                document.getElementById('repo-name').addEventListener('input', (e) => {
+                    this.repoName = e.target.value.trim();
+                    localStorage.setItem('repo_name', this.repoName);
+                });
+                
+                // 设置拖放
+                this.setupDragDrop();
+            },
             
-            if (!inputCode.trim()) {
-                showToast('请输入需要解密的代码！');
-                return;
-            }
-
-            if (!githubToken || githubToken.trim() === '') {
-                showToast('请先配置 GitHub Token！');
-                document.getElementById('github-token').focus();
-                return;
-            }
-
-            if (!repoName || repoName.trim() === '') {
-                showToast('请输入仓库名称！');
-                document.getElementById('repo-name').focus();
-                return;
-            }
-
-            const btn = document.getElementById('submit-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loader"></span><span>提交中...</span>';
-
-            // 显示状态区域
-            document.getElementById('status-section').style.display = 'block';
-            document.getElementById('status-log').innerHTML = '';
-            logLineNumber = 1;
-
-            try {
-                // 1. 更新 input.js 文件
-                addLogLine('🚀 开始执行任务...', 'log-step');
-                await updateFile(inputCode);
+            // 显示提示
+            showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `
+                    <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+                    <span>${message}</span>
+                `;
                 
-                // 2. 等待 Actions 运行
-                addLogLine('✅ 代码已提交到 GitHub', 'log-success');
-                addLogLine('⏳ 等待 GitHub Actions 开始运行...', 'log-info');
+                const container = document.getElementById('toast-container');
+                container.appendChild(toast);
                 
-                // 3. 开始倒计时和检查输出
-                startCountdown();
-                
-            } catch (error) {
-                addLogLine('❌ 错误: ' + error.message, 'log-error');
-                btn.disabled = false;
-                btn.innerHTML = '<span>🚀</span><span>提交并运行解密</span>';
-                showToast('运行失败');
-            }
-        }
-
-        // 更新文件到 GitHub
-        async function updateFile(content) {
-            const apiUrl = `https://api.github.com/repos/${repoName}/contents/input.js`;
+                setTimeout(() => toast.remove(), 3000);
+            },
             
-            try {
-                // 先获取文件的 SHA
-                const getResponse = await fetch(apiUrl, {
-                    headers: {
-                        'Authorization': `token ${githubToken}`,
-                        'Accept': 'application/vnd.github.v3+json'
+            // 添加日志
+            addLog(message, type = 'info') {
+                const logsContent = document.getElementById('logs-content');
+                if (logsContent.querySelector('.empty-state')) {
+                    logsContent.innerHTML = '';
+                }
+                
+                const time = new Date().toLocaleTimeString();
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `
+                    <span class="log-time">${time}</span>
+                    <span class="log-message log-${type}">${message}</span>
+                `;
+                
+                logsContent.appendChild(entry);
+                logsContent.scrollTop = logsContent.scrollHeight;
+            },
+            
+            // 切换标签
+            switchTab(tab) {
+                this.currentTab = tab;
+                
+                // 更新标签状态
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                event.target.classList.add('active');
+                
+                // 切换内容
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(`${tab}-tab`).classList.add('active');
+            },
+            
+            // 清空输入
+            clearInput() {
+                if (this.currentTab === 'paste') {
+                    document.getElementById('code-input').value = '';
+                } else if (this.currentTab === 'url') {
+                    document.getElementById('url-input').value = '';
+                }
+                this.showToast('已清空输入');
+            },
+            
+            // 文件选择
+            selectFile() {
+                document.getElementById('file-input').click();
+            },
+            
+            handleFile(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('code-input').value = e.target.result;
+                        this.switchTab('paste');
+                        document.querySelector('.tab').click();
+                        this.showToast('文件已加载', 'success');
+                    };
+                    reader.readAsText(file);
+                }
+            },
+            
+            // 拖放设置
+            setupDragDrop() {
+                const dropZone = document.getElementById('drop-zone');
+                
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                });
+                
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('dragover');
+                });
+                
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    
+                    const file = e.dataTransfer.files[0];
+                    if (file && file.name.endsWith('.js')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            document.getElementById('code-input').value = e.target.result;
+                            this.switchTab('paste');
+                            document.querySelector('.tab').click();
+                            this.showToast('文件已加载', 'success');
+                        };
+                        reader.readAsText(file);
                     }
                 });
-
-                let sha = '';
-                if (getResponse.ok) {
-                    const fileData = await getResponse.json();
-                    sha = fileData.sha;
+            },
+            
+            // 加载URL
+            async loadFromUrl() {
+                const url = document.getElementById('url-input').value.trim();
+                if (!url) {
+                    this.showToast('请输入URL', 'error');
+                    return;
                 }
-
-                // 更新文件
-                const updateResponse = await fetch(apiUrl, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${githubToken}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: 'Update input.js for decryption',
-                        content: btoa(unescape(encodeURIComponent(content))),
-                        sha: sha || undefined
-                    })
-                });
-
-                if (!updateResponse.ok) {
-                    const errorData = await updateResponse.json();
-                    throw new Error('无法更新文件: ' + (errorData.message || updateResponse.statusText));
+                
+                try {
+                    this.addLog('正在加载远程文件...');
+                    const response = await fetch(url);
+                    const content = await response.text();
+                    
+                    document.getElementById('code-input').value = content;
+                    this.switchTab('paste');
+                    document.querySelector('.tab').click();
+                    
+                    this.showToast('文件加载成功', 'success');
+                    this.addLog('远程文件加载成功', 'success');
+                } catch (error) {
+                    this.showToast('加载失败: ' + error.message, 'error');
+                    this.addLog('加载失败: ' + error.message, 'error');
                 }
-
-                document.getElementById('input-status').textContent = '已提交';
-            } catch (error) {
-                if (error.message.includes('401')) {
-                    throw new Error('Token 无效或已过期，请检查你的 GitHub Token');
-                } else if (error.message.includes('404')) {
-                    throw new Error('仓库或文件不存在，请检查仓库名称是否正确');
+            },
+            
+            // 清除所有
+            clearAll() {
+                document.getElementById('code-input').value = '';
+                document.getElementById('url-input').value = '';
+                document.getElementById('output-content').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⏸️</div>
+                        <div>解密结果将在这里显示</div>
+                    </div>
+                `;
+                this.clearLogs();
+                this.showToast('已清除所有内容');
+            },
+            
+            // 清空日志
+            clearLogs() {
+                document.getElementById('logs-content').innerHTML = `
+                    <div class="empty-state">
+                        <div>等待运行...</div>
+                    </div>
+                `;
+                document.getElementById('progress').style.display = 'none';
+            },
+            
+            // 复制输出
+            copyOutput() {
+                const output = document.getElementById('output-content').textContent;
+                if (output && !output.includes('解密结果将在这里显示')) {
+                    navigator.clipboard.writeText(output).then(() => {
+                        this.showToast('已复制到剪贴板', 'success');
+                    });
                 } else {
-                    throw error;
+                    this.showToast('没有可复制的内容', 'error');
                 }
-            }
-        }
-
-        // 开始倒计时
-        function startCountdown() {
-            let seconds = 60;
-            const countdownEl = document.getElementById('countdown');
-            const progressBar = document.getElementById('progress-bar');
-            const progressFill = document.getElementById('progress-fill');
+            },
             
-            countdownEl.style.display = 'block';
-            progressBar.style.display = 'block';
+            // 下载输出
+            downloadOutput() {
+                const output = document.getElementById('output-content').textContent;
+                if (output && !output.includes('解密结果将在这里显示')) {
+                    const blob = new Blob([output], { type: 'text/javascript' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'decrypted.js';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    this.showToast('文件已下载', 'success');
+                } else {
+                    this.showToast('没有可下载的内容', 'error');
+                }
+            },
             
-            // 模拟 npm install 日志
-            setTimeout(() => {
-                addLogLine('> Run npm install', 'log-npm');
-                addLogLine('npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory.', 'log-warn');
-                addLogLine('npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported', 'log-warn');
-                addLogLine('npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported', 'log-warn');
-                addLogLine('npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead', 'log-warn');
-                addLogLine('npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead', 'log-warn');
-                addLogLine('npm warn deprecated vm2@3.9.19: The library contains critical security issues', 'log-warn');
-                addLogLine('npm warn deprecated eslint@8.57.1: This version is no longer supported.', 'log-warn');
-            }, 2000);
-
-            setTimeout(() => {
-                addLogLine('added 159 packages, and audited 160 packages in 5s', 'log-info');
-                addLogLine('34 packages are looking for funding', 'log-info');
-                addLogLine('  run `npm fund` for details', 'log-info');
-                addLogLine('1 critical severity vulnerability', 'log-warn');
-            }, 5000);
-
-            const interval = setInterval(() => {
-                seconds--;
-                countdownEl.textContent = `${seconds} 秒`;
-                progressFill.style.width = ((60 - seconds) / 60 * 100) + '%';
-
-                if (seconds === 45) {
-                    addLogLine('✅ Set up job completed', 'log-step');
-                    addLogLine('✅ Checkout repository completed', 'log-step');
-                }
-
-                if (seconds === 30) {
-                    addLogLine('🔄 Execute Python script for decoding...', 'log-info');
-                }
-
-                if (seconds === 15) {
-                    addLogLine('✅ Install dependencies and run decode completed', 'log-step');
-                    addLogLine('📝 正在生成解密结果...', 'log-info');
-                }
-
-                if (seconds <= 0) {
-                    clearInterval(interval);
-                    countdownEl.textContent = '完成！';
-                    checkOutput();
-                }
-            }, 1000);
-        }
-
-        // 检查输出文件
-        async function checkOutput() {
-            addLogLine('📥 正在获取解密结果...', 'log-info');
+            // 复制结果（同copyOutput）
+            copyResult() {
+                this.copyOutput();
+            },
             
-            try {
-                const apiUrl = `https://api.github.com/repos/${repoName}/contents/output.js`;
-                const response = await fetch(apiUrl, {
-                    headers: {
-                        'Authorization': `token ${githubToken}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const content = decodeURIComponent(escape(atob(data.content)));
+            // 下载结果（同downloadOutput）
+            downloadResult() {
+                this.downloadOutput();
+            },
+            
+            // 开始解密
+            async startDecryption() {
+                const code = document.getElementById('code-input').value.trim();
+                
+                if (!code) {
+                    this.showToast('请输入需要解密的代码', 'error');
+                    return;
+                }
+                
+                if (!this.githubToken) {
+                    this.showToast('请配置GitHub Token', 'error');
+                    document.getElementById('github-token').focus();
+                    return;
+                }
+                
+                if (!this.repoName) {
+                    this.showToast('请配置仓库地址', 'error');
+                    document.getElementById('repo-name').focus();
+                    return;
+                }
+                
+                const btn = document.getElementById('decrypt-btn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span> 解密中...';
+                
+                document.getElementById('status').textContent = 'Running';
+                document.getElementById('progress').style.display = 'block';
+                
+                try {
+                    this.addLog('开始解密任务...', 'info');
                     
-                    // 显示输出
-                    document.getElementById('output-display').textContent = content;
-                    document.getElementById('output-status').textContent = '解密完成';
+                    // 更新文件
+                    await this.updateFile(code);
                     
-                    addLogLine('✅ 解密成功！结果已显示在输出框中。', 'log-success');
-                    showToast('解密完成！');
+                    // 模拟解密过程
+                    await this.simulateDecryption();
                     
-                    // 恢复按钮
-                    const btn = document.getElementById('submit-btn');
+                    // 获取结果
+                    await this.getResult();
+                    
+                    document.getElementById('status').textContent = 'Completed';
+                    this.showToast('解密完成！', 'success');
+                    
+                } catch (error) {
+                    this.addLog('错误: ' + error.message, 'error');
+                    this.showToast('解密失败', 'error');
+                    document.getElementById('status').textContent = 'Error';
+                } finally {
                     btn.disabled = false;
-                    btn.innerHTML = '<span>🚀</span><span>提交并运行解密</span>';
-                } else {
-                    throw new Error('无法获取输出文件');
+                    btn.innerHTML = '🚀 点击解密';
                 }
-            } catch (error) {
-                addLogLine('❌ 获取结果失败: ' + error.message, 'log-error');
-                addLogLine('⚠️ 请稍后手动检查 GitHub 仓库中的 output.js 文件', 'log-warning');
+            },
+            
+            // 更新GitHub文件
+            async updateFile(content) {
+                const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/input.js`;
                 
-                // 恢复按钮
-                const btn = document.getElementById('submit-btn');
-                btn.disabled = false;
-                btn.innerHTML = '<span>🚀</span><span>提交并运行解密</span>';
-            }
-        }
-
-        // 添加日志行
-        function addLogLine(message, className = '') {
-            const logDiv = document.getElementById('status-log');
-            const line = document.createElement('div');
-            line.className = 'log-line';
-            
-            line.innerHTML = `
-                <span class="log-line-number">${logLineNumber}</span>
-                <span class="log-content ${className}">${escapeHtml(message)}</span>
-            `;
-            
-            logDiv.appendChild(line);
-            logDiv.scrollTop = logDiv.scrollHeight;
-            logLineNumber++;
-        }
-
-        // HTML 转义
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
-    </script>
-</body>
-</html>
+                this.addLog('正在提交代码到GitHub...', 'info');
+                
+                try {
+                    // 获取文件SHA
+                    const getResponse = await fetch(apiUrl, {
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    let sha = '';
+                    if (getResponse.ok) {
+                        const data = await getResponse.json();
+                        sha = data.sha;
+                    }
+                    
+                    // 更新文件
+                    const response = await fetch(apiUrl, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.
