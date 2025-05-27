@@ -419,12 +419,18 @@
             
             if (savedToken) {
                 document.getElementById('github-token').value = savedToken;
-                githubToken = savedToken;
+                githubToken = savedToken;  // 重要：更新变量
             }
             
             if (savedRepo) {
                 document.getElementById('repo-name').value = savedRepo;
-                repoName = savedRepo;
+                repoName = savedRepo;  // 重要：更新变量
+            } else {
+                // 如果没有保存的值，使用默认值
+                repoName = document.getElementById('repo-name').value;
+                if (repoName) {
+                    localStorage.setItem('repo_name', repoName);
+                }
             }
 
             // 检查是否在 GitHub Pages 上运行
