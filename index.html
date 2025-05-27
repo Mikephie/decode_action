@@ -5,8 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>QLScript 在线解密工具</title>
+    <title>QLScript Decoder Pro</title>
     <style>
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #151934;
+            --bg-tertiary: #1e2341;
+            --border-color: #2a3054;
+            --text-primary: #e4e7ed;
+            --text-secondary: #a2a9b9;
+            --text-dim: #6b7280;
+            --accent-primary: #4f46e5;
+            --accent-hover: #6366f1;
+            --accent-success: #10b981;
+            --accent-error: #ef4444;
+            --accent-warning: #f59e0b;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-dark: linear-gradient(180deg, #0a0e27 0%, #151934 100%);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,205 +39,282 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
-            background: #0d1117;
-            color: #c9d1d9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
             overflow-x: hidden;
             min-height: 100vh;
         }
 
-        /* 头部导航 */
+        /* 背景装饰 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(-100px, -100px) rotate(120deg); }
+            66% { transform: translate(100px, -50px) rotate(240deg); }
+        }
+
+        /* 头部 */
         .header {
-            background: #161b22;
-            border-bottom: 1px solid #30363d;
-            padding: 16px;
+            background: rgba(21, 25, 52, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: var(--shadow-md);
         }
 
         .header-content {
-            max-width: 1280px;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 16px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .header h1 {
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 20px;
-            font-weight: 600;
-            color: #f0f6fc;
+            box-shadow: var(--shadow-sm);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-indicator {
             display: flex;
             align-items: center;
             gap: 8px;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--accent-success);
         }
 
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 12px;
-            background: #1f6feb;
-            color: white;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-success);
+            border-radius: 50%;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         /* 主容器 */
         .container {
-            max-width: 1280px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 24px 16px;
+            padding: 24px;
         }
 
-        /* 配置区域 */
-        .config-section {
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            padding: 16px;
-            margin-bottom: 16px;
+        /* 配置卡片 */
+        .config-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .config-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-primary);
         }
 
         .config-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
-            cursor: pointer;
+            margin-bottom: 20px;
         }
 
-        .config-header h3 {
-            font-size: 14px;
+        .config-title {
+            font-size: 16px;
             font-weight: 600;
-            color: #f0f6fc;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .config-content {
+        .config-grid {
             display: grid;
-            gap: 12px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .input-label {
-            font-size: 12px;
-            font-weight: 500;
-            color: #8b949e;
-        }
-
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .text-input {
-            width: 100%;
-            padding: 8px 12px;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            color: #c9d1d9;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .text-input:focus {
-            outline: none;
-            border-color: #58a6ff;
-            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
-        }
-
-        /* 主要工作区 */
-        .main-section {
-            display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 16px;
         }
 
-        @media (min-width: 768px) {
-            .main-section {
-                grid-template-columns: 1fr 1fr;
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .form-input {
+            padding: 10px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* 工作区 */
+        .workspace {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr;
             }
         }
 
-        .panel {
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 6px;
+        .editor-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
             overflow: hidden;
+            box-shadow: var(--shadow-md);
             display: flex;
             flex-direction: column;
-            height: 500px;
+            height: 600px;
+            position: relative;
         }
 
-        .panel-header {
-            background: #161b22;
-            padding: 12px 16px;
-            border-bottom: 1px solid #30363d;
+        .editor-header {
+            background: var(--bg-tertiary);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .panel-title {
-            font-size: 14px;
+        .editor-title {
+            font-size: 15px;
             font-weight: 600;
-            color: #f0f6fc;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .panel-actions {
+        .editor-actions {
             display: flex;
             gap: 8px;
         }
 
-        /* 输入区域 */
-        .input-tabs {
+        /* 标签栏 */
+        .tab-bar {
             display: flex;
-            background: #0d1117;
-            border-bottom: 1px solid #30363d;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .input-tab {
-            padding: 8px 16px;
-            font-size: 13px;
-            color: #8b949e;
+        .tab {
+            padding: 12px 24px;
+            font-size: 14px;
+            color: var(--text-secondary);
             background: none;
             border: none;
-            border-bottom: 2px solid transparent;
             cursor: pointer;
-            transition: all 0.2s;
+            position: relative;
+            transition: all 0.3s ease;
         }
 
-        .input-tab:hover {
-            color: #c9d1d9;
+        .tab:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        .input-tab.active {
-            color: #f0f6fc;
-            border-bottom-color: #f78166;
+        .tab.active {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
         }
 
-        .input-content {
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-primary);
+        }
+
+        /* 编辑器内容 */
+        .editor-content {
             flex: 1;
             position: relative;
-            overflow: hidden;
+            background: var(--bg-primary);
         }
 
-        .input-pane {
+        .editor-pane {
             position: absolute;
             top: 0;
             left: 0;
@@ -222,20 +323,20 @@
             display: none;
         }
 
-        .input-pane.active {
+        .editor-pane.active {
             display: flex;
-            flex-direction: column;
         }
 
         .code-editor {
-            flex: 1;
-            padding: 16px;
-            background: #0d1117;
-            color: #c9d1d9;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             border: none;
-            font-family: 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.5;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
             resize: none;
         }
 
@@ -243,136 +344,272 @@
             outline: none;
         }
 
-        .file-input-area {
+        /* 文件上传区域 */
+        .upload-zone {
             flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .upload-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 60px 40px;
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .upload-box:hover {
+            border-color: var(--accent-primary);
+            background: rgba(79, 70, 229, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .upload-box.dragover {
+            border-color: var(--accent-primary);
+            background: rgba(79, 70, 229, 0.15);
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.8;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* URL 输入区域 */
+        .url-input-container {
+            flex: 1;
+            padding: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 32px;
-            text-align: center;
+            gap: 20px;
         }
 
-        .file-dropzone {
+        .url-input-group {
             width: 100%;
             max-width: 400px;
-            padding: 32px;
-            border: 2px dashed #30363d;
-            border-radius: 6px;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .file-dropzone:hover {
-            border-color: #58a6ff;
-            background: rgba(88, 166, 255, 0.05);
-        }
-
-        .file-dropzone.dragover {
-            border-color: #58a6ff;
-            background: rgba(88, 166, 255, 0.1);
-        }
-
-        .file-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        .url-input-area {
-            flex: 1;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
         }
 
         /* 输出区域 */
-        .output-content {
-            flex: 1;
-            padding: 16px;
-            background: #0d1117;
-            color: #c9d1d9;
-            font-family: 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.5;
+        .output-display {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
             overflow: auto;
             white-space: pre-wrap;
             word-break: break-all;
         }
 
-        /* 日志区域 */
-        .logs-section {
-            margin-top: 24px;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 6px;
+        /* 按钮样式 */
+        .btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
             overflow: hidden;
         }
 
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
+        }
+
+        .btn-success {
+            background: var(--gradient-success);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--accent-error);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+        }
+
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 操作栏 */
+        .action-bar {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 日志区域 */
+        .logs-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
         .logs-header {
-            background: #161b22;
-            padding: 12px 16px;
-            border-bottom: 1px solid #30363d;
+            background: var(--bg-tertiary);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .logs-content {
+        .logs-viewport {
             height: 400px;
             overflow-y: auto;
-            background: #0d1117;
-            font-family: 'SF Mono', Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-            font-size: 12px;
+            background: #000;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
             line-height: 1.5;
         }
 
         .log-group {
-            border-bottom: 1px solid #21262d;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .log-group-header {
-            background: #161b22;
-            padding: 8px 16px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
-            cursor: pointer;
             user-select: none;
         }
 
         .log-group-header:hover {
-            background: #1c2128;
+            background: rgba(255, 255, 255, 0.08);
         }
 
-        .log-group.expanded .log-group-header {
-            background: #1c2128;
+        .log-expand-icon {
+            transition: transform 0.3s ease;
         }
 
-        .log-group-icon {
-            transition: transform 0.2s;
-        }
-
-        .log-group.expanded .log-group-icon {
+        .log-group.expanded .log-expand-icon {
             transform: rotate(90deg);
         }
 
         .log-group-title {
             flex: 1;
             font-weight: 600;
-            color: #f0f6fc;
+            color: #fff;
+        }
+
+        .log-group-status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .log-group-status.success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-success);
         }
 
         .log-group-time {
-            color: #8b949e;
-            font-size: 11px;
+            font-size: 12px;
+            color: var(--text-dim);
         }
 
         .log-group-content {
             display: none;
-            background: #0d1117;
-            padding: 0;
+            background: rgba(0, 0, 0, 0.5);
         }
 
         .log-group.expanded .log-group-content {
@@ -380,14 +617,13 @@
         }
 
         .log-line {
-            padding: 2px 16px 2px 40px;
-            display: flex;
-            align-items: flex-start;
+            padding: 4px 16px 4px 48px;
             position: relative;
+            color: #8b949e;
         }
 
         .log-line:hover {
-            background: rgba(177, 186, 196, 0.05);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .log-line-number {
@@ -395,158 +631,89 @@
             left: 16px;
             color: #484f58;
             user-select: none;
-            font-size: 11px;
-        }
-
-        .log-line-content {
-            flex: 1;
-            color: #8b949e;
-        }
-
-        .log-warn {
-            color: #d29922;
-        }
-
-        .log-error {
-            color: #f85149;
-        }
-
-        .log-success {
-            color: #3fb950;
-        }
-
-        .log-info {
-            color: #58a6ff;
-        }
-
-        /* 按钮样式 */
-        .btn {
-            padding: 6px 16px;
-            font-size: 14px;
-            font-weight: 500;
-            border-radius: 6px;
-            border: 1px solid;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: #238636;
-            border-color: #2ea043;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2ea043;
-        }
-
-        .btn-primary:disabled {
-            background: #21262d;
-            border-color: #30363d;
-            color: #8b949e;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: #21262d;
-            border-color: #30363d;
-            color: #c9d1d9;
-        }
-
-        .btn-secondary:hover {
-            background: #30363d;
-            border-color: #8b949e;
-        }
-
-        .btn-danger {
-            background: #21262d;
-            border-color: rgba(248, 81, 73, 0.4);
-            color: #f85149;
-        }
-
-        .btn-danger:hover {
-            background: rgba(248, 81, 73, 0.1);
-            border-color: #f85149;
-        }
-
-        .btn-sm {
-            padding: 4px 12px;
             font-size: 12px;
         }
 
-        /* 操作按钮组 */
-        .action-bar {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            padding: 24px;
-            background: #0d1117;
-            border-top: 1px solid #30363d;
-            position: sticky;
-            bottom: 0;
-        }
+        .log-npm { color: #569cd6; }
+        .log-warn { color: #d29922; }
+        .log-error { color: #f85149; }
+        .log-success { color: #3fb950; }
+        .log-info { color: #58a6ff; }
 
         /* 进度条 */
+        .progress-container {
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
         .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: #21262d;
-            border-radius: 2px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
             overflow: hidden;
-            margin-top: 16px;
         }
 
         .progress-fill {
             height: 100%;
-            background: #58a6ff;
+            background: var(--gradient-primary);
             width: 0%;
             transition: width 1s ease;
         }
 
-        /* Toast 提示 */
+        /* Toast 通知 */
         .toast {
             position: fixed;
             bottom: 24px;
             left: 50%;
-            transform: translateX(-50%);
-            background: #161b22;
-            border: 1px solid #30363d;
-            color: #c9d1d9;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 14px;
-            z-index: 1000;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow-lg);
             opacity: 0;
-            transition: opacity 0.3s;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
         }
 
         .toast.show {
+            transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
 
         .toast.success {
-            border-color: #2ea043;
-            color: #3fb950;
+            border-color: var(--accent-success);
         }
 
         .toast.error {
-            border-color: #f85149;
-            color: #f85149;
+            border-color: var(--accent-error);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        .toast-message {
+            font-size: 14px;
         }
 
         /* 加载动画 */
         .spinner {
-            display: inline-block;
             width: 16px;
             height: 16px;
-            border: 2px solid #30363d;
-            border-top-color: #58a6ff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -557,81 +724,84 @@
 
         /* 空状态 */
         .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-dim);
             text-align: center;
-            padding: 48px;
-            color: #8b949e;
+            padding: 40px;
         }
 
-        .empty-state-icon {
-            font-size: 48px;
+        .empty-icon {
+            font-size: 64px;
             margin-bottom: 16px;
             opacity: 0.3;
         }
 
-        /* 文件选择 */
-        input[type="file"] {
-            display: none;
-        }
-
-        /* 响应式优化 */
+        /* 响应式 */
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 16px;
+            .header-content {
+                padding: 12px 16px;
             }
             
-            .panel {
+            .logo-text {
+                display: none;
+            }
+            
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+            
+            .editor-panel {
                 height: 400px;
             }
             
             .action-bar {
-                flex-wrap: wrap;
-                gap: 12px;
                 padding: 16px;
             }
             
-            .logs-content {
+            .logs-viewport {
                 height: 300px;
             }
         }
 
-        /* 折叠动画 */
-        .collapsible {
-            overflow: hidden;
-            transition: max-height 0.3s ease;
+        /* 文件输入隐藏 */
+        input[type="file"] {
+            display: none;
         }
 
-        /* 成功勾选动画 */
-        .checkmark {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #3fb950;
-            position: relative;
-        }
-
-        .checkmark:after {
-            content: '';
-            position: absolute;
-            left: 5px;
-            top: 2px;
-            width: 4px;
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 8px;
             height: 8px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-dim);
         }
     </style>
 </head>
 <body>
-    <!-- 顶部导航 -->
+    <!-- 头部 -->
     <header class="header">
         <div class="header-content">
-            <h1>
-                <span>🔐</span>
-                <span>QLScript 在线解密工具</span>
-            </h1>
-            <div class="status-badge">
+            <div class="logo">
+                <div class="logo-icon">🔐</div>
+                <div class="logo-text">QLScript Decoder Pro</div>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
                 <span>Ready</span>
             </div>
         </div>
@@ -639,119 +809,126 @@
 
     <div class="container">
         <!-- GitHub 配置 -->
-        <div class="config-section">
-            <div class="config-header" onclick="toggleConfig()">
-                <h3>
+        <div class="config-card">
+            <div class="config-header">
+                <h3 class="config-title">
                     <span>⚙️</span>
-                    <span>GitHub 配置</span>
+                    <span>GitHub Configuration</span>
                 </h3>
-                <span id="config-toggle">▼</span>
             </div>
-            <div class="config-content" id="config-content">
-                <div class="input-group">
-                    <label class="input-label">Personal Access Token</label>
-                    <div class="input-wrapper">
-                        <input type="password" 
-                               id="github-token" 
-                               class="text-input" 
-                               placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                               autocomplete="off">
-                    </div>
+            <div class="config-grid">
+                <div class="form-group">
+                    <label class="form-label">Personal Access Token</label>
+                    <input type="password" 
+                           id="github-token" 
+                           class="form-input" 
+                           placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                           autocomplete="off">
                 </div>
-                <div class="input-group">
-                    <label class="input-label">仓库地址</label>
-                    <div class="input-wrapper">
-                        <input type="text" 
-                               id="repo-name" 
-                               class="text-input" 
-                               placeholder="用户名/仓库名" 
-                               value="Mikephie/decode_action"
-                               autocomplete="off">
-                    </div>
+                <div class="form-group">
+                    <label class="form-label">Repository</label>
+                    <input type="text" 
+                           id="repo-name" 
+                           class="form-input" 
+                           placeholder="username/repository" 
+                           value="Mikephie/decode_action"
+                           autocomplete="off">
                 </div>
             </div>
         </div>
 
-        <!-- 主工作区 -->
-        <div class="main-section">
+        <!-- 工作区 -->
+        <div class="workspace">
             <!-- 输入面板 -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h3 class="panel-title">
+            <div class="editor-panel">
+                <div class="editor-header">
+                    <h3 class="editor-title">
                         <span>📥</span>
-                        <span>输入</span>
+                        <span>Input</span>
                     </h3>
-                    <div class="panel-actions">
-                        <button class="btn btn-sm btn-secondary" onclick="clearInput()">清空</button>
+                    <div class="editor-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="clearInput()">
+                            <span>🗑️</span>
+                            <span>Clear</span>
+                        </button>
                     </div>
                 </div>
                 
-                <div class="input-tabs">
-                    <button class="input-tab active" onclick="switchInputTab('paste')">粘贴代码</button>
-                    <button class="input-tab" onclick="switchInputTab('file')">选择文件</button>
-                    <button class="input-tab" onclick="switchInputTab('url')">远程文件</button>
+                <div class="tab-bar">
+                    <button class="tab active" onclick="switchTab('paste')">Paste Code</button>
+                    <button class="tab" onclick="switchTab('file')">Upload File</button>
+                    <button class="tab" onclick="switchTab('url')">Remote URL</button>
                 </div>
                 
-                <div class="input-content">
+                <div class="editor-content">
                     <!-- 粘贴代码 -->
-                    <div class="input-pane active" id="paste-pane">
-                        <textarea id="code-input" class="code-editor" placeholder="在这里粘贴需要解密的 JavaScript 代码...
+                    <div class="editor-pane active" id="paste-pane">
+                        <textarea id="code-input" class="code-editor" placeholder="Paste your encrypted JavaScript code here...
 
-支持以下加密格式：
+Supported formats:
 • sojson (jsjiami.v6)
 • sojsonv7 (jsjiami.v7)
-• obfuscator (市面上通用加密)
-• awsc (阿里云混淆)
+• obfuscator
+• awsc
 • jjencode
 • common"></textarea>
                     </div>
                     
-                    <!-- 选择文件 -->
-                    <div class="input-pane" id="file-pane">
-                        <div class="file-input-area">
-                            <div class="file-dropzone" id="dropzone" onclick="selectFile()">
-                                <div class="file-icon">📁</div>
-                                <p>点击选择文件或拖拽文件到此处</p>
-                                <p style="font-size: 12px; color: #8b949e; margin-top: 8px;">支持 .js 文件</p>
+                    <!-- 上传文件 -->
+                    <div class="editor-pane" id="file-pane">
+                        <div class="upload-zone">
+                            <div class="upload-box" id="dropzone" onclick="selectFile()">
+                                <div class="upload-icon">📁</div>
+                                <div class="upload-text">Drop file here or click to browse</div>
+                                <div class="upload-hint">Supports .js files</div>
                             </div>
                             <input type="file" id="file-input" accept=".js" onchange="handleFileSelect(event)">
                         </div>
                     </div>
                     
-                    <!-- 远程文件 -->
-                    <div class="input-pane" id="url-pane">
-                        <div class="url-input-area">
-                            <div class="input-group">
-                                <label class="input-label">文件 URL</label>
-                                <input type="text" 
-                                       id="url-input" 
-                                       class="text-input" 
-                                       placeholder="https://example.com/script.js">
+                    <!-- 远程URL -->
+                    <div class="editor-pane" id="url-pane">
+                        <div class="url-input-container">
+                            <div class="url-input-group">
+                                <div class="form-group">
+                                    <label class="form-label">File URL</label>
+                                    <input type="text" 
+                                           id="url-input" 
+                                           class="form-input" 
+                                           placeholder="https://example.com/script.js">
+                                </div>
+                                <button class="btn btn-primary" style="width: 100%; margin-top: 16px;" onclick="loadFromUrl()">
+                                    <span>⬇️</span>
+                                    <span>Load File</span>
+                                </button>
                             </div>
-                            <button class="btn btn-primary" onclick="loadFromUrl()">
-                                加载文件
-                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- 输出面板 -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h3 class="panel-title">
+            <div class="editor-panel">
+                <div class="editor-header">
+                    <h3 class="editor-title">
                         <span>📤</span>
-                        <span>输出</span>
+                        <span>Output</span>
                     </h3>
-                    <div class="panel-actions">
-                        <button class="btn btn-sm btn-secondary" onclick="copyOutput()">复制</button>
-                        <button class="btn btn-sm btn-secondary" onclick="downloadOutput()">下载</button>
+                    <div class="editor-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="copyOutput()">
+                            <span>📋</span>
+                            <span>Copy</span>
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="downloadOutput()">
+                            <span>💾</span>
+                            <span>Download</span>
+                        </button>
                     </div>
                 </div>
-                <div class="output-content" id="output-content">
+                <div class="output-display" id="output-content">
                     <div class="empty-state">
-                        <div class="empty-state-icon">⏸️</div>
-                        <p>解密结果将在这里显示</p>
+                        <div class="empty-icon">⏸️</div>
+                        <div>Decrypted code will appear here</div>
                     </div>
                 </div>
             </div>
@@ -761,236 +938,34 @@
         <div class="action-bar">
             <button class="btn btn-danger" onclick="clearAll()">
                 <span>🗑️</span>
-                <span>清除</span>
+                <span>Clear All</span>
             </button>
             <button class="btn btn-primary" id="decrypt-btn" onclick="startDecryption()">
                 <span>🚀</span>
-                <span>点击解密</span>
+                <span>Start Decryption</span>
             </button>
             <button class="btn btn-secondary" onclick="copyResult()">
                 <span>📋</span>
-                <span>复制结果</span>
+                <span>Copy Result</span>
             </button>
             <button class="btn btn-secondary" onclick="downloadResult()">
                 <span>💾</span>
-                <span>下载结果</span>
+                <span>Download Result</span>
             </button>
         </div>
 
         <!-- 运行日志 -->
-        <div class="logs-section">
+        <div class="logs-container">
             <div class="logs-header">
-                <h3 class="panel-title">
+                <h3 class="editor-title">
                     <span>📊</span>
-                    <span>运行日志</span>
+                    <span>Execution Logs</span>
                 </h3>
-                <button class="btn btn-sm btn-secondary" onclick="clearLogs()">清空日志</button>
+                <button class="btn btn-sm btn-secondary" onclick="clearLogs()">Clear</button>
             </div>
-            <div class="logs-content" id="logs-content">
+            <div class="logs-viewport" id="logs-viewport">
                 <div class="empty-state">
-                    <p>等待运行...</p>
+                    <div>Waiting for execution...</div>
                 </div>
             </div>
-            <div class="progress-bar" id="progress-bar" style="display: none;">
-                <div class="progress-fill" id="progress-fill"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast 提示 -->
-    <div id="toast" class="toast"></div>
-
-    <script>
-        // 全局变量
-        let githubToken = '';
-        let repoName = '';
-        let currentInputTab = 'paste';
-        let logGroups = [];
-        let currentLogGroup = null;
-        let lineNumber = 1;
-
-        // 初始化
-        window.onload = function() {
-            // 从 localStorage 读取配置
-            const savedToken = localStorage.getItem('github_token');
-            const savedRepo = localStorage.getItem('repo_name');
-            
-            if (savedToken) {
-                document.getElementById('github-token').value = savedToken;
-                githubToken = savedToken;
-            }
-            
-            if (savedRepo) {
-                document.getElementById('repo-name').value = savedRepo;
-                repoName = savedRepo;
-            } else {
-                repoName = document.getElementById('repo-name').value;
-                if (repoName) {
-                    localStorage.setItem('repo_name', repoName);
-                }
-            }
-
-            // 设置拖拽事件
-            setupDragAndDrop();
-        };
-
-        // 监听输入变化
-        document.getElementById('github-token').addEventListener('input', function(e) {
-            githubToken = e.target.value.trim();
-            localStorage.setItem('github_token', githubToken);
-        });
-
-        document.getElementById('repo-name').addEventListener('input', function(e) {
-            repoName = e.target.value.trim();
-            localStorage.setItem('repo_name', repoName);
-        });
-
-        // 切换配置区域
-        function toggleConfig() {
-            const content = document.getElementById('config-content');
-            const toggle = document.getElementById('config-toggle');
-            if (content.style.display === 'none') {
-                content.style.display = 'grid';
-                toggle.textContent = '▼';
-            } else {
-                content.style.display = 'none';
-                toggle.textContent = '▶';
-            }
-        }
-
-        // 切换输入标签
-        function switchInputTab(tab) {
-            currentInputTab = tab;
-            
-            // 更新标签状态
-            document.querySelectorAll('.input-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // 切换面板
-            document.querySelectorAll('.input-pane').forEach(p => p.classList.remove('active'));
-            document.getElementById(tab + '-pane').classList.add('active');
-        }
-
-        // 清空输入
-        function clearInput() {
-            if (currentInputTab === 'paste') {
-                document.getElementById('code-input').value = '';
-            } else if (currentInputTab === 'url') {
-                document.getElementById('url-input').value = '';
-            }
-            showToast('已清空输入');
-        }
-
-        // 文件选择和拖拽
-        function setupDragAndDrop() {
-            const dropzone = document.getElementById('dropzone');
-            
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropzone.addEventListener(eventName, preventDefaults, false);
-            });
-            
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropzone.addEventListener(eventName, () => {
-                    dropzone.classList.add('dragover');
-                }, false);
-            });
-            
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropzone.addEventListener(eventName, () => {
-                    dropzone.classList.remove('dragover');
-                }, false);
-            });
-            
-            dropzone.addEventListener('drop', handleDrop, false);
-        }
-
-        function selectFile() {
-            document.getElementById('file-input').click();
-        }
-
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                readFile(file);
-            }
-        }
-
-        function handleDrop(e) {
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                readFile(files[0]);
-            }
-        }
-
-        function readFile(file) {
-            if (!file.name.endsWith('.js')) {
-                showToast('请选择 .js 文件', 'error');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                switchInputTab('paste');
-                document.querySelector('.input-tab').click();
-                document.getElementById('code-input').value = e.target.result;
-                showToast('文件已加载');
-            };
-            reader.readAsText(file);
-        }
-
-        // 加载远程文件
-        async function loadFromUrl() {
-            const url = document.getElementById('url-input').value.trim();
-            if (!url) {
-                showToast('请输入文件 URL', 'error');
-                return;
-            }
-            
-            try {
-                showToast('正在加载文件...');
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('无法加载文件');
-                
-                const content = await response.text();
-                switchInputTab('paste');
-                document.querySelector('.input-tab').click();
-                document.getElementById('code-input').value = content;
-                showToast('文件加载成功', 'success');
-            } catch (error) {
-                showToast('加载失败: ' + error.message, 'error');
-            }
-        }
-
-        // 开始解密
-        async function startDecryption() {
-            const inputCode = document.getElementById('code-input').value;
-            
-            if (!inputCode.trim()) {
-                showToast('请输入需要解密的代码', 'error');
-                return;
-            }
-
-            if (!githubToken || githubToken.trim() === '') {
-                showToast('请先配置 GitHub Token', 'error');
-                toggleConfig();
-                document.getElementById('github-token').focus();
-                return;
-            }
-
-            if (!repoName || repoName.trim() === '') {
-                showToast('请输入仓库名称', 'error');
-                toggleConfig();
-                document.getElementById('repo-name').focus();
-                return;
-            }
-
-            const btn = document.getElementById('decrypt-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span><span>解密中...</span>';
-            
-            // 更新状态
+            <div class="
