@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QLScript 在线解密工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .token-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .token-section h3 {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .token-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .token-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .token-help {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .token-help a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .editor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .editor-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .editor-section {
+            background: #2d2d30;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .editor-header {
+            background: #252526;
+            padding: 15px 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-title {
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .editor-status {
+            font-size: 0.9em;
+            color: #4ec9b0;
+        }
+
+        .code-editor {
+            width: 100%;
+            min-height: 400px;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: none;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .code-editor:focus {
+            outline: none;
+        }
+
+        .code-display {
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            min-height: 400px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .action-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .submit-button {
+            padding: 15px 50px;
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(86, 171, 47, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(86, 171, 47, 0.6);
+        }
+
+        .submit-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .status-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .status-content {
+            background: #2d2d30;
+            color: #cccccc;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 5px 0;
+        }
+
+        .log-time {
+            color: #4ec9b0;
+            margin-right: 10px;
+        }
+
+        .log-info {
+            color: #9cdcfe;
+        }
+
+        .log-success {
+            color: #4ec9b0;
+        }
+
+        .log-error {
+            color: #f44747;
+        }
+
+        .log-warning {
+            color: #ffcc00;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 1s ease;
+        }
+
+        .countdown {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .success-message {
+            background: #efe;
+            border: 1px solid #cfc;
+            color: #363;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .info-box {
+            background: #e8f4fd;
+            border: 1px solid #b8e0f7;
+            color: #0c5b9d;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 QLScript 在线解密工具</h1>
+            <p>将加密的 JavaScript 代码粘贴到输入框，自动解密并显示结果</p>
+        </div>
+
+        <div class="content">
+            <!-- GitHub Pages 提示 -->
+            <div class="info-box">
+                <strong>📌 GitHub Pages 部署说明：</strong>
+                1. Fork 或创建新仓库<br>
+                2. 将此 HTML 文件保存为 index.html<br>
+                3. 上传到仓库的根目录或 docs 文件夹<br>
+                4. 在仓库 Settings → Pages 中启用 GitHub Pages<br>
+                5. 选择分支和文件夹，保存后即可通过 https://[用户名].github.io/[仓库名] 访问
+            </div>
+
+            <!-- GitHub Token 配置 -->
+            <div class="token-section">
+                <h3>⚙️ GitHub 配置</h3>
+                <input type="password" 
+                       id="github-token" 
+                       class="token-input" 
+                       placeholder="输入你的 GitHub Personal Access Token">
+                <div class="token-help">
+                    <p>需要 repo 权限的 token。<a href="https://github.com/settings/tokens/new" target="_blank">创建新 token →</a></p>
+                    <p>仓库地址：<input type="text" id="repo-name" class="token-input" style="margin-top: 10px;" placeholder="用户名/仓库名 (例如: Mikephie/decode_action)" value="Mikephie/decode_action"></p>
+                </div>
+            </div>
+
+            <!-- 编辑器区域 -->
+            <div class="editor-container">
+                <div class="editor-section">
+                    <div class="editor-header">
+                        <span class="editor-title">📥 输入 (input.js)</span>
+                        <span class="editor-status" id="input-status">准备就绪</span>
+                    </div>
+                    <textarea id="input-editor" class="code-editor" placeholder="在这里粘贴需要解密的 JavaScript 代码...
+
+例如：
+- sojson 加密的代码
+- obfuscator 混淆的代码
+- 其他支持的加密格式"></textarea>
+                </div>
+
+                <div class="editor-section">
+                    <div class="editor-header">
+                        <span class="editor-title">📤 输出 (output.js)</span>
+                        <span class="editor-status" id="output-status">等待运行</span>
+                    </div>
+                    <div id="output-display" class="code-display">
+                        <div class="empty-state">
+                            <div style="font-size: 3em; margin-bottom: 20px;">⏸️</div>
+                            <p>解密结果将在这里显示</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 提交按钮 -->
+            <div class="action-section">
+                <button id="submit-btn" class="submit-button" onclick="submitAndRun()">
+                    <span>🚀</span>
+                    <span>提交并运行解密</span>
+                </button>
+            </div>
+
+            <!-- 状态显示 -->
+            <div class="status-section" id="status-section" style="display: none;">
+                <div class="status-header">📊 运行状态</div>
+                <div class="countdown" id="countdown" style="display: none;"></div>
+                <div class="progress-bar" id="progress-bar" style="display: none;">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="status-content" id="status-log">
+                    <div class="empty-state">
+                        <p>等待运行...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let githubToken = '';
+        let repoName = '';
+        let checkInterval;
+        let runId = null;
+
+        // 初始化
+        window.onload = function() {
+            // 从 localStorage 读取保存的配置
+            const savedToken = localStorage.getItem('github_token');
+            const savedRepo = localStorage.getItem('repo_name');
+            
+            if (savedToken) {
+                document.getElementById('github-token').value = savedToken;
+                githubToken = savedToken;
+            }
+            
+            if (savedRepo) {
+                document.getElementById('repo-name').value = savedRepo;
+                repoName = savedRepo;
+            }
+
+            // 检查是否在 GitHub Pages 上运行
+            if (window.location.hostname.includes('github.io')) {
+                console.log('Running on GitHub Pages');
+            }
+        };
+
+        // 监听输入变化
+        document.getElementById('github-token').addEventListener('change', function(e) {
+            githubToken = e.target.value;
+            localStorage.setItem('github_token', githubToken);
+        });
+
+        document.getElementById('repo-name').addEventListener('change', function(e) {
+            repoName = e.target.value;
+            localStorage.setItem('repo_name', repoName);
+        });
+
+        // 提交并运行
+        async function submitAndRun() {
+            const inputCode = document.getElementById('input-editor').value;
+            
+            if (!inputCode.trim()) {
+                alert('请输入需要解密的代码！');
+                return;
+            }
+
+            if (!githubToken) {
+                alert('请先配置 GitHub Token！');
+                document.getElementById('github-token').focus();
+                return;
+            }
+
+            if (!repoName) {
+                alert('请输入仓库名称！');
+                document.getElementById('repo-name').focus();
+                return;
+            }
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loader"></span><span>提交中...</span>';
+
+            // 显示状态区域
+            document.getElementById('status-section').style.display = 'block';
+            document.getElementById('status-log').innerHTML = '';
+
+            try {
+                // 1. 更新 input.js 文件
+                addLog('info', '正在提交代码到 GitHub...');
+                await updateFile(inputCode);
+                
+                // 2. 等待 Actions 运行
+                addLog('success', '代码已提交，等待 GitHub Actions 开始运行...');
+                await waitForActions();
+                
+                // 3. 开始倒计时和检查输出
+                startCountdown();
+                
+            } catch (error) {
+                addLog('error', '错误: ' + error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<span>🚀</span><span>提交并运行解密</span>';
+            }
+        }
+
+        // 更新文件到 GitHub
+        async function updateFile(content) {
+            const apiUrl = `https://api.github.com/repos/${repoName}/contents/input.js`;
+            
+            try {
+                // 先获取文件的 SHA
+                const getResponse = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                let sha = '';
+                if (getResponse.ok) {
+                    const fileData = await getResponse.json();
+                    sha = fileData.sha;
+                }
+
+                // 更新文件
+                const updateResponse = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Update input.js for decryption',
+                        content: btoa(unescape(encodeURIComponent(content))),
+                        sha: sha || undefined
+                    })
+                });
+
+                if (!updateResponse.ok) {
+                    const errorData = await updateResponse.json();
+                    throw new Error('无法更新文件: ' + (errorData.message || updateResponse.statusText));
+                }
+
+                document.getElementById('input-status').textContent = '已提交';
+            } catch (error) {
+                if (error.message.includes('401')) {
+                    throw new Error('Token 无效或已过期，请检查你的 GitHub Token');
+                } else if (error.message.includes('404')) {
+                    throw new Error('仓库或文件不存在，请检查仓库名称是否正确');
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        // 等待 Actions 开始运行
+        async function waitForActions() {
+            const apiUrl = `https://api.github.com/repos/${repoName}/actions/runs`;
+            
+            // 获取最新的运行
+            const response = await fetch(apiUrl, {
+                headers: {
+                    'Authorization': `token ${githubToken}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('无法获取 Actions 状态');
+            }
+
+            const data = await response.json();
+            if (data.workflow_runs && data.workflow_runs.length > 0) {
+                runId = data.workflow_runs[0].id;
+                addLog('info', `GitHub Actions 运行 ID: ${runId}`);
+            }
+        }
+
+        // 开始倒计时
+        function startCountdown() {
+            let seconds = 60;
+            const countdownEl = document.getElementById('countdown');
+            const progressBar = document.getElementById('progress-bar');
+            const progressFill = document.getElementById('progress-fill');
+            
+            countdownEl.style.display = 'block';
+            progressBar.style.display = 'block';
+            
+            addLog('info', '开始解密过程，预计需要 60 秒...');
+
+            const interval = setInterval(() => {
+                seconds--;
+                countdownEl.textContent = `${seconds} 秒`;
+                progressFill.style.width = ((60 - seconds) / 60 * 100) + '%';
+
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    countdownEl.textContent = '完成！';
+                    checkOutput();
+                }
+
+                // 每10秒检查一次
+                if (seconds % 10 === 0 && seconds > 0) {
+                    addLog('info', `正在处理中... 剩余 ${seconds} 秒`);
+                }
+            }, 1000);
+        }
+
+        // 检查输出文件
+        async function checkOutput() {
+            addLog('info', '正在获取解密结果...');
+            
+            try {
+                const apiUrl = `https://api.github.com/repos/${repoName}/contents/output.js`;
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const content = decodeURIComponent(escape(atob(data.content)));
+                    
+                    // 显示输出
+                    document.getElementById('output-display').textContent = content;
+                    document.getElementById('output-status').textContent = '解密完成';
+                    
+                    addLog('success', '✅ 解密成功！结果已显示在输出框中。');
+                    
+                    // 恢复按钮
+                    const btn = document.getElementById('submit-btn');
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>🚀</span><span>提交并运行解密</span>';
+                } else {
+                    throw new Error('无法获取输出文件');
+                }
+            } catch (error) {
+                addLog('error', '获取结果失败: ' + error.message);
+                addLog('warning', '请稍后手动检查 GitHub 仓库中的 output.js 文件');
+                
+                // 恢复按钮
+                const btn = document.getElementById('submit-btn');
+                btn.disabled = false;
+                btn.innerHTML = '<span>🚀</span><span>提交并运行解密</span>';
+            }
+        }
+
+        // 添加日志
+        function addLog(type, message) {
+            const logDiv = document.getElementById('status-log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            const time = new Date().toLocaleTimeString();
+            const typeClass = `log-${type}`;
+            
+            entry.innerHTML = `<span class="log-time">[${time}]</span><span class="${typeClass}">${message}</span>`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // 处理 GitHub API 的 CORS 问题
+        // GitHub API 支持 CORS，所以在 GitHub Pages 上应该可以正常工作
+    </script>
+</body>
+</html>
