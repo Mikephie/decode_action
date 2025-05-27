@@ -231,7 +231,7 @@
         .file-upload {
             border: 2px dashed rgba(255, 255, 255, 0.2);
             border-radius: 12px;
-            padding: 3rem;
+            padding: 2rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
@@ -428,6 +428,7 @@
                         <span>输入代码</span>
                     </div>
                     <div class="input-actions">
+                        <button class="icon-btn" onclick="app.pasteInput()" title="粘贴">📋</button>
                         <button class="icon-btn" onclick="app.clearInput()" title="清空">🗑️</button>
                     </div>
                 </div>
@@ -443,16 +444,18 @@
                         <input type="file" id="file-input" accept=".js,.txt">
                         <div>
                             <div style="font-size: 2rem; margin-bottom: 0.5rem;">📁</div>
-                            <div>拖拽文件到此处或点击选择</div>
+                            <div>点击选择文件</div>
                             <div style="color: #6b7280; font-size: 0.875rem; margin-top: 0.5rem;">支持 .js 和 .txt 文件</div>
+                            <div style="color: #4f46e5; font-size: 0.875rem; margin-top: 0.5rem;">（电脑端支持拖拽）</div>
                         </div>
                     </div>
+                    <div id="selected-file-info" style="margin-top: 1rem; color: #10b981; text-align: center;"></div>
                 </div>
                 
                 <!-- 远程文件标签内容 -->
                 <div id="url-content" class="tab-content hidden">
-                    <input type="text" id="remote-url" placeholder="输入远程文件 URL..." style="width: 100%; margin-bottom: 1rem;">
-                    <button class="btn btn-secondary" onclick="app.loadRemoteFile()">加载文件</button>
+                    <input type="text" id="remote-url" placeholder="输入远程文件 URL..." style="width: 100%; margin-bottom: 1rem; padding: 0.75rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
+                    <button class="btn btn-secondary" onclick="app.loadRemoteFile()" style="width: 100%;">加载远程文件</button>
                 </div>
             </div>
             
@@ -592,6 +595,17 @@
                 document.getElementById('url-content').classList.toggle('hidden', tab !== 'url');
             },
             
+            pasteInput() {
+                navigator.clipboard.readText().then(text => {
+                    document.getElementById('input-code').value = text;
+                    this.showToast('粘贴成功');
+                    this.addLog('从剪贴板粘贴内容', 'success');
+                }).catch(() => {
+                    // 如果剪贴板权限被拒绝，显示提示
+                    this.showToast('请手动粘贴（Ctrl+V 或 长按粘贴）', 'warning');
+                });
+            },
+            
             clearInput() {
                 document.getElementById('input-code').value = '';
                 this.showToast('输入已清空');
@@ -669,12 +683,21 @@
             },
             
             handleFile(file) {
+                if (!file) return;
+                
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     document.getElementById('input-code').value = e.target.result;
+                    // 显示文件信息
+                    document.getElementById('selected-file-info').textContent = 
+                        `已加载: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
                     this.switchTab('paste');
                     this.showToast(`已加载文件: ${file.name}`);
                     this.addLog(`加载文件: ${file.name}`, 'success');
+                };
+                reader.onerror = () => {
+                    this.showToast('文件读取失败', 'error');
+                    this.addLog('文件读取失败', 'error');
                 };
                 reader.readAsText(file);
             },
