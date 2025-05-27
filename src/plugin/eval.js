@@ -6,7 +6,48 @@ const traverse = _traverse.default
 import * as t from '@babel/types'
 
 /**
- * 修改后的unpack函数 - 支持更多格式但保持原始逻辑
+ * 简单的Dean Edwards Packer解包器
+ * 直接执行代码让它自己解包
+ */
+function simpleUnpack(code) {
+  if (!code.includes('eval')) {
+    return null
+  }
+  
+  try {
+    let result = null
+    
+    // 创建一个捕获eval参数的环境
+    const captureEval = `
+      let __result = null;
+      const __originalEval = eval;
+      eval = function(x) {
+        __result = x;
+        return __originalEval(x);
+      };
+      try {
+        ${code}
+      } catch(e) {}
+      eval = __originalEval;
+      __result;
+    `
+    
+    // 执行并获取结果
+    result = eval(captureEval)
+    
+    // 如果结果还包含eval，递归解包
+    if (result && typeof result === 'string' && result.includes('eval')) {
+      return simpleUnpack(result)
+    }
+    
+    return result
+  } catch (e) {
+    return null
+  }
+}
+
+/**
+ * 原始的unpack函数 - 修改为使用simpleUnpack作为后备
  */
 function unpack(code) {
   let ast = parse(code, { errorRecovery: true })
@@ -18,95 +59,34 @@ function unpack(code) {
       continue
     }
     if (data) {
-      return null
+      // 发现多个语句，尝试使用simpleUnpack
+      return simpleUnpack(code)
     }
-    
-    // 检查是否是表达式语句
-    if (t.isExpressionStatement(line)) {
-      // 检查是否是eval调用
-      if (
-        t.isCallExpression(line.expression) &&
-        line.expression.callee?.name === 'eval' &&
-        line.expression.arguments.length === 1
-      ) {
-        const arg = line.expression.arguments[0]
-        
-        // 原始逻辑：处理eval(function(){}())格式
-        if (t.isCallExpression(arg)) {
-          data = t.expressionStatement(arg)
-          continue
-        }
-        
-        // 新增：处理eval("string")格式
-        if (t.isStringLiteral(arg)) {
-          try {
-            // 尝试递归解包字符串内容
-            const innerResult = unpack(arg.value)
-            if (innerResult) {
-              return innerResult
-            }
-            // 如果递归失败，直接返回字符串内容
-            return arg.value
-          } catch (e) {
-            return arg.value
-          }
-        }
-      }
+    if (
+      t.isExpressionStatement(line) &&
+      t.isCallExpression(line?.expression) &&
+      line.expression.callee?.name === 'eval' &&
+      line.expression.arguments.length === 1 &&
+      t.isCallExpression(line.expression.arguments[0])
+    ) {
+      data = t.expressionStatement(line.expression.arguments[0])
+      continue
     }
-    
-    // 如果不匹配任何模式，返回null
-    return null
+    // 如果不是预期的格式，尝试simpleUnpack
+    return simpleUnpack(code)
   }
   
   if (!data) {
-    return null
+    return simpleUnpack(code)
   }
   
-  // 生成代码并执行
+  code = generator(data, { minified: true }).code
+  
   try {
-    const code = generator(data, { minified: true }).code
-    
-    // 对于Dean Edwards Packer，我们需要执行它
-    if (code.includes('function(p,a,c,k,e,d)')) {
-      // 创建一个安全的执行环境来捕获结果
-      let result = null
-      const sandbox = {
-        eval: function(x) { result = x; return x },
-        String: String,
-        parseInt: parseInt,
-        RegExp: RegExp
-      }
-      
-      // 使用Function构造器在沙箱中执行
-      const func = new Function(...Object.keys(sandbox), `
-        let result = null;
-        ${code.replace(/eval\s*\(/, 'result = (')}
-        return result;
-      `)
-      
-      result = func(...Object.values(sandbox))
-      
-      // 如果结果还包含eval，递归解包
-      if (result && typeof result === 'string' && result.includes('eval')) {
-        return unpack(result)
-      }
-      
-      return result
-    }
-    
-    // 对于其他情况，直接eval
-    const result = eval(code)
-    
-    // 如果结果是字符串且包含eval，递归解包
-    if (typeof result === 'string' && result.includes('eval')) {
-      return unpack(result)
-    }
-    
-    return result
+    return eval(code)
   } catch (e) {
-    // 如果执行失败，尝试返回生成的代码
-    const code = generator(data, { minified: true }).code
-    return code
+    // 如果eval失败，尝试simpleUnpack
+    return simpleUnpack(code)
   }
 }
 
@@ -128,17 +108,10 @@ function pack(code) {
 }
 
 /**
- * 检测函数
- */
-function detect(code) {
-  return code.includes('eval')
-}
-
-/**
- * 插件接口
+ * 插件接口 - 使用simpleUnpack以获得更好的兼容性
  */
 function plugin(code) {
-  if (!detect(code)) {
+  if (!code.includes('eval')) {
     return null
   }
   
@@ -146,7 +119,8 @@ function plugin(code) {
   console.log('[eval]检测到 eval 加密，正在解密...')
   const startTime = Date.now()
   
-  const result = unpack(code)
+  // 直接使用simpleUnpack，它能处理各种情况
+  const result = simpleUnpack(code)
   
   if (result) {
     const endTime = Date.now()
@@ -164,6 +138,5 @@ function plugin(code) {
 export default {
   unpack,
   pack,
-  detect,
   plugin
 }
