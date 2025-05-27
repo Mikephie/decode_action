@@ -434,13 +434,13 @@
         };
 
         // 监听输入变化
-        document.getElementById('github-token').addEventListener('change', function(e) {
-            githubToken = e.target.value;
+        document.getElementById('github-token').addEventListener('input', function(e) {
+            githubToken = e.target.value.trim();
             localStorage.setItem('github_token', githubToken);
         });
 
-        document.getElementById('repo-name').addEventListener('change', function(e) {
-            repoName = e.target.value;
+        document.getElementById('repo-name').addEventListener('input', function(e) {
+            repoName = e.target.value.trim();
             localStorage.setItem('repo_name', repoName);
         });
 
@@ -453,13 +453,13 @@
                 return;
             }
 
-            if (!githubToken) {
+            if (!githubToken || githubToken.trim() === '') {
                 alert('请先配置 GitHub Token！');
                 document.getElementById('github-token').focus();
                 return;
             }
 
-            if (!repoName) {
+            if (!repoName || repoName.trim() === '') {
                 alert('请输入仓库名称！');
                 document.getElementById('repo-name').focus();
                 return;
