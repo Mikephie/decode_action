@@ -6,114 +6,147 @@ const traverse = _traverse.default
 import * as t from '@babel/types'
 
 /**
- * 增强版解包函数 - 结合了AST分析和直接执行两种方法
+ * 解包eval加密的代码 - 增强版
  * @param {string} code - 要解包的代码
- * @returns {string|null} - 解包后的代码或null
+ * @returns {string|null} - 解包后的代码或null（解包失败时）
  */
 function unpack(code) {
-  // 方法1: 使用Babel AST分析
   try {
-    let ast = parse(code, { errorRecovery: true })
-    let lines = ast.program.body
-    let data = null
+    // 如果不包含eval，直接返回null
+    if (!code.includes('eval(') && !code.includes('eval (')) {
+      return null;
+    }
     
-    for (let line of lines) {
-      if (t.isEmptyStatement(line)) {
-        continue
-      }
-      if (data) {
-        return null
-      }
-      if (
-        t.isExpressionStatement(line) &&
-        t.isCallExpression(line.expression) &&
-        line.expression.callee?.name === 'eval' &&
-        line.expression.arguments.length === 1
-      ) {
-        // 提取eval的参数
-        let evalArg = line.expression.arguments[0]
-        
-        // 如果参数是字符串字面量，直接返回内容
-        if (t.isStringLiteral(evalArg)) {
-          return evalArg.value
-        }
-        
-        // 如果参数是表达式，尝试生成代码并评估
-        if (t.isExpression(evalArg)) {
-          let argCode = generator(evalArg, { minified: true }).code
-          try {
-            let result = eval(argCode)
-            // 如果结果仍包含eval，递归解包
-            if (typeof result === 'string' && (result.includes('eval(') || result.includes('eval ('))) {
-              return unpack(result)
+    console.log('[eval]尝试检测是否为 eval 加密');
+    console.log('[eval]检测到 eval 加密，正在解密...');
+    const startTime = Date.now();
+    
+    // 方法1: 使用Babel AST精确分析
+    try {
+      let ast = parse(code, { 
+        errorRecovery: true,
+        sourceType: 'script',
+        plugins: ['jsx', 'typescript']
+      })
+      
+      let evalFound = false;
+      let result = null;
+      
+      // 遍历AST查找eval调用
+      traverse(ast, {
+        CallExpression(path) {
+          if (path.node.callee.name === 'eval' && path.node.arguments.length > 0) {
+            evalFound = true;
+            const arg = path.node.arguments[0];
+            
+            // 如果参数是字符串字面量
+            if (t.isStringLiteral(arg)) {
+              result = arg.value;
+              path.stop();
             }
-            return result
-          } catch (e) {
-            console.warn('AST方法评估失败，尝试备用方法:', e)
+            // 如果参数是模板字面量
+            else if (t.isTemplateLiteral(arg) && arg.quasis.length === 1) {
+              result = arg.quasis[0].value.cooked;
+              path.stop();
+            }
+            // 如果参数是表达式
+            else {
+              try {
+                // 生成参数代码并评估
+                const argCode = generator(arg).code;
+                result = eval(argCode);
+                path.stop();
+              } catch (e) {
+                // 继续尝试其他方法
+              }
+            }
           }
         }
-        
-        data = t.expressionStatement(line.expression.arguments[0])
-        continue
+      });
+      
+      if (result) {
+        // 如果结果仍包含eval，递归解包
+        if (typeof result === 'string' && (result.includes('eval(') || result.includes('eval ('))) {
+          result = unpack(result);
+        }
+        const endTime = Date.now();
+        console.log(`[eval]eval 解密成功! 耗时: ${(endTime - startTime).toFixed(2)}ms`);
+        return result;
       }
+    } catch (astError) {
+      // AST方法失败，尝试下一个方法
+      console.log('[eval]AST方法失败，尝试替换方法');
     }
     
-    if (data) {
-      let generatedCode = generator(data, { minified: true }).code
-      return eval(generatedCode)
-    }
-  } catch (astError) {
-    console.warn('AST解析失败，尝试备用方法:', astError)
-  }
-  
-  // 方法2: 使用替换eval的方法（来自插件）
-  try {
-    if (!code.includes('eval(') && !code.includes('eval (')) {
-      return null
-    }
-    
-    // 替换eval为一个捕获函数
-    let modifiedCode = code.replace(/eval\s*\(/g, '(function(x) { return x; })(')
-    
+    // 方法2: 使用替换eval的方法
     try {
-      // 创建一个安全的执行环境
-      const env = {
+      // 创建一个捕获eval参数的函数
+      let capturedValue = null;
+      
+      // 替换eval为捕获函数
+      const modifiedCode = code.replace(/eval\s*\(/g, '(function(x) { capturedValue = x; return x; })(');
+      
+      // 创建安全的执行环境
+      const sandbox = {
+        eval: function(x) { capturedValue = x; return x; },
         window: {},
         document: {},
         navigator: { userAgent: "Mozilla/5.0" },
         location: {},
-        console: console
-      }
+        console: console,
+        capturedValue: null
+      };
       
-      // 执行代码
-      const result = Function('window', 'document', 'navigator', 'location', 'console',
-                            `return ${modifiedCode}`)(
-                            env.window, env.document, env.navigator, env.location, env.console)
-      
-      // 如果结果是字符串且包含eval，递归解包
-      if (typeof result === 'string') {
-        if (result.includes('eval(') || result.includes('eval (')) {
-          return unpack(result)
-        }
-        return result
-      }
-      
-      return String(result)
-    } catch (err) {
-      console.log("执行替换eval的方法失败，尝试直接替换方法")
-      
-      // 尝试直接替换eval
+      // 使用Function构造器执行代码
       try {
-        modifiedCode = code.replace(/eval\s*\(/g, '(')
-        return modifiedCode
-      } catch (replaceErr) {
-        console.error("直接替换eval方法也失败:", replaceErr)
-        return null
+        const fn = new Function(...Object.keys(sandbox), modifiedCode);
+        fn(...Object.values(sandbox));
+        
+        if (capturedValue !== null) {
+          // 如果捕获的值还包含eval，递归解包
+          if (typeof capturedValue === 'string' && (capturedValue.includes('eval(') || capturedValue.includes('eval ('))) {
+            capturedValue = unpack(capturedValue);
+          }
+          const endTime = Date.now();
+          console.log(`[eval]eval 解密成功! 耗时: ${(endTime - startTime).toFixed(2)}ms`);
+          return capturedValue;
+        }
+      } catch (execError) {
+        // 执行失败，尝试更简单的方法
       }
+    } catch (replaceError) {
+      // 替换方法失败
     }
+    
+    // 方法3: 简单的正则提取
+    try {
+      // 匹配 eval("...") 或 eval('...') 模式
+      const evalMatch = code.match(/eval\s*\(\s*["'`]([\s\S]*?)["'`]\s*\)/);
+      if (evalMatch && evalMatch[1]) {
+        let extracted = evalMatch[1];
+        // 处理转义字符
+        extracted = extracted
+          .replace(/\\n/g, '\n')
+          .replace(/\\r/g, '\r')
+          .replace(/\\t/g, '\t')
+          .replace(/\\'/g, "'")
+          .replace(/\\"/g, '"')
+          .replace(/\\\\/g, '\\');
+        
+        const endTime = Date.now();
+        console.log(`[eval]eval 解密成功! 耗时: ${(endTime - startTime).toFixed(2)}ms`);
+        return extracted;
+      }
+    } catch (regexError) {
+      // 正则方法失败
+    }
+    
+    console.log('[eval]所有解密方法都失败了');
+    return null;
+    
   } catch (error) {
-    console.error("Eval解包发生错误:", error)
-    return null
+    console.error('[eval]Eval解包发生错误:', error);
+    return null;
   }
 }
 
@@ -141,77 +174,14 @@ function pack(code) {
  * @returns {boolean} - 是否包含eval
  */
 function detect(code) {
-  return code.includes('eval(') || code.includes('eval (')
+  return code.includes('eval(') || code.includes('eval (');
 }
 
-/**
- * 高级解包函数 - 处理多层嵌套的eval
- * @param {string} code - 要解包的代码
- * @param {number} maxDepth - 最大递归深度（默认10）
- * @returns {string|null} - 完全解包后的代码
- */
-function deepUnpack(code, maxDepth = 10) {
-  let result = code
-  let depth = 0
-  
-  while (depth < maxDepth && detect(result)) {
-    let unpacked = unpack(result)
-    if (!unpacked || unpacked === result) {
-      break
-    }
-    result = unpacked
-    depth++
-  }
-  
-  if (depth >= maxDepth) {
-    console.warn(`达到最大解包深度 ${maxDepth}`)
-  }
-  
-  return result
-}
-
-/**
- * 智能打包函数 - 带有eval包装选项
- * @param {string} code - 要打包的代码
- * @param {object} options - 打包选项
- * @returns {string} - 打包后的代码
- */
-function smartPack(code, options = {}) {
-  const {
-    useEval = false,      // 是否使用eval包装
-    minify = false,       // 是否压缩代码
-    obfuscate = false     // 是否混淆（简单版本）
-  } = options
-  
-  let packedCode = pack(code)
-  
-  if (minify) {
-    let ast = parse(packedCode)
-    packedCode = generator(ast, { minified: true }).code
-  }
-  
-  if (useEval) {
-    // 将代码转换为字符串并用eval包装
-    let escapedCode = JSON.stringify(packedCode)
-    packedCode = `eval(${escapedCode});`
-  }
-  
-  if (obfuscate && useEval) {
-    // 简单的混淆：将eval拆分
-    packedCode = packedCode.replace('eval(', '["ev" + "al"][0](')
-  }
-  
-  return packedCode
-}
-
-// 导出增强版模块
+// 导出模块
 export default {
   unpack,
   pack,
   detect,
-  deepUnpack,
-  smartPack,
-  
-  // 兼容原始插件接口
+  // 兼容插件接口
   plugin: unpack
 }
