@@ -545,6 +545,11 @@
         const highlightCode = (code) => {
             if (!code) return '';
             
+            // 如果代码已经包含HTML标签，先清理它们
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = code;
+            code = tempDiv.textContent || tempDiv.innerText || '';
+            
             // 转义HTML
             code = code.replace(/&/g, '&amp;')
                       .replace(/</g, '&lt;')
@@ -990,6 +995,15 @@
                         const content = decodeURIComponent(escape(atob(data.content)));
                         
                         document.getElementById('output-code').value = content;
+                        
+                        // 重置高亮状态
+                        this.isHighlightMode = false;
+                        const outputTextarea = document.getElementById('output-code');
+                        const outputHighlight = document.getElementById('output-highlight');
+                        outputTextarea.style.display = 'block';
+                        outputHighlight.style.display = 'none';
+                        outputHighlight.innerHTML = '';
+                        
                         this.addLog('解密成功！', 'success');
                     } else {
                         throw new Error('无法获取输出文件');
@@ -1000,6 +1014,14 @@
                     const inputCode = document.getElementById('input-code').value;
                     const result = mockDecrypt(inputCode);
                     document.getElementById('output-code').value = result;
+                    
+                    // 重置高亮状态
+                    this.isHighlightMode = false;
+                    const outputTextarea = document.getElementById('output-code');
+                    const outputHighlight = document.getElementById('output-highlight');
+                    outputTextarea.style.display = 'block';
+                    outputHighlight.style.display = 'none';
+                    outputHighlight.innerHTML = '';
                 }
             }
         };
