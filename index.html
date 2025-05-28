@@ -794,6 +794,9 @@
                 try {
                     this.addLog('开始解密流程...', 'info');
                     
+                    // 重置进度条
+                    document.getElementById('progress-bar').style.width = '0%';
+                    
                     // 1. 提交代码到GitHub
                     await this.submitToGitHub(inputCode);
                     
@@ -804,10 +807,16 @@
                     await this.getResult();
                     
                 } catch (error) {
-                    this.addLog('解密失败: ' + error.message, 'error');
-                    this.showToast('解密失败: ' + error.message, 'error');
+                    this.addLog('解密流程出错: ' + error.message, 'error');
                     
-                    this.displayResult(`// ❌ 解密失败\n// 错误: ${error.message}\n// \n// 请检查:\n// 1. GitHub Token 是否有效\n// 2. 仓库地址是否正确\n// 3. Actions 是否已启用\n// 4. decode_action 框架是否正确部署\n\n${inputCode}`);
+                    // 即使出错也尝试获取结果（可能Actions已经完成）
+                    try {
+                        this.addLog('尝试直接获取结果...', 'info');
+                        await this.getResult();
+                    } catch (e) {
+                        this.showToast('解密失败: ' + error.message, 'error');
+                        this.displayResult(`// ❌ 解密失败\n// 错误: ${error.message}\n// \n// 请检查:\n// 1. GitHub Token 是否有效\n// 2. 仓库地址是否正确\n// 3. Actions 是否已启用\n// 4. decode_action 框架是否正确部署\n// 5. 检查 GitHub Actions 日志\n\n${inputCode}`);
+                    }
                 }
             },
             
@@ -873,9 +882,30 @@
                 this.addLog('等待 Actions 执行...', 'info');
                 const maxAttempts = 30; // 最多等待30次，每次2秒
                 let attempts = 0;
+                let lastSha = null;
                 
                 const progressBar = document.getElementById('progress-bar');
                 
+                // 先获取当前output.js的SHA（如果存在）
+                try {
+                    const outputUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
+                    const initialResponse = await fetch(outputUrl, {
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (initialResponse.ok) {
+                        const data = await initialResponse.json();
+                        lastSha = data.sha;
+                        this.addLog('记录当前 output.js 状态', 'info');
+                    }
+                } catch (e) {
+                    this.addLog('output.js 尚不存在', 'info');
+                }
+                
+                // 等待文件更新
                 while (attempts < maxAttempts) {
                     attempts++;
                     progressBar.style.width = (attempts / maxAttempts * 100) + '%';
@@ -883,24 +913,32 @@
                     try {
                         // 检查output.js是否已更新
                         const outputUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
-                        const response = await fetch(outputUrl, {
+                        const response = await fetch(`${outputUrl}?t=${Date.now()}`, {
                             headers: {
                                 'Authorization': `token ${this.githubToken}`,
-                                'Accept': 'application/vnd.github.v3+json'
+                                'Accept': 'application/vnd.github.v3+json',
+                                'Cache-Control': 'no-cache'
                             }
                         });
                         
                         if (response.ok) {
                             const data = await response.json();
-                            // 检查文件更新时间
-                            const updateTime = new Date(data.updated_at || data.created_at);
-                            const now = new Date();
-                            const timeDiff = now - updateTime;
                             
-                            // 如果文件在最近60秒内更新，认为Actions已完成
-                            if (timeDiff < 60000) {
-                                this.addLog('Actions 执行完成！', 'success');
+                            // 检查SHA是否变化（文件已更新）
+                            if (lastSha && data.sha !== lastSha) {
+                                this.addLog('检测到 output.js 已更新！', 'success');
                                 progressBar.style.width = '100%';
+                                
+                                // 再等待2秒确保文件完全写入
+                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                return;
+                            } else if (!lastSha && data.sha) {
+                                // 如果之前没有文件，现在有了
+                                this.addLog('检测到新的 output.js 文件！', 'success');
+                                progressBar.style.width = '100%';
+                                
+                                // 再等待2秒确保文件完全写入
+                                await new Promise(resolve => setTimeout(resolve, 2000));
                                 return;
                             }
                         }
@@ -917,45 +955,76 @@
                     await new Promise(resolve => setTimeout(resolve, 2000));
                 }
                 
-                throw new Error('Actions 执行超时，请检查仓库配置');
+                // 如果超时但文件可能已更新，仍然尝试获取结果
+                this.addLog('等待超时，尝试获取结果...', 'warning');
             },
             
             async getResult() {
                 this.addLog('正在获取解密结果...', 'info');
                 
-                try {
-                    const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
-                    
-                    // 添加缓存破坏参数，确保获取最新内容
-                    const response = await fetch(`${apiUrl}?ref=main&t=${Date.now()}`, {
-                        headers: {
-                            'Authorization': `token ${this.githubToken}`,
-                            'Accept': 'application/vnd.github.v3+json',
-                            'Cache-Control': 'no-cache'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        const content = decodeURIComponent(escape(atob(data.content)));
+                let retries = 3; // 重试次数
+                
+                while (retries > 0) {
+                    try {
+                        const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
                         
-                        // 检查是否是有效的解密结果
-                        if (content && content.length > 0) {
-                            this.displayResult(content);
-                            this.addLog('解密成功！', 'success');
-                            this.showToast('解密成功！');
+                        // 添加时间戳确保获取最新内容
+                        const response = await fetch(`${apiUrl}?ref=main&t=${Date.now()}`, {
+                            headers: {
+                                'Authorization': `token ${this.githubToken}`,
+                                'Accept': 'application/vnd.github.v3+json',
+                                'Cache-Control': 'no-cache',
+                                'Pragma': 'no-cache'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
                             
-                            // 重置进度条
-                            document.getElementById('progress-bar').style.width = '0%';
+                            // 解码内容
+                            let content = '';
+                            try {
+                                // Base64解码
+                                const decoded = atob(data.content.replace(/\n/g, ''));
+                                // UTF-8解码
+                                content = decodeURIComponent(escape(decoded));
+                            } catch (e) {
+                                // 如果UTF-8解码失败，尝试直接使用
+                                try {
+                                    content = atob(data.content.replace(/\n/g, ''));
+                                } catch (e2) {
+                                    throw new Error('无法解码文件内容');
+                                }
+                            }
+                            
+                            // 检查是否是有效的解密结果
+                            if (content && content.length > 0) {
+                                this.displayResult(content);
+                                this.addLog('解密成功！', 'success');
+                                this.addLog(`文件SHA: ${data.sha.substring(0, 7)}...`, 'info');
+                                this.showToast('解密成功！');
+                                
+                                // 重置进度条
+                                document.getElementById('progress-bar').style.width = '0%';
+                                return;
+                            } else {
+                                throw new Error('解密结果为空');
+                            }
+                        } else if (response.status === 404) {
+                            throw new Error('output.js 文件不存在');
                         } else {
-                            throw new Error('解密结果为空');
+                            throw new Error(`HTTP错误: ${response.status}`);
                         }
-                    } else {
-                        throw new Error('无法获取输出文件，请确保Actions已完成');
+                    } catch (error) {
+                        retries--;
+                        if (retries > 0) {
+                            this.addLog(`获取失败，重试中... (${3 - retries}/3)`, 'warning');
+                            await new Promise(resolve => setTimeout(resolve, 2000));
+                        } else {
+                            this.addLog('获取结果失败: ' + error.message, 'error');
+                            throw error;
+                        }
                     }
-                } catch (error) {
-                    this.addLog('获取结果失败: ' + error.message, 'error');
-                    throw error;
                 }
             },
             
