@@ -207,35 +207,56 @@
             color: #4f46e5;
         }
         
-        /* 代码高亮样式 */
+        /* 代码高亮样式 - 增强移动端显示 */
         .code-highlight {
-            background: rgba(0, 0, 0, 0.3);
+            background: #1e1e1e;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             padding: 1rem;
-            color: #e0e0e0;
+            color: #d4d4d4;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 0.875rem;
             line-height: 1.6;
             overflow-x: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            height: 300px;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch; /* 移动端平滑滚动 */
+            white-space: pre;
+            word-wrap: normal;
+            height: 300px;
+            -webkit-overflow-scrolling: touch;
+            tab-size: 4;
         }
         
-        /* 语法高亮颜色 - 增强移动端显示 */
-        .keyword { color: #c678dd !important; font-weight: bold; }
-        .string { color: #98c379 !important; }
-        .number { color: #d19a66 !important; }
-        .comment { color: #5c6370 !important; font-style: italic; }
-        .function { color: #61afef !important; }
-        .operator { color: #56b6c2 !important; }
-        .punctuation { color: #abb2bf !important; }
-        .boolean { color: #d19a66 !important; }
-        .variable { color: #e06c75 !important; }
-        .property { color: #d19a66 !important; }
+        /* 确保高亮样式正确显示 */
+        .code-highlight span {
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+        }
+        
+        /* 语法高亮颜色 - 使用更鲜明的颜色 */
+        .code-highlight .keyword { 
+            color: #569cd6 !important; 
+            font-weight: bold; 
+        }
+        .code-highlight .string { 
+            color: #ce9178 !important; 
+        }
+        .code-highlight .number { 
+            color: #b5cea8 !important; 
+        }
+        .code-highlight .comment { 
+            color: #6a9955 !important; 
+            font-style: italic; 
+        }
+        .code-highlight .function { 
+            color: #dcdcaa !important; 
+        }
+        .code-highlight .boolean { 
+            color: #569cd6 !important; 
+        }
+        .code-highlight .property { 
+            color: #9cdcfe !important; 
+        }
         
         textarea {
             width: 100%;
@@ -541,50 +562,85 @@
     <div id="toast" class="toast"></div>
     
     <script>
-        // 增强的代码高亮函数
+        // 简化的代码高亮函数 - 只处理纯文本JavaScript代码
         const highlightCode = (code) => {
-            if (!code) return '';
+            if (!code || typeof code !== 'string') return '';
             
-            // 如果代码已经包含HTML标签，先清理它们
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = code;
-            code = tempDiv.textContent || tempDiv.innerText || '';
+            // 确保处理的是纯文本，不是HTML
+            let plainCode = code;
             
-            // 转义HTML
-            code = code.replace(/&/g, '&amp;')
-                      .replace(/</g, '&lt;')
-                      .replace(/>/g, '&gt;');
+            // 如果检测到HTML标签，提取纯文本
+            if (code.includes('<') && code.includes('>')) {
+                const temp = document.createElement('div');
+                temp.innerHTML = code;
+                plainCode = temp.textContent || temp.innerText || '';
+            }
             
-            // 高亮注释（优先处理，避免被其他规则影响）
-            code = code.replace(/(\/\/.*$)/gm, '<span class="comment">$1</span>');
-            code = code.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="comment">$1</span>');
+            // 转义HTML特殊字符
+            let escaped = plainCode
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
             
-            // 高亮字符串（包括模板字符串）
-            code = code.replace(/(["'`])(?:(?=(\\?))\2[\s\S])*?\1/g, '<span class="string">$&</span>');
+            // 应用语法高亮
+            // 1. 字符串（必须先处理，避免影响其他匹配）
+            escaped = escaped.replace(
+                /(&quot;[^&]*&quot;|&#39;[^&]*&#39;|`[^`]*`)/g,
+                '<span class="string">$1</span>'
+            );
             
-            // 高亮正则表达式
-            code = code.replace(/\/(?:[^\/\\\n]|\\.)+\/[gimuy]*/g, '<span class="string">$&</span>');
+            // 2. 注释
+            escaped = escaped.replace(
+                /(\/\/[^\n]*)/g,
+                '<span class="comment">$1</span>'
+            );
+            escaped = escaped.replace(
+                /(\/\*[\s\S]*?\*\/)/g,
+                '<span class="comment">$1</span>'
+            );
             
-            // 高亮关键字
-            const keywords = /\b(var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|class|extends|import|export|default|async|await|yield|this|super|typeof|instanceof|in|of|void|delete|debugger|with)\b/g;
-            code = code.replace(keywords, '<span class="keyword">$1</span>');
+            // 3. 关键字
+            const keywords = [
+                'var', 'let', 'const', 'function', 'return', 'if', 'else',
+                'for', 'while', 'do', 'switch', 'case', 'break', 'continue',
+                'try', 'catch', 'finally', 'throw', 'new', 'class', 'extends',
+                'import', 'export', 'default', 'async', 'await', 'yield',
+                'this', 'super', 'typeof', 'instanceof', 'in', 'of', 'void',
+                'delete', 'debugger', 'with'
+            ].join('|');
             
-            // 高亮布尔值和特殊值
-            code = code.replace(/\b(true|false|null|undefined|NaN|Infinity)\b/g, '<span class="boolean">$1</span>');
+            escaped = escaped.replace(
+                new RegExp(`\\b(${keywords})\\b`, 'g'),
+                '<span class="keyword">$1</span>'
+            );
             
-            // 高亮数字（包括浮点数、十六进制等）
-            code = code.replace(/\b(0x[\da-fA-F]+|\d+\.?\d*)\b/g, '<span class="number">$1</span>');
+            // 4. 布尔值和特殊值
+            escaped = escaped.replace(
+                /\b(true|false|null|undefined|NaN|Infinity)\b/g,
+                '<span class="boolean">$1</span>'
+            );
             
-            // 高亮函数名（函数声明和调用）
-            code = code.replace(/(\w+)(?=\s*\()/g, '<span class="function">$1</span>');
+            // 5. 数字
+            escaped = escaped.replace(
+                /\b(\d+\.?\d*)\b/g,
+                '<span class="number">$1</span>'
+            );
             
-            // 高亮对象属性
-            code = code.replace(/\.(\w+)/g, '.<span class="property">$1</span>');
+            // 6. 函数名
+            escaped = escaped.replace(
+                /(\w+)(?=\s*\()/g,
+                '<span class="function">$1</span>'
+            );
             
-            // 高亮运算符
-            code = code.replace(/([+\-*/%=<>!&|^~?:])/g, '<span class="operator">$1</span>');
+            // 7. 属性
+            escaped = escaped.replace(
+                /\.(\w+)(?!\()/g,
+                '.<span class="property">$1</span>'
+            );
             
-            return code;
+            return escaped;
         };
         
         // 模拟解密功能
@@ -750,23 +806,39 @@
                 const outputHighlight = document.getElementById('output-highlight');
                 
                 if (this.isHighlightMode) {
+                    // 获取原始纯文本内容
                     const code = outputTextarea.value;
-                    if (code) {
-                        // 确保高亮容器可见并设置内容
-                        outputHighlight.innerHTML = highlightCode(code);
-                        outputTextarea.style.display = 'none';
-                        outputHighlight.style.display = 'block';
-                        outputHighlight.classList.remove('hidden');
-                        this.showToast('已开启代码高亮');
-                        this.addLog('开启代码高亮显示', 'info');
+                    if (code && code.trim()) {
+                        try {
+                            // 调用高亮函数处理纯文本
+                            const highlightedCode = highlightCode(code);
+                            
+                            // 设置高亮内容
+                            outputHighlight.innerHTML = highlightedCode;
+                            
+                            // 切换显示
+                            outputTextarea.style.display = 'none';
+                            outputHighlight.style.display = 'block';
+                            outputHighlight.classList.remove('hidden');
+                            
+                            this.showToast('已开启代码高亮');
+                            this.addLog('开启代码高亮显示', 'info');
+                        } catch (error) {
+                            console.error('高亮处理错误:', error);
+                            this.showToast('高亮处理失败', 'error');
+                            this.isHighlightMode = false;
+                        }
                     } else {
                         this.showToast('没有代码可以高亮', 'warning');
                         this.isHighlightMode = false;
                     }
                 } else {
+                    // 切换回纯文本显示
                     outputTextarea.style.display = 'block';
                     outputHighlight.style.display = 'none';
                     outputHighlight.classList.add('hidden');
+                    outputHighlight.innerHTML = ''; // 清空高亮内容
+                    
                     this.showToast('已关闭代码高亮');
                     this.addLog('关闭代码高亮显示', 'info');
                 }
