@@ -220,16 +220,21 @@
             overflow-x: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
+            height: 300px;
+            overflow-y: auto;
         }
         
         /* 语法高亮颜色 */
-        .keyword { color: #c678dd; }
+        .keyword { color: #c678dd; font-weight: bold; }
         .string { color: #98c379; }
         .number { color: #d19a66; }
         .comment { color: #5c6370; font-style: italic; }
         .function { color: #61afef; }
         .operator { color: #56b6c2; }
         .punctuation { color: #abb2bf; }
+        .boolean { color: #d19a66; }
+        .variable { color: #e06c75; }
+        .property { color: #d19a66; }
         
         textarea {
             width: 100%;
@@ -403,6 +408,11 @@
         .hidden {
             display: none !important;
         }
+        
+        /* 确保文件输入时文本框可见 */
+        #input-box-container textarea {
+            display: block !important;
+        }
     </style>
 </head>
 <body>
@@ -446,7 +456,7 @@
         <!-- 输入输出区域 -->
         <div class="input-section">
             <!-- 输入框 -->
-            <div class="input-box">
+            <div class="input-box" id="input-box-container">
                 <div class="input-header">
                     <div class="input-title">
                         <span>📝</span>
@@ -458,10 +468,8 @@
                     </div>
                 </div>
                 
-                <!-- 粘贴代码标签内容 -->
-                <div id="paste-content" class="tab-content">
-                    <textarea id="input-code" placeholder="在此粘贴需要解密的代码..."></textarea>
-                </div>
+                <!-- 统一的输入文本框 -->
+                <textarea id="input-code" placeholder="在此粘贴需要解密的代码..."></textarea>
                 
                 <!-- 选择文件标签内容 -->
                 <div id="file-content" class="tab-content hidden">
@@ -532,7 +540,7 @@
     <div id="toast" class="toast"></div>
     
     <script>
-        // 简单的代码高亮函数
+        // 增强的代码高亮函数
         const highlightCode = (code) => {
             if (!code) return '';
             
@@ -541,22 +549,34 @@
                       .replace(/</g, '&lt;')
                       .replace(/>/g, '&gt;');
             
-            // 高亮关键字
-            const keywords = /\b(var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|class|extends|import|export|default|async|await|yield|this|super)\b/g;
-            code = code.replace(keywords, '<span class="keyword">$1</span>');
-            
-            // 高亮字符串
-            code = code.replace(/(["'])(?:(?=(\\?))\2.)*?\1/g, '<span class="string">$&</span>');
-            
-            // 高亮数字
-            code = code.replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
-            
-            // 高亮注释
+            // 高亮注释（优先处理，避免被其他规则影响）
             code = code.replace(/(\/\/.*$)/gm, '<span class="comment">$1</span>');
             code = code.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="comment">$1</span>');
             
-            // 高亮函数名
+            // 高亮字符串（包括模板字符串）
+            code = code.replace(/(["'`])(?:(?=(\\?))\2[\s\S])*?\1/g, '<span class="string">$&</span>');
+            
+            // 高亮正则表达式
+            code = code.replace(/\/(?:[^\/\\\n]|\\.)+\/[gimuy]*/g, '<span class="string">$&</span>');
+            
+            // 高亮关键字
+            const keywords = /\b(var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|class|extends|import|export|default|async|await|yield|this|super|typeof|instanceof|in|of|void|delete|debugger|with)\b/g;
+            code = code.replace(keywords, '<span class="keyword">$1</span>');
+            
+            // 高亮布尔值和特殊值
+            code = code.replace(/\b(true|false|null|undefined|NaN|Infinity)\b/g, '<span class="boolean">$1</span>');
+            
+            // 高亮数字（包括浮点数、十六进制等）
+            code = code.replace(/\b(0x[\da-fA-F]+|\d+\.?\d*)\b/g, '<span class="number">$1</span>');
+            
+            // 高亮函数名（函数声明和调用）
             code = code.replace(/(\w+)(?=\s*\()/g, '<span class="function">$1</span>');
+            
+            // 高亮对象属性
+            code = code.replace(/\.(\w+)/g, '.<span class="property">$1</span>');
+            
+            // 高亮运算符
+            code = code.replace(/([+\-*/%=<>!&|^~?:])/g, '<span class="operator">$1</span>');
             
             return code;
         };
@@ -627,10 +647,6 @@
                     }
                 });
                 
-                dropArea.addEventListener('click', () => {
-                    fileInput.click();
-                });
-                
                 fileInput.addEventListener('change', (e) => {
                     if (e.target.files && e.target.files.length > 0) {
                         this.handleFile(e.target.files[0]);
@@ -647,9 +663,12 @@
                 });
                 
                 // 更新内容显示
-                document.getElementById('paste-content').classList.toggle('hidden', tab !== 'paste');
                 document.getElementById('file-content').classList.toggle('hidden', tab !== 'file');
                 document.getElementById('url-content').classList.toggle('hidden', tab !== 'url');
+                
+                // 输入框始终可见
+                const inputTextarea = document.getElementById('input-code');
+                inputTextarea.style.display = 'block';
             },
             
             pasteInput() {
@@ -671,6 +690,7 @@
             clearAll() {
                 document.getElementById('input-code').value = '';
                 document.getElementById('output-code').value = '';
+                document.getElementById('output-highlight').innerHTML = '';
                 document.getElementById('progress-bar').style.width = '0%';
                 this.showToast('已清除所有内容');
                 this.addLog('清除所有内容', 'info');
@@ -778,15 +798,13 @@
                         
                         if (inputTextarea) {
                             inputTextarea.value = content;
+                            inputTextarea.style.display = 'block'; // 确保文本框显示
                             
                             // 显示文件信息
                             const fileInfo = document.getElementById('selected-file-info');
                             if (fileInfo) {
                                 fileInfo.textContent = `已加载: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
                             }
-                            
-                            // 切换到粘贴代码标签
-                            this.switchTab('paste');
                             
                             this.showToast(`文件加载成功: ${file.name}`);
                             this.addLog(`文件加载成功: ${file.name} (${content.length} 字符)`, 'success');
@@ -823,8 +841,10 @@
                     if (!response.ok) throw new Error('无法加载文件');
                     
                     const text = await response.text();
-                    document.getElementById('input-code').value = text;
-                    this.switchTab('paste');
+                    const inputTextarea = document.getElementById('input-code');
+                    inputTextarea.value = text;
+                    inputTextarea.style.display = 'block'; // 确保文本框显示
+                    
                     this.showToast('远程文件加载成功');
                     this.addLog('远程文件加载成功', 'success');
                 } catch (error) {
