@@ -1,4 +1,24 @@
-<!DOCTYPE html>
+/* 文件上传区域 - 桌面端 */
+        .file-upload {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .file-upload:hover {
+            border-color: #4f46e5;
+            background: rgba(79, 70, 229, 0.05);
+        }
+        
+        .file-upload.dragover {
+            border-color: #7c3aed;
+            background: rgba(124, 58, 237, 0.1);
+        }<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -272,34 +292,67 @@
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
         
-        /* 文件上传区域 */
-        .file-upload {
-            border: 2px dashed rgba(255, 255, 255, 0.2);
+        /* 移动端文件选择按钮 */
+        .mobile-file-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .file-option-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
+            padding: 1.5rem 1rem;
             cursor: pointer;
             transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
+            text-align: center;
         }
         
-        .file-upload:hover {
+        .file-option-btn:hover {
+            background: rgba(79, 70, 229, 0.1);
             border-color: #4f46e5;
-            background: rgba(79, 70, 229, 0.05);
         }
         
-        .file-upload.dragover {
-            border-color: #7c3aed;
-            background: rgba(124, 58, 237, 0.1);
+        .file-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
         }
         
-        .file-upload input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
+        .file-option-btn span:last-child {
+            font-size: 0.875rem;
+            color: #e0e0e0;
         }
+        
+        @media (max-width: 768px) {
+            .mobile-file-options {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .file-option-btn {
+                flex-direction: row;
+                padding: 1rem;
+                justify-content: flex-start;
+                gap: 1rem;
+            }
+            
+            .file-icon {
+                font-size: 1.5rem;
+                margin-bottom: 0;
+            }
+            
+            /* 移动端隐藏拖拽区域 */
+            .file-upload {
+                display: none;
+            }
+        }
+        
         
         /* 控制按钮 */
         .control-section {
@@ -531,13 +584,31 @@
                 
                 <!-- 选择文件标签内容 -->
                 <div id="file-content" class="tab-content hidden">
-                    <div class="file-upload" id="file-drop-area">
-                        <input type="file" id="file-input" accept=".js,.txt">
+                    <div class="mobile-file-options">
+                        <label for="file-input" class="file-option-btn">
+                            <span class="file-icon">📷</span>
+                            <span>相册选择</span>
+                            <input type="file" id="file-input" accept=".js,.txt,image/*" capture="environment" style="display: none;">
+                        </label>
+                        
+                        <label for="file-input-camera" class="file-option-btn">
+                            <span class="file-icon">📸</span>
+                            <span>拍照上传</span>
+                            <input type="file" id="file-input-camera" accept="image/*" capture="camera" style="display: none;">
+                        </label>
+                        
+                        <label for="file-input-files" class="file-option-btn">
+                            <span class="file-icon">📁</span>
+                            <span>选择文件</span>
+                            <input type="file" id="file-input-files" accept=".js,.txt" style="display: none;">
+                        </label>
+                    </div>
+                    
+                    <div class="file-upload" id="file-drop-area" style="margin-top: 1rem;">
                         <div>
                             <div style="font-size: 2rem; margin-bottom: 0.5rem;">📁</div>
-                            <div>点击选择文件</div>
+                            <div>或拖拽文件到此处</div>
                             <div style="color: #6b7280; font-size: 0.875rem; margin-top: 0.5rem;">支持 .js 和 .txt 文件</div>
-                            <div style="color: #4f46e5; font-size: 0.875rem; margin-top: 0.5rem;">（电脑端支持拖拽）</div>
                         </div>
                     </div>
                     <div id="selected-file-info" style="margin-top: 1rem; color: #10b981; text-align: center;"></div>
@@ -678,11 +749,75 @@
             return escaped;
         };
         
+        // 真实的解密函数 - 解析混淆的JavaScript代码
+        const realDecrypt = (code) => {
+            try {
+                // 检测常见的混淆模式
+                if (code.includes('eval') || code.includes('Function')) {
+                    this.addLog('检测到eval混淆代码', 'info');
+                    
+                    // 创建安全的执行环境
+                    let decodedCode = '';
+                    
+                    // 替换eval为捕获函数
+                    const modifiedCode = code.replace(/eval\s*\(/g, 'captureEval(');
+                    
+                    // 捕获eval的内容
+                    const captureEval = (evalCode) => {
+                        decodedCode = evalCode;
+                        return evalCode;
+                    };
+                    
+                    // 尝试执行并捕获结果
+                    try {
+                        // 创建沙箱环境
+                        const sandbox = {
+                            eval: captureEval,
+                            captureEval: captureEval,
+                            console: { log: () => {} },
+                            window: {},
+                            document: {}
+                        };
+                        
+                        // 使用Function构造器在沙箱中执行
+                        const func = new Function(...Object.keys(sandbox), modifiedCode);
+                        func(...Object.values(sandbox));
+                        
+                        if (decodedCode) {
+                            return '// 解密成功！\n' + decodedCode;
+                        }
+                    } catch (e) {
+                        this.addLog('自动解密失败，尝试其他方法', 'warning');
+                    }
+                }
+                
+                // 检测其他混淆类型
+                const obfuscatorPatterns = [
+                    { name: 'aaencode', pattern: /ﾟωﾟ/ },
+                    { name: 'jjencode', pattern: /\$\+\[\]\+/ },
+                    { name: 'jsfuck', pattern: /\[\]\[\]\+/ },
+                    { name: 'obfuscator.io', pattern: /_0x[a-f0-9]+/ }
+                ];
+                
+                for (const { name, pattern } of obfuscatorPatterns) {
+                    if (pattern.test(code)) {
+                        this.addLog(`检测到 ${name} 混淆`, 'info');
+                        break;
+                    }
+                }
+                
+                // 如果无法自动解密，返回提示
+                return `// 检测到混淆代码，但需要使用专门的解密工具\n// 请确保已配置 GitHub Token 和仓库地址\n// 或访问 https://github.com/smallfawn/decode_action 获取解密工具\n\n${code}`;
+                
+            } catch (error) {
+                return `// 解密过程出错: ${error.message}\n\n${code}`;
+            }
+        };
+        
         // 模拟解密功能
         const mockDecrypt = (code) => {
-            // 这里应该是实际的解密逻辑
-            // 现在只是返回一个模拟结果
-            return `// 解密成功！\n// 原始代码长度: ${code.length}\n// 解密时间: ${new Date().toLocaleString()}\n\n${code}`;
+            this.addLog('尝试本地解密...', 'info');
+            return realDecrypt(code);
         };
         
         // 应用主对象
@@ -721,31 +856,38 @@
                     tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
                 });
                 
-                // 文件拖拽
+                // 文件拖拽（桌面端）
                 const dropArea = document.getElementById('file-drop-area');
-                const fileInput = document.getElementById('file-input');
+                if (dropArea) {
+                    dropArea.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        dropArea.classList.add('dragover');
+                    });
+                    
+                    dropArea.addEventListener('dragleave', () => {
+                        dropArea.classList.remove('dragover');
+                    });
+                    
+                    dropArea.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        dropArea.classList.remove('dragover');
+                        const files = e.dataTransfer.files;
+                        if (files && files.length > 0) {
+                            this.handleFile(files[0]);
+                        }
+                    });
+                }
                 
-                dropArea.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    dropArea.classList.add('dragover');
-                });
-                
-                dropArea.addEventListener('dragleave', () => {
-                    dropArea.classList.remove('dragover');
-                });
-                
-                dropArea.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    dropArea.classList.remove('dragover');
-                    const files = e.dataTransfer.files;
-                    if (files && files.length > 0) {
-                        this.handleFile(files[0]);
-                    }
-                });
-                
-                fileInput.addEventListener('change', (e) => {
-                    if (e.target.files && e.target.files.length > 0) {
-                        this.handleFile(e.target.files[0]);
+                // 文件选择（所有平台）
+                const fileInputs = ['file-input', 'file-input-camera', 'file-input-files'];
+                fileInputs.forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.addEventListener('change', (e) => {
+                            if (e.target.files && e.target.files.length > 0) {
+                                this.handleFile(e.target.files[0]);
+                            }
+                        });
                     }
                 });
             },
@@ -961,6 +1103,14 @@
                 }
                 
                 this.addLog(`开始读取文件: ${file.name}`, 'info');
+                
+                // 如果是图片文件，使用 OCR 识别
+                if (file.type.startsWith('image/')) {
+                    this.addLog('检测到图片文件，准备识别文字...', 'info');
+                    this.showToast('图片文字识别功能开发中', 'warning');
+                    // 这里可以集成 OCR API
+                    return;
+                }
                 
                 const reader = new FileReader();
                 reader.onload = (e) => {
