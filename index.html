@@ -207,6 +207,30 @@
             color: #4f46e5;
         }
         
+        /* 代码高亮样式 */
+        .code-highlight {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            color: #e0e0e0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        /* 语法高亮颜色 */
+        .keyword { color: #c678dd; }
+        .string { color: #98c379; }
+        .number { color: #d19a66; }
+        .comment { color: #5c6370; font-style: italic; }
+        .function { color: #61afef; }
+        .operator { color: #56b6c2; }
+        .punctuation { color: #abb2bf; }
+        
         textarea {
             width: 100%;
             height: 300px;
@@ -215,10 +239,11 @@
             border-radius: 8px;
             padding: 1rem;
             color: #e0e0e0;
-            font-family: 'Consolas', 'Monaco', monospace;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 0.875rem;
             resize: vertical;
             transition: all 0.3s;
+            line-height: 1.6;
         }
         
         textarea:focus {
@@ -467,11 +492,13 @@
                         <span>解密结果</span>
                     </div>
                     <div class="input-actions">
+                        <button class="icon-btn" onclick="app.toggleHighlight()" title="切换高亮">🎨</button>
                         <button class="icon-btn" onclick="app.copyResult()" title="复制">📋</button>
                         <button class="icon-btn" onclick="app.downloadResult()" title="下载">💾</button>
                     </div>
                 </div>
                 <textarea id="output-code" placeholder="解密结果将显示在这里..." readonly></textarea>
+                <div id="output-highlight" class="code-highlight hidden"></div>
             </div>
         </div>
         
@@ -505,6 +532,35 @@
     <div id="toast" class="toast"></div>
     
     <script>
+        // 简单的代码高亮函数
+        const highlightCode = (code) => {
+            if (!code) return '';
+            
+            // 转义HTML
+            code = code.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;');
+            
+            // 高亮关键字
+            const keywords = /\b(var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|class|extends|import|export|default|async|await|yield|this|super)\b/g;
+            code = code.replace(keywords, '<span class="keyword">$1</span>');
+            
+            // 高亮字符串
+            code = code.replace(/(["'])(?:(?=(\\?))\2.)*?\1/g, '<span class="string">$&</span>');
+            
+            // 高亮数字
+            code = code.replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
+            
+            // 高亮注释
+            code = code.replace(/(\/\/.*$)/gm, '<span class="comment">$1</span>');
+            code = code.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="comment">$1</span>');
+            
+            // 高亮函数名
+            code = code.replace(/(\w+)(?=\s*\()/g, '<span class="function">$1</span>');
+            
+            return code;
+        };
+        
         // 模拟解密功能
         const mockDecrypt = (code) => {
             // 这里应该是实际的解密逻辑
@@ -517,6 +573,7 @@
             githubToken: '',
             repoName: '',
             currentTab: 'paste',
+            isHighlightMode: false,
             
             init() {
                 // 加载保存的配置
@@ -565,7 +622,7 @@
                     e.preventDefault();
                     dropArea.classList.remove('dragover');
                     const files = e.dataTransfer.files;
-                    if (files.length > 0) {
+                    if (files && files.length > 0) {
                         this.handleFile(files[0]);
                     }
                 });
@@ -575,7 +632,7 @@
                 });
                 
                 fileInput.addEventListener('change', (e) => {
-                    if (e.target.files.length > 0) {
+                    if (e.target.files && e.target.files.length > 0) {
                         this.handleFile(e.target.files[0]);
                     }
                 });
@@ -648,6 +705,29 @@
                 }
             },
             
+            toggleHighlight() {
+                this.isHighlightMode = !this.isHighlightMode;
+                const outputTextarea = document.getElementById('output-code');
+                const outputHighlight = document.getElementById('output-highlight');
+                
+                if (this.isHighlightMode) {
+                    const code = outputTextarea.value;
+                    if (code) {
+                        outputHighlight.innerHTML = highlightCode(code);
+                        outputTextarea.classList.add('hidden');
+                        outputHighlight.classList.remove('hidden');
+                        this.showToast('已开启代码高亮');
+                    } else {
+                        this.showToast('没有代码可以高亮', 'warning');
+                        this.isHighlightMode = false;
+                    }
+                } else {
+                    outputTextarea.classList.remove('hidden');
+                    outputHighlight.classList.add('hidden');
+                    this.showToast('已关闭代码高亮');
+                }
+            },
+            
             copyResult() {
                 const output = document.getElementById('output-code').value;
                 if (!output) {
@@ -683,23 +763,51 @@
             },
             
             handleFile(file) {
-                if (!file) return;
+                if (!file) {
+                    this.showToast('未选择文件', 'error');
+                    return;
+                }
+                
+                this.addLog(`开始读取文件: ${file.name}`, 'info');
                 
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    document.getElementById('input-code').value = e.target.result;
-                    // 显示文件信息
-                    document.getElementById('selected-file-info').textContent = 
-                        `已加载: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
-                    this.switchTab('paste');
-                    this.showToast(`已加载文件: ${file.name}`);
-                    this.addLog(`加载文件: ${file.name}`, 'success');
+                    try {
+                        const content = e.target.result;
+                        const inputTextarea = document.getElementById('input-code');
+                        
+                        if (inputTextarea) {
+                            inputTextarea.value = content;
+                            
+                            // 显示文件信息
+                            const fileInfo = document.getElementById('selected-file-info');
+                            if (fileInfo) {
+                                fileInfo.textContent = `已加载: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                            }
+                            
+                            // 切换到粘贴代码标签
+                            this.switchTab('paste');
+                            
+                            this.showToast(`文件加载成功: ${file.name}`);
+                            this.addLog(`文件加载成功: ${file.name} (${content.length} 字符)`, 'success');
+                        }
+                    } catch (error) {
+                        this.showToast('文件处理失败', 'error');
+                        this.addLog(`文件处理错误: ${error.message}`, 'error');
+                    }
                 };
+                
                 reader.onerror = () => {
                     this.showToast('文件读取失败', 'error');
-                    this.addLog('文件读取失败', 'error');
+                    this.addLog(`文件读取失败: ${file.name}`, 'error');
                 };
-                reader.readAsText(file);
+                
+                try {
+                    reader.readAsText(file);
+                } catch (error) {
+                    this.showToast('无法读取文件', 'error');
+                    this.addLog(`无法读取文件: ${error.message}`, 'error');
+                }
             },
             
             async loadRemoteFile() {
