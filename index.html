@@ -540,6 +540,15 @@
                     <input type="text" id="repo-name" placeholder="例如: username/decode_action">
                 </div>
             </div>
+            <div style="margin-top: 1rem; padding: 1rem; background: rgba(79, 70, 229, 0.1); border-radius: 8px; font-size: 0.875rem; color: #a78bfa;">
+                <strong>使用说明：</strong>
+                <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                    <li>需要先部署 <a href="https://github.com/smallfawn/decode_action" target="_blank" style="color: #818cf8;">decode_action</a> 解密框架</li>
+                    <li>GitHub Token 需要 repo 权限</li>
+                    <li>提交代码后会自动触发 Actions 运行解密</li>
+                    <li>支持多种加密方式（eval、aaencode、jjencode、obfuscator等）</li>
+                </ul>
+            </div>
         </div>
         
         <!-- 标签栏 -->
@@ -766,6 +775,85 @@
                 this.addLog('清除所有内容', 'info');
             },
             
+            async triggerGitHubAction() {
+                this.addLog('触发 GitHub Actions...', 'info');
+                
+                try {
+                    // 获取默认分支的最新workflow运行状态
+                    const workflowUrl = `https://api.github.com/repos/${this.repoName}/actions/workflows`;
+                    const workflowResponse = await fetch(workflowUrl, {
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (!workflowResponse.ok) {
+                        throw new Error('无法获取workflow信息');
+                    }
+                    
+                    const workflows = await workflowResponse.json();
+                    this.addLog(`找到 ${workflows.total_count} 个workflow`, 'info');
+                    
+                    // 等待Actions完成（通过轮询检查）
+                    await this.waitForActionComplete();
+                    
+                } catch (error) {
+                    throw new Error('GitHub Actions触发失败: ' + error.message);
+                }
+            },
+            
+            async waitForActionComplete() {
+                this.addLog('等待 Actions 执行...', 'info');
+                const maxAttempts = 30; // 最多等待30次，每次2秒
+                let attempts = 0;
+                
+                const progressBar = document.getElementById('progress-bar');
+                
+                while (attempts < maxAttempts) {
+                    attempts++;
+                    progressBar.style.width = (attempts / maxAttempts * 100) + '%';
+                    
+                    try {
+                        // 检查output.js是否已更新
+                        const outputUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
+                        const response = await fetch(outputUrl, {
+                            headers: {
+                                'Authorization': `token ${this.githubToken}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            // 检查文件更新时间
+                            const updateTime = new Date(data.updated_at || data.created_at);
+                            const now = new Date();
+                            const timeDiff = now - updateTime;
+                            
+                            // 如果文件在最近60秒内更新，认为Actions已完成
+                            if (timeDiff < 60000) {
+                                this.addLog('Actions 执行完成！', 'success');
+                                progressBar.style.width = '100%';
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        // 忽略错误，继续等待
+                    }
+                    
+                    // 显示等待状态
+                    if (attempts % 3 === 0) {
+                        this.addLog(`Actions 执行中... (${attempts * 2}秒)`, 'info');
+                    }
+                    
+                    // 等待2秒后重试
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+                
+                throw new Error('Actions 执行超时，请检查仓库配置');
+            },
+            
             async decrypt() {
                 const inputCode = document.getElementById('input-code').value.trim();
                 
@@ -781,14 +869,26 @@
                     this.displayResult(result);
                     this.showToast('解密完成（本地模式）');
                     this.addLog('本地解密完成', 'success');
+                // 必须配置GitHub才能解密
+                if (!this.githubToken || !this.repoName) {
+                    this.showToast('请先配置 GitHub Token 和仓库地址', 'error');
+                    this.addLog('缺少配置信息', 'error');
+                    this.displayResult(`// ⚠️ 未配置 GitHub\n// 本工具需要通过 GitHub Actions 运行解密框架\n// \n// 请配置:\n// 1. GitHub Token (需要 repo 权限)\n// 2. 仓库地址 (格式: username/repo)\n// \n// 解密框架仓库: https://github.com/smallfawn/decode_action\n\n${inputCode}`);
                     return;
                 }
                 
                 try {
                     this.addLog('开始解密流程...', 'info');
+                    
+                    // 1. 提交代码到GitHub
                     await this.submitToGitHub(inputCode);
-                    await this.simulateDecryption();
+                    
+                    // 2. 等待Actions自动触发并完成
+                    await this.triggerGitHubAction();
+                    
+                    // 3. 获取解密结果
                     await this.getResult();
+                    
                 } catch (error) {
                     this.addLog('解密失败: ' + error.message, 'error');
                     this.showToast('解密失败: ' + error.message, 'error');
@@ -797,6 +897,59 @@
                     const result = this.localDecrypt(inputCode);
                     this.displayResult(result);
                     this.addLog('使用本地模拟解密', 'warning');
+                    this.displayResult(`// ❌ 解密失败\n// 错误: ${error.message}\n// \n// 请检查:\n// 1. GitHub Token 是否有效\n// 2. 仓库地址是否正确\n// 3. Actions 是否已启用\n// 4. decode_action 框架是否正确部署\n\n${inputCode}`);
+                }
+            },
+            
+            // 移除不需要的本地解密函数和模拟函数
+            
+            displayResult(code) {
+                // 保存原始文本到隐藏的textarea
+                document.getElementById('output-code').value = code;
+                
+                // 直接显示高亮代码
+                const outputDisplay = document.getElementById('output-display');
+                if (code && code.trim()) {
+                    // 简单的语法高亮处理
+                    let highlighted = code
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+                    
+                    // 高亮字符串
+                    highlighted = highlighted.replace(
+                        /(["'])(?:(?=(\\?))\2.)*?\1/g,
+                        '<span style="color: #ce9178">$&</span>'
+                    );
+                    
+                    // 高亮注释
+                    highlighted = highlighted.replace(
+                        /(\/\/.*$)/gm,
+                        '<span style="color: #6a9955; font-style: italic">$1</span>'
+                    );
+                    
+                    // 高亮关键字
+                    const keywords = /\b(var|let|const|function|return|if|else|for|while|new|this)\b/g;
+                    highlighted = highlighted.replace(
+                        keywords,
+                        '<span style="color: #569cd6; font-weight: bold">$1</span>'
+                    );
+                    
+                    // 高亮数字
+                    highlighted = highlighted.replace(
+                        /\b(\d+)\b/g,
+                        '<span style="color: #b5cea8">$1</span>'
+                    );
+                    
+                    // 移动端优化：添加自动换行提示
+                    const isMobile = window.innerWidth <= 768;
+                    if (isMobile) {
+                        outputDisplay.innerHTML = '<div style="color: #6a9955; font-size: 0.75rem; margin-bottom: 0.5rem;">// 提示：左右滑动查看完整代码</div>' + highlighted;
+                    } else {
+                        outputDisplay.innerHTML = highlighted;
+                    }
+                } else {
+                    outputDisplay.innerHTML = '<span style="color: #6a9955">// 解密结果将显示在这里...</span>';
                 }
             },
             
@@ -1057,9 +1210,10 @@
                         if (getResponse.ok) {
                             const fileData = await getResponse.json();
                             sha = fileData.sha;
+                            this.addLog('找到现有 input.js 文件', 'info');
                         }
                     } catch (e) {
-                        // 文件不存在，将创建新文件
+                        this.addLog('input.js 不存在，将创建新文件', 'info');
                     }
                     
                     // 创建或更新文件
@@ -1074,43 +1228,67 @@
                         body: JSON.stringify({
                             message: 'Update input.js for decryption',
                             content: content,
-                            sha: sha || undefined
+                            sha: sha || undefined,
+                            branch: 'main' // 确保提交到main分支
                         })
                     });
                     
                     if (!response.ok) {
-                        throw new Error('无法更新文件');
+                        const error = await response.json();
+                        throw new Error(error.message || '无法更新文件');
                     }
                     
-                    this.addLog('代码提交成功', 'success');
+                    this.addLog('代码已提交到 main 分支', 'success');
+                    this.addLog('GitHub Actions 将自动触发...', 'info');
+                    
+                    // 等待一下让GitHub处理提交
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                     
                 } catch (error) {
                     throw new Error('GitHub API错误: ' + error.message);
                 }
             },
             
-            async simulateDecryption() {
-                const steps = [
-                    { delay: 1000, message: 'GitHub Actions 已触发', type: 'info' },
-                    { delay: 2000, message: '> Run npm install', type: 'info' },
-                    { delay: 3000, message: 'npm warn deprecated inflight@1.0.6', type: 'warning' },
-                    { delay: 4000, message: 'added 159 packages in 5s', type: 'info' },
-                    { delay: 5000, message: '✓ Execute decoding script', type: 'success' },
-                    { delay: 6000, message: '✓ Process completed', type: 'success' }
-                ];
-                
-                const progressBar = document.getElementById('progress-bar');
-                let progress = 0;
-                
-                for (const step of steps) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    this.addLog(step.message, step.type);
-                    progress += 100 / steps.length;
-                    progressBar.style.width = Math.min(progress, 90) + '%';
+            async             async checkGitHubConnection() {
+                try {
+                    const response = await fetch(`https://api.github.com/repos/${this.repoName}`, {
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const repo = await response.json();
+                        this.addLog(`已连接到仓库: ${repo.full_name}`, 'success');
+                        
+                        // 检查是否有Actions
+                        const actionsUrl = `https://api.github.com/repos/${this.repoName}/actions/workflows`;
+                        const actionsResponse = await fetch(actionsUrl, {
+                            headers: {
+                                'Authorization': `token ${this.githubToken}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        });
+                        
+                        if (actionsResponse.ok) {
+                            const workflows = await actionsResponse.json();
+                            if (workflows.total_count > 0) {
+                                this.addLog(`检测到 ${workflows.total_count} 个 Actions workflow`, 'info');
+                            } else {
+                                this.addLog('未检测到 Actions workflow，请确保已正确部署', 'warning');
+                            }
+                        }
+                        
+                        return true;
+                    } else {
+                        this.addLog('无法连接到仓库，请检查配置', 'error');
+                        return false;
+                    }
+                } catch (error) {
+                    this.addLog('连接检查失败: ' + error.message, 'error');
+                    return false;
                 }
-                
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                progressBar.style.width = '100%';
             },
             
             async getResult() {
@@ -1118,10 +1296,13 @@
                 
                 try {
                     const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
-                    const response = await fetch(apiUrl, {
+                    
+                    // 添加缓存破坏参数，确保获取最新内容
+                    const response = await fetch(`${apiUrl}?ref=main&t=${Date.now()}`, {
                         headers: {
                             'Authorization': `token ${this.githubToken}`,
-                            'Accept': 'application/vnd.github.v3+json'
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Cache-Control': 'no-cache'
                         }
                     });
                     
@@ -1131,8 +1312,19 @@
                         
                         this.displayResult(content);
                         this.addLog('解密成功！', 'success');
+                        // 检查是否是有效的解密结果
+                        if (content && content.length > 0) {
+                            this.displayResult(content);
+                            this.addLog('解密成功！', 'success');
+                            this.showToast('解密成功！');
+                            
+                            // 重置进度条
+                            document.getElementById('progress-bar').style.width = '0%';
+                        } else {
+                            throw new Error('解密结果为空');
+                        }
                     } else {
-                        throw new Error('无法获取输出文件');
+                        throw new Error('无法获取输出文件，请确保Actions已完成');
                     }
                 } catch (error) {
                     this.addLog('获取结果失败，使用模拟结果', 'warning');
@@ -1140,6 +1332,8 @@
                     const inputCode = document.getElementById('input-code').value;
                     const result = this.localDecrypt(inputCode);
                     this.displayResult(result);
+                    this.addLog('获取结果失败: ' + error.message, 'error');
+                    throw error;
                 }
             }
         };
