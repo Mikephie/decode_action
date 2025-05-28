@@ -1,168 +1,257 @@
-/**
- * Eval2 - 专门处理Dean Edwards Packer格式的解包器
- * 用于处理 eval(function(p,a,c,k,e,d){...}(...)) 格式
- */
+import { parse } from '@babel/parser'
+import _generate from '@babel/generator'
+const generator = _generate.default
+import _traverse from '@babel/traverse'
+const traverse = _traverse.default
+import * as t from '@babel/types'
 
 /**
- * 检测是否是Dean Edwards Packer格式
- * @param {string} code - 要检测的代码
- * @returns {boolean} - 是否匹配
+ * Dean Edwards Packer解包函数
+ * @param {string} code - 打包的代码
+ * @returns {object|null} - 返回解包参数对象或null
  */
-function detect(code) {
-  // 检测特征：eval + function(p,a,c,k,e,d)
-  return code.includes('eval') && 
-         code.includes('function(p,a,c,k,e,d)') &&
-         code.includes('.split(') &&
-         code.includes('toString(36)');
+function unpackDeanEdwardsPacker(code) {
+  // 匹配Dean Edwards Packer的模式
+  const packerPattern = /eval\s*\(\s*function\s*\(\s*p\s*,\s*a\s*,\s*c\s*,\s*k\s*,\s*e\s*,\s*d\s*\)\s*\{[\s\S]*?\}\s*\(\s*'([\s\S]*?)'\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*'([\s\S]*?)'\s*\.split\s*\(\s*'([^']+)'\s*\)\s*,\s*(\d+)\s*,\s*\{\s*\}\s*\)\s*\)/;
+  
+  const match = code.match(packerPattern);
+  if (!match) return null;
+  
+  return {
+    payload: match[1],
+    radix: parseInt(match[2]),
+    count: parseInt(match[3]),
+    words: match[4].split(match[5]),
+    countCheck: parseInt(match[6])
+  };
 }
 
 /**
- * 解包Dean Edwards Packer
+ * 执行Dean Edwards解包算法
+ * @param {object} params - 解包参数
+ * @returns {string} - 解包后的代码
+ */
+function executeDeanEdwardsUnpacker(params) {
+  const { payload, radix, count, words } = params;
+  
+  // Dean Edwards的解码函数
+  const decode = function(c) {
+    c = parseInt(c, radix);
+    return (c < radix ? '' : decode(Math.floor(c / radix))) + 
+           ((c = c % radix) > 35 ? String.fromCharCode(c + 29) : c.toString(36));
+  };
+  
+  // 构建替换字典
+  const dictionary = {};
+  for (let i = 0; i < count; i++) {
+    const key = decode(i);
+    dictionary[key] = words[i] || key;
+  }
+  
+  // 执行替换
+  let unpacked = payload;
+  for (let i = count - 1; i >= 0; i--) {
+    const key = decode(i);
+    if (dictionary[key]) {
+      const regex = new RegExp('\\b' + key + '\\b', 'g');
+      unpacked = unpacked.replace(regex, dictionary[key]);
+    }
+  }
+  
+  return unpacked;
+}
+
+/**
+ * 解包eval加密的代码 - 增强版
  * @param {string} code - 要解包的代码
- * @returns {string|null} - 解包后的代码
+ * @returns {string|null} - 解包后的代码或null（解包失败时）
  */
 function unpack(code) {
   try {
-    console.log('[eval2]尝试检测是否为 Dean Edwards Packer 加密');
-    
-    if (!detect(code)) {
+    // 如果不包含eval，直接返回null
+    if (!code.includes('eval')) {
       return null;
     }
     
-    console.log('[eval2]检测到 Dean Edwards Packer 加密，正在解密...');
+    console.log('[eval]尝试检测是否为 eval 加密');
+    console.log('[eval]检测到 eval 加密，正在解密...');
     const startTime = Date.now();
     
-    let result = null;
-    
-    // 方法1：直接执行捕获
-    try {
-      // 创建捕获eval结果的代码
-      const captureCode = `
-        (function() {
-          let __captured = null;
-          const __originalEval = eval;
-          
-          // 临时替换eval
-          eval = function(x) {
-            __captured = x;
-            return __originalEval(x);
-          };
-          
-          try {
-            ${code}
-          } catch(e) {
-            // 忽略执行错误
-          }
-          
-          // 恢复eval
-          eval = __originalEval;
-          
-          return __captured;
-        })()
-      `;
-      
-      result = eval(captureCode);
-      
-      // 如果结果还包含eval，递归解包
-      if (result && typeof result === 'string') {
-        // 检查是否还是Dean Edwards格式
-        if (detect(result)) {
+    // 检查是否是Dean Edwards Packer
+    const packerParams = unpackDeanEdwardsPacker(code);
+    if (packerParams) {
+      try {
+        let result = executeDeanEdwardsUnpacker(packerParams);
+        
+        // 如果结果仍包含eval，递归解包
+        if (result && result.includes('eval')) {
           result = unpack(result);
         }
-        // 如果是其他eval格式，保留结果，让其他插件处理
-        else if (result.includes('eval')) {
-          // 返回结果，让系统尝试其他插件
-          const endTime = Date.now();
-          console.log(`[eval2]Dean Edwards Packer 解密成功! 耗时: ${(endTime - startTime).toFixed(2)}ms`);
-          console.log('[eval2]检测到内部还有其他格式的eval，交给其他插件处理');
-          return result;
-        }
+        
+        const endTime = Date.now();
+        console.log(`[eval]eval 解密成功! 耗时: ${(endTime - startTime).toFixed(2)}ms`);
+        return result;
+      } catch (e) {
+        console.log('[eval]Dean Edwards解包失败，尝试其他方法');
       }
+    }
+    
+    // 方法2: 使用VM模块执行（Node.js环境）
+    try {
+      const vm = require('vm');
+      let result = null;
+      
+      // 创建沙箱环境
+      const sandbox = {
+        eval: function(code) {
+          result = code;
+          return code;
+        },
+        String: String,
+        parseInt: parseInt,
+        RegExp: RegExp,
+        console: console
+      };
+      
+      // 在沙箱中执行代码
+      vm.createContext(sandbox);
+      vm.runInContext(code, sandbox, { timeout: 5000 });
       
       if (result) {
-        const endTime = Date.now();
-        console.log(`[eval2]Dean Edwards Packer 解密成功! 耗时: ${(endTime - startTime).toFixed(2)}ms`);
-        return result;
-      }
-    } catch (e) {
-      console.log('[eval2]直接执行方法失败，尝试正则提取');
-    }
-    
-    // 方法2：正则提取并手动解包
-    try {
-      // 匹配Dean Edwards Packer的参数
-      const regex = /eval\s*\(\s*function\s*\(p,a,c,k,e,d\)\s*\{[\s\S]*?\}\s*\(\s*'([\s\S]*?)'\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*'([\s\S]*?)'\s*\.split\s*\(\s*'([^']+)'\s*\)\s*,\s*\d+\s*,\s*\{\s*\}\s*\)\s*\)/;
-      const match = code.match(regex);
-      
-      if (match) {
-        const payload = match[1];
-        const radix = parseInt(match[2]);
-        const count = parseInt(match[3]);
-        const words = match[4].split(match[5]);
-        
-        // 实现Dean Edwards的解码算法
-        const decode = function(w, n) {
-          return (w < n ? '' : decode(parseInt(w / n), n)) + 
-                 ((w = w % n) > 35 ? String.fromCharCode(w + 29) : w.toString(36));
-        };
-        
-        // 构建替换映射
-        const dictionary = {};
-        for (let i = 0; i < count; i++) {
-          const key = decode(i, radix);
-          dictionary[key] = words[i] || key;
-        }
-        
-        // 执行替换
-        let unpacked = payload;
-        for (let i = count - 1; i >= 0; i--) {
-          const key = decode(i, radix);
-          if (dictionary[key]) {
-            const regex = new RegExp('\\b' + key + '\\b', 'g');
-            unpacked = unpacked.replace(regex, dictionary[key]);
-          }
-        }
-        
-        result = unpacked;
-        
-        // 检查是否需要继续解包
-        if (result && detect(result)) {
+        // 如果结果仍包含eval，递归解包
+        if (typeof result === 'string' && result.includes('eval')) {
           result = unpack(result);
         }
-        
-        if (result) {
-          const endTime = Date.now();
-          console.log(`[eval2]Dean Edwards Packer 解密成功! 耗时: ${(endTime - startTime).toFixed(2)}ms`);
-          return result;
-        }
+        const endTime = Date.now();
+        console.log(`[eval]eval 解密成功! 耗时: ${(endTime - startTime).toFixed(2)}ms`);
+        return result;
       }
-    } catch (e) {
-      console.log('[eval2]正则提取方法也失败');
+    } catch (vmError) {
+      // VM方法失败，尝试其他方法
     }
     
-    console.log('[eval2]Dean Edwards Packer 解密失败');
+    // 方法3: 使用Function构造器
+    try {
+      let result = null;
+      
+      // 替换eval为捕获函数
+      const modifiedCode = code.replace(/\beval\b/g, '(function(x) { result = x; return x; })');
+      
+      // 创建全局捕获变量
+      global.__evalCapture = null;
+      
+      // 执行修改后的代码
+      const func = new Function('result', 'String', 'parseInt', 'RegExp', `
+        let result = null;
+        ${modifiedCode}
+        return result;
+      `);
+      
+      result = func(null, String, parseInt, RegExp);
+      
+      if (result) {
+        // 如果结果仍包含eval，递归解包
+        if (typeof result === 'string' && result.includes('eval')) {
+          result = unpack(result);
+        }
+        const endTime = Date.now();
+        console.log(`[eval]eval 解密成功! 耗时: ${(endTime - startTime).toFixed(2)}ms`);
+        return result;
+      }
+    } catch (funcError) {
+      // Function方法失败
+    }
+    
+    // 方法4: 使用Babel AST分析
+    try {
+      let ast = parse(code, { 
+        errorRecovery: true,
+        sourceType: 'script'
+      });
+      
+      let result = null;
+      
+      traverse(ast, {
+        CallExpression(path) {
+          if (path.node.callee.name === 'eval') {
+            const arg = path.node.arguments[0];
+            
+            // 处理函数调用表达式
+            if (t.isCallExpression(arg)) {
+              try {
+                // 生成整个eval调用的代码
+                const evalCode = generator(path.node).code;
+                // 使用Function执行并捕获结果
+                const func = new Function('return ' + evalCode.replace(/^eval\(/, '('));
+                result = func();
+                path.stop();
+              } catch (e) {
+                // 继续尝试
+              }
+            }
+            // 处理字符串字面量
+            else if (t.isStringLiteral(arg)) {
+              result = arg.value;
+              path.stop();
+            }
+          }
+        }
+      });
+      
+      if (result) {
+        // 如果结果仍包含eval，递归解包
+        if (typeof result === 'string' && result.includes('eval')) {
+          result = unpack(result);
+        }
+        const endTime = Date.now();
+        console.log(`[eval]eval 解密成功! 耗时: ${(endTime - startTime).toFixed(2)}ms`);
+        return result;
+      }
+    } catch (astError) {
+      // AST方法失败
+    }
+    
+    console.log('[eval]所有解密方法都失败了');
     return null;
     
   } catch (error) {
-    console.error('[eval2]Dean Edwards Packer 解包发生错误:', error);
+    console.error('[eval]Eval解包发生错误:', error);
     return null;
   }
 }
 
 /**
- * 插件接口
+ * 打包函数 - 将代码包装在IIFE中
+ * @param {string} code - 要打包的代码
+ * @returns {string} - 打包后的代码
  */
-function plugin(code) {
-  return unpack(code);
+function pack(code) {
+  let ast1 = parse('(function(){}())')
+  let ast2 = parse(code)
+  traverse(ast1, {
+    FunctionExpression(path) {
+      let body = t.blockStatement(ast2.program.body)
+      path.replaceWith(t.functionExpression(null, [], body))
+      path.stop()
+    },
+  })
+  return generator(ast1, { minified: false }).code
 }
 
-// 导出
+/**
+ * 检测代码是否包含eval调用
+ * @param {string} code - 要检测的代码
+ * @returns {boolean} - 是否包含eval
+ */
+function detect(code) {
+  return code.includes('eval');
+}
+
+// 导出模块
 export default {
-  detect,
   unpack,
-  plugin,
-  // 插件元信息
-  name: 'eval2',
-  description: 'Dean Edwards Packer专用解包器',
-  priority: 90 // 优先级高于普通eval
+  pack,
+  detect,
+  // 兼容插件接口
+  plugin: unpack
 }
