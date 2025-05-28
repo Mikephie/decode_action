@@ -222,19 +222,20 @@
             word-wrap: break-word;
             height: 300px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* 移动端平滑滚动 */
         }
         
-        /* 语法高亮颜色 */
-        .keyword { color: #c678dd; font-weight: bold; }
-        .string { color: #98c379; }
-        .number { color: #d19a66; }
-        .comment { color: #5c6370; font-style: italic; }
-        .function { color: #61afef; }
-        .operator { color: #56b6c2; }
-        .punctuation { color: #abb2bf; }
-        .boolean { color: #d19a66; }
-        .variable { color: #e06c75; }
-        .property { color: #d19a66; }
+        /* 语法高亮颜色 - 增强移动端显示 */
+        .keyword { color: #c678dd !important; font-weight: bold; }
+        .string { color: #98c379 !important; }
+        .number { color: #d19a66 !important; }
+        .comment { color: #5c6370 !important; font-style: italic; }
+        .function { color: #61afef !important; }
+        .operator { color: #56b6c2 !important; }
+        .punctuation { color: #abb2bf !important; }
+        .boolean { color: #d19a66 !important; }
+        .variable { color: #e06c75 !important; }
+        .property { color: #d19a66 !important; }
         
         textarea {
             width: 100%;
@@ -704,8 +705,21 @@
                     return;
                 }
                 
+                // 如果没有配置GitHub，直接使用模拟解密
                 if (!this.githubToken || !this.repoName) {
-                    this.showToast('请先配置 GitHub Token 和仓库地址', 'error');
+                    this.addLog('使用本地解密模式', 'info');
+                    const result = mockDecrypt(inputCode);
+                    document.getElementById('output-code').value = result;
+                    
+                    // 重置高亮状态
+                    this.isHighlightMode = false;
+                    const outputTextarea = document.getElementById('output-code');
+                    const outputHighlight = document.getElementById('output-highlight');
+                    outputTextarea.style.display = 'block';
+                    outputHighlight.style.display = 'none';
+                    
+                    this.showToast('解密完成（本地模式）');
+                    this.addLog('本地解密完成', 'success');
                     return;
                 }
                 
@@ -733,18 +747,23 @@
                 if (this.isHighlightMode) {
                     const code = outputTextarea.value;
                     if (code) {
+                        // 确保高亮容器可见并设置内容
                         outputHighlight.innerHTML = highlightCode(code);
-                        outputTextarea.classList.add('hidden');
+                        outputTextarea.style.display = 'none';
+                        outputHighlight.style.display = 'block';
                         outputHighlight.classList.remove('hidden');
                         this.showToast('已开启代码高亮');
+                        this.addLog('开启代码高亮显示', 'info');
                     } else {
                         this.showToast('没有代码可以高亮', 'warning');
                         this.isHighlightMode = false;
                     }
                 } else {
-                    outputTextarea.classList.remove('hidden');
+                    outputTextarea.style.display = 'block';
+                    outputHighlight.style.display = 'none';
                     outputHighlight.classList.add('hidden');
                     this.showToast('已关闭代码高亮');
+                    this.addLog('关闭代码高亮显示', 'info');
                 }
             },
             
