@@ -807,61 +807,21 @@
                     await this.getResult();
                     
                 } catch (error) {
-                    this.addLog('主流程出错: ' + error.message, 'error');
+                    this.addLog('解密流程出错: ' + error.message, 'error');
                     
-                    // 尝试备用方案
+                    // 即使出错也尝试获取结果（可能Actions已经完成）
                     try {
-                        this.addLog('尝试备用方案...', 'info');
-                        
-                        // 方案1：直接通过API获取
+                        this.addLog('尝试直接获取结果...', 'info');
                         await this.getResult();
                     } catch (e) {
-                        // 方案2：通过Raw URL获取
-                        const rawSuccess = await this.getResultViaRawUrl();
-                        
-                        if (!rawSuccess) {
-                            this.showToast('解密失败: ' + error.message, 'error');
-                            this.displayResult(`// ❌ 解密失败\n// 错误: ${error.message}\n// \n// 请检查:\n// 1. GitHub Token 是否有效\n// 2. 仓库地址是否正确\n// 3. Actions 是否已启用\n// 4. decode_action 框架是否正确部署\n// 5. 检查 GitHub Actions 日志\n// \n// 手动查看结果:\n// https://github.com/${this.repoName}/blob/main/output.js\n\n${inputCode}`);
-                        }
+                        this.showToast('解密失败: ' + error.message, 'error');
+                        this.displayResult(`// ❌ 解密失败\n// 错误: ${error.message}\n// \n// 请检查:\n// 1. GitHub Token 是否有效\n// 2. 仓库地址是否正确\n// 3. Actions 是否已启用\n// 4. decode_action 框架是否正确部署\n// 5. 检查 GitHub Actions 日志\n\n${inputCode}`);
                     }
-                }
-            },
-            
-            async checkGitHubToken() {
-                try {
-                    // 测试Token是否有效
-                    const response = await fetch('https://api.github.com/user', {
-                        headers: {
-                            'Authorization': `token ${this.githubToken}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const user = await response.json();
-                        this.addLog(`GitHub Token 有效，用户: ${user.login}`, 'success');
-                        return true;
-                    } else if (response.status === 401) {
-                        this.addLog('GitHub Token 无效或过期', 'error');
-                        return false;
-                    } else {
-                        this.addLog('无法验证 GitHub Token', 'warning');
-                        return false;
-                    }
-                } catch (error) {
-                    this.addLog('Token 验证失败: ' + error.message, 'error');
-                    return false;
                 }
             },
             
             async submitToGitHub(code) {
                 this.addLog('正在提交代码到 GitHub...', 'info');
-                
-                // 先验证Token
-                const tokenValid = await this.checkGitHubToken();
-                if (!tokenValid) {
-                    throw new Error('GitHub Token 无效，请检查配置');
-                }
                 
                 try {
                     const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/input.js`;
@@ -904,11 +864,6 @@
                     
                     if (!response.ok) {
                         const error = await response.json();
-                        if (response.status === 404) {
-                            throw new Error('仓库不存在或无权访问');
-                        } else if (response.status === 422) {
-                            throw new Error('文件更新冲突，请重试');
-                        }
                         throw new Error(error.message || '无法更新文件');
                     }
                     
@@ -1057,46 +1012,13 @@
                             }
                         } else if (response.status === 404) {
                             throw new Error('output.js 文件不存在');
-                        } else if (response.status === 401) {
-                            throw new Error('GitHub Token 无效或过期');
-                        } else if (response.status === 403) {
-                            throw new Error('API 访问限制，请稍后再试');
                         } else {
                             throw new Error(`HTTP错误: ${response.status}`);
                         }
                     } catch (error) {
                         retries--;
-                        
-                        // 更详细的错误日志
-                        if (error.message === 'Failed to fetch' || error.message === 'Load failed') {
-                            this.addLog('网络请求失败，可能是网络问题或CORS限制', 'error');
-                            
-                            // 提供备用方案
-                            if (retries === 0) {
-                                this.addLog('提示：请尝试以下方法：', 'info');
-                                this.addLog('1. 检查网络连接', 'info');
-                                this.addLog('2. 检查GitHub Token是否正确', 'info');
-                                this.addLog('3. 直接访问GitHub查看output.js', 'info');
-                                
-                                // 提供直接链接
-                                const directUrl = `https://github.com/${this.repoName}/blob/main/output.js`;
-                                this.displayResult(`// ❌ 网络请求失败\n// \n// 请尝试：\n// 1. 检查网络连接\n// 2. 确认GitHub Token有效\n// 3. 直接访问查看结果：\n// ${directUrl}\n// \n// 如果GitHub上已有解密结果，可以手动复制`);
-                                
-                                // 创建一个链接按钮
-                                const toast = document.getElementById('toast');
-                                toast.innerHTML = `无法自动获取结果 <a href="${directUrl}" target="_blank" style="color: #818cf8; text-decoration: underline;">点击查看GitHub</a>`;
-                                toast.className = 'toast show';
-                                setTimeout(() => {
-                                    toast.classList.remove('show');
-                                    toast.textContent = '';
-                                }, 5000);
-                                
-                                return;
-                            }
-                        }
-                        
                         if (retries > 0) {
-                            this.addLog(`获取失败: ${error.message}，重试中... (${3 - retries}/3)`, 'warning');
+                            this.addLog(`获取失败，重试中... (${3 - retries}/3)`, 'warning');
                             await new Promise(resolve => setTimeout(resolve, 2000));
                         } else {
                             this.addLog('获取结果失败: ' + error.message, 'error');
