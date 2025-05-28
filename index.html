@@ -534,6 +534,9 @@
     <div id="toast" class="toast"></div>
     
     <script>
+        // 全局变量，使 app 对象全局可访问
+        let app;
+        
         // 改进的代码高亮函数
         const highlightCode = (code) => {
             if (!code) return '';
@@ -595,89 +598,123 @@ ${decrypted}
             return decrypted;
         };
         
-        // 应用主对象
-        const app = {
+        // 创建应用主对象，确保全局可访问
+        app = {
             githubToken: '',
             repoName: '',
             currentTab: 'paste',
             isHighlightMode: false,
             
             init() {
-                // 加载保存的配置
-                this.githubToken = localStorage.getItem('github_token') || '';
-                this.repoName = localStorage.getItem('repo_name') || '';
-                
-                document.getElementById('github-token').value = this.githubToken;
-                document.getElementById('repo-name').value = this.repoName;
-                
-                // 绑定事件
-                this.bindEvents();
-                this.addLog('系统初始化完成', 'success');
+                try {
+                    console.log('初始化应用...');
+                    
+                    // 加载保存的配置
+                    this.githubToken = localStorage.getItem('github_token') || '';
+                    this.repoName = localStorage.getItem('repo_name') || '';
+                    
+                    const tokenInput = document.getElementById('github-token');
+                    const repoInput = document.getElementById('repo-name');
+                    
+                    if (tokenInput && repoInput) {
+                        tokenInput.value = this.githubToken;
+                        repoInput.value = this.repoName;
+                    } else {
+                        console.error('配置输入元素未找到');
+                    }
+                    
+                    // 绑定事件
+                    this.bindEvents();
+                    this.addLog('系统初始化完成', 'success');
+                    console.log('应用初始化完成');
+                } catch (error) {
+                    console.error('初始化失败:', error);
+                    this.addLog('初始化失败: ' + error.message, 'error');
+                }
             },
             
             bindEvents() {
-                // 配置输入
-                document.getElementById('github-token').addEventListener('input', (e) => {
-                    this.githubToken = e.target.value;
-                    localStorage.setItem('github_token', this.githubToken);
-                });
-                
-                document.getElementById('repo-name').addEventListener('input', (e) => {
-                    this.repoName = e.target.value;
-                    localStorage.setItem('repo_name', this.repoName);
-                });
-                
-                // 标签切换
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
-                });
-                
-                // 文件拖拽
-                const dropArea = document.getElementById('file-drop-area');
-                const fileInput = document.getElementById('file-input');
-                
-                // 修复：确保文件拖放区域存在
-                if (dropArea && fileInput) {
-                    dropArea.addEventListener('dragover', (e) => {
-                        e.preventDefault();
-                        dropArea.classList.add('dragover');
+                try {
+                    console.log('绑定事件...');
+                    
+                    // 配置输入
+                    const tokenInput = document.getElementById('github-token');
+                    const repoInput = document.getElementById('repo-name');
+                    
+                    if (tokenInput) {
+                        tokenInput.addEventListener('input', (e) => {
+                            this.githubToken = e.target.value;
+                            localStorage.setItem('github_token', this.githubToken);
+                        });
+                    }
+                    
+                    if (repoInput) {
+                        repoInput.addEventListener('input', (e) => {
+                            this.repoName = e.target.value;
+                            localStorage.setItem('repo_name', this.repoName);
+                        });
+                    }
+                    
+                    // 标签切换
+                    document.querySelectorAll('.tab').forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            console.log(`切换到标签: ${tab.dataset.tab}`);
+                            this.switchTab(tab.dataset.tab);
+                        });
                     });
                     
-                    dropArea.addEventListener('dragleave', () => {
-                        dropArea.classList.remove('dragover');
-                    });
+                    // 文件拖拽
+                    const dropArea = document.getElementById('file-drop-area');
+                    const fileInput = document.getElementById('file-input');
                     
-                    dropArea.addEventListener('drop', (e) => {
-                        e.preventDefault();
-                        dropArea.classList.remove('dragover');
-                        const files = e.dataTransfer.files;
-                        if (files && files.length > 0) {
-                            this.handleFile(files[0]);
-                        }
-                    });
+                    // 修复：确保文件拖放区域存在
+                    if (dropArea && fileInput) {
+                        dropArea.addEventListener('dragover', (e) => {
+                            e.preventDefault();
+                            dropArea.classList.add('dragover');
+                        });
+                        
+                        dropArea.addEventListener('dragleave', () => {
+                            dropArea.classList.remove('dragover');
+                        });
+                        
+                        dropArea.addEventListener('drop', (e) => {
+                            e.preventDefault();
+                            dropArea.classList.remove('dragover');
+                            const files = e.dataTransfer.files;
+                            if (files && files.length > 0) {
+                                this.handleFile(files[0]);
+                            }
+                        });
+                        
+                        // 修复：点击整个区域触发文件选择
+                        dropArea.addEventListener('click', () => {
+                            fileInput.click();
+                        });
+                        
+                        // 修复：确保文件选择后立即处理
+                        fileInput.addEventListener('change', (e) => {
+                            if (e.target.files && e.target.files.length > 0) {
+                                this.handleFile(e.target.files[0]);
+                            }
+                        });
+                    }
                     
-                    // 修复：点击整个区域触发文件选择
-                    dropArea.addEventListener('click', () => {
-                        fileInput.click();
-                    });
+                    // 修复：确保文本区域更新时重置高亮状态
+                    const inputCode = document.getElementById('input-code');
+                    if (inputCode) {
+                        inputCode.addEventListener('input', () => {
+                            // 如果输出区域正在显示高亮，重置为普通文本区域
+                            if (this.isHighlightMode) {
+                                this.toggleHighlight();
+                            }
+                        });
+                    }
                     
-                    // 修复：确保文件选择后立即处理
-                    fileInput.addEventListener('change', (e) => {
-                        if (e.target.files && e.target.files.length > 0) {
-                            this.handleFile(e.target.files[0]);
-                        }
-                    });
-                }
-                
-                // 修复：确保文本区域更新时重置高亮状态
-                const inputCode = document.getElementById('input-code');
-                if (inputCode) {
-                    inputCode.addEventListener('input', () => {
-                        // 如果输出区域正在显示高亮，重置为普通文本区域
-                        if (this.isHighlightMode) {
-                            this.toggleHighlight();
-                        }
-                    });
+                    console.log('事件绑定完成');
+                } catch (error) {
+                    console.error('绑定事件失败:', error);
+                    this.addLog('绑定事件失败: ' + error.message, 'error');
                 }
             },
             
