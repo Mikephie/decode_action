@@ -141,11 +141,11 @@ function unpack(code) {
     }
     
     console.log('[eval2]Dean Edwards Packer 解密失败');
-    return code; // 修改null
+    return null; // 修改null
     
   } catch (error) {
     console.error('[eval2]Dean Edwards Packer 解包发生错误:', error);
-    return code; // 修改null
+    return null; // 修改null
   }
 }
 
