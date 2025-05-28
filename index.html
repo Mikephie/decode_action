@@ -1,26 +1,4 @@
-/* 文件上传区域 - 桌面端 */
-        .file-upload {
-            border: 2px dashed rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .file-upload:hover {
-            border-color: #4f46e5;
-            background: rgba(79, 70, 229, 0.05);
-        }
-        
-        .file-upload.dragover {
-            border-color: #7c3aed;
-            background: rgba(124, 58, 237, 0.1);
-        }
-        
-        /* 控制按钮 */<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -234,7 +212,7 @@
             color: #4f46e5;
         }
         
-        /* 代码高亮容器 - 默认显示 */
+        /* 代码高亮容器 */
         .code-highlight {
             background: #1e1e1e;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -253,24 +231,6 @@
             tab-size: 4;
             min-height: 300px;
             max-width: 100%;
-        }
-        
-        /* 移动端优化 - 防止横向溢出 */
-        @media (max-width: 768px) {
-            .code-highlight {
-                font-size: 0.75rem;
-                padding: 0.75rem;
-                white-space: pre-wrap;
-                word-wrap: break-word;
-                overflow-wrap: break-word;
-            }
-        }
-        
-        /* 初始占位文本 */
-        .code-highlight:empty::before {
-            content: "// 解密结果将显示在这里...";
-            color: #6a9955;
-            font-style: italic;
         }
         
         textarea {
@@ -331,30 +291,27 @@
             color: #e0e0e0;
         }
         
-        @media (max-width: 768px) {
-            .mobile-file-options {
-                grid-template-columns: 1fr;
-                gap: 0.75rem;
-            }
-            
-            .file-option-btn {
-                flex-direction: row;
-                padding: 1rem;
-                justify-content: flex-start;
-                gap: 1rem;
-            }
-            
-            .file-icon {
-                font-size: 1.5rem;
-                margin-bottom: 0;
-            }
-            
-            /* 移动端隐藏拖拽区域 */
-            .file-upload {
-                display: none;
-            }
+        /* 文件上传区域 */
+        .file-upload {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
         
+        .file-upload:hover {
+            border-color: #4f46e5;
+            background: rgba(79, 70, 229, 0.05);
+        }
+        
+        .file-upload.dragover {
+            border-color: #7c3aed;
+            background: rgba(124, 58, 237, 0.1);
+        }
         
         /* 控制按钮 */
         .control-section {
@@ -509,11 +466,37 @@
             
             .code-highlight {
                 height: 250px;
+                font-size: 0.75rem;
+                padding: 0.75rem;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
             }
             
             .log-section {
                 height: 150px;
                 font-size: 0.7rem;
+            }
+            
+            .mobile-file-options {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .file-option-btn {
+                flex-direction: row;
+                padding: 1rem;
+                justify-content: flex-start;
+                gap: 1rem;
+            }
+            
+            .file-icon {
+                font-size: 1.5rem;
+                margin-bottom: 0;
+            }
+            
+            .file-upload {
+                display: none;
             }
         }
         
@@ -670,158 +653,6 @@
     <div id="toast" class="toast"></div>
     
     <script>
-        // 简化的代码高亮函数 - 只处理纯文本JavaScript代码
-        const highlightCode = (code) => {
-            if (!code || typeof code !== 'string') return '';
-            
-            // 确保处理的是纯文本，不是HTML
-            let plainCode = code;
-            
-            // 如果检测到HTML标签，提取纯文本
-            if (code.includes('<') && code.includes('>')) {
-                const temp = document.createElement('div');
-                temp.innerHTML = code;
-                plainCode = temp.textContent || temp.innerText || '';
-            }
-            
-            // 转义HTML特殊字符
-            let escaped = plainCode
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-            
-            // 应用语法高亮
-            // 1. 字符串（必须先处理，避免影响其他匹配）
-            escaped = escaped.replace(
-                /(&quot;[^&]*&quot;|&#39;[^&]*&#39;|`[^`]*`)/g,
-                '<span class="string">$1</span>'
-            );
-            
-            // 2. 注释
-            escaped = escaped.replace(
-                /(\/\/[^\n]*)/g,
-                '<span class="comment">$1</span>'
-            );
-            escaped = escaped.replace(
-                /(\/\*[\s\S]*?\*\/)/g,
-                '<span class="comment">$1</span>'
-            );
-            
-            // 3. 关键字
-            const keywords = [
-                'var', 'let', 'const', 'function', 'return', 'if', 'else',
-                'for', 'while', 'do', 'switch', 'case', 'break', 'continue',
-                'try', 'catch', 'finally', 'throw', 'new', 'class', 'extends',
-                'import', 'export', 'default', 'async', 'await', 'yield',
-                'this', 'super', 'typeof', 'instanceof', 'in', 'of', 'void',
-                'delete', 'debugger', 'with'
-            ].join('|');
-            
-            escaped = escaped.replace(
-                new RegExp(`\\b(${keywords})\\b`, 'g'),
-                '<span class="keyword">$1</span>'
-            );
-            
-            // 4. 布尔值和特殊值
-            escaped = escaped.replace(
-                /\b(true|false|null|undefined|NaN|Infinity)\b/g,
-                '<span class="boolean">$1</span>'
-            );
-            
-            // 5. 数字
-            escaped = escaped.replace(
-                /\b(\d+\.?\d*)\b/g,
-                '<span class="number">$1</span>'
-            );
-            
-            // 6. 函数名
-            escaped = escaped.replace(
-                /(\w+)(?=\s*\()/g,
-                '<span class="function">$1</span>'
-            );
-            
-            // 7. 属性
-            escaped = escaped.replace(
-                /\.(\w+)(?!\()/g,
-                '.<span class="property">$1</span>'
-            );
-            
-            return escaped;
-        };
-        
-        // 真实的解密函数 - 解析混淆的JavaScript代码
-        const realDecrypt = (code) => {
-            try {
-                // 检测常见的混淆模式
-                if (code.includes('eval') || code.includes('Function')) {
-                    this.addLog('检测到eval混淆代码', 'info');
-                    
-                    // 创建安全的执行环境
-                    let decodedCode = '';
-                    
-                    // 替换eval为捕获函数
-                    const modifiedCode = code.replace(/eval\s*\(/g, 'captureEval(');
-                    
-                    // 捕获eval的内容
-                    const captureEval = (evalCode) => {
-                        decodedCode = evalCode;
-                        return evalCode;
-                    };
-                    
-                    // 尝试执行并捕获结果
-                    try {
-                        // 创建沙箱环境
-                        const sandbox = {
-                            eval: captureEval,
-                            captureEval: captureEval,
-                            console: { log: () => {} },
-                            window: {},
-                            document: {}
-                        };
-                        
-                        // 使用Function构造器在沙箱中执行
-                        const func = new Function(...Object.keys(sandbox), modifiedCode);
-                        func(...Object.values(sandbox));
-                        
-                        if (decodedCode) {
-                            return '// 解密成功！\n' + decodedCode;
-                        }
-                    } catch (e) {
-                        this.addLog('自动解密失败，尝试其他方法', 'warning');
-                    }
-                }
-                
-                // 检测其他混淆类型
-                const obfuscatorPatterns = [
-                    { name: 'aaencode', pattern: /ﾟωﾟ/ },
-                    { name: 'jjencode', pattern: /\$\+\[\]\+/ },
-                    { name: 'jsfuck', pattern: /\[\]\[\]\+/ },
-                    { name: 'obfuscator.io', pattern: /_0x[a-f0-9]+/ }
-                ];
-                
-                for (const { name, pattern } of obfuscatorPatterns) {
-                    if (pattern.test(code)) {
-                        this.addLog(`检测到 ${name} 混淆`, 'info');
-                        break;
-                    }
-                }
-                
-                // 如果无法自动解密，返回提示
-                return `// 检测到混淆代码，但需要使用专门的解密工具\n// 请确保已配置 GitHub Token 和仓库地址\n// 或访问 https://github.com/smallfawn/decode_action 获取解密工具\n\n${code}`;
-                
-            } catch (error) {
-                return `// 解密过程出错: ${error.message}\n\n${code}`;
-            }
-        };
-        
-        // 模拟解密功能
-        const mockDecrypt = (code) => {
-            this.addLog('尝试本地解密...', 'info');
-            return realDecrypt(code);
-        };
-        
         // 应用主对象
         const app = {
             githubToken: '',
@@ -917,7 +748,6 @@
                     this.showToast('粘贴成功');
                     this.addLog('从剪贴板粘贴内容', 'success');
                 }).catch(() => {
-                    // 如果剪贴板权限被拒绝，显示提示
                     this.showToast('请手动粘贴（Ctrl+V 或 长按粘贴）', 'warning');
                 });
             },
@@ -944,10 +774,10 @@
                     return;
                 }
                 
-                // 如果没有配置GitHub，直接使用模拟解密
+                // 如果没有配置GitHub，直接使用本地解密
                 if (!this.githubToken || !this.repoName) {
                     this.addLog('使用本地解密模式', 'info');
-                    const result = mockDecrypt(inputCode);
+                    const result = this.localDecrypt(inputCode);
                     this.displayResult(result);
                     this.showToast('解密完成（本地模式）');
                     this.addLog('本地解密完成', 'success');
@@ -963,10 +793,59 @@
                     this.addLog('解密失败: ' + error.message, 'error');
                     this.showToast('解密失败: ' + error.message, 'error');
                     
-                    // 使用模拟解密
-                    const result = mockDecrypt(inputCode);
+                    // 使用本地解密
+                    const result = this.localDecrypt(inputCode);
                     this.displayResult(result);
                     this.addLog('使用本地模拟解密', 'warning');
+                }
+            },
+            
+            localDecrypt(code) {
+                try {
+                    // 检测eval混淆
+                    if (code.includes('eval') || code.includes('Function')) {
+                        this.addLog('检测到eval混淆代码', 'info');
+                        
+                        // 尝试简单的eval替换
+                        let decodedCode = code;
+                        try {
+                            // 创建一个安全的eval替换
+                            const evalCapture = [];
+                            const fakeEval = (str) => {
+                                evalCapture.push(str);
+                                return str;
+                            };
+                            
+                            // 使用正则表达式提取eval的内容
+                            const evalMatch = code.match(/eval\s*\((.*)\)/);
+                            if (evalMatch && evalMatch[1]) {
+                                return `// 检测到eval混淆，请使用GitHub Actions解密\n// 配置GitHub Token和仓库后可自动解密\n\n${code}`;
+                            }
+                        } catch (e) {
+                            this.addLog('本地解密失败', 'warning');
+                        }
+                    }
+                    
+                    // 检测其他混淆类型
+                    const obfuscatorPatterns = [
+                        { name: 'aaencode', pattern: /ﾟωﾟ/ },
+                        { name: 'jjencode', pattern: /\$\+\[\]\+/ },
+                        { name: 'jsfuck', pattern: /\[\]\[\]\+/ },
+                        { name: 'obfuscator.io', pattern: /_0x[a-f0-9]+/ }
+                    ];
+                    
+                    for (const { name, pattern } of obfuscatorPatterns) {
+                        if (pattern.test(code)) {
+                            this.addLog(`检测到 ${name} 混淆`, 'info');
+                            return `// 检测到 ${name} 混淆代码\n// 请配置GitHub Token和仓库地址使用完整解密功能\n// 仓库地址: https://github.com/smallfawn/decode_action\n\n${code}`;
+                        }
+                    }
+                    
+                    // 如果不是混淆代码，直接返回
+                    return `// 代码分析完成\n// 未检测到已知的混淆模式\n\n${code}`;
+                    
+                } catch (error) {
+                    return `// 解密过程出错: ${error.message}\n\n${code}`;
                 }
             },
             
@@ -1017,50 +896,6 @@
                     }
                 } else {
                     outputDisplay.innerHTML = '<span style="color: #6a9955">// 解密结果将显示在这里...</span>';
-                }
-            },
-            
-            toggleHighlight() {
-                this.isHighlightMode = !this.isHighlightMode;
-                const outputTextarea = document.getElementById('output-code');
-                const outputHighlight = document.getElementById('output-highlight');
-                
-                if (this.isHighlightMode) {
-                    // 获取原始纯文本内容
-                    const code = outputTextarea.value;
-                    if (code && code.trim()) {
-                        try {
-                            // 调用高亮函数处理纯文本
-                            const highlightedCode = highlightCode(code);
-                            
-                            // 设置高亮内容
-                            outputHighlight.innerHTML = highlightedCode;
-                            
-                            // 切换显示
-                            outputTextarea.style.display = 'none';
-                            outputHighlight.style.display = 'block';
-                            outputHighlight.classList.remove('hidden');
-                            
-                            this.showToast('已开启代码高亮');
-                            this.addLog('开启代码高亮显示', 'info');
-                        } catch (error) {
-                            console.error('高亮处理错误:', error);
-                            this.showToast('高亮处理失败', 'error');
-                            this.isHighlightMode = false;
-                        }
-                    } else {
-                        this.showToast('没有代码可以高亮', 'warning');
-                        this.isHighlightMode = false;
-                    }
-                } else {
-                    // 切换回纯文本显示
-                    outputTextarea.style.display = 'block';
-                    outputHighlight.style.display = 'none';
-                    outputHighlight.classList.add('hidden');
-                    outputHighlight.innerHTML = ''; // 清空高亮内容
-                    
-                    this.showToast('已关闭代码高亮');
-                    this.addLog('关闭代码高亮显示', 'info');
                 }
             },
             
@@ -1122,7 +957,7 @@
                         
                         if (inputTextarea) {
                             inputTextarea.value = content;
-                            inputTextarea.style.display = 'block'; // 确保文本框显示
+                            inputTextarea.style.display = 'block';
                             
                             // 显示文件信息
                             const fileInfo = document.getElementById('selected-file-info');
@@ -1167,7 +1002,7 @@
                     const text = await response.text();
                     const inputTextarea = document.getElementById('input-code');
                     inputTextarea.value = text;
-                    inputTextarea.style.display = 'block'; // 确保文本框显示
+                    inputTextarea.style.display = 'block';
                     
                     this.showToast('远程文件加载成功');
                     this.addLog('远程文件加载成功', 'success');
@@ -1303,7 +1138,7 @@
                     this.addLog('获取结果失败，使用模拟结果', 'warning');
                     // 使用模拟结果
                     const inputCode = document.getElementById('input-code').value;
-                    const result = mockDecrypt(inputCode);
+                    const result = this.localDecrypt(inputCode);
                     this.displayResult(result);
                 }
             }
