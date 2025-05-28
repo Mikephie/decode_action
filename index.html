@@ -534,10 +534,7 @@
     <div id="toast" class="toast"></div>
     
     <script>
-        // 全局变量，使 app 对象全局可访问
-        let app;
-        
-        // 改进的代码高亮函数
+        // 简单的代码高亮函数
         const highlightCode = (code) => {
             if (!code) return '';
             
@@ -546,176 +543,101 @@
                       .replace(/</g, '&lt;')
                       .replace(/>/g, '&gt;');
             
-            // 高亮关键字 - 增加更多关键字支持
-            const keywords = /\b(var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|class|extends|import|export|default|async|await|yield|this|super|undefined|null|true|false|typeof|instanceof|in|of|delete|void|debugger)\b/g;
+            // 高亮关键字
+            const keywords = /\b(var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|class|extends|import|export|default|async|await|yield|this|super|undefined|null|true|false)\b/g;
             code = code.replace(keywords, '<span class="keyword">$1</span>');
             
-            // 高亮字符串 - 优化字符串识别正则
-            code = code.replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g, '<span class="string">$&</span>');
+            // 高亮字符串
+            code = code.replace(/(["'])(?:(?=(\\?))\2.)*?\1/g, '<span class="string">$&</span>');
             
             // 高亮数字
-            code = code.replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="number">$1</span>');
+            code = code.replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
             
-            // 高亮注释 - 支持多行和单行注释
+            // 高亮注释
             code = code.replace(/(\/\/.*$)/gm, '<span class="comment">$1</span>');
             code = code.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="comment">$1</span>');
-            
-            // 高亮运算符
-            const operators = /([+\-*/%=&|^<>!?:~.])/g;
-            code = code.replace(operators, '<span class="operator">$1</span>');
             
             // 高亮函数名
             code = code.replace(/(\w+)(?=\s*\()/g, '<span class="function">$1</span>');
             
-            // 高亮括号和标点
-            const punctuation = /([{}[\]();,])/g;
-            code = code.replace(punctuation, '<span class="punctuation">$1</span>');
-            
             return code;
         };
         
-        // 改进的模拟解密功能
+        // 模拟解密功能
         const mockDecrypt = (code) => {
             // 这里应该是实际的解密逻辑
-            // 现在只是返回一个模拟结果，添加一些注释和格式化
-            let decrypted = code;
-            
-            // 添加一些模拟的变量声明和函数定义，使高亮效果更明显
-            decrypted = `// 解密成功！
-// 原始代码长度: ${code.length}
-// 解密时间: ${new Date().toLocaleString()}
-
-/**
- * 解密后的代码
- * 
- * 这是一个示例解密结果，实际解密会根据输入内容有所不同
- */
- 
-${decrypted}
-
-// 解密完成`;
-            
-            return decrypted;
+            // 现在只是返回一个模拟结果
+            return `// 解密成功！\n// 原始代码长度: ${code.length}\n// 解密时间: ${new Date().toLocaleString()}\n\n${code}`;
         };
         
-        // 创建应用主对象，确保全局可访问
-        app = {
+        // 应用主对象
+        const app = {
             githubToken: '',
             repoName: '',
             currentTab: 'paste',
             isHighlightMode: false,
             
             init() {
-                try {
-                    console.log('初始化应用...');
-                    
-                    // 加载保存的配置
-                    this.githubToken = localStorage.getItem('github_token') || '';
-                    this.repoName = localStorage.getItem('repo_name') || '';
-                    
-                    const tokenInput = document.getElementById('github-token');
-                    const repoInput = document.getElementById('repo-name');
-                    
-                    if (tokenInput && repoInput) {
-                        tokenInput.value = this.githubToken;
-                        repoInput.value = this.repoName;
-                    } else {
-                        console.error('配置输入元素未找到');
-                    }
-                    
-                    // 绑定事件
-                    this.bindEvents();
-                    this.addLog('系统初始化完成', 'success');
-                    console.log('应用初始化完成');
-                } catch (error) {
-                    console.error('初始化失败:', error);
-                    this.addLog('初始化失败: ' + error.message, 'error');
-                }
+                // 加载保存的配置
+                this.githubToken = localStorage.getItem('github_token') || '';
+                this.repoName = localStorage.getItem('repo_name') || '';
+                
+                document.getElementById('github-token').value = this.githubToken;
+                document.getElementById('repo-name').value = this.repoName;
+                
+                // 绑定事件
+                this.bindEvents();
+                this.addLog('系统初始化完成', 'success');
             },
             
             bindEvents() {
-                try {
-                    console.log('绑定事件...');
-                    
-                    // 配置输入
-                    const tokenInput = document.getElementById('github-token');
-                    const repoInput = document.getElementById('repo-name');
-                    
-                    if (tokenInput) {
-                        tokenInput.addEventListener('input', (e) => {
-                            this.githubToken = e.target.value;
-                            localStorage.setItem('github_token', this.githubToken);
-                        });
+                // 配置输入
+                document.getElementById('github-token').addEventListener('input', (e) => {
+                    this.githubToken = e.target.value;
+                    localStorage.setItem('github_token', this.githubToken);
+                });
+                
+                document.getElementById('repo-name').addEventListener('input', (e) => {
+                    this.repoName = e.target.value;
+                    localStorage.setItem('repo_name', this.repoName);
+                });
+                
+                // 标签切换
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
+                });
+                
+                // 文件拖拽
+                const dropArea = document.getElementById('file-drop-area');
+                const fileInput = document.getElementById('file-input');
+                
+                dropArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropArea.classList.add('dragover');
+                });
+                
+                dropArea.addEventListener('dragleave', () => {
+                    dropArea.classList.remove('dragover');
+                });
+                
+                dropArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropArea.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files && files.length > 0) {
+                        this.handleFile(files[0]);
                     }
-                    
-                    if (repoInput) {
-                        repoInput.addEventListener('input', (e) => {
-                            this.repoName = e.target.value;
-                            localStorage.setItem('repo_name', this.repoName);
-                        });
+                });
+                
+                dropArea.addEventListener('click', () => {
+                    fileInput.click();
+                });
+                
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                        this.handleFile(e.target.files[0]);
                     }
-                    
-                    // 标签切换
-                    document.querySelectorAll('.tab').forEach(tab => {
-                        tab.addEventListener('click', () => {
-                            console.log(`切换到标签: ${tab.dataset.tab}`);
-                            this.switchTab(tab.dataset.tab);
-                        });
-                    });
-                    
-                    // 文件拖拽
-                    const dropArea = document.getElementById('file-drop-area');
-                    const fileInput = document.getElementById('file-input');
-                    
-                    // 修复：确保文件拖放区域存在
-                    if (dropArea && fileInput) {
-                        dropArea.addEventListener('dragover', (e) => {
-                            e.preventDefault();
-                            dropArea.classList.add('dragover');
-                        });
-                        
-                        dropArea.addEventListener('dragleave', () => {
-                            dropArea.classList.remove('dragover');
-                        });
-                        
-                        dropArea.addEventListener('drop', (e) => {
-                            e.preventDefault();
-                            dropArea.classList.remove('dragover');
-                            const files = e.dataTransfer.files;
-                            if (files && files.length > 0) {
-                                this.handleFile(files[0]);
-                            }
-                        });
-                        
-                        // 修复：点击整个区域触发文件选择
-                        dropArea.addEventListener('click', () => {
-                            fileInput.click();
-                        });
-                        
-                        // 修复：确保文件选择后立即处理
-                        fileInput.addEventListener('change', (e) => {
-                            if (e.target.files && e.target.files.length > 0) {
-                                this.handleFile(e.target.files[0]);
-                            }
-                        });
-                    }
-                    
-                    // 修复：确保文本区域更新时重置高亮状态
-                    const inputCode = document.getElementById('input-code');
-                    if (inputCode) {
-                        inputCode.addEventListener('input', () => {
-                            // 如果输出区域正在显示高亮，重置为普通文本区域
-                            if (this.isHighlightMode) {
-                                this.toggleHighlight();
-                            }
-                        });
-                    }
-                    
-                    console.log('事件绑定完成');
-                } catch (error) {
-                    console.error('绑定事件失败:', error);
-                    this.addLog('绑定事件失败: ' + error.message, 'error');
-                }
+                });
             },
             
             switchTab(tab) {
@@ -751,12 +673,14 @@ ${decrypted}
             clearAll() {
                 document.getElementById('input-code').value = '';
                 document.getElementById('output-code').value = '';
-                document.getElementById('output-highlight').innerHTML = '';
                 document.getElementById('progress-bar').style.width = '0%';
                 
-                // 重置高亮状态
+                // 如果高亮模式开启，清空高亮内容并重置
                 if (this.isHighlightMode) {
-                    this.toggleHighlight();
+                    document.getElementById('output-highlight').innerHTML = '';
+                    this.isHighlightMode = false;
+                    document.getElementById('output-code').classList.remove('hidden');
+                    document.getElementById('output-highlight').classList.add('hidden');
                 }
                 
                 this.showToast('已清除所有内容');
@@ -778,12 +702,6 @@ ${decrypted}
                 
                 try {
                     this.addLog('开始解密流程...', 'info');
-                    
-                    // 重置高亮状态
-                    if (this.isHighlightMode) {
-                        this.toggleHighlight();
-                    }
-                    
                     await this.submitToGitHub(inputCode);
                     await this.simulateDecryption();
                     await this.getResult();
@@ -796,3 +714,104 @@ ${decrypted}
                     document.getElementById('output-code').value = result;
                     this.addLog('使用本地模拟解密', 'warning');
                 }
+            },
+            
+            toggleHighlight() {
+                this.isHighlightMode = !this.isHighlightMode;
+                const outputTextarea = document.getElementById('output-code');
+                const outputHighlight = document.getElementById('output-highlight');
+                
+                if (this.isHighlightMode) {
+                    const code = outputTextarea.value;
+                    if (code) {
+                        // 修复：应用高亮内容并显示
+                        outputHighlight.innerHTML = highlightCode(code);
+                        outputTextarea.classList.add('hidden');
+                        outputHighlight.classList.remove('hidden');
+                        this.showToast('已开启代码高亮');
+                    } else {
+                        this.showToast('没有代码可以高亮', 'warning');
+                        this.isHighlightMode = false;
+                    }
+                } else {
+                    outputTextarea.classList.remove('hidden');
+                    outputHighlight.classList.add('hidden');
+                    this.showToast('已关闭代码高亮');
+                }
+            },
+            
+            copyResult() {
+                const output = document.getElementById('output-code').value;
+                if (!output) {
+                    this.showToast('没有内容可复制', 'error');
+                    return;
+                }
+                
+                navigator.clipboard.writeText(output).then(() => {
+                    this.showToast('复制成功');
+                    this.addLog('复制解密结果', 'success');
+                }).catch(() => {
+                    this.showToast('复制失败', 'error');
+                });
+            },
+            
+            downloadResult() {
+                const output = document.getElementById('output-code').value;
+                if (!output) {
+                    this.showToast('没有内容可下载', 'error');
+                    return;
+                }
+                
+                const blob = new Blob([output], { type: 'text/javascript' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `decrypted_${Date.now()}.js`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                this.showToast('下载成功');
+                this.addLog('下载解密结果', 'success');
+            },
+            
+            // 修复：文件处理逻辑
+            handleFile(file) {
+                if (!file) {
+                    this.showToast('未选择文件', 'error');
+                    return;
+                }
+                
+                this.addLog(`开始读取文件: ${file.name}`, 'info');
+                
+                const reader = new FileReader();
+                
+                // 修复：确保文件内容正确加载到输入框
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    
+                    // 直接设置内容到输入框
+                    document.getElementById('input-code').value = content;
+                    
+                    // 更新文件信息显示
+                    document.getElementById('selected-file-info').textContent = 
+                        `已加载: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                    
+                    // 切换到粘贴代码标签，这样用户可以看到内容
+                    this.switchTab('paste');
+                    
+                    this.showToast(`文件加载成功: ${file.name}`);
+                    this.addLog(`文件加载成功: ${file.name} (${content.length} 字符)`, 'success');
+                };
+                
+                reader.onerror = () => {
+                    this.showToast('文件读取失败', 'error');
+                    this.addLog(`文件读取失败: ${file.name}`, 'error');
+                };
+                
+                try {
+                    reader.readAsText(file);
+                } catch (error) {
+                    this.showToast('无法读取文件', 'error');
+                    this.addLog(`无法读取文件: ${error.message}`, 'error');
+                }
+            },
