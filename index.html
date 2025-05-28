@@ -225,7 +225,7 @@
             -webkit-overflow-scrolling: touch; /* 移动端平滑滚动 */
         }
         
-        /* 语法高亮颜色 */
+        /* 语法高亮颜色 - 增强移动端显示 */
         .keyword { color: #c678dd !important; font-weight: bold; }
         .string { color: #98c379 !important; }
         .number { color: #d19a66 !important; }
@@ -470,113 +470,7 @@
                 </div>
                 
                 <!-- 统一的输入文本框 -->
-                <textarea id="input-code" placeholder="在此粘贴需要解密的代码...">let appVersion = null;
-  let obj = JSON.parse($response.body);
-  let $ = new Env(names);
-  obj.subscriber = {
-    non_subscriptions: {},
-    first_seen: "2024-03-08T04:44:30Z",
-    original_application_version: appVersion,
-    other_purchases: {
-      [productType]: {
-        price: {
-          amount: 0,
-          currency: "USD"
-        },
-        display_name: null,
-        purchase_date: "2024-03-08T04:44:44Z"
-      }
-    },
-    management_url: null,
-    subscriptions: {},
-    entitlements: {},
-    original_purchase_date: "2024-03-08T04:44:14Z",
-    original_app_user_id: "$RCAnonymousID:0400000000000000000000000000000",
-    last_seen: "2024-03-08T04:44:30Z"
-  };
-  obj.subscriber.non_subscriptions[productType] = [{
-    id: "aaaaaaaaaa",
-    is_sandbox: false,
-    price: {
-      amount: 0,
-      currency: "USD"
-    },
-    display_name: null,
-    purchase_date: "2024-03-08T04:44:44Z",
-    original_purchase_date: "2024-03-08T04:44:44Z",
-    store: "app_store",
-    store_transaction_id: "280000000000000"
-  }];
-  $.notify("XiaoMao_" + names + " 执行成功！", "", "Nice!已解锁成功，可关掉此脚本。", "https://i.pixiv.re/img-original/img/2022/12/19/00/06/12/103718184_p0.png");
-  $done({
-    body: JSON.stringify(obj)
-  });
-  function Env(name) {
-    const isLoon = typeof $loon !== "undefined";
-    const isSurge = typeof $httpClient !== "undefined" && !isLoon;
-    const isQX = typeof $task !== "undefined";
-    const read = key => {
-      if (isLoon || isSurge) return $persistentStore.read(key);
-      if (isQX) return $prefs.valueForKey(key);
-    };
-    const write = (key, value) => {
-      if (isLoon || isSurge) return $persistentStore.write(key, value);
-      if (isQX) return $prefs.setValueForKey(key, value);
-    };
-    const notify = (title = "XiaoMao", subtitle = "", message = "", url = "", url2 = url) => {
-      if (isLoon) $notification.post(title, subtitle, message, url);
-      if (isSurge) $notification.post(title, subtitle, message, {
-        url
-      });
-      if (isQX) $notify(title, subtitle, message, {
-        "open-url": url,
-        "media-url": url2
-      });
-    };
-    const get = (url, callback) => {
-      if (isLoon || isSurge) $httpClient.get(url, callback);
-      if (isQX) {
-        url.method = `GET`;
-        $task.fetch(url).then(resp => callback(null, {}, resp.body));
-      }
-    };
-    const post = (url, callback) => {
-      if (isLoon || isSurge) $httpClient.post(url, callback);
-      if (isQX) {
-        url.method = `POST`;
-        $task.fetch(url).then(resp => callback(null, {}, resp.body));
-      }
-    };
-    const put = (url, callback) => {
-      if (isLoon || isSurge) $httpClient.put(url, callback);
-      if (isQX) {
-        url.method = "PUT";
-        $task.fetch(url).then(resp => callback(null, {}, resp.body));
-      }
-    };
-    const toObj = str => JSON.parse(str);
-    const toStr = obj => JSON.stringify(obj);
-    const queryStr = obj => {
-      return Object.keys(obj).map(key => `${key}=${obj[key]}`).join("&");
-    };
-    const log = message => console.log(message);
-    const done = (value = {}) => $done(value);
-    return {
-      name,
-      read,
-      write,
-      notify,
-      get,
-      post,
-      put,
-      toObj,
-      toStr,
-      queryStr,
-      log,
-      done
-    };
-  }
-})();</textarea>
+                <textarea id="input-code" placeholder="在此粘贴需要解密的代码..."></textarea>
                 
                 <!-- 选择文件标签内容 -->
                 <div id="file-content" class="tab-content hidden">
@@ -585,7 +479,7 @@
                         <div>
                             <div style="font-size: 2rem; margin-bottom: 0.5rem;">📁</div>
                             <div>点击选择文件</div>
-                            <div style="color: #6b7280; font-size: 0.875rem; margin KAR-top: 0.5rem;">支持 .js 和 .txt 文件</div>
+                            <div style="color: #6b7280; font-size: 0.875rem; margin-top: 0.5rem;">支持 .js 和 .txt 文件</div>
                             <div style="color: #4f46e5; font-size: 0.875rem; margin-top: 0.5rem;">（电脑端支持拖拽）</div>
                         </div>
                     </div>
@@ -657,9 +551,9 @@
             code = tempDiv.textContent || tempDiv.innerText || '';
             
             // 转义HTML
-            code = code.replace(/&/g, '&')
-                      .replace(/</g, '<')
-                      .replace(/>/g, '>');
+            code = code.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;');
             
             // 高亮注释（优先处理，避免被其他规则影响）
             code = code.replace(/(\/\/.*$)/gm, '<span class="comment">$1</span>');
@@ -672,7 +566,7 @@
             code = code.replace(/\/(?:[^\/\\\n]|\\.)+\/[gimuy]*/g, '<span class="string">$&</span>');
             
             // 高亮关键字
-            const keywords = /\b(var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|class|extends|import|export|default|async|await|yield|this|super|typeof|instanceof|in|of|void|delete|debugger|with|JSON|Object|console)\b/g;
+            const keywords = /\b(var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|try|catch|finally|throw|new|class|extends|import|export|default|async|await|yield|this|super|typeof|instanceof|in|of|void|delete|debugger|with)\b/g;
             code = code.replace(keywords, '<span class="keyword">$1</span>');
             
             // 高亮布尔值和特殊值
@@ -684,20 +578,19 @@
             // 高亮函数名（函数声明和调用）
             code = code.replace(/(\w+)(?=\s*\()/g, '<span class="function">$1</span>');
             
-            // 高亮变量（以 $ 开头的特殊变量，如 $response, $httpClient）
-            code = code.replace(/\$\w+/g, '<span class="variable">$&</span>');
-            
             // 高亮对象属性
             code = code.replace(/\.(\w+)/g, '.<span class="property">$1</span>');
             
-            // 高亮运算符（包括 =>）
-            code = code.replace(/([+\-*/%=<>!&|^~?:]|\b=>)/g, '<span class="operator">$1</span>');
+            // 高亮运算符
+            code = code.replace(/([+\-*/%=<>!&|^~?:])/g, '<span class="operator">$1</span>');
             
             return code;
         };
         
         // 模拟解密功能
         const mockDecrypt = (code) => {
+            // 这里应该是实际的解密逻辑
+            // 现在只是返回一个模拟结果
             return `// 解密成功！\n// 原始代码长度: ${code.length}\n// 解密时间: ${new Date().toLocaleString()}\n\n${code}`;
         };
         
@@ -790,6 +683,7 @@
                     this.showToast('粘贴成功');
                     this.addLog('从剪贴板粘贴内容', 'success');
                 }).catch(() => {
+                    // 如果剪贴板权限被拒绝，显示提示
                     this.showToast('请手动粘贴（Ctrl+V 或 长按粘贴）', 'warning');
                 });
             },
@@ -843,6 +737,7 @@
                     this.addLog('解密失败: ' + error.message, 'error');
                     this.showToast('解密失败: ' + error.message, 'error');
                     
+                    // 使用模拟解密
                     const result = mockDecrypt(inputCode);
                     document.getElementById('output-code').value = result;
                     this.addLog('使用本地模拟解密', 'warning');
@@ -857,6 +752,7 @@
                 if (this.isHighlightMode) {
                     const code = outputTextarea.value;
                     if (code) {
+                        // 确保高亮容器可见并设置内容
                         outputHighlight.innerHTML = highlightCode(code);
                         outputTextarea.style.display = 'none';
                         outputHighlight.style.display = 'block';
@@ -926,8 +822,9 @@
                         
                         if (inputTextarea) {
                             inputTextarea.value = content;
-                            inputTextarea.style.display = 'block';
+                            inputTextarea.style.display = 'block'; // 确保文本框显示
                             
+                            // 显示文件信息
                             const fileInfo = document.getElementById('selected-file-info');
                             if (fileInfo) {
                                 fileInfo.textContent = `已加载: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
@@ -970,7 +867,7 @@
                     const text = await response.text();
                     const inputTextarea = document.getElementById('input-code');
                     inputTextarea.value = text;
-                    inputTextarea.style.display = 'block';
+                    inputTextarea.style.display = 'block'; // 确保文本框显示
                     
                     this.showToast('远程文件加载成功');
                     this.addLog('远程文件加载成功', 'success');
@@ -1008,9 +905,53 @@
             
             async submitToGitHub(code) {
                 this.addLog('正在提交代码到 GitHub...', 'info');
-                // 模拟提交
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                this.addLog('代码提交成功', 'success');
+                
+                try {
+                    const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/input.js`;
+                    
+                    // 先尝试获取文件信息
+                    let sha = null;
+                    try {
+                        const getResponse = await fetch(apiUrl, {
+                            headers: {
+                                'Authorization': `token ${this.githubToken}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        });
+                        
+                        if (getResponse.ok) {
+                            const fileData = await getResponse.json();
+                            sha = fileData.sha;
+                        }
+                    } catch (e) {
+                        // 文件不存在，将创建新文件
+                    }
+                    
+                    // 创建或更新文件
+                    const content = btoa(unescape(encodeURIComponent(code)));
+                    const response = await fetch(apiUrl, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: 'Update input.js for decryption',
+                            content: content,
+                            sha: sha || undefined
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('无法更新文件');
+                    }
+                    
+                    this.addLog('代码提交成功', 'success');
+                    
+                } catch (error) {
+                    throw new Error('GitHub API错误: ' + error.message);
+                }
             },
             
             async simulateDecryption() {
@@ -1039,18 +980,49 @@
             
             async getResult() {
                 this.addLog('正在获取解密结果...', 'info');
-                const inputCode = document.getElementById('input-code').value;
-                const result = mockDecrypt(inputCode);
-                document.getElementById('output-code').value = result;
                 
-                this.isHighlightMode = false;
-                const outputTextarea = document.getElementById('output-code');
-                const outputHighlight = document.getElementById('output-highlight');
-                outputTextarea.style.display = 'block';
-                outputHighlight.style.display = 'none';
-                outputHighlight.innerHTML = '';
-                
-                this.addLog('解密成功！', 'success');
+                try {
+                    const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
+                    const response = await fetch(apiUrl, {
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const content = decodeURIComponent(escape(atob(data.content)));
+                        
+                        document.getElementById('output-code').value = content;
+                        
+                        // 重置高亮状态
+                        this.isHighlightMode = false;
+                        const outputTextarea = document.getElementById('output-code');
+                        const outputHighlight = document.getElementById('output-highlight');
+                        outputTextarea.style.display = 'block';
+                        outputHighlight.style.display = 'none';
+                        outputHighlight.innerHTML = '';
+                        
+                        this.addLog('解密成功！', 'success');
+                    } else {
+                        throw new Error('无法获取输出文件');
+                    }
+                } catch (error) {
+                    this.addLog('获取结果失败，使用模拟结果', 'warning');
+                    // 使用模拟结果
+                    const inputCode = document.getElementById('input-code').value;
+                    const result = mockDecrypt(inputCode);
+                    document.getElementById('output-code').value = result;
+                    
+                    // 重置高亮状态
+                    this.isHighlightMode = false;
+                    const outputTextarea = document.getElementById('output-code');
+                    const outputHighlight = document.getElementById('output-highlight');
+                    outputTextarea.style.display = 'block';
+                    outputHighlight.style.display = 'none';
+                    outputHighlight.innerHTML = '';
+                }
             }
         };
         
