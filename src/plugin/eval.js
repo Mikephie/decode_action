@@ -1,58 +1,52 @@
 /**
- * Eval 解包插件 (ESM 版本)
- * 用于解密 eval(function(p,a,c,k,e,d){...}) 类似结构
+ * Eval 解包插件 (ESM 版本) - 支持 eval(function(p,a,c,k,e,d){...})
  */
 
 function plugin(code) {
   try {
-    if (!code.includes('eval(') && !code.includes('eval (')) {
+    if (!/eval\s*\(function\s*\(\w,\w,\w,\w,\w,\w\)/.test(code)) {
       return null;
     }
 
-    // 替换 eval 为捕获函数
-    let modifiedCode = code.replace(/eval\s*\(/g, '(function(x) { return x; })(');
+    // 把 eval 替换成直接执行的捕获方式
+    const modifiedCode = code.replace(
+      /eval\s*\(\s*function\s*\(\w,\w,\w,\w,\w,\w\)/,
+      '(function($fn){ return $fn'
+    );
 
-    try {
-      const env = {
-        window: {},
-        document: {},
-        navigator: { userAgent: "Mozilla/5.0" },
-        location: {},
-      };
-
-      const result = Function('window', 'document', 'navigator', 'location',
-        `return ${modifiedCode}`
-      )(env.window, env.document, env.navigator, env.location);
-
-      if (typeof result === 'string') {
-        if (result.includes('eval(')) {
-          return plugin(result); // 递归解包
+    // 补全函数闭合（用于执行）
+    const wrappedCode = `
+      (function(){
+        const captured = [];
+        const $fn = function() {
+          return (${modifiedCode});
+        };
+        try {
+          return $fn();
+        } catch (e) {
+          return null;
         }
-        return result;
-      }
+      })()
+    `;
 
-      return String(result);
-    } catch (err) {
-      console.log("[eval] 替换eval执行失败，尝试直接替换");
+    const result = eval(wrappedCode);
 
-      try {
-        modifiedCode = code.replace(/eval\s*\(/g, '(');
-        return modifiedCode;
-      } catch (replaceErr) {
-        console.error("[eval] 直接替换失败:", replaceErr);
-        return null;
-      }
+    // 若结果仍包含 eval，尝试递归
+    if (typeof result === 'string' && result.includes('eval(')) {
+      return plugin(result);
     }
-  } catch (error) {
-    console.error("[eval] 解包出错:", error);
+
+    return typeof result === 'string' ? result : String(result);
+  } catch (e) {
+    console.error('[eval] 解包失败:', e);
     return null;
   }
 }
 
-// 导出为默认对象，供 ESM 导入使用
+// ESM 默认导出
 export default {
   detect(code) {
-    return /eval\s*\(/.test(code) || /eval\(function\s*\(\w,\w,\w,\w,\w,\w\)/.test(code);
+    return /eval\s*\(function\s*\(\w,\w,\w,\w,\w,\w\)/.test(code);
   },
   plugin
 };
