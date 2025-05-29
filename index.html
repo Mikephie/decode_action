@@ -617,7 +617,7 @@
         <div class="header-content">
             <div style="display: flex; align-items: center;">
                 <h1 class="logo">羊毛助手</h1>
-                <span class="version">v3.2</span>
+                <span class="version">v3.3</span>
             </div>
             <div style="color: #6b7280; font-size: 0.875rem;">
                 自动解密脚本工具
@@ -868,23 +868,8 @@
                 document.getElementById('output-display').innerHTML = '<span style="color: #6a9955">// 解密结果将显示在这里...</span>';
                 document.getElementById('progress-bar').style.width = '0%';
                 
-                // 清除所有缓存相关的数据
-                this.decryptStartTime = null;
-                this.lastResultHash = null;
-                
-                // 尝试清除浏览器缓存
-                if ('caches' in window) {
-                    caches.keys().then(names => {
-                        names.forEach(name => {
-                            if (name.includes('github') || name.includes('raw.githubusercontent')) {
-                                caches.delete(name);
-                            }
-                        });
-                    });
-                }
-                
-                this.showToast('已清除所有内容和缓存');
-                this.addLog('清除所有内容和缓存', 'info');
+                this.showToast('已清除所有内容');
+                this.addLog('清除所有内容', 'info');
             },
             
             async decrypt() {
@@ -904,33 +889,14 @@
                 }
                 
                 try {
-                    this.addLog('开始新的解密流程...', 'info');
+                    this.addLog('开始解密流程...', 'info');
                     
-                    // 强制清空之前的结果和缓存
+                    // 清空之前的结果
                     this.displayResult('');
                     document.getElementById('output-code').value = '';
-                    this.lastResultHash = null;
-                    
-                    // 清除可能的浏览器缓存
-                    if ('caches' in window) {
-                        try {
-                            const cacheNames = await caches.keys();
-                            for (const cacheName of cacheNames) {
-                                if (cacheName.includes('github') || cacheName.includes('raw.githubusercontent')) {
-                                    await caches.delete(cacheName);
-                                    this.addLog(`清除缓存: ${cacheName}`, 'info');
-                                }
-                            }
-                        } catch (e) {
-                            // 忽略缓存清除错误
-                        }
-                    }
                     
                     // 重置进度条
                     document.getElementById('progress-bar').style.width = '0%';
-                    
-                    // 记录开始时间，用于避免缓存
-                    this.decryptStartTime = Date.now();
                     
                     // 1. 提交代码到GitHub
                     await this.submitToGitHub(inputCode);
@@ -938,32 +904,15 @@
                     // 2. 等待Actions自动触发并完成
                     await this.waitForActionComplete();
                     
-                    // 3. 延迟5秒再获取，确保CDN更新
-                    this.addLog('等待CDN缓存更新...', 'info');
-                    await new Promise(resolve => setTimeout(resolve, 5000));
-                    
-                    // 4. 获取解密结果
+                    // 3. 获取解密结果
                     await this.getResult();
                     
                 } catch (error) {
-                    this.addLog('主流程出错: ' + error.message, 'error');
+                    this.addLog('解密流程出错: ' + error.message, 'error');
+                    this.showToast('解密失败: ' + error.message, 'error');
                     
-                    // 尝试备用方案
-                    try {
-                        this.addLog('尝试备用方案...', 'info');
-                        
-                        // 再次延迟后尝试
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        await this.getResult();
-                    } catch (e) {
-                        // 方案2：通过Raw URL获取
-                        const rawSuccess = await this.getResultViaRawUrl();
-                        
-                        if (!rawSuccess) {
-                            this.showToast('解密失败: ' + error.message, 'error');
-                            this.displayResult(`// ❌ 解密失败\n// 错误: ${error.message}\n// \n// 请检查:\n// 1. GitHub Token 是否有效\n// 2. 仓库地址是否正确\n// 3. Actions 是否已启用\n// 4. decode_action 框架是否正确部署\n// 5. 检查 GitHub Actions 日志\n// \n// 手动查看结果:\n// https://github.com/${this.repoName}/blob/main/output.js\n\n${inputCode}`);
-                        }
-                    }
+                    // 简单的错误处理
+                    this.displayResult(`// ❌ 解密失败\n// 错误: ${error.message}\n// \n// 请检查配置并重试，或手动访问:\n// https://github.com/${this.repoName}/blob/main/output.js`);
                 }
             },
             
@@ -1147,23 +1096,117 @@
             async getResult() {
                 this.addLog('正在获取解密结果...', 'info');
                 
-                // 使用时间戳强制刷新缓存
-                const timestamp = this.decryptStartTime || Date.now();
+                // 简单的时间戳，不要过度复杂化
+                const timestamp = Date.now();
                 
-                // 方案1: 尝试通过Raw URL获取（CDN方式）
-                if (await this.tryGetResultFromRaw(timestamp)) return;
+                // 方案1: GitHub API (最稳定)
+                try {
+                    this.addLog('尝试GitHub API...', 'info');
+                    const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
+                    const response = await fetch(`${apiUrl}?ref=main&_=${timestamp}`, {
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const content = atob(data.content.replace(/\n/g, ''));
+                        
+                        if (content && content.trim().length > 10) {
+                            this.displayResult(content);
+                            this.addLog('GitHub API获取成功！', 'success');
+                            this.showToast('解密成功！');
+                            document.getElementById('progress-bar').style.width = '0%';
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    this.addLog('GitHub API失败: ' + error.message, 'warning');
+                }
                 
-                // 方案2: 尝试GitHub API方式
-                if (await this.tryGetResultFromAPI(timestamp)) return;
+                // 方案2: Raw URL
+                try {
+                    this.addLog('尝试Raw URL...', 'info');
+                    const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js?_=${timestamp}`;
+                    const response = await fetch(rawUrl);
+                    
+                    if (response.ok) {
+                        const content = await response.text();
+                        if (content && content.trim().length > 10) {
+                            this.displayResult(content);
+                            this.addLog('Raw URL获取成功！', 'success');
+                            this.showToast('解密成功！');
+                            document.getElementById('progress-bar').style.width = '0%';
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    this.addLog('Raw URL失败: ' + error.message, 'warning');
+                }
                 
-                // 方案3: 尝试不同的Raw URL格式
-                if (await this.tryAlternativeRawUrls(timestamp)) return;
+                // 方案3: 代理 (allorigins)
+                try {
+                    this.addLog('尝试代理获取...', 'info');
+                    const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js?_=${timestamp}`;
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rawUrl)}`;
+                    const response = await fetch(proxyUrl);
+                    
+                    if (response.ok) {
+                        const content = await response.text();
+                        if (content && content.trim().length > 10) {
+                            this.displayResult(content);
+                            this.addLog('代理获取成功！', 'success');
+                            this.showToast('解密成功！');
+                            document.getElementById('progress-bar').style.width = '0%';
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    this.addLog('代理获取失败: ' + error.message, 'warning');
+                }
                 
-                // 方案4: 尝试使用代理
-                if (await this.tryWithProxy(timestamp)) return;
+                // 所有方法都失败，提供手动方案
+                this.showSimpleManualHelp();
+            },
+            
+            showSimpleManualHelp() {
+                const directUrl = `https://github.com/${this.repoName}/blob/main/output.js`;
                 
-                // 方案5: 提供手动方案
-                this.showManualOptions();
+                this.displayResult(`// ⚠️ 自动获取失败
+//
+// 请手动操作：
+// 1. 打开: ${directUrl}
+// 2. 复制解密后的代码
+// 3. 粘贴到输入框
+// 4. 点击"复制结果"
+//
+// 提示：如果看到的还是旧内容，请刷新GitHub页面`);
+                
+                this.addLog('请手动获取结果', 'warning');
+                
+                // 简单的提示
+                const toast = document.getElementById('toast');
+                toast.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div>自动获取失败，请手动操作</div>
+                        <button onclick="window.open('${directUrl}', '_blank')" 
+                                style="background: #4f46e5; color: white; border: none; 
+                                       padding: 0.5rem; border-radius: 6px; cursor: pointer;">
+                            打开GitHub查看结果
+                        </button>
+                        <div style="font-size: 0.8rem; color: #a1a1aa;">
+                            复制代码后粘贴到输入框即可
+                        </div>
+                    </div>
+                `;
+                toast.className = 'toast show';
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    toast.innerHTML = '';
+                }, 10000);
             },
             
             async tryGetResultFromRaw(timestamp) {
