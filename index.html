@@ -617,7 +617,7 @@
         <div class="header-content">
             <div style="display: flex; align-items: center;">
                 <h1 class="logo">羊毛助手</h1>
-                <span class="version">v3.0</span>
+                <span class="version">v3.1</span>
             </div>
             <div style="color: #6b7280; font-size: 0.875rem;">
                 自动解密脚本工具
@@ -867,8 +867,24 @@
                 document.getElementById('output-code').value = '';
                 document.getElementById('output-display').innerHTML = '<span style="color: #6a9955">// 解密结果将显示在这里...</span>';
                 document.getElementById('progress-bar').style.width = '0%';
-                this.showToast('已清除所有内容');
-                this.addLog('清除所有内容', 'info');
+                
+                // 清除所有缓存相关的数据
+                this.decryptStartTime = null;
+                this.lastResultHash = null;
+                
+                // 尝试清除浏览器缓存
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => {
+                            if (name.includes('github') || name.includes('raw.githubusercontent')) {
+                                caches.delete(name);
+                            }
+                        });
+                    });
+                }
+                
+                this.showToast('已清除所有内容和缓存');
+                this.addLog('清除所有内容和缓存', 'info');
             },
             
             async decrypt() {
@@ -888,11 +904,27 @@
                 }
                 
                 try {
-                    this.addLog('开始解密流程...', 'info');
+                    this.addLog('开始新的解密流程...', 'info');
                     
-                    // 清空之前的结果，避免缓存问题
+                    // 强制清空之前的结果和缓存
                     this.displayResult('');
                     document.getElementById('output-code').value = '';
+                    this.lastResultHash = null;
+                    
+                    // 清除可能的浏览器缓存
+                    if ('caches' in window) {
+                        try {
+                            const cacheNames = await caches.keys();
+                            for (const cacheName of cacheNames) {
+                                if (cacheName.includes('github') || cacheName.includes('raw.githubusercontent')) {
+                                    await caches.delete(cacheName);
+                                    this.addLog(`清除缓存: ${cacheName}`, 'info');
+                                }
+                            }
+                        } catch (e) {
+                            // 忽略缓存清除错误
+                        }
+                    }
                     
                     // 重置进度条
                     document.getElementById('progress-bar').style.width = '0%';
@@ -906,7 +938,11 @@
                     // 2. 等待Actions自动触发并完成
                     await this.waitForActionComplete();
                     
-                    // 3. 获取解密结果
+                    // 3. 延迟5秒再获取，确保CDN更新
+                    this.addLog('等待CDN缓存更新...', 'info');
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    
+                    // 4. 获取解密结果
                     await this.getResult();
                     
                 } catch (error) {
@@ -916,7 +952,8 @@
                     try {
                         this.addLog('尝试备用方案...', 'info');
                         
-                        // 方案1：直接通过API获取
+                        // 再次延迟后尝试
+                        await new Promise(resolve => setTimeout(resolve, 3000));
                         await this.getResult();
                     } catch (e) {
                         // 方案2：通过Raw URL获取
@@ -1131,21 +1168,37 @@
             
             async tryGetResultFromRaw(timestamp) {
                 try {
-                    const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js?t=${timestamp}&cache=${Math.random()}`;
+                    // 生成强随机数避免缓存
+                    const randomSuffix = Math.random().toString(36).substring(2, 15);
+                    const cacheBuster = `${timestamp}_${randomSuffix}_${Date.now()}`;
+                    
+                    const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js?v=${cacheBuster}&nocache=${Math.random()}&_=${Date.now()}`;
                     this.addLog('尝试Raw URL方式...', 'info');
                     
                     const response = await fetch(rawUrl, {
-                        cache: 'no-cache',
+                        method: 'GET',
+                        cache: 'no-store',
                         headers: {
-                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
                             'Pragma': 'no-cache',
-                            'Expires': '0'
+                            'Expires': '0',
+                            'If-None-Match': '*',
+                            'If-Modified-Since': 'Thu, 01 Jan 1970 00:00:00 GMT'
                         }
                     });
                     
                     if (response.ok) {
                         const content = await response.text();
+                        const contentHash = this.hashCode(content);
+                        
+                        // 检查是否是新内容
                         if (content && content.trim().length > 10) {
+                            if (this.lastResultHash && this.lastResultHash === contentHash) {
+                                this.addLog('检测到可能是缓存内容，继续尝试其他方式...', 'warning');
+                                return false;
+                            }
+                            
+                            this.lastResultHash = contentHash;
                             this.displayResult(content);
                             this.addLog('Raw URL获取成功！', 'success');
                             this.showToast('解密成功！');
@@ -1165,20 +1218,35 @@
             async tryGetResultFromAPI(timestamp) {
                 try {
                     this.addLog('尝试GitHub API方式...', 'info');
+                    const randomSuffix = Math.random().toString(36).substring(2, 15);
+                    const cacheBuster = `${timestamp}_${randomSuffix}_${Date.now()}`;
+                    
                     const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
-                    const response = await fetch(`${apiUrl}?ref=main&t=${timestamp}&cache=${Math.random()}`, {
+                    const response = await fetch(`${apiUrl}?ref=main&v=${cacheBuster}&nocache=${Math.random()}&_=${Date.now()}`, {
+                        method: 'GET',
+                        cache: 'no-store',
                         headers: {
                             'Authorization': `token ${this.githubToken}`,
                             'Accept': 'application/vnd.github.v3+json',
-                            'Cache-Control': 'no-cache, no-store, must-revalidate'
+                            'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+                            'Pragma': 'no-cache',
+                            'Expires': '0',
+                            'If-None-Match': '*'
                         }
                     });
                     
                     if (response.ok) {
                         const data = await response.json();
                         const content = atob(data.content.replace(/\n/g, ''));
+                        const contentHash = this.hashCode(content);
                         
                         if (content && content.trim().length > 10) {
+                            if (this.lastResultHash && this.lastResultHash === contentHash) {
+                                this.addLog('API返回可能是缓存内容，继续尝试其他方式...', 'warning');
+                                return false;
+                            }
+                            
+                            this.lastResultHash = contentHash;
                             this.displayResult(content);
                             this.addLog('GitHub API获取成功！', 'success');
                             this.showToast('解密成功！');
@@ -1197,22 +1265,39 @@
             
             async tryAlternativeRawUrls(timestamp) {
                 const [owner, repo] = this.repoName.split('/');
+                const randomSuffix = Math.random().toString(36).substring(2, 15);
+                const cacheBuster = `${timestamp}_${randomSuffix}_${Date.now()}`;
+                
                 const alternatives = [
-                    `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/output.js`,
-                    `https://cdn.jsdelivr.net/gh/${owner}/${repo}/output.js`,
-                    `https://gitcdn.xyz/repo/${owner}/${repo}/main/output.js`
+                    `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/output.js?v=${cacheBuster}&_=${Date.now()}`,
+                    `https://cdn.jsdelivr.net/gh/${owner}/${repo}@main/output.js?v=${cacheBuster}&_=${Date.now()}`,
+                    `https://gitcdn.xyz/repo/${owner}/${repo}/main/output.js?v=${cacheBuster}&_=${Date.now()}`
                 ];
                 
                 for (const url of alternatives) {
                     try {
                         this.addLog(`尝试备用URL: ${url.split('/')[2]}`, 'info');
-                        const response = await fetch(`${url}?t=${timestamp}`, {
-                            cache: 'no-cache'
+                        const response = await fetch(url, {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                'Pragma': 'no-cache',
+                                'Expires': '0'
+                            }
                         });
                         
                         if (response.ok) {
                             const content = await response.text();
+                            const contentHash = this.hashCode(content);
+                            
                             if (content && content.trim().length > 10) {
+                                if (this.lastResultHash && this.lastResultHash === contentHash) {
+                                    this.addLog('备用URL返回可能是缓存内容...', 'warning');
+                                    continue;
+                                }
+                                
+                                this.lastResultHash = contentHash;
                                 this.displayResult(content);
                                 this.addLog('备用URL获取成功！', 'success');
                                 this.showToast('解密成功！');
@@ -1227,6 +1312,18 @@
                 
                 this.addLog('所有备用URL都失败', 'warning');
                 return false;
+            },
+            
+            // 生成内容哈希值用于检查是否是缓存内容
+            hashCode(str) {
+                let hash = 0;
+                if (str.length === 0) return hash;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash; // Convert to 32bit integer
+                }
+                return hash;
             },
             
             async tryWithProxy(timestamp) {
