@@ -1,170 +1,84 @@
-import fs from 'fs';
+/**
+ * Eval - 处理一般eval字符串包裹的解包器
+ * 用于处理 eval("var a = ...") 等形式的代码
+ */
 
-// Helper function to balance parentheses and braces
-function balanceCode(code, startIndex) {
-  let openBraces = 0, openParens = 0, inString = false, quoteChar = '';
-  let i = startIndex;
-  while (i < code.length) {
-    if (code[i] === '"' || code[i] === "'") {
-      if (!inString) {
-        inString = true;
-        quoteChar = code[i];
-      } else if (code[i] === quoteChar && code[i - 1] !== '\\') {
-        inString = false;
-      }
-    }
-    if (!inString) {
-      if (code[i] === '{') openBraces++;
-      if (code[i] === '}') openBraces--;
-      if (code[i] === '(') openParens++;
-      if (code[i] === ')') openParens--;
-    }
-    if (openBraces === 0 && openParens === 0 && i > startIndex) {
-      return code.slice(0, i + 1);
-    }
-    i++;
-  }
-  return code;
+/**
+ * 检测是否为普通 eval 包裹的代码
+ * @param {string} code - 要检测的代码
+ * @returns {boolean} - 是否匹配
+ */
+function detect(code) {
+  // 去掉注释和字符串中的干扰，避免误判
+  const stripped = code
+    .replace(/\/\/.*|\/\*[\s\S]*?\*\//g, '') // 移除注释
+    .replace(/(['"`])(?:(?!\1)[^\\]|\\.)*\1/g, ''); // 移除字符串
+  return /\beval\s*\(/.test(stripped);
 }
 
-// Helper function to handle nested eval calls
-function unpackInner(innerCode) {
-  try {
-    if (!/eval\s*\(\s*function\s*\(\w+,\w+,\w+,\w+,\w+,\w+\)\s*{/.test(innerCode)) {
-      console.log('No inner eval pattern found');
-      return innerCode;
-    }
-
-    const modifiedInnerCode = balanceCode(
-      innerCode.replace(
-        /eval\s*\(\s*function\s*\(\w+,\w+,\w+,\w+,\w+,\w+\)\s*{/,
-        '(function($fn){ return $fn('
-      ),
-      innerCode.indexOf('{')
-    );
-
-    const innerWrappedCode = `
-      (function(){
-        const captured = [];
-        const $loon = undefined, $n = undefined, $o = undefined;
-        const $notify = (...args) => console.log('Notify:', ...args);
-        const $done = (obj) => obj;
-        const $task = { fetch: () => Promise.resolve({}) };
-        const $httpClient = { get: () => {}, post: () => {}, put: () => {} };
-        const $persistentStore = { write: () => {}, read: () => {} };
-        const $request = { body: '{}' };
-        const $t = (obj) => console.log('Done:', obj);
-        const $ = { request: {}, response: {} };
-        const $X = { m: (...args) => console.log('Notify X:', ...args) };
-        const $S = { F: () => {}, D: () => {} };
-        const $10 = { '1A': () => {}, '1B': () => {} };
-        const JSON = globalThis.JSON;
-        const String = globalThis.String;
-        const RegExp = globalThis.RegExp;
-        const console = globalThis.console;
-
-        const $fn = function() {
-          return (${modifiedInnerCode});
-        };
-        try {
-          const result = $fn();
-          console.log('Inner eval result type:', typeof result);
-          return result;
-        } catch (e) {
-          console.error('Inner unpack error:', e.message, e.stack);
-          return null;
-        }
-      })()
-    `;
-
-    const innerResult = eval(innerWrappedCode);
-    if (typeof innerResult === 'string' && innerResult.includes('eval(')) {
-      console.log('Detected nested eval in inner code, recursing...');
-      return unpackInner(innerResult);
-    }
-    return typeof innerResult === 'string' ? innerResult : String(innerResult);
-  } catch (e) {
-    console.error('Inner unpack failed:', e.message, e.stack);
-    return null;
+/**
+ * 递归解包 eval 包裹的代码
+ * @param {string} code - 要解包的代码
+ * @param {number} [depth=0] - 当前递归深度
+ * @returns {string|null} - 解包后的代码
+ */
+function unpack(code, depth = 0) {
+  if (depth > 5) {
+    console.warn('[eval] 达到最大递归深度，停止解包');
+    return code;
   }
-}
 
-// Main unpack function (renamed from plugin to unpack)
-function unpack(code) {
   try {
-    // Detect eval pattern
-    if (!/eval\s*\(\s*function\s*\(\w+,\w+,\w+,\w+,\w+,\w+\)\s*{/.test(code)) {
-      console.log('No matching eval pattern found');
+    if (!detect(code)) {
       return null;
     }
 
-    // Replace eval with callable function
-    const modifiedCode = balanceCode(
-      code.replace(
-        /eval\s*\(\s*function\s*\(\w+,\w+,\w+,\w+,\w+,\w+\)\s*{/,
-        '(function($fn){ return $fn('
-      ),
-      code.indexOf('{')
-    );
+    console.log(`[eval] 检测到普通 eval 包裹代码，开始第 ${depth + 1} 层解包`);
 
-    // Wrap code with mocked environment
-    const wrappedCode = `
-      (function(){
-        const captured = [];
-        const $loon = undefined, $n = undefined, $o = undefined;
-        const $notify = (...args) => console.log('Notify:', ...args);
-        const $done = (obj) => obj;
-        const $task = { fetch: () => Promise.resolve({}) };
-        const $httpClient = { get: () => {}, post: () => {}, put: () => {} };
-        const $persistentStore = { write: () => {}, read: () => {} };
-        const $request = { body: '{}' };
-        const $t = (obj) => console.log('Done:', obj);
-        const $ = { request: {}, response: {} };
-        const $X = { m: (...args) => console.log('Notify X:', ...args) };
-        const $S = { F: () => {}, D: () => {} };
-        const $10 = { '1A': () => {}, '1B': () => {} };
-        const JSON = globalThis.JSON;
-        const String = globalThis.String;
-        const RegExp = globalThis.RegExp;
-        const console = globalThis.console;
+    // 替换 eval(...) 为 捕获表达式
+    const modifiedCode = code.replace(/eval\s*\(/g, '(function(x){return x})(');
 
-        const $fn = function() {
-          return (${modifiedCode});
-        };
-        try {
-          const result = $fn();
-          console.log('Outer eval result type:', typeof result);
-          return result;
-        } catch (e) {
-          console.error('Outer eval error:', e.message, e.stack);
-          return null;
-        }
-      })()
-    `;
+    // 安全执行 eval，提取出真实代码
+    let result = Function('window', 'document', 'navigator', 'location',
+      `return ${modifiedCode}`)(
+        {}, {}, { userAgent: 'Mozilla/5.0' }, {}
+      );
 
-    console.log('Executing wrapped code...');
-    const result = eval(wrappedCode);
-
-    // Log intermediate result
-    console.log('Deobfuscated result type:', typeof result);
-    console.log('Deobfuscated result snippet:', String(result).slice(0, 100) + '...');
-
-    // Handle nested eval
-    if (typeof result === 'string' && result.includes('eval(')) {
-      console.log('Detected nested eval, recursing...');
-      return unpackInner(result);
+    if (typeof result === 'string') {
+      if (detect(result)) {
+        return unpack(result, depth + 1);
+      }
+      return result;
     }
 
-    return typeof result === 'string' ? result : String(result);
-  } catch (e) {
-    console.error('[eval] 解包失败:', e.message, e.stack);
-    return null;
+    return String(result);
+  } catch (err) {
+    console.warn('[eval] 捕获执行失败，尝试粗暴替换');
+
+    try {
+      // 粗暴替换 eval(...) => (...)
+      const modified = code.replace(/eval\s*\(/g, '(');
+      return modified;
+    } catch (e) {
+      console.error('[eval] 粗暴替换失败:', e);
+      return code;
+    }
   }
 }
 
+/**
+ * 插件接口
+ */
+function plugin(code) {
+  return unpack(code);
+}
+
+// 导出插件
 export default {
-  detect(code) {
-    return /eval\s*\(\s*function\s*\(\w+,\w+,\w+,\w+,\w+,\w+\)\s*{/.test(code);
-  },
-  unpack
-};
+  detect,
+  unpack,
+  plugin,
+  name: 'eval',
+  description: '普通eval字符串解包器',
+  priority: 50 // 优先级低于 eval2
+}
