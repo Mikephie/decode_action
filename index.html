@@ -876,8 +876,15 @@
                 try {
                     this.addLog('开始解密流程...', 'info');
                     
+                    // 清空之前的结果，避免缓存问题
+                    this.displayResult('');
+                    document.getElementById('output-code').value = '';
+                    
                     // 重置进度条
                     document.getElementById('progress-bar').style.width = '0%';
+                    
+                    // 记录开始时间，用于避免缓存
+                    this.decryptStartTime = Date.now();
                     
                     // 1. 提交代码到GitHub
                     await this.submitToGitHub(inputCode);
@@ -1038,13 +1045,13 @@
                     progressBar.style.width = (attempts / maxAttempts * 100) + '%';
                     
                     try {
-                        // 检查output.js是否已更新
+                        // 检查output.js是否已更新，使用时间戳避免缓存
                         const outputUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
-                        const response = await fetch(`${outputUrl}?t=${Date.now()}`, {
+                        const response = await fetch(`${outputUrl}?t=${Date.now()}&cache=${Math.random()}`, {
                             headers: {
                                 'Authorization': `token ${this.githubToken}`,
                                 'Accept': 'application/vnd.github.v3+json',
-                                'Cache-Control': 'no-cache'
+                                'Cache-Control': 'no-cache, no-store, must-revalidate'
                             }
                         });
                         
@@ -1056,16 +1063,16 @@
                                 this.addLog('检测到 output.js 已更新！', 'success');
                                 progressBar.style.width = '100%';
                                 
-                                // 再等待2秒确保文件完全写入
-                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                // 再等待3秒确保文件完全写入并避免缓存
+                                await new Promise(resolve => setTimeout(resolve, 3000));
                                 return;
                             } else if (!lastSha && data.sha) {
                                 // 如果之前没有文件，现在有了
                                 this.addLog('检测到新的 output.js 文件！', 'success');
                                 progressBar.style.width = '100%';
                                 
-                                // 再等待2秒确保文件完全写入
-                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                // 再等待3秒确保文件完全写入并避免缓存
+                                await new Promise(resolve => setTimeout(resolve, 3000));
                                 return;
                             }
                         }
@@ -1089,10 +1096,20 @@
             async getResult() {
                 this.addLog('正在获取解密结果...', 'info');
                 
+                // 使用时间戳强制刷新缓存
+                const timestamp = this.decryptStartTime || Date.now();
+                
                 // 先尝试通过Raw URL获取（避免CORS问题）
                 try {
-                    const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js?t=${Date.now()}`;
-                    const response = await fetch(rawUrl);
+                    const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js?t=${timestamp}&cache=${Math.random()}`;
+                    const response = await fetch(rawUrl, {
+                        cache: 'no-cache',
+                        headers: {
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
+                        }
+                    });
                     
                     if (response.ok) {
                         const content = await response.text();
@@ -1111,10 +1128,11 @@
                 // 使用API方式
                 try {
                     const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
-                    const response = await fetch(`${apiUrl}?ref=main&t=${Date.now()}`, {
+                    const response = await fetch(`${apiUrl}?ref=main&t=${timestamp}&cache=${Math.random()}`, {
                         headers: {
                             'Authorization': `token ${this.githubToken}`,
-                            'Accept': 'application/vnd.github.v3+json'
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Cache-Control': 'no-cache, no-store, must-revalidate'
                         }
                     });
                     
@@ -1144,16 +1162,19 @@
                 this.addLog('尝试通过Raw URL获取结果...', 'info');
                 
                 try {
-                    // 构建raw.githubusercontent.com URL
+                    // 构建raw.githubusercontent.com URL，使用多重缓存破坏
                     const [owner, repo] = this.repoName.split('/');
-                    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/output.js?t=${Date.now()}`;
+                    const timestamp = this.decryptStartTime || Date.now();
+                    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/output.js?t=${timestamp}&cache=${Math.random()}&v=${Date.now()}`;
                     
                     this.addLog(`尝试访问: ${rawUrl}`, 'info');
                     
                     const response = await fetch(rawUrl, {
+                        cache: 'no-cache',
                         headers: {
-                            'Cache-Control': 'no-cache',
-                            'Pragma': 'no-cache'
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
                         }
                     });
                     
