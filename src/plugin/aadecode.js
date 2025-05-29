@@ -1,65 +1,50 @@
 // plugin/aadecode.js
-// 完整 AAEncode 解码器，不使用 eval，100% 对标 liminba 逻辑
+import vm from 'vm';
 
-const table = {
-  '(c)': '0',
-  '(o)': '1',
-  '(^)': '2',
-  '(+)': '3',
-  '(v)': '4',
-  '(U)': '5',
-  '(u)': '6',
-  '(σ)': '7',
-  '(p)': '8',
-  '(q)': '9',
-  '(D)': 'a',
-  '(d)': 'b',
-  '(b)': 'c',
-  '(B)': 'd',
-  '(Z)': 'e',
-  '(z)': 'f'
-};
-
-function transformAAEncodeBlock(block) {
-  return block
-    .replace(/(\(c\)|\(o\)|\(\^\)|\(\+\)|\(v\)|\(U\)|\(u\)|\(σ\)|\(p\)|\(q\)|\(D\)|\(d\)|\(b\)|\(B\)|\(Z\)|\(z\))/g, m => table[m] || '')
-    .replace(/\\x/g, '')
-    .replace(/[^0-9a-f]/gi, '');
-}
-
-function parseAAEncodeString(input) {
-  const match = input.match(/ﾟωﾟ.+?\('_'\);?/s);
-  if (!match) return null;
-
-  const payload = match[0];
-
-  // 提取 "((ﾟｰﾟ)+ (ﾟΘﾟ))" 等字符串段，拼接为一整段 hex 编码
-  const hexMatches = [...payload.matchAll(/\+\s*\((.*?)\)/g)];
-  if (!hexMatches.length) return null;
-
-  let hex = '';
-  for (const m of hexMatches) {
-    const piece = transformAAEncodeBlock(m[1]);
-    hex += piece;
-  }
-
-  try {
-    // 将十六进制恢复为原始字符串
-    const buffer = Buffer.from(hex, 'hex');
-    return buffer.toString('utf8');
-  } catch {
-    return null;
-  }
+/**
+ * 判断字符串是否为典型 AAEncode 混淆格式
+ * @param {string} code
+ */
+function looksLikeAAEncode(code) {
+  return /ﾟωﾟ|'∀｀|｀・ω・'/.test(code) && /function/.test(code);
 }
 
 /**
- * AAEncode 解码插件（完整版）
+ * 递归解码 AAEncode 脚本
+ * @param {string} input
+ * @param {number} depth
+ * @returns {string|null}
+ */
+function decodeAAEncodeRecursive(input, depth = 0) {
+  if (depth > 5) return null; // 防止死循环
+
+  if (!looksLikeAAEncode(input)) return null;
+
+  try {
+    // 尝试在沙箱中运行该段代码，获取 return 的结果
+    const sandbox = {};
+    const script = new vm.Script(input, { timeout: 1000 });
+    const context = vm.createContext(sandbox);
+    const result = script.runInContext(context);
+
+    if (typeof result === 'string') {
+      // 如果返回结果仍然是 AAEncode 格式，继续递归
+      const nested = decodeAAEncodeRecursive(result, depth + 1);
+      return nested || result;
+    }
+  } catch (err) {
+    return null;
+  }
+
+  return null;
+}
+
+/**
+ * 最终插件导出函数
  * @param {string} source 输入源代码
- * @returns {string|null} 解码后的代码，或 null 表示未处理
+ * @returns {string|null}
  */
 export default function aadecode(source) {
-  if (!/ﾟωﾟ|'∀｀|｀・ω・'/.test(source)) return null;
-
-  const decoded = parseAAEncodeString(source);
-  return decoded || null;
+  const result = decodeAAEncodeRecursive(source);
+  return result || null;
 }
