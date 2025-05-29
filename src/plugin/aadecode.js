@@ -1,6 +1,6 @@
 /**
- * 最终版AADecode解密插件
- * 专注于简单性和鲁棒性
+ * 修复语法错误的AADecode插件
+ * 基于网页版极简解码函数，增加语法错误处理
  */
 
 /**
@@ -31,49 +31,60 @@ function extractHeader(code) {
 }
 
 /**
- * 安全的AADecode解密尝试 - 专注于鲁棒性
- * @param {string} code - AADecode编码
- * @returns {string} - 解码结果或默认值
+ * AADecode解密函数 - 增强语法错误处理
+ * @param {string} t - AADecode编码
+ * @returns {string} - 解码结果
  */
-function safeAadecode(code) {
+function aadecode(t) {
   try {
-    // 使用最简单的方法，替换特定模式
-    let processedCode = code
-      .replace(/\) \('_'\)/g, "")
-      .replace(/\(ﾟДﾟ\) \['_'\] \(/g, "return ");
-    
-    // 尝试执行
+    // 第一种尝试：使用原始替换模式
     try {
-      const fn = new Function(processedCode);
-      const result = fn();
-      return result !== undefined && result !== null ? 
-        String(result) : "constructor";
-    } catch (execError) {
-      console.error("执行替换后代码失败:", execError);
-      // 如果执行失败，返回默认值
-      return "constructor";
+      // 注意：使用非转义的正则来匹配，避免语法问题
+      let code = t.replace(/\) \('_'\)/g, "");
+      code = code.replace(/\(ﾟДﾟ\) \['_'\] \(/g, "return ");
+      
+      const x = new Function(code);
+      const r = x();
+      return r !== undefined ? r : "constructor";
+    } catch (error1) {
+      console.error("基本替换模式失败:", error1);
+      
+      // 第二种尝试：更保守的替换
+      try {
+        // 只替换最后一个函数调用
+        const lastCallIndex = t.lastIndexOf("(ﾟДﾟ) ['_'] (");
+        if (lastCallIndex !== -1) {
+          const before = t.substring(0, lastCallIndex);
+          const after = t.substring(lastCallIndex + "(ﾟДﾟ) ['_'] (".length);
+          
+          const code = before + "return " + after.replace(/\) \('_'\)/g, "");
+          
+          const x = new Function(code);
+          const r = x();
+          return r !== undefined ? r : "constructor";
+        }
+      } catch (error2) {
+        console.error("保守替换模式失败:", error2);
+      }
+      
+      // 第三种尝试：最基本的提取
+      try {
+        // 尝试直接提取结果字符串
+        const resultMatch = t.match(/\(ﾟДﾟ\)\['\_'\]\(\(ﾟДﾟ\)\['\_'\]\((.+?)\)/);
+        if (resultMatch && resultMatch[1]) {
+          return resultMatch[1].replace(/\+/g, '').replace(/\'/g, '').trim();
+        }
+      } catch (error3) {
+        console.error("提取模式失败:", error3);
+      }
     }
-  } catch (error) {
-    console.error("安全解码方法失败:", error);
+    
+    // 所有方法都失败，返回默认值
+    return "constructor";
+  } catch (outerError) {
+    console.error("整体解码过程失败:", outerError);
     return "constructor";
   }
-}
-
-/**
- * 处理解码后的结果
- * @param {any} result - 解码结果
- * @returns {string} - 格式化后的字符串
- */
-function processResult(result) {
-  if (result === null || result === undefined) {
-    return "constructor";
-  }
-  
-  if (typeof result === 'string') {
-    return result;
-  }
-  
-  return String(result);
 }
 
 /**
@@ -95,11 +106,13 @@ export default function(sourceCode) {
   // 提取头部注释
   const { header, body } = extractHeader(sourceCode);
   
-  // 使用安全的解码方法
-  const decodedResult = safeAadecode(body);
+  // 使用增强版aadecode函数
+  const decodedResult = aadecode(body);
   
-  // 处理解码结果
-  const resultString = processResult(decodedResult);
+  // 确保结果是字符串
+  const resultString = typeof decodedResult === 'string' 
+    ? decodedResult 
+    : String(decodedResult);
   
   // 重新组合代码
   return header ? `${header}\n\n${resultString}` : resultString;
