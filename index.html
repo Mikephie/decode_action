@@ -617,7 +617,7 @@
         <div class="header-content">
             <div style="display: flex; align-items: center;">
                 <h1 class="logo">羊毛助手</h1>
-                <span class="version">v3.1</span>
+                <span class="version">v3.2</span>
             </div>
             <div style="color: #6b7280; font-size: 0.875rem;">
                 自动解密脚本工具
@@ -1329,33 +1329,98 @@
             async tryWithProxy(timestamp) {
                 const proxies = [
                     'https://api.allorigins.win/raw?url=',
-                    'https://corsproxy.io/?'
+                    'https://corsproxy.io/?',
+                    'https://cors-anywhere.herokuapp.com/'
                 ];
                 
-                const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js?t=${timestamp}`;
+                const randomSuffix = Math.random().toString(36).substring(2, 15);
+                const cacheBuster = `${timestamp}_${randomSuffix}_${Date.now()}`;
+                const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js?v=${cacheBuster}&nocache=${Math.random()}&_=${Date.now()}&singapore=${Math.random()}`;
                 
                 for (const proxy of proxies) {
                     try {
                         this.addLog(`尝试代理: ${proxy.split('/')[2]}`, 'info');
-                        const response = await fetch(proxy + encodeURIComponent(rawUrl));
+                        
+                        // 为代理请求也添加缓存破坏参数
+                        let proxyUrl;
+                        if (proxy.includes('allorigins')) {
+                            proxyUrl = `${proxy}${encodeURIComponent(rawUrl)}&cacheBuster=${Date.now()}`;
+                        } else {
+                            proxyUrl = `${proxy}${encodeURIComponent(rawUrl)}`;
+                        }
+                        
+                        const response = await fetch(proxyUrl, {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                'Pragma': 'no-cache',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'User-Agent': 'SingaporeDecryptTool/1.0'
+                            }
+                        });
                         
                         if (response.ok) {
-                            const content = await response.text();
+                            let content = await response.text();
+                            
+                            // 处理allorigins可能返回的JSON格式
+                            if (proxy.includes('allorigins') && content.startsWith('{')) {
+                                try {
+                                    const jsonData = JSON.parse(content);
+                                    content = jsonData.contents || content;
+                                } catch (e) {
+                                    // 如果不是JSON，直接使用原内容
+                                }
+                            }
+                            
+                            const contentHash = this.hashCode(content);
+                            
                             if (content && content.trim().length > 10) {
+                                // 检查是否是真正的新内容
+                                if (this.lastResultHash && this.lastResultHash === contentHash) {
+                                    this.addLog(`代理返回可能是缓存内容 (${proxy.split('/')[2]})，尝试下一个...`, 'warning');
+                                    continue;
+                                }
+                                
+                                // 额外检查：如果内容包含明显的缓存标识，跳过
+                                if (this.isLikelyCachedContent(content)) {
+                                    this.addLog(`检测到缓存特征 (${proxy.split('/')[2]})，尝试下个代理...`, 'warning');
+                                    continue;
+                                }
+                                
+                                this.lastResultHash = contentHash;
                                 this.displayResult(content);
-                                this.addLog('代理获取成功！', 'success');
+                                this.addLog(`代理获取成功！(${proxy.split('/')[2]})`, 'success');
                                 this.showToast('解密成功！');
                                 document.getElementById('progress-bar').style.width = '0%';
                                 return true;
                             }
                         }
+                        
+                        this.addLog(`代理响应失败: ${response.status} (${proxy.split('/')[2]})`, 'warning');
                     } catch (error) {
+                        this.addLog(`代理错误 (${proxy.split('/')[2]}): ${error.message}`, 'warning');
                         continue;
                     }
                 }
                 
-                this.addLog('代理方式也失败', 'warning');
+                this.addLog('所有代理方式都失败或返回缓存内容', 'warning');
                 return false;
+            },
+            
+            // 检查内容是否可能是缓存的
+            isLikelyCachedContent(content) {
+                const cacheIndicators = [
+                    'cache-control',
+                    'last-modified',
+                    'etag',
+                    'expires',
+                    '304 Not Modified',
+                    'from cache'
+                ];
+                
+                const lowerContent = content.toLowerCase();
+                return cacheIndicators.some(indicator => lowerContent.includes(indicator));
             },
             
             showManualOptions() {
@@ -1392,12 +1457,15 @@
                 const toast = document.getElementById('toast');
                 toast.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 0.75rem; max-width: 300px;">
-                        <div style="font-weight: bold;">🔧 网络问题解决方案</div>
+                        <div style="font-weight: bold;">🌏 新加坡网络优化</div>
+                        <div style="font-size: 0.85rem; color: #a1a1aa;">
+                            检测到可能的缓存问题，请尝试以下方案：
+                        </div>
                         <div style="display: flex; gap: 0.5rem;">
-                            <button onclick="window.open('https://github.com/${this.repoName}/blob/main/output.js', '_blank')" 
+                            <button onclick="window.open('https://github.com/${this.repoName}/blob/main/output.js?t=${Date.now()}', '_blank')" 
                                     style="flex: 1; background: #4f46e5; color: white; border: none; 
                                            padding: 0.5rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
-                                查看结果
+                                强制刷新查看
                             </button>
                             <button onclick="window.open('https://github.com/${this.repoName}/actions', '_blank')" 
                                     style="flex: 1; background: #059669; color: white; border: none; 
@@ -1405,13 +1473,18 @@
                                 检查Actions
                             </button>
                         </div>
-                        <div style="font-size: 0.75rem; color: #a1a1aa; text-align: center;">
-                            复制结果后粘贴到输入框即可
-                        </div>
-                        <button onclick="app.retryGetResult()" 
+                        <button onclick="app.forceRefreshAndRetry()" 
                                 style="background: #dc2626; color: white; border: none; 
                                        padding: 0.5rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
-                            重试获取
+                            🚀 强制刷新重试
+                        </button>
+                        <div style="font-size: 0.75rem; color: #a1a1aa; text-align: center;">
+                            或手动复制GitHub上的最新内容
+                        </div>
+                        <button onclick="app.enableManualInput()" 
+                                style="background: #7c3aed; color: white; border: none; 
+                                       padding: 0.5rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
+                            📝 手动输入模式
                         </button>
                     </div>
                 `;
@@ -1421,7 +1494,70 @@
                 setTimeout(() => {
                     toast.classList.remove('show');
                     toast.innerHTML = '';
-                }, 20000);
+                }, 25000);
+            },
+            
+            async forceRefreshAndRetry() {
+                // 关闭提示
+                const toast = document.getElementById('toast');
+                toast.classList.remove('show');
+                
+                this.addLog('用户触发强制刷新重试...', 'info');
+                
+                // 清除所有可能的缓存
+                this.lastResultHash = null;
+                this.decryptStartTime = Date.now();
+                
+                // 清除浏览器缓存
+                if ('caches' in window) {
+                    try {
+                        const cacheNames = await caches.keys();
+                        for (const cacheName of cacheNames) {
+                            await caches.delete(cacheName);
+                        }
+                        this.addLog('已清除所有浏览器缓存', 'info');
+                    } catch (e) {
+                        this.addLog('缓存清除失败，但继续尝试', 'warning');
+                    }
+                }
+                
+                // 使用超强缓存破坏参数重试
+                this.addLog('使用超强反缓存参数重试...', 'info');
+                
+                // 延迟更长时间，确保GitHub CDN完全更新
+                await new Promise(resolve => setTimeout(resolve, 8000));
+                
+                await this.getResult();
+            },
+            
+            enableManualInput() {
+                // 关闭提示
+                const toast = document.getElementById('toast');
+                toast.classList.remove('show');
+                
+                // 切换到输入标签页
+                this.switchTab('paste');
+                
+                // 显示手动输入指引
+                this.displayResult(`// 🔧 手动输入模式已启用
+//
+// 请按以下步骤操作：
+// 1. 访问: https://github.com/${this.repoName}/blob/main/output.js
+// 2. 按 Ctrl+F5 强制刷新页面
+// 3. 复制解密后的完整代码
+// 4. 清空下面的输入框
+// 5. 粘贴复制的代码
+// 6. 点击"复制结果"按钮
+//
+// 注意：请确保复制的是最新的解密结果，不是缓存内容`);
+                
+                this.addLog('已启用手动输入模式', 'info');
+                this.showToast('请按提示手动复制最新结果', 'info');
+                
+                // 清空输入框，让用户手动输入
+                document.getElementById('input-code').value = '';
+                document.getElementById('input-code').placeholder = '请粘贴从GitHub复制的最新解密结果...';
+                document.getElementById('input-code').focus();
             },
             
             async retryGetResult() {
