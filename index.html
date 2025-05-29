@@ -679,6 +679,9 @@
                 // 绑定事件
                 this.bindEvents();
                 this.addLog('系统初始化完成', 'success');
+                
+                // 初始化输出显示
+                this.displayResult('');
             },
             
             bindEvents() {
@@ -752,13 +755,17 @@
             },
             
             pasteInput() {
-                navigator.clipboard.readText().then(text => {
-                    document.getElementById('input-code').value = text;
-                    this.showToast('粘贴成功');
-                    this.addLog('从剪贴板粘贴内容', 'success');
-                }).catch(() => {
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                    navigator.clipboard.readText().then(text => {
+                        document.getElementById('input-code').value = text;
+                        this.showToast('粘贴成功');
+                        this.addLog('从剪贴板粘贴内容', 'success');
+                    }).catch(() => {
+                        this.showToast('请手动粘贴（Ctrl+V 或 长按粘贴）', 'warning');
+                    });
+                } else {
                     this.showToast('请手动粘贴（Ctrl+V 或 长按粘贴）', 'warning');
-                });
+                }
             },
             
             clearInput() {
@@ -898,7 +905,7 @@
                             message: 'Update input.js for decryption',
                             content: content,
                             sha: sha || undefined,
-                            branch: 'main' // 确保提交到main分支
+                            branch: 'main'
                         })
                     });
                     
@@ -925,7 +932,7 @@
             
             async waitForActionComplete() {
                 this.addLog('等待 Actions 执行...', 'info');
-                const maxAttempts = 30; // 最多等待30次，每次2秒
+                const maxAttempts = 30;
                 let attempts = 0;
                 let lastSha = null;
                 
@@ -1058,6 +1065,42 @@
                 this.showToast('请手动获取结果', 'warning');
             },
             
+            async getResultViaRawUrl() {
+                this.addLog('尝试通过Raw URL获取结果...', 'info');
+                
+                try {
+                    // 构建raw.githubusercontent.com URL
+                    const [owner, repo] = this.repoName.split('/');
+                    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/output.js?t=${Date.now()}`;
+                    
+                    this.addLog(`尝试访问: ${rawUrl}`, 'info');
+                    
+                    const response = await fetch(rawUrl, {
+                        headers: {
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const content = await response.text();
+                        
+                        if (content && content.length > 0) {
+                            this.displayResult(content);
+                            this.addLog('通过Raw URL获取成功！', 'success');
+                            this.showToast('解密成功！');
+                            document.getElementById('progress-bar').style.width = '0%';
+                            return true;
+                        }
+                    }
+                    
+                    return false;
+                } catch (error) {
+                    this.addLog('Raw URL访问失败: ' + error.message, 'error');
+                    return false;
+                }
+            },
+            
             async getResultViaProxy() {
                 this.addLog('尝试使用CORS代理获取...', 'info');
                 
@@ -1149,40 +1192,6 @@
                     toast.classList.remove('show');
                 }
             },
-                this.addLog('尝试通过Raw URL获取结果...', 'info');
-                
-                try {
-                    // 构建raw.githubusercontent.com URL
-                    const [owner, repo] = this.repoName.split('/');
-                    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/output.js?t=${Date.now()}`;
-                    
-                    this.addLog(`尝试访问: ${rawUrl}`, 'info');
-                    
-                    const response = await fetch(rawUrl, {
-                        headers: {
-                            'Cache-Control': 'no-cache',
-                            'Pragma': 'no-cache'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const content = await response.text();
-                        
-                        if (content && content.length > 0) {
-                            this.displayResult(content);
-                            this.addLog('通过Raw URL获取成功！', 'success');
-                            this.showToast('解密成功！');
-                            document.getElementById('progress-bar').style.width = '0%';
-                            return true;
-                        }
-                    }
-                    
-                    return false;
-                } catch (error) {
-                    this.addLog('Raw URL访问失败: ' + error.message, 'error');
-                    return false;
-                }
-            },
             
             displayResult(code) {
                 // 保存原始文本到隐藏的textarea
@@ -1241,12 +1250,42 @@
                     return;
                 }
                 
-                navigator.clipboard.writeText(output).then(() => {
-                    this.showToast('复制成功');
-                    this.addLog('复制解密结果', 'success');
-                }).catch(() => {
-                    this.showToast('复制失败', 'error');
-                });
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(output).then(() => {
+                        this.showToast('复制成功');
+                        this.addLog('复制解密结果', 'success');
+                    }).catch(() => {
+                        this.fallbackCopyToClipboard(output);
+                    });
+                } else {
+                    this.fallbackCopyToClipboard(output);
+                }
+            },
+            
+            fallbackCopyToClipboard(text) {
+                // 备用复制方法
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        this.showToast('复制成功');
+                        this.addLog('复制解密结果', 'success');
+                    } else {
+                        this.showToast('复制失败，请手动复制', 'error');
+                    }
+                } catch (err) {
+                    this.showToast('复制失败，请手动复制', 'error');
+                }
+                
+                document.body.removeChild(textArea);
             },
             
             downloadResult() {
@@ -1256,16 +1295,23 @@
                     return;
                 }
                 
-                const blob = new Blob([output], { type: 'text/javascript' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `decrypted_${Date.now()}.js`;
-                a.click();
-                URL.revokeObjectURL(url);
-                
-                this.showToast('下载成功');
-                this.addLog('下载解密结果', 'success');
+                try {
+                    const blob = new Blob([output], { type: 'text/javascript' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `decrypted_${Date.now()}.js`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    this.showToast('下载成功');
+                    this.addLog('下载解密结果', 'success');
+                } catch (error) {
+                    this.showToast('下载失败: ' + error.message, 'error');
+                    this.addLog('下载失败: ' + error.message, 'error');
+                }
             },
             
             handleFile(file) {
