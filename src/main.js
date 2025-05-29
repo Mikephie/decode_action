@@ -15,7 +15,7 @@ const awscModule = await import('./plugin/awsc.js');
 const jsconfuserModule = await import('./plugin/jsconfuser.js');
 
 // Provide default exports if necessary
-const PluginAAdecode = evalModule.default || aadecodeModule;
+const PluginAAdecode = aadecodeModule.default || aadecodeModule;
 const PluginEval = evalModule.default || evalModule;
 const PluginCommon = commonModule.default || commonModule;
 const PluginJjencode = jjencodeModule.default || jjencodeModule;
