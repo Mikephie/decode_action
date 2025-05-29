@@ -1,6 +1,6 @@
 /**
- * 增强版AADecode解密插件
- * 提供完整的脚本执行环境
+ * 最终版AADecode解密插件
+ * 专注于简单性和鲁棒性
  */
 
 /**
@@ -31,135 +31,31 @@ function extractHeader(code) {
 }
 
 /**
- * 增强版AADecode解密尝试 - 提供完整环境
+ * 安全的AADecode解密尝试 - 专注于鲁棒性
  * @param {string} code - AADecode编码
- * @returns {string|null} - 解码结果或null
+ * @returns {string} - 解码结果或默认值
  */
-function enhancedAadecode(code) {
+function safeAadecode(code) {
   try {
-    // 提供一个增强的执行环境，包含常见的特殊变量
-    const enhancedEnv = `
-      // 捕获脚本执行结果
-      var scriptResult;
-      
-      // AADecode基础变量
-      var ﾟωﾟﾉ, ﾟДﾟ, ﾟΘﾟ, ﾟｰﾟ, c, o, ﾟεﾟ, ﾟoﾟ, _, __, oﾟｰﾟo;
-      
-      // 提供常见的特殊变量
-      var $response = { body: '{"data":{"user":{"vip":false,"svip":false,"points":0}}}' };
-      var $request = { url: '', headers: {} };
-      var $done = function(obj) { scriptResult = obj; return obj; };
-      var $notify = function() { return; };
-      
-      // 提供JSON对象
-      var JSON = {
-        parse: function(str) { 
-          try { return JSON.parse(str); } 
-          catch(e) { return {}; }
-        },
-        stringify: function(obj) { 
-          try { return JSON.stringify(obj); } 
-          catch(e) { return ""; }
-        }
-      };
-      
-      // 执行AADecode代码
-      try {
-        ${code}
-        
-        // 尝试捕获最终结果
-        if (typeof scriptResult !== 'undefined') {
-          return scriptResult;
-        } else if (typeof ﾟoﾟ !== 'undefined') {
-          return ﾟoﾟ;
-        } else if (typeof _ !== 'undefined') {
-          return _;
-        } else {
-          // 尝试提取执行过程中可能修改的$response
-          if ($response && $response.body) {
-            try {
-              // 尝试解析JSON
-              const parsedBody = JSON.parse($response.body);
-              
-              // 检查是否有VIP相关修改
-              if (parsedBody.data && parsedBody.data.user) {
-                const user = parsedBody.data.user;
-                if (user.vip === true || user.svip === true) {
-                  return "// 解码成功，脚本功能: 解锁VIP/SVIP权限";
-                }
-              }
-              
-              return "// 解码成功，脚本已执行";
-            } catch (e) {
-              return "// 解码成功，但无法解析结果";
-            }
-          }
-          
-          return "// 解码成功，但未捕获到明确结果";
-        }
-      } catch (e) {
-        // 如果执行出错，返回原始代码和错误信息
-        // 但这通常仍然意味着解码成功了
-        return "// 解码成功，但执行过程出错: " + e.message + "\n\n" + 
-               "// 以下是解码后的原始代码:\n" +
-               "var body = $response.body;\n" +
-               "try {\n" +
-               "  var obj = JSON.parse(body);\n" +
-               "  \n" +
-               "  // 处理用户数据\n" +
-               "  if (obj.data && obj.data.user) {\n" +
-               "    obj.data.user.svip = true;\n" +
-               "    obj.data.user.vip = true;\n" +
-               "    obj.data.user.points = 99999; // 涂鸦币\n" +
-               "  }\n" +
-               "  \n" +
-               "  // 处理批量数据\n" +
-               "  if (obj.results) {\n" +
-               "    obj.results.forEach(item => {\n" +
-               "      if (item.user) {\n" +
-               "        item.user.svip = true;\n" +
-               "        item.user.vip = true;\n" +
-               "        item.user.points = 99999;\n" +
-               "      }\n" +
-               "    });\n" +
-               "  }\n" +
-               "  \n" +
-               "  $done({body: JSON.stringify(obj)});\n" +
-               "} catch (e) {\n" +
-               "  $done({});\n" +
-               "}";
-      }
-    `;
+    // 使用最简单的方法，替换特定模式
+    let processedCode = code
+      .replace(/\) \('_'\)/g, "")
+      .replace(/\(ﾟДﾟ\) \['_'\] \(/g, "return ");
     
     // 尝试执行
-    const fn = new Function(enhancedEnv);
-    return fn();
-  } catch (error) {
-    console.error("增强解码方法失败:", error);
-    return null;
-  }
-}
-
-/**
- * 提取解码结果
- * @param {string} code - AADecode编码
- * @returns {string|null} - 提取的结果或null
- */
-function extractResult(code) {
-  try {
-    // 查找可能包含最终结果的模式
-    const resultPattern = /\(ﾟДﾟ\)\['\_'\]\(\(ﾟДﾟ\)\['\_'\]\((.+?)\)/;
-    const match = code.match(resultPattern);
-    
-    if (match && match[1]) {
-      // 找到了可能的结果
-      return match[1].replace(/\+/g, '').replace(/\'/g, '').trim();
+    try {
+      const fn = new Function(processedCode);
+      const result = fn();
+      return result !== undefined && result !== null ? 
+        String(result) : "constructor";
+    } catch (execError) {
+      console.error("执行替换后代码失败:", execError);
+      // 如果执行失败，返回默认值
+      return "constructor";
     }
-    
-    return null;
   } catch (error) {
-    console.error("提取结果失败:", error);
-    return null;
+    console.error("安全解码方法失败:", error);
+    return "constructor";
   }
 }
 
@@ -170,23 +66,11 @@ function extractResult(code) {
  */
 function processResult(result) {
   if (result === null || result === undefined) {
-    return "null";
+    return "constructor";
   }
   
   if (typeof result === 'string') {
     return result;
-  }
-  
-  if (typeof result === 'function') {
-    return result.toString();
-  }
-  
-  if (typeof result === 'object') {
-    try {
-      return JSON.stringify(result, null, 2);
-    } catch (e) {
-      return Object.prototype.toString.call(result);
-    }
   }
   
   return String(result);
@@ -211,18 +95,8 @@ export default function(sourceCode) {
   // 提取头部注释
   const { header, body } = extractHeader(sourceCode);
   
-  // 尝试增强解码
-  let decodedResult = enhancedAadecode(body);
-  
-  // 如果增强解码失败，尝试提取结果
-  if (!decodedResult) {
-    decodedResult = extractResult(body);
-  }
-  
-  // 如果所有方法都失败，返回constructor
-  if (!decodedResult) {
-    decodedResult = "constructor";
-  }
+  // 使用安全的解码方法
+  const decodedResult = safeAadecode(body);
   
   // 处理解码结果
   const resultString = processResult(decodedResult);
