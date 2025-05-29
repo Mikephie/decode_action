@@ -49,7 +49,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            padding: 1.5rem 0;
+            padding: 1rem 0;
         }
         
         .header-content {
@@ -371,6 +371,28 @@
             flex: 1;
             min-width: 80px;
             max-width: 120px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
         }
         
         .btn-primary {
@@ -1293,7 +1315,7 @@
                     // 移动端优化：添加自动换行提示
                     const isMobile = window.innerWidth <= 768;
                     if (isMobile) {
-                        outputDisplay.innerHTML = '<div style="color: #6a9955; font-size: 0.75rem; margin-bottom: 0.5rem;">// 提示：左右滑动查看完整代码</div>' + highlighted;
+                        outputDisplay.innerHTML = '<div style="color: #6a9955; font-size: 0.7rem; margin-bottom: 0.5rem; padding: 0.25rem; background: rgba(106, 149, 85, 0.1); border-radius: 4px;">💡 提示：左右滑动查看完整代码</div>' + highlighted;
                     } else {
                         outputDisplay.innerHTML = highlighted;
                     }
@@ -1470,12 +1492,18 @@
             
             addLog(message, type = 'info') {
                 const logContainer = document.getElementById('log-container');
-                const time = new Date().toLocaleTimeString();
+                const time = new Date().toLocaleTimeString('zh-CN', {hour12: false});
                 const logEntry = document.createElement('div');
                 logEntry.className = 'log-entry';
                 logEntry.innerHTML = `<span class="log-time">${time}</span><span class="log-${type}">${message}</span>`;
                 logContainer.appendChild(logEntry);
                 logContainer.scrollTop = logContainer.scrollHeight;
+                
+                // 限制日志条数，避免过多日志影响性能
+                const entries = logContainer.querySelectorAll('.log-entry');
+                if (entries.length > 50) {
+                    entries[0].remove();
+                }
             }
         };
         
