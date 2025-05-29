@@ -355,7 +355,10 @@
             justify-content: center;
             gap: 0.5rem;
             margin-bottom: 1rem;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 0 0.5rem;
         }
         
         .btn {
@@ -368,9 +371,9 @@
             position: relative;
             overflow: hidden;
             font-size: 0.8rem;
-            flex: 1;
+            flex-shrink: 0;
             min-width: 80px;
-            max-width: 120px;
+            white-space: nowrap;
         }
         
         .btn-primary {
@@ -609,28 +612,20 @@
     </header>
     
     <div class="container">
-            <div class="config-section">
-                <h3>配置信息</h3>
-                <div class="config-grid">
-                    <div class="config-item">
-                        <label>GitHub Token</label>
-                        <input type="password" id="github-token" placeholder="输入你的 GitHub Token">
-                    </div>
-                    <div class="config-item">
-                        <label>仓库地址</label>
-                        <input type="text" id="repo-name" placeholder="例如: username/decode_action">
-                    </div>
+        <!-- 配置区域 -->
+        <div class="config-section">
+            <h3>配置信息</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label>GitHub Token</label>
+                    <input type="password" id="github-token" placeholder="输入你的 GitHub Token">
                 </div>
-                <div class="usage-note">
-                    <strong>使用说明：</strong>
-                    <ul>
-                        <li>需要先部署 <a href="https://github.com/smallfawn/decode_action" target="_blank" style="color: #818cf8;">decode_action</a> 解密框架</li>
-                        <li>GitHub Token 需要 repo 权限</li>
-                        <li>提交代码后会自动触发 Actions 运行解密</li>
-                        <li>支持多种加密方式（eval、aaencode、jjencode、obfuscator等）</li>
-                    </ul>
+                <div class="config-item">
+                    <label>仓库地址</label>
+                    <input type="text" id="repo-name" placeholder="例如: username/decode_action">
                 </div>
             </div>
+        </div>
         
         <!-- 标签栏 -->
         <div class="tabs">
@@ -686,7 +681,6 @@
                             <div style="color: #6b7280; font-size: 0.7rem; margin-top: 0.25rem;">支持 .js 和 .txt 文件</div>
                         </div>
                     </div>
-                    <div id="selected-file-info" style="margin-top: 1rem; color: #10b981; text-align: center;"></div>
                 </div>
                 
                 <!-- 远程文件标签内容 -->
@@ -1421,14 +1415,11 @@
                             inputTextarea.value = content;
                             inputTextarea.style.display = 'block';
                             
-                            // 显示文件信息
-                            const fileInfo = document.getElementById('selected-file-info');
-                            if (fileInfo) {
-                                fileInfo.textContent = `已加载: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
-                            }
-                            
                             this.showToast(`文件加载成功: ${file.name}`);
                             this.addLog(`文件加载成功: ${file.name} (${content.length} 字符)`, 'success');
+                            
+                            // 自动切换到粘贴代码标签页
+                            this.switchTab('paste');
                         }
                     } catch (error) {
                         this.showToast('文件处理失败', 'error');
@@ -1468,6 +1459,9 @@
                     
                     this.showToast('远程文件加载成功');
                     this.addLog('远程文件加载成功', 'success');
+                    
+                    // 自动切换到粘贴代码标签页
+                    this.switchTab('paste');
                 } catch (error) {
                     this.showToast('加载失败: ' + error.message, 'error');
                     this.addLog('加载远程文件失败: ' + error.message, 'error');
