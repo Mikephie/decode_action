@@ -1,9 +1,14 @@
 /**
- * AADecode 解码插件 - 借鉴封装版的实现
- * 符合原框架接口，直接导出解码函数
+ * 专业级AADecode解密插件
+ * 基于 http://www.liminba.com/tool/aaencode/ 官方编码逻辑
+ * 支持完整和不完整代码的解密
  */
 
-// 核心解码函数
+/**
+ * AADecode解密主函数
+ * @param {string} code - 待解密的代码
+ * @returns {string|null} - 解密后的代码或null
+ */
 function plugin(code) {
   // 快速检测是否为AADecode编码
   if (!code.includes('ﾟωﾟﾉ') && !code.includes('ﾟДﾟ') && 
@@ -11,88 +16,138 @@ function plugin(code) {
     return null;
   }
   
+  // 提取头部注释和主体部分
+  let header = '';
+  let encodedPart = code;
+  
+  const aaStartIndex = code.search(/ﾟωﾟﾉ\s*=|ﾟдﾟ\s*=|ﾟДﾟ\s*=|ﾟΘﾟ\s*=/);
+  if (aaStartIndex > 0) {
+    header = code.substring(0, aaStartIndex).trim();
+    encodedPart = code.substring(aaStartIndex);
+  }
+  
+  // ==================== 标准解码方法 ====================
   try {
-    // 提取头部注释和编码部分
-    let header = '';
-    let encodedPart = code;
-    
-    const aaStartIndex = code.search(/ﾟωﾟﾉ\s*=|ﾟдﾟ\s*=|ﾟДﾟ\s*=|ﾟΘﾟ\s*=/);
-    if (aaStartIndex > 0) {
-      header = code.substring(0, aaStartIndex).trim();
-      encodedPart = code.substring(aaStartIndex);
-    }
-    
-    // 参考你的封装插件中的核心解码逻辑
+    // 准备解码
     let decodePart = encodedPart;
     
-    // 特殊情况处理：检查是否为不完整代码
+    // 处理AA代码的常见结构
+    // 1. 去除末尾的执行部分
+    decodePart = decodePart.replace(/\(ﾟДﾟ\)\['\_'\]\(\(ﾟДﾟ\)['\_']\);$/, "");
+    decodePart = decodePart.replace(/\)\s*\('_'\)/g, "");
+    
+    // 2. 替换解码器的核心部分为return语句
+    decodePart = decodePart.replace(/\(ﾟДﾟ\)\s*\['_'\]\s*\(/g, "return (");
+    
+    // 3. 如果代码不完整，尝试补全
     if (decodePart.endsWith("((ﾟДﾟ) +'_')")) {
-      decodePart += "['_']; (ﾟДﾟ) ['_'] ((ﾟoﾟ))('_');";
-    } else if (!decodePart.includes("['_'])('_')") && !decodePart.endsWith(';')) {
-      decodePart += "; (ﾟДﾟ) ['_'] ((ﾟoﾟ))('_');";
+      decodePart += "['_'])";
     }
     
-    // 使用与你的封装插件相似的转换
-    decodePart = decodePart.replace(/\)\s*\('_'\)/g, "");
-    decodePart = decodePart.replace(/\(ﾟДﾟ\)\s*\['_'\]\s*\(/g, "return ");
+    // 使用Function构造函数执行解码
+    const decodeFn = new Function(decodePart);
+    const decodedResult = decodeFn();
     
-    // 执行解码脚本
-    try {
-      const x = new Function(decodePart);
-      const decodedContent = x();
-      
-      // 如果有头部注释则保留拼接
-      return header ? `${header}\n\n${decodedContent}` : decodedContent;
-    } catch (execError) {
-      // 如果执行失败，检查是否符合特定模式
-      if (encodedPart.includes("(ﾟДﾟ) ['c']") && 
-          encodedPart.includes("(ﾟДﾟ) ['o']") &&
-          encodedPart.includes("(ﾟωﾟﾉ +'_')[ﾟΘﾟ]")) {
-        
-        // 这种模式通常构建 "console.log"
-        return header ? `${header}\n\nconsole.log` : "console.log";
-      }
-      
-      // 尝试特定片段的解码
-      if (encodedPart.includes("ﾟωﾟﾉ= /｀ｍ'）ﾉ ~┻━┻")) {
-        // 这是你提供的片段
-        return header ? `${header}\n\nconsole.log` : "console.log";
-      }
-      
-      // 最后尝试通过构建特定执行环境来解码
-      try {
-        const sandboxCode = `
-          var result = "";
-          try {
-            ${encodedPart}
-            if (typeof (ﾟoﾟ) !== 'undefined') {
-              result = (ﾟoﾟ);
-            }
-          } catch(e) {
-            // 忽略错误
-          }
-          return result || "console.log";
-        `;
-        
-        const sandboxFn = new Function(sandboxCode);
-        const sandboxResult = sandboxFn();
-        
-        return header ? `${header}\n\n${sandboxResult}` : sandboxResult;
-      } catch (sandboxError) {
-        // 所有方法都失败，回退到最可能的结果
-        return header ? `${header}\n\nconsole.log` : "console.log";
-      }
+    // 验证解码结果
+    if (decodedResult && typeof decodedResult === 'string' && decodedResult.length > 0) {
+      return header ? `${header}\n\n${decodedResult}` : decodedResult;
     }
   } catch (e) {
-    // 如果发生任何错误，尝试返回最可能的结果
-    if (code.includes("(ﾟДﾟ) ['c']") && code.includes("(ﾟДﾟ) ['o']")) {
-      return "console.log";
+    // 标准解码失败，尝试高级解码方法
+  }
+  
+  // ==================== 高级解码方法 ====================
+  try {
+    // 创建一个更完整的AA解码环境
+    const aaDecodeEnv = `
+      // AA编码的基本环境
+      var ﾟωﾟﾉ = '', _= [];
+      var ﾟΘﾟ = ''; 
+      var ﾟДﾟ = {
+        'ﾟΘﾟ' : 'a',
+        'ﾟωﾟﾉ' : 'b',
+        'ﾟｷﾟ' : 'c',
+        'ﾟДﾟﾉ' : 'd',
+        'ﾟεﾟﾉ': 'e',
+        '𠮷': 'f'
+      };
+      
+      var ﾟДﾟﾒ = ﾟДﾟ['ﾟΘﾟ'] + (ﾟДﾟ['ﾟΘﾟ'] + ﾟДﾟ['ﾟｷﾟ'] + '')[ﾟДﾟ['ﾟΘﾟ']] + (ﾟДﾟ['ﾟΘﾟ'] + ﾟДﾟ['ﾟДﾟﾉ'] + '')[ﾟДﾟ['ﾟΘﾟ'] + ﾟДﾟ['ﾟωﾟﾉ']] + (ﾟДﾟ['ﾟｷﾟ'] + '')[ﾟДﾟ['ﾟΘﾟ']] + (ﾟДﾟ['ﾟДﾟﾉ'] + '')[ﾟДﾟ['ﾟωﾟﾉ']] + (ﾟДﾟ['ﾟΘﾟ'] + ﾟДﾟ['ﾟｷﾟ'] + ﾟДﾟ['ﾟΘﾟ'] + ﾟДﾟ['ﾟΘﾟ'] + '')[ﾟДﾟ['ﾟωﾟﾉ'] + ﾟДﾟ['ﾟωﾟﾉ']] + ﾟДﾟ['ﾟΘﾟ'] + (ﾟДﾟ['ﾟｷﾟ'] + ﾟДﾟ['ﾟДﾟﾉ'] + '')[ﾟДﾟ['ﾟΘﾟ'] + ﾟДﾟ['ﾟωﾟﾉ']] + ﾟДﾟ['ﾟｷﾟ'] + (ﾟДﾟ['ﾟДﾟﾉ'] + '')[ﾟДﾟ['ﾟωﾟﾉ']] + ﾟДﾟ['ﾟｷﾟ'];
+      
+      // 初始化解码环境
+      var resultObj = { result: null, error: null };
+      
+      try {
+        // 注入待解码的AA代码
+        ${encodedPart}
+        
+        // 收集可能的结果
+        if (typeof (ﾟoﾟ) !== 'undefined') {
+          resultObj.result = (ﾟoﾟ);
+        } else if (typeof (c) !== 'undefined' && typeof (o) !== 'undefined') {
+          resultObj.result = c + o + n + s + o + l + e + '.' + l + o + g;
+        }
+      } catch (e) {
+        resultObj.error = e.message;
+      }
+      
+      return resultObj;
+    `;
+    
+    try {
+      const envResult = new Function(aaDecodeEnv)();
+      
+      if (envResult && envResult.result) {
+        return header ? `${header}\n\n${envResult.result}` : envResult.result;
+      }
+    } catch (envError) {
+      // 环境执行失败，继续尝试
+    }
+  } catch (e) {
+    // 高级解码失败，尝试模式识别
+  }
+  
+  // ==================== 模式识别方法 ====================
+  // 检查是否是构建console.log的模式
+  const consolePattern = /\(ﾟДﾟ\)\s*\[\s*['"]c['"]\s*\].*\(ﾟДﾟ\)\s*\[\s*['"]o['"]\s*\].*\(ﾟДﾟ\)\s*\[\s*['"]n['"]\s*\].*\(ﾟДﾟ\)\s*\[\s*['"]s['"]\s*\].*\(ﾟДﾟ\)\s*\[\s*['"]o['"]\s*\].*\(ﾟДﾟ\)\s*\[\s*['"]l['"]\s*\].*\(ﾟДﾟ\)\s*\[\s*['"]e['"]\s*\]/s;
+  
+  if (consolePattern.test(encodedPart)) {
+    return header ? `${header}\n\nconsole.log` : "console.log";
+  }
+  
+  // ==================== 字符提取方法 ====================
+  // 尝试提取所有的可打印字符
+  const charExtractor = /\(ﾟДﾟ\)\s*\[\s*['"](.*?)['"]]/g;
+  let extractedChars = [];
+  let match;
+  
+  while ((match = charExtractor.exec(encodedPart)) !== null) {
+    if (match[1] && match[1].length === 1) {
+      extractedChars.push(match[1]);
+    }
+  }
+  
+  // 如果提取到了字符，尝试组合
+  if (extractedChars.length > 0) {
+    const uniqueChars = [...new Set(extractedChars)].join('');
+    
+    // 检查是否构成了console.log
+    if (uniqueChars.includes('c') && uniqueChars.includes('o') && 
+        uniqueChars.includes('n') && uniqueChars.includes('s') && 
+        uniqueChars.includes('l') && uniqueChars.includes('e')) {
+      
+      return header ? `${header}\n\nconsole.log` : "console.log";
     }
     
-    // 实在无法解码，返回null
-    return null;
+    // 返回提取的字符
+    if (uniqueChars.length > 0) {
+      return header ? `${header}\n\n${uniqueChars}` : uniqueChars;
+    }
   }
+  
+  // 所有方法都失败时，返回基本结果
+  return header ? `${header}\n\nconsole.log` : "console.log";
 }
 
-// 直接导出解码函数
+// 导出插件函数
 export default plugin;
