@@ -48,11 +48,11 @@ let time;
 
 // Try plugins in sequence until the processed code differs from the original
 const plugins = [
+  { name: 'aadecode', plugin: PluginAAdecode }, // 👈 插入 aadecode 插件
+  { name: 'eval', plugin: PluginEval }, // 👈 插入 eval 插件
   { name: 'obfuscator', plugin: PluginObfuscator },
   { name: 'sojsonv7', plugin: PluginSojsonV7 },
-    { name: 'sojson', plugin: PluginSojson },
-    { name: 'aadecode', plugin: PluginAAdecode }, // 👈 插入 aadecode 插件
-    { name: 'eval', plugin: PluginEval }, // 👈 插入 eval 插件
+  { name: 'sojson', plugin: PluginSojson },
   { name: 'jsconfuser', plugin: PluginJsconfuser },
   { name: 'awsc', plugin: PluginAwsc },
   { name: 'jjencode', plugin: PluginJjencode },
