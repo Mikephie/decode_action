@@ -1,4 +1,4 @@
-//Thu May 29 2025 14:20:50 GMT+0000 (Coordinated Universal Time)
+//Thu May 29 2025 14:25:22 GMT+0000 (Coordinated Universal Time)
 //解密脚本在此
 /*************************************
 
@@ -17,4 +17,4 @@ hostname = leancloud.emotionwp.com
 
 *************************************/
 
-执行过程出错: $response is not defined
+constructor
