@@ -544,8 +544,8 @@
                         <span>输入代码</span>
                     </div>
                     <div class="input-actions">
-                        <button class="icon-btn" onclick="appInstance.pasteInput()" title="粘贴">📋</button>
-                        <button class="icon-btn" onclick="appInstance.clearInput()" title="清空">🗑️</button>
+                        <button class="icon-btn" onclick="app.pasteInput()" title="粘贴">📋</button>
+                        <button class="icon-btn" onclick="app.clearInput()" title="清空">🗑️</button>
                     </div>
                 </div>
                 
@@ -584,7 +584,7 @@
                 
                 <div id="url-content" class="tab-content hidden">
                     <input type="text" id="remote-url" placeholder="输入远程文件 URL..." style="width: 100%; margin-bottom: 1rem; padding: 0.75rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
-                    <button class="btn btn-secondary" onclick="appInstance.loadRemoteFile()" style="width: 100%;">加载远程文件</button>
+                    <button class="btn btn-secondary" onclick="app.loadRemoteFile()" style="width: 100%;">加载远程文件</button>
                 </div>
             </div>
             
@@ -595,8 +595,8 @@
                         <span>解密结果</span>
                     </div>
                     <div class="input-actions">
-                        <button class="icon-btn" onclick="appInstance.copyResult()" title="复制">📋</button>
-                        <button class="icon-btn" onclick="appInstance.downloadResult()" title="下载">💾</button>
+                        <button class="icon-btn" onclick="app.copyResult()" title="复制">📋</button>
+                        <button class="icon-btn" onclick="app.downloadResult()" title="下载">💾</button>
                     </div>
                 </div>
                 <div id="output-display" class="code-highlight"></div>
@@ -605,10 +605,10 @@
         </div>
         
         <div class="control-section">
-            <button class="btn btn-secondary" onclick="appInstance.clearAll()">清除</button>
-            <button class="btn btn-primary" onclick="appInstance.decrypt()">点击解密</button>
-            <button class="btn btn-secondary" onclick="appInstance.copyResult()">复制结果</button>
-            <button class="btn btn-secondary" onclick="appInstance.downloadResult()">下载结果</button>
+            <button class="btn btn-secondary" onclick="app.clearAll()">清除</button>
+            <button class="btn btn-primary" onclick="app.decrypt()">点击解密</button>
+            <button class="btn btn-secondary" onclick="app.copyResult()">复制结果</button>
+            <button class="btn btn-secondary" onclick="app.downloadResult()">下载结果</button>
         </div>
         
         <div class="progress-bar">
@@ -623,14 +623,14 @@
         </div>
         
         <div style="text-align: center; margin-top: 2rem;">
-            <button class="btn btn-secondary" onclick="appInstance.clearLogs()">清空日志</button>
+            <button class="btn btn-secondary" onclick="app.clearLogs()">清空日志</button>
         </div>
     </div>
     
     <div id="toast" class="toast"></div>
 
     <script>
-        const appInstance = {
+        const app = {
             githubToken: '',
             repoName: '',
             currentTab: 'paste',
