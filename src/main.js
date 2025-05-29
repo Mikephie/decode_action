@@ -5,6 +5,7 @@ import process from 'process';
 
 // Dynamically import ESM modules
 const evalModule = await import('./plugin/eval.js');
+const aadecodeModule = await import('./plugin/aadecode.js');
 const commonModule = await import('./plugin/common.js');
 const jjencodeModule = await import('./plugin/jjencode.js');
 const sojsonModule = await import('./plugin/sojson.js');
@@ -14,6 +15,7 @@ const awscModule = await import('./plugin/awsc.js');
 const jsconfuserModule = await import('./plugin/jsconfuser.js');
 
 // Provide default exports if necessary
+const PluginAAdecode = evalModule.default || aadecodeModule;
 const PluginEval = evalModule.default || evalModule;
 const PluginCommon = commonModule.default || commonModule;
 const PluginJjencode = jjencodeModule.default || jjencodeModule;
@@ -49,6 +51,7 @@ const plugins = [
   { name: 'obfuscator', plugin: PluginObfuscator },
   { name: 'sojsonv7', plugin: PluginSojsonV7 },
     { name: 'sojson', plugin: PluginSojson },
+    { name: 'aadecode', plugin: PluginAAdecode }, // 👈 插入 aadecode 插件
     { name: 'eval', plugin: PluginEval }, // 👈 插入 eval 插件
   { name: 'jsconfuser', plugin: PluginJsconfuser },
   { name: 'awsc', plugin: PluginAwsc },
