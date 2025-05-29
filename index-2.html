@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羊毛助手 - 代码解密工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100vw;
+        }
+        
+        /* 动画背景 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.05;
+            background: 
+                radial-gradient(circle at 20% 30%, #4f46e5 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, #7c3aed 0%, transparent 50%);
+            animation: bgMove 20s ease infinite;
+        }
+        
+        @keyframes bgMove {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
+        }
+        
+        /* 头部样式 */
+        .header {
+            background: rgba(15, 15, 15, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1.5rem 0;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .version {
+            font-size: 0.75rem;
+            background: rgba(79, 70, 229, 0.2);
+            color: #818cf8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            margin-left: 1rem;
+        }
+        
+        /* 主容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* 配置区域 */
+        .config-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .config-item label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #a1a1aa;
+        }
+        
+        .config-item input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        .config-item input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        /* 标签栏 */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            color: #a1a1aa;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+            font-size: 0.875rem;
+        }
+        
+        .tab:hover {
+            color: #e0e0e0;
+        }
+        
+        .tab.active {
+            color: #4f46e5;
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+        }
+        
+        /* 输入区域 */
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            max-width: 100%;
+        }
+        
+        .input-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .input-title {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .input-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #a1a1aa;
+        }
+        
+        .icon-btn:hover {
+            background: rgba(79, 70, 229, 0.2);
+            color: #4f46e5;
+        }
+        
+        /* 代码高亮容器 */
+        .code-highlight {
+            background: #1e1e1e;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            overflow-y: auto;
+            white-space: pre;
+            word-break: normal;
+            height: 300px;
+            -webkit-overflow-scrolling: touch;
+            tab-size: 4;
+            min-height: 300px;
+            max-width: 100%;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            color: #e0e0e0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.875rem;
+            resize: vertical;
+            transition: all 0.3s;
+            line-height: 1.6;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        /* 移动端文件选择按钮 */
+        .mobile-file-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .file-option-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .file-option-btn:hover {
+            background: rgba(79, 70, 229, 0.1);
+            border-color: #4f46e5;
+        }
+        
+        .file-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .file-option-btn span:last-child {
+            font-size: 0.875rem;
+            color: #e0e0e0;
+        }
+        
+        /* 文件上传区域 */
+        .file-upload {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .file-upload:hover {
+            border-color: #4f46e5;
+            background: rgba(79, 70, 229, 0.05);
+        }
+        
+        .file-upload.dragover {
+            border-color: #7c3aed;
+            background: rgba(124, 58, 237, 0.1);
+        }
+        
+        /* 控制按钮 */
+        .control-section {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* 日志区域 */
+        .log-section {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.75rem;
+        }
+        
+        .log-entry {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .log-time {
+            color: #6b7280;
+            margin-right: 1rem;
+        }
+        
+        .log-success { color: #10b981; }
+        .log-error { color: #ef4444; }
+        .log-warning { color: #f59e0b; }
+        .log-info { color: #3b82f6; }
+        
+        /* 进度条 */
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            height: 8px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        /* Toast 提示 */
+        .toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .config-grid,
+            .input-section {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .input-box {
+                padding: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 0 1rem;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                gap: 0.5rem;
+            }
+            
+            .tab {
+                padding: 0.5rem 1rem;
+                white-space: nowrap;
+                font-size: 0.8125rem;
+            }
+            
+            .control-section {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+                flex: 1 1 calc(50% - 0.25rem);
+                min-width: 120px;
+            }
+            
+            textarea {
+                font-size: 0.75rem;
+                height: 200px;
+            }
+            
+            .code-highlight {
+                height: 250px;
+                font-size: 0.75rem;
+                padding: 0.75rem;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
+            
+            .log-section {
+                height: 150px;
+                font-size: 0.7rem;
+            }
+            
+            .mobile-file-options {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .file-option-btn {
+                flex-direction: row;
+                padding: 1rem;
+                justify-content: flex-start;
+                gap: 1rem;
+            }
+            
+            .file-icon {
+                font-size: 1.5rem;
+                margin-bottom: 0;
+            }
+            
+            .file-upload {
+                display: none;
+            }
+        }
+        
+        /* 隐藏类 */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* 确保文件输入时文本框可见 */
+        #input-box-container textarea {
+            display: block !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <header class="header">
+        <div class="header-content">
+            <div style="display: flex; align-items: center;">
+                <h1 class="logo">羊毛助手</h1>
+                <span class="version">v2.0</span>
+            </div>
+            <div style="color: #6b7280; font-size: 0.875rem;">
+                自动解密脚本工具
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- 配置区域 -->
+        <div class="config-section">
+            <h3 style="margin-bottom: 1rem; font-size: 1.125rem;">配置信息</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label>GitHub Token</label>
+                    <input type="password" id="github-token" placeholder="输入你的 GitHub Token">
+                </div>
+                <div class="config-item">
+                    <label>仓库地址</label>
+                    <input type="text" id="repo-name" placeholder="例如: username/decode_action">
+                </div>
+            </div>
+            <div style="margin-top: 1rem; padding: 1rem; background: rgba(79, 70, 229, 0.1); border-radius: 8px; font-size: 0.875rem; color: #a78bfa;">
+                <strong>使用说明：</strong>
+                <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                    <li>需要先部署 <a href="https://github.com/smallfawn/decode_action" target="_blank" style="color: #818cf8;">decode_action</a> 解密框架</li>
+                    <li>GitHub Token 需要 repo 权限</li>
+                    <li>提交代码后会自动触发 Actions 运行解密</li>
+                    <li>支持多种加密方式（eval、aaencode、jjencode、obfuscator等）</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 标签栏 -->
+        <div class="tabs">
+            <button class="tab active" data-tab="paste">粘贴代码</button>
+            <button class="tab" data-tab="file">选择文件</button>
+            <button class="tab" data-tab="url">远程文件</button>
+        </div>
+        
+        <!-- 输入输出区域 -->
+        <div class="input-section">
+            <!-- 输入框 -->
+            <div class="input-box" id="input-box-container">
+                <div class="input-header">
+                    <div class="input-title">
+                        <span>📝</span>
+                        <span>输入代码</span>
+                    </div>
+                    <div class="input-actions">
+                        <button class="icon-btn" onclick="app.pasteInput()" title="粘贴">📋</button>
+                        <button class="icon-btn" onclick="app.clearInput()" title="清空">🗑️</button>
+                    </div>
+                </div>
+                
+                <!-- 统一的输入文本框 -->
+                <textarea id="input-code" placeholder="在此粘贴需要解密的代码..."></textarea>
+                
+                <!-- 选择文件标签内容 -->
+                <div id="file-content" class="tab-content hidden">
+                    <div class="mobile-file-options">
+                        <label for="file-input" class="file-option-btn">
+                            <span class="file-icon">📷</span>
+                            <span>相册选择</span>
+                            <input type="file" id="file-input" accept=".js,.txt,image/*" capture="environment" style="display: none;">
+                        </label>
+                        
+                        <label for="file-input-camera" class="file-option-btn">
+                            <span class="file-icon">📸</span>
+                            <span>拍照上传</span>
+                            <input type="file" id="file-input-camera" accept="image/*" capture="camera" style="display: none;">
+                        </label>
+                        
+                        <label for="file-input-files" class="file-option-btn">
+                            <span class="file-icon">📁</span>
+                            <span>选择文件</span>
+                            <input type="file" id="file-input-files" accept=".js,.txt" style="display: none;">
+                        </label>
+                    </div>
+                    
+                    <div class="file-upload" id="file-drop-area" style="margin-top: 1rem;">
+                        <div>
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📁</div>
+                            <div>或拖拽文件到此处</div>
+                            <div style="color: #6b7280; font-size: 0.875rem; margin-top: 0.5rem;">支持 .js 和 .txt 文件</div>
+                        </div>
+                    </div>
+                    <div id="selected-file-info" style="margin-top: 1rem; color: #10b981; text-align: center;"></div>
+                </div>
+                
+                <!-- 远程文件标签内容 -->
+                <div id="url-content" class="tab-content hidden">
+                    <input type="text" id="remote-url" placeholder="输入远程文件 URL..." style="width: 100%; margin-bottom: 1rem; padding: 0.75rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #e0e0e0; font-size: 1rem;">
+                    <button class="btn btn-secondary" onclick="app.loadRemoteFile()" style="width: 100%;">加载远程文件</button>
+                </div>
+            </div>
+            
+            <!-- 输出框 -->
+            <div class="input-box">
+                <div class="input-header">
+                    <div class="input-title">
+                        <span>✨</span>
+                        <span>解密结果</span>
+                    </div>
+                    <div class="input-actions">
+                        <button class="icon-btn" onclick="app.copyResult()" title="复制">📋</button>
+                        <button class="icon-btn" onclick="app.downloadResult()" title="下载">💾</button>
+                    </div>
+                </div>
+                <div id="output-display" class="code-highlight"></div>
+                <textarea id="output-code" style="display: none;"></textarea>
+            </div>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="control-section">
+            <button class="btn btn-secondary" onclick="app.clearAll()">清除</button>
+            <button class="btn btn-primary" onclick="app.decrypt()">点击解密</button>
+            <button class="btn btn-secondary" onclick="app.copyResult()">复制结果</button>
+            <button class="btn btn-secondary" onclick="app.downloadResult()">下载结果</button>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-bar"></div>
+        </div>
+        
+        <!-- 日志区域 -->
+        <div class="log-section" id="log-container">
+            <div class="log-entry">
+                <span class="log-time">00:00:00</span>
+                <span class="log-info">系统初始化完成，准备就绪</span>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <button class="btn btn-secondary" onclick="app.clearLogs()">清空日志</button>
+        </div>
+    </div>
+    
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast"></div>
+    
+    <script>
+        // 应用主对象
+        const app = {
+            githubToken: '',
+            repoName: '',
+            currentTab: 'paste',
+            
+            init() {
+                // 加载保存的配置
+                this.githubToken = localStorage.getItem('github_token') || '';
+                this.repoName = localStorage.getItem('repo_name') || '';
+                
+                document.getElementById('github-token').value = this.githubToken;
+                document.getElementById('repo-name').value = this.repoName;
+                
+                // 绑定事件
+                this.bindEvents();
+                this.addLog('系统初始化完成', 'success');
+            },
+            
+            bindEvents() {
+                // 配置输入
+                document.getElementById('github-token').addEventListener('input', (e) => {
+                    this.githubToken = e.target.value;
+                    localStorage.setItem('github_token', this.githubToken);
+                });
+                
+                document.getElementById('repo-name').addEventListener('input', (e) => {
+                    this.repoName = e.target.value;
+                    localStorage.setItem('repo_name', this.repoName);
+                });
+                
+                // 标签切换
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', () => this.switchTab(tab.dataset.tab));
+                });
+                
+                // 文件拖拽（桌面端）
+                const dropArea = document.getElementById('file-drop-area');
+                if (dropArea) {
+                    dropArea.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        dropArea.classList.add('dragover');
+                    });
+                    
+                    dropArea.addEventListener('dragleave', () => {
+                        dropArea.classList.remove('dragover');
+                    });
+                    
+                    dropArea.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        dropArea.classList.remove('dragover');
+                        const files = e.dataTransfer.files;
+                        if (files && files.length > 0) {
+                            this.handleFile(files[0]);
+                        }
+                    });
+                }
+                
+                // 文件选择（所有平台）
+                const fileInputs = ['file-input', 'file-input-camera', 'file-input-files'];
+                fileInputs.forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.addEventListener('change', (e) => {
+                            if (e.target.files && e.target.files.length > 0) {
+                                this.handleFile(e.target.files[0]);
+                            }
+                        });
+                    }
+                });
+            },
+            
+            switchTab(tab) {
+                this.currentTab = tab;
+                
+                // 更新标签样式
+                document.querySelectorAll('.tab').forEach(t => {
+                    t.classList.toggle('active', t.dataset.tab === tab);
+                });
+                
+                // 更新内容显示
+                document.getElementById('file-content').classList.toggle('hidden', tab !== 'file');
+                document.getElementById('url-content').classList.toggle('hidden', tab !== 'url');
+                
+                // 输入框始终可见
+                const inputTextarea = document.getElementById('input-code');
+                inputTextarea.style.display = 'block';
+            },
+            
+            pasteInput() {
+                navigator.clipboard.readText().then(text => {
+                    document.getElementById('input-code').value = text;
+                    this.showToast('粘贴成功');
+                    this.addLog('从剪贴板粘贴内容', 'success');
+                }).catch(() => {
+                    this.showToast('请手动粘贴（Ctrl+V 或 长按粘贴）', 'warning');
+                });
+            },
+            
+            clearInput() {
+                document.getElementById('input-code').value = '';
+                this.showToast('输入已清空');
+            },
+            
+            clearAll() {
+                document.getElementById('input-code').value = '';
+                document.getElementById('output-code').value = '';
+                document.getElementById('output-display').innerHTML = '<span style="color: #6a9955">// 解密结果将显示在这里...</span>';
+                document.getElementById('progress-bar').style.width = '0%';
+                this.showToast('已清除所有内容');
+                this.addLog('清除所有内容', 'info');
+            },
+            
+            async decrypt() {
+                const inputCode = document.getElementById('input-code').value.trim();
+                
+                if (!inputCode) {
+                    this.showToast('请先输入代码', 'error');
+                    return;
+                }
+                
+                // 必须配置GitHub才能解密
+                if (!this.githubToken || !this.repoName) {
+                    this.showToast('请先配置 GitHub Token 和仓库地址', 'error');
+                    this.addLog('缺少配置信息', 'error');
+                    this.displayResult(`// ⚠️ 未配置 GitHub\n// 本工具需要通过 GitHub Actions 运行解密框架\n// \n// 请配置:\n// 1. GitHub Token (需要 repo 权限)\n// 2. 仓库地址 (格式: username/repo)\n// \n// 解密框架仓库: https://github.com/smallfawn/decode_action\n\n${inputCode}`);
+                    return;
+                }
+                
+                try {
+                    this.addLog('开始解密流程...', 'info');
+                    
+                    // 重置进度条
+                    document.getElementById('progress-bar').style.width = '0%';
+                    
+                    // 1. 提交代码到GitHub
+                    await this.submitToGitHub(inputCode);
+                    
+                    // 2. 等待Actions自动触发并完成
+                    await this.waitForActionComplete();
+                    
+                    // 3. 获取解密结果
+                    await this.getResult();
+                    
+                } catch (error) {
+                    this.addLog('主流程出错: ' + error.message, 'error');
+                    
+                    // 尝试备用方案
+                    try {
+                        this.addLog('尝试备用方案...', 'info');
+                        
+                        // 方案1：直接通过API获取
+                        await this.getResult();
+                    } catch (e) {
+                        // 方案2：通过Raw URL获取
+                        const rawSuccess = await this.getResultViaRawUrl();
+                        
+                        if (!rawSuccess) {
+                            this.showToast('解密失败: ' + error.message, 'error');
+                            this.displayResult(`// ❌ 解密失败\n// 错误: ${error.message}\n// \n// 请检查:\n// 1. GitHub Token 是否有效\n// 2. 仓库地址是否正确\n// 3. Actions 是否已启用\n// 4. decode_action 框架是否正确部署\n// 5. 检查 GitHub Actions 日志\n// \n// 手动查看结果:\n// https://github.com/${this.repoName}/blob/main/output.js\n\n${inputCode}`);
+                        }
+                    }
+                }
+            },
+            
+            async checkGitHubToken() {
+                try {
+                    // 测试Token是否有效
+                    const response = await fetch('https://api.github.com/user', {
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const user = await response.json();
+                        this.addLog(`GitHub Token 有效，用户: ${user.login}`, 'success');
+                        return true;
+                    } else if (response.status === 401) {
+                        this.addLog('GitHub Token 无效或过期', 'error');
+                        return false;
+                    } else {
+                        this.addLog('无法验证 GitHub Token', 'warning');
+                        return false;
+                    }
+                } catch (error) {
+                    this.addLog('Token 验证失败: ' + error.message, 'error');
+                    return false;
+                }
+            },
+            
+            async submitToGitHub(code) {
+                this.addLog('正在提交代码到 GitHub...', 'info');
+                
+                // 先验证Token
+                const tokenValid = await this.checkGitHubToken();
+                if (!tokenValid) {
+                    throw new Error('GitHub Token 无效，请检查配置');
+                }
+                
+                try {
+                    const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/input.js`;
+                    
+                    // 先尝试获取文件信息
+                    let sha = null;
+                    try {
+                        const getResponse = await fetch(apiUrl, {
+                            headers: {
+                                'Authorization': `token ${this.githubToken}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        });
+                        
+                        if (getResponse.ok) {
+                            const fileData = await getResponse.json();
+                            sha = fileData.sha;
+                            this.addLog('找到现有 input.js 文件', 'info');
+                        }
+                    } catch (e) {
+                        this.addLog('input.js 不存在，将创建新文件', 'info');
+                    }
+                    
+                    // 创建或更新文件
+                    const content = btoa(unescape(encodeURIComponent(code)));
+                    const response = await fetch(apiUrl, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: 'Update input.js for decryption',
+                            content: content,
+                            sha: sha || undefined,
+                            branch: 'main' // 确保提交到main分支
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        if (response.status === 404) {
+                            throw new Error('仓库不存在或无权访问');
+                        } else if (response.status === 422) {
+                            throw new Error('文件更新冲突，请重试');
+                        }
+                        throw new Error(error.message || '无法更新文件');
+                    }
+                    
+                    this.addLog('代码已提交到 main 分支', 'success');
+                    this.addLog('GitHub Actions 将自动触发...', 'info');
+                    
+                    // 等待一下让GitHub处理提交
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                } catch (error) {
+                    throw new Error('GitHub API错误: ' + error.message);
+                }
+            },
+            
+            async waitForActionComplete() {
+                this.addLog('等待 Actions 执行...', 'info');
+                const maxAttempts = 30; // 最多等待30次，每次2秒
+                let attempts = 0;
+                let lastSha = null;
+                
+                const progressBar = document.getElementById('progress-bar');
+                
+                // 先获取当前output.js的SHA（如果存在）
+                try {
+                    const outputUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
+                    const initialResponse = await fetch(outputUrl, {
+                        headers: {
+                            'Authorization': `token ${this.githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (initialResponse.ok) {
+                        const data = await initialResponse.json();
+                        lastSha = data.sha;
+                        this.addLog('记录当前 output.js 状态', 'info');
+                    }
+                } catch (e) {
+                    this.addLog('output.js 尚不存在', 'info');
+                }
+                
+                // 等待文件更新
+                while (attempts < maxAttempts) {
+                    attempts++;
+                    progressBar.style.width = (attempts / maxAttempts * 100) + '%';
+                    
+                    try {
+                        // 检查output.js是否已更新
+                        const outputUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
+                        const response = await fetch(`${outputUrl}?t=${Date.now()}`, {
+                            headers: {
+                                'Authorization': `token ${this.githubToken}`,
+                                'Accept': 'application/vnd.github.v3+json',
+                                'Cache-Control': 'no-cache'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            
+                            // 检查SHA是否变化（文件已更新）
+                            if (lastSha && data.sha !== lastSha) {
+                                this.addLog('检测到 output.js 已更新！', 'success');
+                                progressBar.style.width = '100%';
+                                
+                                // 再等待2秒确保文件完全写入
+                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                return;
+                            } else if (!lastSha && data.sha) {
+                                // 如果之前没有文件，现在有了
+                                this.addLog('检测到新的 output.js 文件！', 'success');
+                                progressBar.style.width = '100%';
+                                
+                                // 再等待2秒确保文件完全写入
+                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        // 忽略错误，继续等待
+                    }
+                    
+                    // 显示等待状态
+                    if (attempts % 3 === 0) {
+                        this.addLog(`Actions 执行中... (${attempts * 2}秒)`, 'info');
+                    }
+                    
+                    // 等待2秒后重试
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+                
+                // 如果超时但文件可能已更新，仍然尝试获取结果
+                this.addLog('等待超时，尝试获取结果...', 'warning');
+            },
+            
+            async getResult() {
+                this.addLog('正在获取解密结果...', 'info');
+                
+                let retries = 3; // 重试次数
+                
+                while (retries > 0) {
+                    try {
+                        const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
+                        
+                        // 添加时间戳确保获取最新内容
+                        const response = await fetch(`${apiUrl}?ref=main&t=${Date.now()}`, {
+                            headers: {
+                                'Authorization': `token ${this.githubToken}`,
+                                'Accept': 'application/vnd.github.v3+json',
+                                'Cache-Control': 'no-cache',
+                                'Pragma': 'no-cache'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            
+                            // 解码内容
+                            let content = '';
+                            try {
+                                // Base64解码
+                                const decoded = atob(data.content.replace(/\n/g, ''));
+                                
+                                // 尝试UTF-8解码
+                                try {
+                                    // 使用TextDecoder进行更准确的UTF-8解码
+                                    const uint8Array = new Uint8Array(decoded.length);
+                                    for (let i = 0; i < decoded.length; i++) {
+                                        uint8Array[i] = decoded.charCodeAt(i);
+                                    }
+                                    const decoder = new TextDecoder('utf-8', { fatal: false });
+                                    content = decoder.decode(uint8Array);
+                                } catch (e) {
+                                    // 如果TextDecoder失败，使用传统方法
+                                    content = decodeURIComponent(escape(decoded));
+                                }
+                            } catch (e) {
+                                // 如果UTF-8解码失败，尝试直接使用
+                                try {
+                                    content = atob(data.content.replace(/\n/g, ''));
+                                } catch (e2) {
+                                    throw new Error('无法解码文件内容');
+                                }
+                            }
+                            
+                            // 检查是否是有效的解密结果
+                            if (content && content.length > 0) {
+                                this.displayResult(content);
+                                this.addLog('解密成功！', 'success');
+                                this.addLog(`文件SHA: ${data.sha.substring(0, 7)}...`, 'info');
+                                this.showToast('解密成功！');
+                                
+                                // 重置进度条
+                                document.getElementById('progress-bar').style.width = '0%';
+                                return;
+                            } else {
+                                throw new Error('解密结果为空');
+                            }
+                        } else if (response.status === 404) {
+                            throw new Error('output.js 文件不存在');
+                        } else if (response.status === 401) {
+                            throw new Error('GitHub Token 无效或过期');
+                        } else if (response.status === 403) {
+                            throw new Error('API 访问限制，请稍后再试');
+                        } else {
+                            throw new Error(`HTTP错误: ${response.status}`);
+                        }
+                    } catch (error) {
+                        retries--;
+                        
+                        // 更详细的错误日志
+                        if (error.message === 'Failed to fetch' || error.message === 'Load failed') {
+                            this.addLog('网络请求失败，可能是网络问题或CORS限制', 'error');
+                            
+                            // 提供备用方案
+                            if (retries === 0) {
+                                this.addLog('提示：请尝试以下方法：', 'info');
+                                this.addLog('1. 检查网络连接', 'info');
+                                this.addLog('2. 检查GitHub Token是否正确', 'info');
+                                this.addLog('3. 直接访问GitHub查看output.js', 'info');
+                                
+                                // 提供直接链接
+                                const directUrl = `https://github.com/${this.repoName}/blob/main/output.js`;
+                                this.displayResult(`// ❌ 网络请求失败\n// \n// 请尝试：\n// 1. 检查网络连接\n// 2. 确认GitHub Token有效\n// 3. 直接访问查看结果：\n// ${directUrl}\n// \n// 如果GitHub上已有解密结果，可以手动复制`);
+                                
+                                // 创建一个链接按钮
+                                const toast = document.getElementById('toast');
+                                toast.innerHTML = `无法自动获取结果 <a href="${directUrl}" target="_blank" style="color: #818cf8; text-decoration: underline;">点击查看GitHub</a>`;
+                                toast.className = 'toast show';
+                                setTimeout(() => {
+                                    toast.classList.remove('show');
+                                    toast.textContent = '';
+                                }, 5000);
+                                
+                                return;
+                            }
+                        }
+                        
+                        if (retries > 0) {
+                            this.addLog(`获取失败: ${error.message}，重试中... (${3 - retries}/3)`, 'warning');
+                            await new Promise(resolve => setTimeout(resolve, 2000));
+                        } else {
+                            this.addLog('获取结果失败: ' + error.message, 'error');
+                            throw error;
+                        }
+                    }
+                }
+            },
+            
+            async getResultViaRawUrl() {
+                this.addLog('尝试通过Raw URL获取结果...', 'info');
+                
+                try {
+                    // 构建raw.githubusercontent.com URL
+                    const [owner, repo] = this.repoName.split('/');
+                    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/output.js?t=${Date.now()}`;
+                    
+                    this.addLog(`尝试访问: ${rawUrl}`, 'info');
+                    
+                    const response = await fetch(rawUrl, {
+                        headers: {
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const content = await response.text();
+                        
+                        if (content && content.length > 0) {
+                            this.displayResult(content);
+                            this.addLog('通过Raw URL获取成功！', 'success');
+                            this.showToast('解密成功！');
+                            document.getElementById('progress-bar').style.width = '0%';
+                            return true;
+                        }
+                    }
+                    
+                    return false;
+                } catch (error) {
+                    this.addLog('Raw URL访问失败: ' + error.message, 'error');
+                    return false;
+                }
+            },
+            
+            displayResult(code) {
+                // 保存原始文本到隐藏的textarea
+                document.getElementById('output-code').value = code;
+                
+                // 直接显示高亮代码
+                const outputDisplay = document.getElementById('output-display');
+                if (code && code.trim()) {
+                    // 简单的语法高亮处理
+                    let highlighted = code
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+                    
+                    // 高亮字符串
+                    highlighted = highlighted.replace(
+                        /(["'])(?:(?=(\\?))\2.)*?\1/g,
+                        '<span style="color: #ce9178">$&</span>'
+                    );
+                    
+                    // 高亮注释
+                    highlighted = highlighted.replace(
+                        /(\/\/.*$)/gm,
+                        '<span style="color: #6a9955; font-style: italic">$1</span>'
+                    );
+                    
+                    // 高亮关键字
+                    const keywords = /\b(var|let|const|function|return|if|else|for|while|new|this)\b/g;
+                    highlighted = highlighted.replace(
+                        keywords,
+                        '<span style="color: #569cd6; font-weight: bold">$1</span>'
+                    );
+                    
+                    // 高亮数字
+                    highlighted = highlighted.replace(
+                        /\b(\d+)\b/g,
+                        '<span style="color: #b5cea8">$1</span>'
+                    );
+                    
+                    // 移动端优化：添加自动换行提示
+                    const isMobile = window.innerWidth <= 768;
+                    if (isMobile) {
+                        outputDisplay.innerHTML = '<div style="color: #6a9955; font-size: 0.75rem; margin-bottom: 0.5rem;">// 提示：左右滑动查看完整代码</div>' + highlighted;
+                    } else {
+                        outputDisplay.innerHTML = highlighted;
+                    }
+                } else {
+                    outputDisplay.innerHTML = '<span style="color: #6a9955">// 解密结果将显示在这里...</span>';
+                }
+            },
+            
+            copyResult() {
+                const output = document.getElementById('output-code').value;
+                if (!output) {
+                    this.showToast('没有内容可复制', 'error');
+                    return;
+                }
+                
+                navigator.clipboard.writeText(output).then(() => {
+                    this.showToast('复制成功');
+                    this.addLog('复制解密结果', 'success');
+                }).catch(() => {
+                    this.showToast('复制失败', 'error');
+                });
+            },
+            
+            downloadResult() {
+                const output = document.getElementById('output-code').value;
+                if (!output) {
+                    this.showToast('没有内容可下载', 'error');
+                    return;
+                }
+                
+                const blob = new Blob([output], { type: 'text/javascript' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `decrypted_${Date.now()}.js`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                this.showToast('下载成功');
+                this.addLog('下载解密结果', 'success');
+            },
+            
+            handleFile(file) {
+                if (!file) {
+                    this.showToast('未选择文件', 'error');
+                    return;
+                }
+                
+                this.addLog(`开始读取文件: ${file.name}`, 'info');
+                
+                // 如果是图片文件，使用 OCR 识别
+                if (file.type.startsWith('image/')) {
+                    this.addLog('检测到图片文件，准备识别文字...', 'info');
+                    this.showToast('图片文字识别功能开发中', 'warning');
+                    // 这里可以集成 OCR API
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const content = e.target.result;
+                        const inputTextarea = document.getElementById('input-code');
+                        
+                        if (inputTextarea) {
+                            inputTextarea.value = content;
+                            inputTextarea.style.display = 'block';
+                            
+                            // 显示文件信息
+                            const fileInfo = document.getElementById('selected-file-info');
+                            if (fileInfo) {
+                                fileInfo.textContent = `已加载: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                            }
+                            
+                            this.showToast(`文件加载成功: ${file.name}`);
+                            this.addLog(`文件加载成功: ${file.name} (${content.length} 字符)`, 'success');
+                        }
+                    } catch (error) {
+                        this.showToast('文件处理失败', 'error');
+                        this.addLog(`文件处理错误: ${error.message}`, 'error');
+                    }
+                };
+                
+                reader.onerror = () => {
+                    this.showToast('文件读取失败', 'error');
+                    this.addLog(`文件读取失败: ${file.name}`, 'error');
+                };
+                
+                try {
+                    reader.readAsText(file);
+                } catch (error) {
+                    this.showToast('无法读取文件', 'error');
+                    this.addLog(`无法读取文件: ${error.message}`, 'error');
+                }
+            },
+            
+            async loadRemoteFile() {
+                const url = document.getElementById('remote-url').value.trim();
+                if (!url) {
+                    this.showToast('请输入 URL', 'error');
+                    return;
+                }
+                
+                try {
+                    this.addLog(`加载远程文件: ${url}`, 'info');
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('无法加载文件');
+                    
+                    const text = await response.text();
+                    const inputTextarea = document.getElementById('input-code');
+                    inputTextarea.value = text;
+                    inputTextarea.style.display = 'block';
+                    
+                    this.showToast('远程文件加载成功');
+                    this.addLog('远程文件加载成功', 'success');
+                } catch (error) {
+                    this.showToast('加载失败: ' + error.message, 'error');
+                    this.addLog('加载远程文件失败: ' + error.message, 'error');
+                }
+            },
+            
+            clearLogs() {
+                const logContainer = document.getElementById('log-container');
+                logContainer.innerHTML = '<div class="log-entry"><span class="log-time">00:00:00</span><span class="log-info">日志已清空</span></div>';
+                this.showToast('日志已清空');
+            },
+            
+            showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.className = 'toast show';
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            },
+            
+            addLog(message, type = 'info') {
+                const logContainer = document.getElementById('log-container');
+                const time = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.innerHTML = `<span class="log-time">${time}</span><span class="log-${type}">${message}</span>`;
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+        };
+        
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>
