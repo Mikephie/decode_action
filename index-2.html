@@ -1007,13 +1007,6 @@
             async getResult() {
                 this.addLog('正在获取解密结果...', 'info');
                 
-                // 先尝试通过Raw URL获取（避免CORS问题）
-                const rawSuccess = await this.getResultViaRawUrl();
-                if (rawSuccess) {
-                    return;
-                }
-                
-                // 如果Raw URL失败，再尝试API方式
                 let retries = 3; // 重试次数
                 
                 while (retries > 0) {
@@ -1022,7 +1015,6 @@
                         
                         // 添加时间戳确保获取最新内容
                         const response = await fetch(`${apiUrl}?ref=main&t=${Date.now()}`, {
-                            method: 'GET',
                             headers: {
                                 'Authorization': `token ${this.githubToken}`,
                                 'Accept': 'application/vnd.github.v3+json',
@@ -1088,30 +1080,28 @@
                         retries--;
                         
                         // 更详细的错误日志
-                        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                            this.addLog('API请求失败，尝试使用代理方案...', 'warning');
+                        if (error.message === 'Failed to fetch' || error.message === 'Load failed') {
+                            this.addLog('网络请求失败，可能是网络问题或CORS限制', 'error');
                             
-                            // 尝试使用CORS代理
-                            if (retries === 1) {
-                                const corsProxySuccess = await this.getResultViaProxy();
-                                if (corsProxySuccess) {
-                                    return;
-                                }
-                            }
-                            
-                            // 最后的备用方案
+                            // 提供备用方案
                             if (retries === 0) {
-                                this.addLog('所有自动获取方式都失败了', 'error');
-                                this.addLog('请手动访问GitHub查看结果', 'info');
+                                this.addLog('提示：请尝试以下方法：', 'info');
+                                this.addLog('1. 检查网络连接', 'info');
+                                this.addLog('2. 检查GitHub Token是否正确', 'info');
+                                this.addLog('3. 直接访问GitHub查看output.js', 'info');
                                 
-                                // 提供直接链接和手动输入选项
+                                // 提供直接链接
                                 const directUrl = `https://github.com/${this.repoName}/blob/main/output.js`;
-                                const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js`;
+                                this.displayResult(`// ❌ 网络请求失败\n// \n// 请尝试：\n// 1. 检查网络连接\n// 2. 确认GitHub Token有效\n// 3. 直接访问查看结果：\n// ${directUrl}\n// \n// 如果GitHub上已有解密结果，可以手动复制`);
                                 
-                                this.displayResult(`// ❌ 自动获取失败（可能是CORS限制）\n// \n// 请尝试以下方法：\n// \n// 方法1：直接访问GitHub页面\n// ${directUrl}\n// \n// 方法2：访问Raw文件\n// ${rawUrl}\n// \n// 方法3：如果上述链接能看到解密结果，\n// 请手动复制粘贴到输入框，然后点击"复制结果"按钮\n// \n// 原始代码：\n${document.getElementById('input-code').value}`);
-                                
-                                // 提供手动输入选项
-                                this.showManualInputOption();
+                                // 创建一个链接按钮
+                                const toast = document.getElementById('toast');
+                                toast.innerHTML = `无法自动获取结果 <a href="${directUrl}" target="_blank" style="color: #818cf8; text-decoration: underline;">点击查看GitHub</a>`;
+                                toast.className = 'toast show';
+                                setTimeout(() => {
+                                    toast.classList.remove('show');
+                                    toast.textContent = '';
+                                }, 5000);
                                 
                                 return;
                             }
@@ -1128,97 +1118,7 @@
                 }
             },
             
-            async getResultViaProxy() {
-                this.addLog('尝试使用CORS代理获取...', 'info');
-                
-                try {
-                    // 使用多个CORS代理服务
-                    const proxies = [
-                        'https://cors-anywhere.herokuapp.com/',
-                        'https://api.allorigins.win/raw?url=',
-                        'https://cors.bridged.cc/'
-                    ];
-                    
-                    const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js`;
-                    
-                    for (const proxy of proxies) {
-                        try {
-                            this.addLog(`尝试代理: ${proxy}`, 'info');
-                            const response = await fetch(proxy + encodeURIComponent(rawUrl), {
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest'
-                                }
-                            });
-                            
-                            if (response.ok) {
-                                const content = await response.text();
-                                if (content && content.length > 0) {
-                                    this.displayResult(content);
-                                    this.addLog('通过CORS代理获取成功！', 'success');
-                                    this.showToast('解密成功！');
-                                    document.getElementById('progress-bar').style.width = '0%';
-                                    return true;
-                                }
-                            }
-                        } catch (e) {
-                            continue;
-                        }
-                    }
-                    
-                    return false;
-                } catch (error) {
-                    this.addLog('CORS代理失败: ' + error.message, 'error');
-                    return false;
-                }
-            },
-            
-            showManualInputOption() {
-                // 创建一个临时的手动输入提示
-                const toast = document.getElementById('toast');
-                toast.innerHTML = `
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <div>无法自动获取，请手动操作：</div>
-                        <a href="https://github.com/${this.repoName}/blob/main/output.js" 
-                           target="_blank" 
-                           style="color: #818cf8; text-decoration: underline;">
-                           1. 点击查看output.js
-                        </a>
-                        <div style="font-size: 0.875rem; color: #a1a1aa;">
-                           2. 复制解密后的代码
-                        </div>
-                        <div style="font-size: 0.875rem; color: #a1a1aa;">
-                           3. 粘贴到输入框
-                        </div>
-                        <button onclick="app.handleManualInput()" 
-                                style="background: #4f46e5; color: white; border: none; 
-                                       padding: 0.5rem 1rem; border-radius: 6px; 
-                                       cursor: pointer; margin-top: 0.5rem;">
-                            我已复制，转换格式
-                        </button>
-                    </div>
-                `;
-                toast.className = 'toast show';
-                
-                // 延长显示时间
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    toast.innerHTML = '';
-                }, 15000);
-            },
-            
-            handleManualInput() {
-                // 将输入框的内容作为解密结果
-                const inputContent = document.getElementById('input-code').value;
-                if (inputContent) {
-                    this.displayResult(inputContent);
-                    this.addLog('已将输入内容转为输出结果', 'success');
-                    this.showToast('转换成功！现在可以复制或下载结果');
-                    
-                    // 关闭提示
-                    const toast = document.getElementById('toast');
-                    toast.classList.remove('show');
-                }
-            },
+            async getResultViaRawUrl() {
                 this.addLog('尝试通过Raw URL获取结果...', 'info');
                 
                 try {
