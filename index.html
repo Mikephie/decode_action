@@ -465,7 +465,7 @@
             position: fixed;
             top: 2rem;
             right: 2rem;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             color: white;
             padding: 1rem 1.5rem;
             border-radius: 8px;
@@ -473,117 +473,131 @@
             transform: translateX(400px);
             transition: transform 0.3s ease;
             z-index: 1000;
+            max-width: 350px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .toast.show {
             transform: translateX(0);
         }
         
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0.75rem;
+            /* 响应式设计 */
+            @media (max-width: 768px) {
+                .toast {
+                    top: 1rem;
+                    right: 1rem;
+                    left: 1rem;
+                    max-width: none;
+                    transform: translateY(-100px);
+                }
+                
+                .toast.show {
+                    transform: translateY(0);
+                }
+                
+                .container {
+                    padding: 0.75rem;
+                }
+                
+                .config-grid,
+                .input-section {
+                    grid-template-columns: 1fr;
+                    gap: 0.75rem;
+                }
+                
+                .input-box {
+                    padding: 0.75rem;
+                }
+                
+                .header-content {
+                    flex-direction: column;
+                    gap: 0.5rem;
+                    padding: 0 1rem;
+                }
+                
+                .header {
+                    padding: 1rem 0;
+                }
+                
+                .tabs {
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                    gap: 0.25rem;
+                }
+                
+                .tab {
+                    padding: 0.4rem 0.75rem;
+                    white-space: nowrap;
+                    font-size: 0.75rem;
+                }
+                
+                .control-section {
+                    gap: 0.4rem;
+                }
+                
+                .btn {
+                    padding: 0.4rem 0.75rem;
+                    font-size: 0.75rem;
+                    flex: 1 1 calc(50% - 0.2rem);
+                    min-width: 70px;
+                    max-width: none;
+                }
+                
+                textarea {
+                    font-size: 0.75rem;
+                    height: 150px;
+                    padding: 0.5rem;
+                }
+                
+                .code-highlight {
+                    height: 150px;
+                    font-size: 0.7rem;
+                    padding: 0.5rem;
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
+                }
+                
+                .log-section {
+                    height: 100px;
+                    font-size: 0.65rem;
+                    padding: 0.5rem;
+                }
+                
+                .mobile-file-options {
+                    grid-template-columns: 1fr;
+                    gap: 0.5rem;
+                }
+                
+                .file-option-btn {
+                    flex-direction: row;
+                    padding: 0.75rem;
+                    justify-content: flex-start;
+                    gap: 0.75rem;
+                }
+                
+                .file-icon {
+                    font-size: 1rem;
+                    margin-bottom: 0;
+                }
+                
+                .file-upload {
+                    display: none;
+                }
+                
+                .input-title {
+                    font-size: 0.8rem;
+                }
+                
+                .config-section h3 {
+                    font-size: 0.9rem;
+                }
+                
+                .config-section .usage-note {
+                    font-size: 0.7rem;
+                    padding: 0.5rem;
+                }
             }
-            
-            .config-grid,
-            .input-section {
-                grid-template-columns: 1fr;
-                gap: 0.75rem;
-            }
-            
-            .input-box {
-                padding: 0.75rem;
-            }
-            
-            .header-content {
-                flex-direction: column;
-                gap: 0.5rem;
-                padding: 0 1rem;
-            }
-            
-            .header {
-                padding: 1rem 0;
-            }
-            
-            .tabs {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                gap: 0.25rem;
-            }
-            
-            .tab {
-                padding: 0.4rem 0.75rem;
-                white-space: nowrap;
-                font-size: 0.75rem;
-            }
-            
-            .control-section {
-                gap: 0.4rem;
-            }
-            
-            .btn {
-                padding: 0.4rem 0.75rem;
-                font-size: 0.75rem;
-                flex: 1 1 calc(50% - 0.2rem);
-                min-width: 70px;
-                max-width: none;
-            }
-            
-            textarea {
-                font-size: 0.75rem;
-                height: 150px;
-                padding: 0.5rem;
-            }
-            
-            .code-highlight {
-                height: 150px;
-                font-size: 0.7rem;
-                padding: 0.5rem;
-                white-space: pre-wrap;
-                word-wrap: break-word;
-                overflow-wrap: break-word;
-            }
-            
-            .log-section {
-                height: 100px;
-                font-size: 0.65rem;
-                padding: 0.5rem;
-            }
-            
-            .mobile-file-options {
-                grid-template-columns: 1fr;
-                gap: 0.5rem;
-            }
-            
-            .file-option-btn {
-                flex-direction: row;
-                padding: 0.75rem;
-                justify-content: flex-start;
-                gap: 0.75rem;
-            }
-            
-            .file-icon {
-                font-size: 1rem;
-                margin-bottom: 0;
-            }
-            
-            .file-upload {
-                display: none;
-            }
-            
-            .input-title {
-                font-size: 0.8rem;
-            }
-            
-            .config-section h3 {
-                font-size: 0.9rem;
-            }
-            
-            .config-section .usage-note {
-                font-size: 0.7rem;
-                padding: 0.5rem;
-            }
-        }
         
         /* 隐藏类 */
         .hidden {
@@ -603,7 +617,7 @@
         <div class="header-content">
             <div style="display: flex; align-items: center;">
                 <h1 class="logo">羊毛助手</h1>
-                <span class="version">v2.0</span>
+                <span class="version">v3.0</span>
             </div>
             <div style="color: #6b7280; font-size: 0.875rem;">
                 自动解密脚本工具
@@ -1099,9 +1113,27 @@
                 // 使用时间戳强制刷新缓存
                 const timestamp = this.decryptStartTime || Date.now();
                 
-                // 先尝试通过Raw URL获取（避免CORS问题）
+                // 方案1: 尝试通过Raw URL获取（CDN方式）
+                if (await this.tryGetResultFromRaw(timestamp)) return;
+                
+                // 方案2: 尝试GitHub API方式
+                if (await this.tryGetResultFromAPI(timestamp)) return;
+                
+                // 方案3: 尝试不同的Raw URL格式
+                if (await this.tryAlternativeRawUrls(timestamp)) return;
+                
+                // 方案4: 尝试使用代理
+                if (await this.tryWithProxy(timestamp)) return;
+                
+                // 方案5: 提供手动方案
+                this.showManualOptions();
+            },
+            
+            async tryGetResultFromRaw(timestamp) {
                 try {
                     const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js?t=${timestamp}&cache=${Math.random()}`;
+                    this.addLog('尝试Raw URL方式...', 'info');
+                    
                     const response = await fetch(rawUrl, {
                         cache: 'no-cache',
                         headers: {
@@ -1113,20 +1145,26 @@
                     
                     if (response.ok) {
                         const content = await response.text();
-                        if (content && content.length > 0) {
+                        if (content && content.trim().length > 10) {
                             this.displayResult(content);
-                            this.addLog('解密成功！', 'success');
+                            this.addLog('Raw URL获取成功！', 'success');
                             this.showToast('解密成功！');
                             document.getElementById('progress-bar').style.width = '0%';
-                            return;
+                            return true;
                         }
                     }
-                } catch (e) {
-                    this.addLog('Raw URL 访问失败，尝试 API 方式...', 'warning');
+                    
+                    this.addLog(`Raw URL响应状态: ${response.status}`, 'warning');
+                    return false;
+                } catch (error) {
+                    this.addLog('Raw URL访问失败: ' + error.message, 'warning');
+                    return false;
                 }
-                
-                // 使用API方式
+            },
+            
+            async tryGetResultFromAPI(timestamp) {
                 try {
+                    this.addLog('尝试GitHub API方式...', 'info');
                     const apiUrl = `https://api.github.com/repos/${this.repoName}/contents/output.js`;
                     const response = await fetch(`${apiUrl}?ref=main&t=${timestamp}&cache=${Math.random()}`, {
                         headers: {
@@ -1140,22 +1178,162 @@
                         const data = await response.json();
                         const content = atob(data.content.replace(/\n/g, ''));
                         
-                        if (content && content.length > 0) {
+                        if (content && content.trim().length > 10) {
                             this.displayResult(content);
-                            this.addLog('解密成功！', 'success');
+                            this.addLog('GitHub API获取成功！', 'success');
                             this.showToast('解密成功！');
                             document.getElementById('progress-bar').style.width = '0%';
-                            return;
+                            return true;
                         }
                     }
+                    
+                    this.addLog(`API响应状态: ${response.status}`, 'warning');
+                    return false;
                 } catch (error) {
-                    this.addLog('获取失败: ' + error.message, 'error');
+                    this.addLog('GitHub API访问失败: ' + error.message, 'warning');
+                    return false;
+                }
+            },
+            
+            async tryAlternativeRawUrls(timestamp) {
+                const [owner, repo] = this.repoName.split('/');
+                const alternatives = [
+                    `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/output.js`,
+                    `https://cdn.jsdelivr.net/gh/${owner}/${repo}/output.js`,
+                    `https://gitcdn.xyz/repo/${owner}/${repo}/main/output.js`
+                ];
+                
+                for (const url of alternatives) {
+                    try {
+                        this.addLog(`尝试备用URL: ${url.split('/')[2]}`, 'info');
+                        const response = await fetch(`${url}?t=${timestamp}`, {
+                            cache: 'no-cache'
+                        });
+                        
+                        if (response.ok) {
+                            const content = await response.text();
+                            if (content && content.trim().length > 10) {
+                                this.displayResult(content);
+                                this.addLog('备用URL获取成功！', 'success');
+                                this.showToast('解密成功！');
+                                document.getElementById('progress-bar').style.width = '0%';
+                                return true;
+                            }
+                        }
+                    } catch (error) {
+                        continue;
+                    }
                 }
                 
-                // 如果都失败了，提供手动方案
+                this.addLog('所有备用URL都失败', 'warning');
+                return false;
+            },
+            
+            async tryWithProxy(timestamp) {
+                const proxies = [
+                    'https://api.allorigins.win/raw?url=',
+                    'https://corsproxy.io/?'
+                ];
+                
+                const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js?t=${timestamp}`;
+                
+                for (const proxy of proxies) {
+                    try {
+                        this.addLog(`尝试代理: ${proxy.split('/')[2]}`, 'info');
+                        const response = await fetch(proxy + encodeURIComponent(rawUrl));
+                        
+                        if (response.ok) {
+                            const content = await response.text();
+                            if (content && content.trim().length > 10) {
+                                this.displayResult(content);
+                                this.addLog('代理获取成功！', 'success');
+                                this.showToast('解密成功！');
+                                document.getElementById('progress-bar').style.width = '0%';
+                                return true;
+                            }
+                        }
+                    } catch (error) {
+                        continue;
+                    }
+                }
+                
+                this.addLog('代理方式也失败', 'warning');
+                return false;
+            },
+            
+            showManualOptions() {
                 const directUrl = `https://github.com/${this.repoName}/blob/main/output.js`;
-                this.displayResult(`// ❌ 自动获取失败\n// \n// 请手动访问：\n// ${directUrl}\n// \n// 然后复制解密后的代码到输入框，点击"复制结果"按钮`);
+                const rawUrl = `https://raw.githubusercontent.com/${this.repoName}/main/output.js`;
+                
+                this.displayResult(`// ⚠️ 网络获取失败，请手动操作
+//
+// 方案1 - 直接访问GitHub:
+// ${directUrl}
+//
+// 方案2 - 访问Raw文件:
+// ${rawUrl}
+//
+// 方案3 - 检查Actions状态:
+// https://github.com/${this.repoName}/actions
+//
+// 操作步骤:
+// 1. 点击上方链接查看解密结果
+// 2. 复制解密后的代码
+// 3. 粘贴到输入框
+// 4. 点击"复制结果"按钮
+//
+// 如果output.js不存在，请检查Actions是否执行成功`);
+                
                 this.showToast('请手动获取结果', 'warning');
+                this.addLog('已提供手动获取方案', 'info');
+                
+                // 显示交互式提示
+                this.showInteractiveHelp();
+            },
+            
+            showInteractiveHelp() {
+                const toast = document.getElementById('toast');
+                toast.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; max-width: 300px;">
+                        <div style="font-weight: bold;">🔧 网络问题解决方案</div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button onclick="window.open('https://github.com/${this.repoName}/blob/main/output.js', '_blank')" 
+                                    style="flex: 1; background: #4f46e5; color: white; border: none; 
+                                           padding: 0.5rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
+                                查看结果
+                            </button>
+                            <button onclick="window.open('https://github.com/${this.repoName}/actions', '_blank')" 
+                                    style="flex: 1; background: #059669; color: white; border: none; 
+                                           padding: 0.5rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
+                                检查Actions
+                            </button>
+                        </div>
+                        <div style="font-size: 0.75rem; color: #a1a1aa; text-align: center;">
+                            复制结果后粘贴到输入框即可
+                        </div>
+                        <button onclick="app.retryGetResult()" 
+                                style="background: #dc2626; color: white; border: none; 
+                                       padding: 0.5rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
+                            重试获取
+                        </button>
+                    </div>
+                `;
+                toast.className = 'toast show';
+                
+                // 延长显示时间
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    toast.innerHTML = '';
+                }, 20000);
+            },
+            
+            async retryGetResult() {
+                // 关闭提示
+                const toast = document.getElementById('toast');
+                toast.classList.remove('show');
+                
+                this.addLog('用户手动重试获取结果...', 'info');
+                await this.getResult();
             },
             
             async getResultViaRawUrl() {
