@@ -1,4 +1,4 @@
-//Fri May 30 2025 02:10:24 GMT+0000 (Coordinated Universal Time)
+//Fri May 30 2025 04:01:57 GMT+0000 (Coordinated Universal Time)
 //解密脚本在此
 var encode_version = "jsjiami.com.v5";
 if (typeof $rocket !== "undefined") {
