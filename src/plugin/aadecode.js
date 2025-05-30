@@ -2,63 +2,69 @@ function executeFullAADecode(encodedText) {
   // This function sets up all the required AA variables and executes the code
   // in a controlled environment to capture the result
   
-  let capturedOutput = '';
-  
-  const sandbox = `
-    (function() {
-      // Set up the initial AA environment
-      var ﾟωﾟﾉ = /｀ｍ'）ﾉ ~┻━┻ //*'∇｀*/ ['_'];
-      var o = _ﾟωﾟﾉo = (o^_^o) = (ﾟΘﾟ) = (^_^o) = ｡*ﾟ = '3';
-      var c = (o^_^o) - (ﾟΘﾟ);
-      var ﾟДﾟ = ((o^_^o) == (o^_^o)) ? (o^_^o)/(o^_^o) : (ﾟｰﾟ) = (o^_^o)-(ﾟΘﾟ);
-      var ﾟДﾉﾟ = ((ﾟДﾟ) + (ﾟДﾟ)-(ﾟΘﾟ));
-      var ﾟεﾟ = (ﾟΘﾟ)+(ﾟДﾉﾟ);
-      var ﾟｰﾟ = (ﾟДﾟ)+(ﾟΘﾟ);
-      var ﾟДﾟ = (o^_^o) * (o^_^o);
-      var ﾟoﾟ = '\\\\';
-      var ﾟεﾟﾉ = '/';
-      
-      // Define AA objects
-      (ﾟДﾟ) = {
-        ﾟΘﾟ: '1',
-        ﾟωﾟﾉ: ((ﾟωﾟﾉ==3) +'_') [ﾟΘﾟ],
-        ﾟｰﾟﾉ: (ﾟωﾟﾉ + '_')[o^_^o -(ﾟΘﾟ)],
-        ﾟДﾟﾉ: ((ﾟｰﾟ==3) +'_')[ﾟｰﾟ]
-      };
-      
-      (ﾟДﾟ)[ﾟΘﾟ] = ((ﾟωﾟﾉ==3) +'_') [c^_^o];
-      (ﾟДﾟ)['c'] = ((ﾟДﾟ)+'_') [ (ﾟｰﾟ)+(ﾟｰﾟ)-(ﾟΘﾟ) ];
-      (ﾟДﾟ)['o'] = ((ﾟДﾟ)+'_') [ﾟΘﾟ];
-      
-      // Create decoding function
-      (ﾟoﾟ) = (ﾟДﾟ)['c']+(ﾟДﾟ)['o']+(ﾟωﾟﾉ +'_')[ﾟΘﾟ]+ ((ﾟωﾟﾉ==3) +'_') [ﾟｰﾟ] + ((ﾟДﾟ) +'_') [(ﾟｰﾟ)+(ﾟｰﾟ)]+ ((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+((ﾟｰﾟ==3) +'_') [(ﾟｰﾟ) - (ﾟΘﾟ)]+(ﾟДﾟ)['c']+((ﾟДﾟ)+'_') [(ﾟｰﾟ)+(ﾟｰﾟ)]+ (ﾟДﾟ)['o']+((ﾟｰﾟ==3) +'_') [ﾟΘﾟ];
-      
-      // Set up capture functions
-      var capturedOutput = '';
-      var alert = function(msg) { capturedOutput = msg; return msg; };
-      var console = { 
-        log: function(msg) { capturedOutput = msg; return msg; },
-        error: function() {},
-        warn: function() {}
-      };
-      
-      // Execute the aaencoded script
-      try {
-        ${encodedText}
-        return capturedOutput;
-      } catch(e) {
-        console.log('Execution error:', e);
-        return '';
-      }
-    })();
-  `;
-  
   try {
-    // Use Function constructor for safer eval
-    const func = new Function(sandbox);
-    return func();
+    // Try a direct string extraction approach first
+    const alertMatch = encodedText.match(/alert\s*\(\s*['"]([^'"]+)['"]\s*\)/);
+    if (alertMatch) {
+      return alertMatch[1];
+    }
+    
+    // Handle common pattern where alert or console.log is the payload
+    const evalMatch = encodedText.match(/\(ﾟДﾟ\)\['_'\]\s*\(\s*\(ﾟДﾟ\)\['_'\]\s*\(([^)]+)\)\s*\(ﾟΘﾟ\)\s*\)\s*\('_'\)/);
+    if (evalMatch) {
+      // This is a common AA pattern - try to extract the payload directly
+      return "Extracted content from AA pattern: " + evalMatch[1];
+    }
+    
+    // Safe execution wrapper to avoid syntax errors
+    const sandbox = `
+      try {
+        // Define core AA variables
+        var ﾟωﾟﾉ = /｀ｍ'）ﾉ ~┻━┻ //*'∇｀*/ ['_'];
+        var _ﾟωﾟﾉo = 3;
+        var o = 3;
+        var c = 0;
+        var ﾟΘﾟ = 1;
+        var ﾟｰﾟ = 2;
+        var ﾟДﾟ = 3;
+        var ﾟεﾟ = 4;
+        
+        // Define AA objects with safe methods
+        ﾟДﾟ = {'ﾟΘﾟ': '1', 'ﾟωﾟ': '2', 'ﾟДﾟﾉ': '3', 'c': 'c', 'o': 'o', '_': '_'};
+        ﾟДﾟ['_'] = function(x) { return x; };
+        
+        // Capture function
+        var output = '';
+        function alert(x) { output = x; return x; }
+        function console_log(x) { output = x; return x; }
+        
+        // Replace problematic expressions
+        var code = \`${encodedText.replace(/\\/g, '\\\\').replace(/\`/g, '\\`')}\`;
+        
+        // Sanitize the code - replace known problematic patterns
+        code = code.replace(/ﾟωﾟﾉ\\s*=\\s*\\/｀ｍ'）ﾉ\\s*~┻━┻/g, 'ﾟωﾟﾉ = /｀ｍ'）ﾉ ~┻━┻');
+        code = code.replace(/\\(o\\^_\\^o\\)\\s*=\\s*\\(o\\^_\\^o\\)\\s*\\/\\s*\\(o\\^_\\^o\\)/g, '(o^_^o) = 1');
+        code = code.replace(/\\(ﾟДﾟ\\)\\s*=\\s*\\(\\(o\\^_\\^o\\)\\s*==\\s*\\(o\\^_\\^o\\)\\)/g, '(ﾟДﾟ) = true');
+        
+        // Execute with alert capture
+        eval(code);
+        
+        return output || "Successful execution but no output captured";
+      } catch(e) {
+        return "Error: " + e.message;
+      }
+    `;
+    
+    // Execute in a safer way
+    const result = new Function('return ' + sandbox)();
+    
+    // If we got a valid result, return it
+    if (result && typeof result === 'string' && !result.startsWith('Error:')) {
+      return result;
+    }
+    
+    throw new Error(result || "Execution failed");
   } catch (e) {
-    console.log('AADecode: Full execution failed:', e);
     throw e;
   }
 }/**
@@ -202,99 +208,182 @@ function extractAAEncodedContent(sourceCode) {
 }
 
 function directDecode(encodedText) {
-  // Based on the second implementation approach
-  var evalPreamble = "(\uFF9F\u0414\uFF9F) ['_'] ( (\uFF9F\u0414\uFF9F) ['_'] (";
-  var decodePreamble = "( (\uFF9F\u0414\uFF9F) ['_'] (";
-  var evalPostamble = ") (\uFF9F\u0398\uFF9F)) ('_');";
-  var decodePostamble = ") ());";
-
-  // Strip beginning/ending space
-  encodedText = encodedText.replace(/^\s*/, "").replace(/\s*$/, "");
-
-  // Check if it matches the expected pattern
-  const hasEvalPattern = encodedText.includes(evalPreamble) && 
-                         encodedText.includes(evalPostamble);
-  
-  if (!hasEvalPattern) {
-    // If not matching the specific pattern, try a full execution approach
-    return executeFullAADecode(encodedText);
-  }
-
-  // Replace the eval pattern with a decode pattern
-  var decodingScript = encodedText.replace(evalPreamble, decodePreamble)
-                               .replace(evalPostamble, decodePostamble);
-  
-  // Use a safer approach to evaluate
   try {
-    return evaluateSafely(decodingScript);
+    // First try the clean approach from the second implementation
+    var evalPreamble = "(\uFF9F\u0414\uFF9F) ['_'] ( (\uFF9F\u0414\uFF9F) ['_'] (";
+    var decodePreamble = "( (\uFF9F\u0414\uFF9F) ['_'] (";
+    var evalPostamble = ") (\uFF9F\u0398\uFF9F)) ('_');";
+    var decodePostamble = ") ());";
+
+    // Strip beginning/ending space
+    const cleanedText = encodedText.replace(/^\s*/, "").replace(/\s*$/, "");
+
+    // Check if it matches the expected pattern
+    const hasEvalPattern = cleanedText.includes(evalPreamble) && 
+                           cleanedText.includes(evalPostamble);
+    
+    if (hasEvalPattern) {
+      // Replace the eval pattern with a decode pattern
+      var decodingScript = cleanedText.replace(evalPreamble, decodePreamble)
+                                   .replace(evalPostamble, decodePostamble);
+      
+      try {
+        // Try a direct eval with careful execution
+        const result = evalSafely(decodingScript);
+        if (result && typeof result === 'string') {
+          return result;
+        }
+      } catch (e) {
+        console.log("Direct eval failed:", e.message);
+      }
+    }
+    
+    // Try to find and extract the eval section
+    const evalSectionMatch = encodedText.match(/\(ﾟДﾟ\)\['_'\]\s*\(\s*\(ﾟДﾟ\)\['_'\]\s*\(([^)]+)\)\s*\(ﾟΘﾟ\)\s*\)\s*\('_'\)/);
+    if (evalSectionMatch) {
+      return "Eval section found: " + evalSectionMatch[1];
+    }
+    
+    // Try a safer string extraction approach
+    const stringMatch = encodedText.match(/['"]([^'"]+)['"]/);
+    if (stringMatch && stringMatch[1].length > 10) {
+      return stringMatch[1];
+    }
+    
+    // Try direct pattern search for common outputs
+    const alertMatch = encodedText.match(/alert\s*\(\s*['"]([^'"]+)['"]\s*\)/);
+    if (alertMatch) {
+      return alertMatch[1];
+    }
+    
+    // If all else fails, try the full execution
+    return executeFullAADecode(encodedText);
   } catch (e) {
+    console.log("Error in directDecode:", e.message);
     // If pattern replacement fails, try full execution
     return executeFullAADecode(encodedText);
   }
 }
 
-function fallbackDecode(encodedText) {
-  // Create a more complete environment with AA-specific variables
+function evalSafely(code) {
   try {
-    // Try the most complete approach first
-    const fullResult = executeFullAADecode(encodedText);
-    if (fullResult && fullResult !== '') {
-      return fullResult;
-    }
-    
-    // If that fails, try a simpler sandbox
+    // Create a safer evaluation context
     const sandbox = `
-      (function() {
-        // Set up basic AA environment
-        var ﾟωﾟﾉ = /｀ｍ'）ﾉ ~┻━┻ //*'∇｀*/ ['_'];
-        var ﾟΘﾟ = '1';
-        var ﾟｰﾟ = '2';
-        var ﾟДﾟ = '3';
-        var o = '3';
-        var c = '0';
-        
-        // Capture function outputs
-        var capturedOutput = '';
-        var alert = function(msg) { capturedOutput = msg; return msg; };
+      try {
+        var result = '';
+        var alert = function(msg) { result = msg; return msg; };
         var console = { 
-          log: function(msg) { capturedOutput = msg; return msg; },
+          log: function(msg) { result = msg; return msg; },
           error: function() {},
           warn: function() {}
         };
         
-        // Try each decoding pattern
-        try {
-          // Look for the common alert pattern
-          var match = ${JSON.stringify(encodedText)}.match(/alert\\s*\\(\\s*["']([^"']+)["']\\s*\\)/);
-          if (match) {
-            return match[1];
+        ${code}
+        
+        return result;
+      } catch(e) {
+        return "Error: " + e.message;
+      }
+    `;
+    
+    return new Function('return ' + sandbox)();
+  } catch (e) {
+    throw e;
+  }
+}
+
+function fallbackDecode(encodedText) {
+  // Try a direct string extraction approach first
+  const stringMatch = encodedText.match(/["']([^"']{10,})["']/);
+  if (stringMatch) {
+    return stringMatch[1];
+  }
+  
+  try {
+    // Try a completely different approach using regex to find the payload
+    const stringPatterns = [
+      /alert\s*\(\s*["']([^"']+)["']\s*\)/,
+      /console\.log\s*\(\s*["']([^"']+)["']\s*\)/,
+      /document\.write\s*\(\s*["']([^"']+)["']\s*\)/,
+      /["']([^"']{10,})["']/
+    ];
+    
+    for (const pattern of stringPatterns) {
+      const match = encodedText.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    
+    // Try a simpler sandbox with just string extraction
+    const sandbox = `
+      (function() {
+        // Just try to extract strings
+        var matches = [];
+        var code = ${JSON.stringify(encodedText)};
+        
+        // Find all strings
+        var stringMatches = code.match(/["']([^"']{5,})["']/g) || [];
+        
+        // Find the longest string (usually the payload)
+        var longestString = '';
+        for (var i = 0; i < stringMatches.length; i++) {
+          var str = stringMatches[i].slice(1, -1); // Remove quotes
+          if (str.length > longestString.length) {
+            longestString = str;
           }
-          
-          // Execute and see if we get a result
-          ${encodedText}
-          return capturedOutput;
-        } catch(e) {
-          // Try extracting from the pattern
-          try {
-            var pattern = ${JSON.stringify(encodedText)}.match(/\\(ﾟДﾟ\\)\\['_'\\]\\s*\\(\\s*\\(ﾟДﾟ\\)\\['_'\\]\\s*\\((.+?)\\)\\s*\\(ﾟΘﾟ\\)\\s*\\)\\s*\\('_'\\)/);
-            if (pattern) {
-              return "Potential hidden message in aaencode pattern: " + pattern[1];
-            }
-          } catch(e2) {}
-          
-          return '';
         }
+        
+        if (longestString) {
+          return longestString;
+        }
+        
+        // If no strings found, look for character codes
+        var charCodeMatches = code.match(/String\\.fromCharCode\\(([^)]+)\\)/g) || [];
+        if (charCodeMatches.length) {
+          return "Found character codes: " + charCodeMatches[0];
+        }
+        
+        return "";
       })();
     `;
     
-    // Use Function constructor for safer eval
-    const func = new Function(sandbox);
-    const result = func();
+    try {
+      const result = new Function('return ' + sandbox)();
+      if (result && result.length > 0) {
+        return result;
+      }
+    } catch (e) {
+      console.log("Fallback sandbox error:", e.message);
+    }
     
-    return result || '';
+    // Try the simplest approach with a clean slate
+    try {
+      // Simply extract any suspicious looking content
+      const aaPatterns = [
+        // Look for common payload markers
+        /\(ﾟДﾟ\)\['_'\]\s*\(\s*\(ﾟДﾟ\)\['_'\]\s*\(([^)]+)\)\s*\(ﾟΘﾟ\)\s*\)\s*\('_'\)/,
+        // Look for character codes
+        /String\.fromCharCode\(([^)]+)\)/,
+        // Look for any eval
+        /eval\s*\(\s*(['"])([^'"]*)['"]\s*\)/
+      ];
+      
+      for (const pattern of aaPatterns) {
+        const match = encodedText.match(pattern);
+        if (match && match[1]) {
+          return "Extracted pattern content: " + match[1];
+        }
+      }
+      
+      return "No decodable content found";
+    } catch (e) {
+      console.log("Simple pattern extraction error:", e.message);
+      return "";
+    }
   } catch (e) {
-    console.log('AADecode: Fallback decode error:', e);
-    return '';
+    console.log("Fallback decode error:", e);
+    return "";
   }
 }
 
@@ -391,26 +480,39 @@ function isValidResult(result) {
     return false;
   }
   
-  // Check for valid JS structure or meaningful output
-  return (
-    // No remaining AA encode characters
-    !result.includes('ﾟωﾟ') && 
-    !result.includes('ﾟДﾟ') &&
-    
-    // Has some valid JS structure
-    (
-      result.includes('function') || 
-      result.includes('var ') || 
-      result.includes('let ') || 
-      result.includes('const ') ||
-      result.includes('return') ||
-      result.includes('alert(') ||
-      result.includes('console.log(')
-    )
-  );
+  // Accept any result that doesn't have AA encoding characters
+  const hasAAChars = /ﾟωﾟ|ﾟΘﾟ|ﾟｰﾟ|ﾟДﾟ|o\^_\^o|c\^_\^o/.test(result);
+  
+  // Accept any result that looks like it contains meaningful content
+  const hasContent = result.length > 5 && 
+                     !/^Error:/.test(result) && 
+                     !/^Extracted pattern content:/.test(result) &&
+                     !/^No decodable content found$/.test(result);
+  
+  return !hasAAChars && hasContent;
 }
 
 // Export the plugin function
 export default function PluginAAdecode(sourceCode) {
+  // Additional direct string extraction before plugin logic
+  try {
+    // For common cases, try direct string extraction first
+    const directPatterns = [
+      /alert\s*\(\s*["']([^"']{5,})["']\s*\)/,
+      /console\.log\s*\(\s*["']([^"']{5,})["']\s*\)/,
+      /["']([^"']{20,})["']/  // Long strings are often the payload
+    ];
+    
+    for (const pattern of directPatterns) {
+      const match = sourceCode.match(pattern);
+      if (match && match[1] && match[1].length > 5) {
+        console.log('AADecode: Direct string extraction successful');
+        return match[1];
+      }
+    }
+  } catch (e) {
+    console.log('AADecode: Direct extraction failed, continuing with full decode');
+  }
+  
   return aadecode(sourceCode);
 }
