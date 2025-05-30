@@ -2,21 +2,16 @@
 // AADecode - Decode JavaScript that has been encoded with aaencode format
 
 /**
- * AADecode implementation for the decode-js framework
- * Compatible with ESM modules
- */
-
-/**
- * Detects if the input code is aaencoded
- * @param {string} code - Input code to check
- * @returns {boolean} - True if code appears to be aaencoded
+ * 检测代码是否是 aaencode 格式
+ * @param {string} code - 输入代码
+ * @returns {boolean} - 如果是 aaencode 格式则返回 true
  */
 function isAAEncoded(code) {
   if (typeof code !== 'string' || !code.trim()) {
     return false;
   }
   
-  // Common patterns in aaencoded content
+  // aaencode 内容中的常见模式
   const patterns = [
     /ﾟωﾟﾉ= \/｀ｍ'）ﾉ ~┻━┻/,
     /\(ﾟДﾟ\) \['_'\]/,
@@ -28,21 +23,21 @@ function isAAEncoded(code) {
 }
 
 /**
- * Decodes aaencoded JavaScript
- * @param {string} code - The encoded JavaScript to decode
- * @returns {string} - Decoded JavaScript code or original code if not aaencoded
+ * 解码 AAencode 格式的 JavaScript
+ * @param {string} code - 编码后的 JavaScript
+ * @returns {string} - 解码后的 JavaScript 或原始代码
  */
-export default function aadecode(code) {
-  // Skip processing if not aaencoded
+function aadecode(code) {
+  // 如果不是 aaencode 格式，跳过处理
   if (!isAAEncoded(code)) {
     return code;
   }
 
   try {
-    // Clean the code
+    // 清理代码
     const encodedText = code.replace(/\/\*'∇｀\*\//g, '').trim();
     
-    // Check if it's valid aaencoded content
+    // 检查是否是有效的 aaencode 内容
     const evalPreamble = "(ﾟДﾟ) ['_'] ( (ﾟДﾟ) ['_'] (";
     const evalPostamble = ") (ﾟΘﾟ)) ('_');";
     
@@ -52,7 +47,7 @@ export default function aadecode(code) {
       return code;
     }
     
-    // Transform for decoding
+    // 转换为解码
     const decodePreamble = "( (ﾟДﾟ) ['_'] (";
     const decodePostamble = ") ());";
     
@@ -60,7 +55,7 @@ export default function aadecode(code) {
       .replace(evalPreamble, decodePreamble)
       .replace(evalPostamble, decodePostamble);
     
-    // Use eval to decode - necessary for this specific encoding method
+    // 使用 eval 解码 - 这对于这种特定的编码方法是必要的
     // eslint-disable-next-line no-eval
     const decodedCode = eval(decodingScript);
     
@@ -68,9 +63,9 @@ export default function aadecode(code) {
     return decodedCode;
   } catch (error) {
     console.error(`AADecode 解码错误: ${error.message}`);
-    return code; // Return original code on error
+    return code; // 出错时返回原始代码
   }
 }
 
-// Export named functions for potential direct usage
-export { isAAEncoded };
+// 使插件与你的框架兼容
+export default aadecode;
