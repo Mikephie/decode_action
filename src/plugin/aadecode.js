@@ -2,7 +2,7 @@
 
 /**
  * AADecode 插件 - 解码 aaencode 格式的 JavaScript
- * 使用双重导出格式，同时支持 ESM 和 CommonJS
+ * 命名导出版本
  */
 
 /**
@@ -10,7 +10,7 @@
  * @param {string} code - 输入代码
  * @returns {string} - 解码后的代码
  */
-function aadecode(code) {
+function decode(code) {
   // 安全检查
   if (typeof code !== 'string' || !code.trim()) {
     return code;
@@ -64,16 +64,14 @@ function aadecode(code) {
   }
 }
 
-// 创建插件对象
-const plugin = {
-  plugin: aadecode
-};
+/**
+ * 创建导出对象
+ */
+const aadecode = decode;
+aadecode.plugin = decode;
+export { aadecode as plugin };
 
-// 同时导出函数和插件对象
-export default aadecode;
-export { plugin };
-
-// 兼容 CommonJS
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = plugin;
+// 同时导出一个默认函数
+export default function(code) {
+  return decode(code);
 }
