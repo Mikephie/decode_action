@@ -1,33 +1,34 @@
 // src/plugin/aadecode.js
 
 /**
- * 解码 AAencode 格式的 JavaScript
- * 此函数将 aaencode 格式的代码转换回正常的 JavaScript
- * @param {string} code - 编码后的代码
- * @returns {string} - 解码后的代码
+ * AADecode 插件 - 解码 aaencode 格式的 JavaScript
+ * 匹配框架插件格式
  */
+
 export default function(code) {
-  // 基本检查 - 如果不是字符串或为空，直接返回
+  // 安全检查
   if (typeof code !== 'string' || !code.trim()) {
     return code;
   }
   
-  // 简单检查是否可能是 aaencode 格式
-  // aaencode 格式通常包含这些特殊字符
+  // 检查是否可能是 aaencode 格式
   if (!code.includes('ﾟДﾟ') || !code.includes('_')) {
     return code;
   }
 
   try {
-    // 清理代码
-    const encodedText = code.replace(/\/\*'∇｀\*\//g, '').trim();
+    console.log('检测到 aaencode 格式，尝试解码...');
     
-    // 检查是否有 aaencode 的标志性结构
+    // 准备解码
+    const encodedText = code.trim();
+    
+    // 检查特征
     const evalPreamble = "(ﾟДﾟ) ['_'] ( (ﾟДﾟ) ['_'] (";
     const evalPostamble = ") (ﾟΘﾟ)) ('_');";
     
-    if (encodedText.lastIndexOf(evalPreamble) < 0 || 
+    if (encodedText.indexOf(evalPreamble) < 0 || 
         encodedText.lastIndexOf(evalPostamble) !== encodedText.length - evalPostamble.length) {
+      console.log('代码不是有效的 aaencode 格式');
       return code;
     }
     
@@ -41,17 +42,19 @@ export default function(code) {
     
     // 使用 eval 解码
     // eslint-disable-next-line no-eval
-    const decodedCode = eval(decodingScript);
+    const result = eval(decodingScript);
     
-    // 如果解码成功且结果不为空，返回解码后的代码
-    if (decodedCode && typeof decodedCode === 'string') {
-      return decodedCode;
+    // 检查结果
+    if (result && typeof result === 'string') {
+      console.log('AADecode 解码成功');
+      return result;
     }
     
-    // 如果解码结果为空或不是字符串，返回原始代码
+    console.log('解码结果无效，返回原始代码');
     return code;
   } catch (error) {
     // 解码失败，返回原始代码
+    console.error(`AADecode 解码错误: ${error.message}`);
     return code;
   }
 }
