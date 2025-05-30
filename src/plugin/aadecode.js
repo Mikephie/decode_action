@@ -29,12 +29,12 @@ function executeFullAADecode(encodedText, depth = 0) {
       return "";
     }
 
-    // 检查是否为 AAEncode 格式
+    // 更严格的AAEncode格式检查
     if (text.lastIndexOf(evalPreamble) < 0) {
-      throw new Error("Given code is not encoded as aaencode.");
+      throw new Error("Given code is not encoded as aaencode - missing eval preamble.");
     }
     if (text.lastIndexOf(evalPostamble) != text.length - evalPostamble.length) {
-      throw new Error("Given code is not encoded as aaencode.");
+      throw new Error("Given code is not encoded as aaencode - missing eval postamble.");
     }
 
     // 替换为解码模式
@@ -46,7 +46,7 @@ function executeFullAADecode(encodedText, depth = 0) {
     
     console.log(`AADecode: Layer ${depth + 1} decoded:`, decodedResult.substring(0, 50) + (decodedResult.length > 50 ? '...' : ''));
     
-    // 检查解密结果是否还包含 AAEncode
+    // 检查解密结果是否还包含 AAEncode（使用更严格的检测）
     if (hasAAEncodeCharacteristics(decodedResult)) {
       console.log(`AADecode: Detected nested AAEncode at layer ${depth + 1}, continuing recursion...`);
       return executeFullAADecode(decodedResult, depth + 1);
@@ -57,14 +57,14 @@ function executeFullAADecode(encodedText, depth = 0) {
   } catch (error) {
     console.log(`AADecode: Standard decode failed at layer ${depth + 1}:`, error.message);
     
-    // 如果标准解码失败，尝试备用方法
+    // 如果标准解码失败，尝试备用方法（但不递归）
     try {
       // 尝试直接字符串提取
       const alertMatch = encodedText.match(/alert\s*\(\s*['"]([^'"]+)['"]\s*\)/);
       if (alertMatch) {
         const result = alertMatch[1];
-        // 检查提取的结果是否还包含 AAEncode
-        if (hasAAEncodeCharacteristics(result)) {
+        // 只有在深度为0且结果确实是完整AAEncode时才递归
+        if (depth === 0 && hasAAEncodeCharacteristics(result)) {
           console.log(`AADecode: Extracted string contains AAEncode, recursing...`);
           return executeFullAADecode(result, depth + 1);
         }
@@ -75,7 +75,7 @@ function executeFullAADecode(encodedText, depth = 0) {
       const consoleMatch = encodedText.match(/console\.log\s*\(\s*['"]([^'"]+)['"]\s*\)/);
       if (consoleMatch) {
         const result = consoleMatch[1];
-        if (hasAAEncodeCharacteristics(result)) {
+        if (depth === 0 && hasAAEncodeCharacteristics(result)) {
           return executeFullAADecode(result, depth + 1);
         }
         return result;
@@ -85,7 +85,7 @@ function executeFullAADecode(encodedText, depth = 0) {
       const stringMatch = encodedText.match(/['"]([^'"]{5,})['"](?![^'"]*['"])/);
       if (stringMatch) {
         const result = stringMatch[1];
-        if (hasAAEncodeCharacteristics(result)) {
+        if (depth === 0 && hasAAEncodeCharacteristics(result)) {
           return executeFullAADecode(result, depth + 1);
         }
         return result;
@@ -172,23 +172,27 @@ function aadecode(sourceCode) {
 }
 
 function hasAAEncodeCharacteristics(code) {
-  // Check for aaencode signatures
-  const signatures = [
-    /ﾟωﾟﾉ\s*=\s*\/｀ｍ'）ﾉ\s*~┻━┻/, // Core pattern
-    /\(ﾟДﾟ\)\['_'\]/, // Common structure
-    /\(c\^_\^o\)/, // Character codes
-    /\(o\^_\^o\)/ // Character codes
+  if (!code || typeof code !== 'string') {
+    return false;
+  }
+  
+  // 更严格的AAEncode检测 - 需要完整的AAEncode结构
+  const strictSignatures = [
+    /ﾟωﾟﾉ\s*=\s*\/｀ｍ['']）ﾉ\s*~┻━┻/, // 开头标志
+    /\(ﾟДﾟ\)\s*\['_'\]\s*\(\s*\(ﾟДﾟ\)\s*\['_'\].*?\(ﾟΘﾟ\)\s*\)\s*\('_'\)/ // 完整执行模式
   ];
   
-  for (const pattern of signatures) {
+  // 首先检查是否有完整的AAEncode结构
+  for (const pattern of strictSignatures) {
     if (pattern.test(code)) {
       return true;
     }
   }
   
-  // Check for high density of AA characters
+  // 如果没有完整结构，检查是否只是包含AAEncode字符但不完整
   const aaChars = ['ﾟωﾟ', 'ﾟΘﾟ', 'ﾟｰﾟ', 'ﾟДﾟ', '┻━┻', '^_^'];
   let charCount = 0;
+  let hasStructuralElements = false;
   
   for (const char of aaChars) {
     if (code.includes(char)) {
@@ -196,8 +200,23 @@ function hasAAEncodeCharacteristics(code) {
     }
   }
   
-  // If we have at least 3 characteristic AA patterns, it's likely aaencoded
-  return charCount >= 3;
+  // 检查是否有结构性元素
+  const structuralPatterns = [
+    /\(ﾟДﾟ\)\['_'\]/,
+    /ﾟωﾟﾉ\s*=/,
+    /\('_'\)\s*;?\s*$/
+  ];
+  
+  for (const pattern of structuralPatterns) {
+    if (pattern.test(code)) {
+      hasStructuralElements = true;
+      break;
+    }
+  }
+  
+  // 只有同时满足字符数量和结构性元素才认为是完整的AAEncode
+  // 避免误判包含AAEncode字符但不完整的字符串
+  return charCount >= 3 && hasStructuralElements;
 }
 
 function extractAAEncodedContent(sourceCode) {
@@ -364,7 +383,7 @@ function isValidResult(result) {
   return !hasAAChars && hasContent;
 }
 
-// Export the plugin function with recursive support
+// Export the plugin function with improved recursive support
 export default function PluginAAdecode(sourceCode) {
   // Additional direct string extraction before plugin logic
   try {
@@ -372,7 +391,7 @@ export default function PluginAAdecode(sourceCode) {
     const directPatterns = [
       /alert\s*\(\s*["']([^"']{3,})["']\s*\)/,
       /console\.log\s*\(\s*["']([^"']{3,})["']\s*\)/,
-      /["']([^"']{10,})["']/  // Long strings are often the payload
+      /["']([^"']{20,})["']/  // Only consider very long strings as potential AAEncode
     ];
     
     for (const pattern of directPatterns) {
@@ -381,14 +400,15 @@ export default function PluginAAdecode(sourceCode) {
         const result = match[1];
         console.log('AADecode: Direct string extraction successful');
         
-        // 检查直接提取的结果是否还包含 AAEncode
+        // 使用更严格的检测来避免误判
         if (hasAAEncodeCharacteristics(result)) {
           console.log('AADecode: Direct extracted string contains AAEncode, recursing...');
           try {
             return executeFullAADecode(result, 0);
           } catch (e) {
             console.log('AADecode: Recursive decode of direct extraction failed:', e.message);
-            return result; // 返回原始提取结果
+            console.log('AADecode: Returning original extracted string as it may not be complete AAEncode');
+            return result; // 返回原始提取结果，可能只是包含AAEncode字符的普通字符串
           }
         }
         return result;
