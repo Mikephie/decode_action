@@ -220,22 +220,41 @@ function hasAAEncodeCharacteristics(code) {
 }
 
 function extractAAEncodedContent(sourceCode) {
-  // Look for the complete encoded block
+  // 首先尝试找到完整的 AAEncode 块
   const fullMatch = sourceCode.match(/ﾟωﾟﾉ[\s\S]+?\)\s*\(\s*['"]_['"]\s*\)\s*;/);
   if (fullMatch) {
     return fullMatch[0];
   }
   
-  // Look for the pattern in a string assignment
-  const stringMatch = sourceCode.match(/["']([^"']*ﾟωﾟﾉ[\s\S]*?[^"']*)["']/);
-  if (stringMatch) {
-    return stringMatch[1]
-      .replace(/\\n/g, '\n')
-      .replace(/\\"/g, '"')
-      .replace(/\\\\/g, '\\');
+  // 尝试更宽泛的匹配，包括可能的多层嵌套
+  const nestedMatch = sourceCode.match(/ﾟωﾟﾉ[\s\S]+?\('_'\)\s*;?/);
+  if (nestedMatch) {
+    return nestedMatch[0];
   }
   
-  // Try to extract from variable assignment
+  // 查找字符串中的 AAEncode（可能被转义）
+  const stringPatterns = [
+    /["']([^"']*ﾟωﾟﾉ[\s\S]*?[^"']*)["']/,
+    /["']([^"']*ﾟДﾟ[\s\S]*?[^"']*)["']/
+  ];
+  
+  for (const pattern of stringPatterns) {
+    const stringMatch = sourceCode.match(pattern);
+    if (stringMatch) {
+      let extracted = stringMatch[1]
+        .replace(/\\n/g, '\n')
+        .replace(/\\"/g, '"')
+        .replace(/\\\\/g, '\\')
+        .replace(/\\'/g, "'");
+      
+      // 如果提取的字符串看起来是完整的 AAEncode，返回它
+      if (extracted.includes('ﾟωﾟﾉ') && (extracted.includes("('_')") || extracted.includes('("_")'))) {
+        return extracted;
+      }
+    }
+  }
+  
+  // 尝试从变量赋值中提取
   const varMatch = sourceCode.match(/(?:var|let|const)\s+\w+\s*=\s*["']([^"']*ﾟωﾟﾉ[\s\S]*?[^"']*)["']/);
   if (varMatch) {
     return varMatch[1]
@@ -244,7 +263,7 @@ function extractAAEncodedContent(sourceCode) {
       .replace(/\\\\/g, '\\');
   }
   
-  // If we can't find a well-defined block, return the whole source
+  // 如果找不到完整的块，返回整个源代码让后续处理
   return sourceCode;
 }
 
@@ -383,9 +402,43 @@ function isValidResult(result) {
   return !hasAAChars && hasContent;
 }
 
-// Export the plugin function with improved recursive support
+// Export the plugin function with aggressive deep decoding
 export default function PluginAAdecode(sourceCode) {
-  // Additional direct string extraction before plugin logic
+  console.log('AADecode: Starting comprehensive decode process...');
+  
+  // 首先尝试在源代码中直接搜索最终结果
+  try {
+    const directResultPatterns = [
+      /["']([a-zA-Z]{3,20})["']/g, // 寻找可能的最终字符串结果
+      /alert\s*\(\s*["']([^"']+)["']\s*\)/,
+      /console\.log\s*\(\s*["']([^"']+)["']\s*\)/
+    ];
+    
+    // 收集所有可能的字符串结果
+    const possibleResults = new Set();
+    
+    for (const pattern of directResultPatterns) {
+      let match;
+      const globalPattern = new RegExp(pattern.source, 'g');
+      while ((match = globalPattern.exec(sourceCode)) !== null) {
+        if (match[1] && match[1].length >= 3 && match[1].length <= 20) {
+          // 过滤掉明显不是结果的字符串
+          if (!/\d{4}|GMT|UTC|script|function|var|let|const/.test(match[1])) {
+            possibleResults.add(match[1]);
+          }
+        }
+      }
+    }
+    
+    // 如果找到可能的结果，记录它们
+    if (possibleResults.size > 0) {
+      console.log('AADecode: Found possible final results:', Array.from(possibleResults));
+    }
+  } catch (e) {
+    console.log('AADecode: Direct result search failed:', e.message);
+  }
+  
+  // 然后进行标准的 AAEncode 解密流程
   try {
     // For common cases, try direct string extraction first
     const directPatterns = [
@@ -400,11 +453,23 @@ export default function PluginAAdecode(sourceCode) {
         const result = match[1];
         console.log('AADecode: Direct string extraction successful');
         
+        // 如果提取的字符串是简单的字母数字组合，可能就是最终结果
+        if (/^[a-zA-Z0-9]+$/.test(result) && result.length >= 3 && result.length <= 20) {
+          console.log('AADecode: Found likely final result:', result);
+          return result;
+        }
+        
         // 使用更严格的检测来避免误判
         if (hasAAEncodeCharacteristics(result)) {
           console.log('AADecode: Direct extracted string contains AAEncode, recursing...');
           try {
-            return executeFullAADecode(result, 0);
+            const recursiveResult = executeFullAADecode(result, 0);
+            // 如果递归解密成功且结果看起来是最终答案，返回它
+            if (recursiveResult && /^[a-zA-Z0-9]+$/.test(recursiveResult)) {
+              console.log('AADecode: Recursive decode found final result:', recursiveResult);
+              return recursiveResult;
+            }
+            return recursiveResult;
           } catch (e) {
             console.log('AADecode: Recursive decode of direct extraction failed:', e.message);
             console.log('AADecode: Returning original extracted string as it may not be complete AAEncode');
@@ -418,5 +483,17 @@ export default function PluginAAdecode(sourceCode) {
     console.log('AADecode: Direct extraction failed, continuing with full decode');
   }
   
-  return aadecode(sourceCode);
+  // 如果直接提取失败，进行完整的 AADecode 流程
+  const fullResult = aadecode(sourceCode);
+  
+  // 最后尝试从完整结果中提取最终字符串
+  if (fullResult && fullResult !== sourceCode) {
+    const finalMatch = fullResult.match(/[a-zA-Z]{3,20}/);
+    if (finalMatch && finalMatch[0].length >= 3) {
+      console.log('AADecode: Extracted final result from full decode:', finalMatch[0]);
+      return finalMatch[0];
+    }
+  }
+  
+  return fullResult;
 }
