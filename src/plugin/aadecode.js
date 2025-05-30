@@ -1,15 +1,11 @@
 // src/plugin/aadecode.js
 
 /**
- * AADecode 插件 - 解码 aaencode 格式的 JavaScript
- * 命名导出版本
+ * 最简版 AADecode 插件
+ * 完全专注于提供 plugin.plugin 方法
  */
 
-/**
- * 解码 aaencode 格式的 JavaScript
- * @param {string} code - 输入代码
- * @returns {string} - 解码后的代码
- */
+// 定义解码函数
 function decode(code) {
   // 安全检查
   if (typeof code !== 'string' || !code.trim()) {
@@ -64,14 +60,10 @@ function decode(code) {
   }
 }
 
-/**
- * 创建导出对象
- */
-const aadecode = decode;
-aadecode.plugin = decode;
-export { aadecode as plugin };
+// 创建并导出插件对象
+const plugin = {
+  plugin: decode
+};
 
-// 同时导出一个默认函数
-export default function(code) {
-  return decode(code);
-}
+// 导出方式 1: 作为默认导出
+export default plugin;
