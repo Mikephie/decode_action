@@ -5,8 +5,15 @@
  * to handle various forms of aaencoded JavaScript.
  */
 
-// 正确的 AADecode 解密器实现
-function executeFullAADecode(encodedText) {
+// 正确的 AADecode 解密器实现（支持递归解密）
+function executeFullAADecode(encodedText, depth = 0) {
+  const MAX_DEPTH = 10; // 防止无限递归
+  
+  if (depth >= MAX_DEPTH) {
+    console.log(`AADecode: Maximum recursion depth (${MAX_DEPTH}) reached`);
+    return encodedText;
+  }
+
   try {
     // 使用标准的 AADecode 实现
     var evalPreamble = "(\uFF9F\u0414\uFF9F) ['_'] ( (\uFF9F\u0414\uFF9F) ['_'] (";
@@ -35,29 +42,53 @@ function executeFullAADecode(encodedText) {
                              .replace(evalPostamble, decodePostamble);
 
     // 安全执行解码脚本
-    return eval(decodingScript);
+    const decodedResult = eval(decodingScript);
+    
+    console.log(`AADecode: Layer ${depth + 1} decoded:`, decodedResult.substring(0, 50) + (decodedResult.length > 50 ? '...' : ''));
+    
+    // 检查解密结果是否还包含 AAEncode
+    if (hasAAEncodeCharacteristics(decodedResult)) {
+      console.log(`AADecode: Detected nested AAEncode at layer ${depth + 1}, continuing recursion...`);
+      return executeFullAADecode(decodedResult, depth + 1);
+    }
+    
+    return decodedResult;
 
   } catch (error) {
-    console.log('AADecode: Standard decode failed:', error.message);
+    console.log(`AADecode: Standard decode failed at layer ${depth + 1}:`, error.message);
     
     // 如果标准解码失败，尝试备用方法
     try {
       // 尝试直接字符串提取
       const alertMatch = encodedText.match(/alert\s*\(\s*['"]([^'"]+)['"]\s*\)/);
       if (alertMatch) {
-        return alertMatch[1];
+        const result = alertMatch[1];
+        // 检查提取的结果是否还包含 AAEncode
+        if (hasAAEncodeCharacteristics(result)) {
+          console.log(`AADecode: Extracted string contains AAEncode, recursing...`);
+          return executeFullAADecode(result, depth + 1);
+        }
+        return result;
       }
       
       // 尝试其他常见模式
       const consoleMatch = encodedText.match(/console\.log\s*\(\s*['"]([^'"]+)['"]\s*\)/);
       if (consoleMatch) {
-        return consoleMatch[1];
+        const result = consoleMatch[1];
+        if (hasAAEncodeCharacteristics(result)) {
+          return executeFullAADecode(result, depth + 1);
+        }
+        return result;
       }
 
       // 尝试通用字符串提取
       const stringMatch = encodedText.match(/['"]([^'"]{5,})['"](?![^'"]*['"])/);
       if (stringMatch) {
-        return stringMatch[1];
+        const result = stringMatch[1];
+        if (hasAAEncodeCharacteristics(result)) {
+          return executeFullAADecode(result, depth + 1);
+        }
+        return result;
       }
 
       throw new Error("No fallback methods successful");
@@ -74,7 +105,7 @@ function aadecode(sourceCode) {
     return sourceCode;
   }
 
-  console.log('AADecode: Detected aaencode, starting decoding...');
+  console.log('AADecode: Detected aaencode, starting recursive decoding...');
   
   try {
     // Extract the encoded content
@@ -86,16 +117,16 @@ function aadecode(sourceCode) {
     
     console.log('AADecode: Extracted content of length:', aaencodedContent.length);
     
-    // 使用正确的 AADecode 实现
+    // 使用递归 AADecode 实现
     try {
-      console.log('AADecode: Trying standard AADecode method...');
-      const decoded = executeFullAADecode(aaencodedContent);
+      console.log('AADecode: Starting recursive AADecode method...');
+      const decoded = executeFullAADecode(aaencodedContent, 0);
       if (decoded && isValidResult(decoded)) {
-        console.log('AADecode: Standard decode successful:', decoded);
+        console.log('AADecode: Recursive decode successful, final result:', decoded);
         return decoded;
       }
     } catch (e) {
-      console.log('AADecode: Standard decode failed:', e.message);
+      console.log('AADecode: Recursive decode failed:', e.message);
     }
     
     // Try direct decode method as fallback
@@ -104,6 +135,11 @@ function aadecode(sourceCode) {
       const decoded = directDecode(aaencodedContent);
       if (decoded && isValidResult(decoded)) {
         console.log('AADecode: Direct decode successful');
+        // 检查直接解码结果是否还包含 AAEncode
+        if (hasAAEncodeCharacteristics(decoded)) {
+          console.log('AADecode: Direct decode result contains AAEncode, recursing...');
+          return executeFullAADecode(decoded, 0);
+        }
         return decoded;
       }
     } catch (e) {
@@ -116,6 +152,11 @@ function aadecode(sourceCode) {
       const decoded = fallbackDecode(aaencodedContent);
       if (decoded && isValidResult(decoded)) {
         console.log('AADecode: Fallback decode successful');
+        // 检查备用解码结果是否还包含 AAEncode
+        if (hasAAEncodeCharacteristics(decoded)) {
+          console.log('AADecode: Fallback decode result contains AAEncode, recursing...');
+          return executeFullAADecode(decoded, 0);
+        }
         return decoded;
       }
     } catch (e) {
@@ -190,29 +231,42 @@ function extractAAEncodedContent(sourceCode) {
 
 function directDecode(encodedText) {
   try {
-    // 尝试使用标准 AADecode 方法
-    return executeFullAADecode(encodedText);
+    // 尝试使用递归 AADecode 方法
+    return executeFullAADecode(encodedText, 0);
   } catch (e) {
-    console.log("Direct decode using standard method failed:", e.message);
+    console.log("Direct decode using recursive method failed:", e.message);
     
     // 尝试备用方法
     try {
       // Try direct pattern search for common outputs
       const alertMatch = encodedText.match(/alert\s*\(\s*['"]([^'"]+)['"]\s*\)/);
       if (alertMatch) {
-        return alertMatch[1];
+        const result = alertMatch[1];
+        // 检查提取的结果是否还包含 AAEncode
+        if (hasAAEncodeCharacteristics(result)) {
+          return executeFullAADecode(result, 0);
+        }
+        return result;
       }
       
       // Try console.log pattern
       const consoleMatch = encodedText.match(/console\.log\s*\(\s*['"]([^'"]+)['"]\s*\)/);
       if (consoleMatch) {
-        return consoleMatch[1];
+        const result = consoleMatch[1];
+        if (hasAAEncodeCharacteristics(result)) {
+          return executeFullAADecode(result, 0);
+        }
+        return result;
       }
       
       // Try document.write pattern
       const docWriteMatch = encodedText.match(/document\.write\s*\(\s*['"]([^'"]+)['"]\s*\)/);
       if (docWriteMatch) {
-        return docWriteMatch[1];
+        const result = docWriteMatch[1];
+        if (hasAAEncodeCharacteristics(result)) {
+          return executeFullAADecode(result, 0);
+        }
+        return result;
       }
       
       // Try to find and extract the eval section
@@ -224,7 +278,11 @@ function directDecode(encodedText) {
       // Try a safer string extraction approach
       const stringMatch = encodedText.match(/['"]([^'"]+)['"]/);
       if (stringMatch && stringMatch[1].length > 5) {
-        return stringMatch[1];
+        const result = stringMatch[1];
+        if (hasAAEncodeCharacteristics(result)) {
+          return executeFullAADecode(result, 0);
+        }
+        return result;
       }
       
       throw new Error("All direct decode methods failed");
@@ -238,7 +296,16 @@ function fallbackDecode(encodedText) {
   // Try a direct string extraction approach first
   const stringMatch = encodedText.match(/["']([^"']{5,})["']/);
   if (stringMatch) {
-    return stringMatch[1];
+    const result = stringMatch[1];
+    // 检查提取的结果是否还包含 AAEncode
+    if (hasAAEncodeCharacteristics(result)) {
+      try {
+        return executeFullAADecode(result, 0);
+      } catch (e) {
+        console.log("Recursive decode of extracted string failed:", e.message);
+      }
+    }
+    return result;
   }
   
   try {
@@ -253,7 +320,17 @@ function fallbackDecode(encodedText) {
     for (const pattern of stringPatterns) {
       const match = encodedText.match(pattern);
       if (match && match[1]) {
-        return match[1];
+        const result = match[1];
+        // 检查每个匹配结果是否还包含 AAEncode
+        if (hasAAEncodeCharacteristics(result)) {
+          try {
+            return executeFullAADecode(result, 0);
+          } catch (e) {
+            console.log("Recursive decode of pattern match failed:", e.message);
+            continue; // 尝试下一个模式
+          }
+        }
+        return result;
       }
     }
     
@@ -287,7 +364,7 @@ function isValidResult(result) {
   return !hasAAChars && hasContent;
 }
 
-// Export the plugin function
+// Export the plugin function with recursive support
 export default function PluginAAdecode(sourceCode) {
   // Additional direct string extraction before plugin logic
   try {
@@ -301,8 +378,20 @@ export default function PluginAAdecode(sourceCode) {
     for (const pattern of directPatterns) {
       const match = sourceCode.match(pattern);
       if (match && match[1] && match[1].length > 2) {
+        const result = match[1];
         console.log('AADecode: Direct string extraction successful');
-        return match[1];
+        
+        // 检查直接提取的结果是否还包含 AAEncode
+        if (hasAAEncodeCharacteristics(result)) {
+          console.log('AADecode: Direct extracted string contains AAEncode, recursing...');
+          try {
+            return executeFullAADecode(result, 0);
+          } catch (e) {
+            console.log('AADecode: Recursive decode of direct extraction failed:', e.message);
+            return result; // 返回原始提取结果
+          }
+        }
+        return result;
       }
     }
   } catch (e) {
