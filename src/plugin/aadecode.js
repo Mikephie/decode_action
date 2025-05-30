@@ -1,4 +1,67 @@
-/**
+function executeFullAADecode(encodedText) {
+  // This function sets up all the required AA variables and executes the code
+  // in a controlled environment to capture the result
+  
+  let capturedOutput = '';
+  
+  const sandbox = `
+    (function() {
+      // Set up the initial AA environment
+      var ﾟωﾟﾉ = /｀ｍ'）ﾉ ~┻━┻ //*'∇｀*/ ['_'];
+      var o = _ﾟωﾟﾉo = (o^_^o) = (ﾟΘﾟ) = (^_^o) = ｡*ﾟ = '3';
+      var c = (o^_^o) - (ﾟΘﾟ);
+      var ﾟДﾟ = ((o^_^o) == (o^_^o)) ? (o^_^o)/(o^_^o) : (ﾟｰﾟ) = (o^_^o)-(ﾟΘﾟ);
+      var ﾟДﾉﾟ = ((ﾟДﾟ) + (ﾟДﾟ)-(ﾟΘﾟ));
+      var ﾟεﾟ = (ﾟΘﾟ)+(ﾟДﾉﾟ);
+      var ﾟｰﾟ = (ﾟДﾟ)+(ﾟΘﾟ);
+      var ﾟДﾟ = (o^_^o) * (o^_^o);
+      var ﾟoﾟ = '\\\\';
+      var ﾟεﾟﾉ = '/';
+      
+      // Define AA objects
+      (ﾟДﾟ) = {
+        ﾟΘﾟ: '1',
+        ﾟωﾟﾉ: ((ﾟωﾟﾉ==3) +'_') [ﾟΘﾟ],
+        ﾟｰﾟﾉ: (ﾟωﾟﾉ + '_')[o^_^o -(ﾟΘﾟ)],
+        ﾟДﾟﾉ: ((ﾟｰﾟ==3) +'_')[ﾟｰﾟ]
+      };
+      
+      (ﾟДﾟ)[ﾟΘﾟ] = ((ﾟωﾟﾉ==3) +'_') [c^_^o];
+      (ﾟДﾟ)['c'] = ((ﾟДﾟ)+'_') [ (ﾟｰﾟ)+(ﾟｰﾟ)-(ﾟΘﾟ) ];
+      (ﾟДﾟ)['o'] = ((ﾟДﾟ)+'_') [ﾟΘﾟ];
+      
+      // Create decoding function
+      (ﾟoﾟ) = (ﾟДﾟ)['c']+(ﾟДﾟ)['o']+(ﾟωﾟﾉ +'_')[ﾟΘﾟ]+ ((ﾟωﾟﾉ==3) +'_') [ﾟｰﾟ] + ((ﾟДﾟ) +'_') [(ﾟｰﾟ)+(ﾟｰﾟ)]+ ((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+((ﾟｰﾟ==3) +'_') [(ﾟｰﾟ) - (ﾟΘﾟ)]+(ﾟДﾟ)['c']+((ﾟДﾟ)+'_') [(ﾟｰﾟ)+(ﾟｰﾟ)]+ (ﾟДﾟ)['o']+((ﾟｰﾟ==3) +'_') [ﾟΘﾟ];
+      
+      // Set up capture functions
+      var capturedOutput = '';
+      var alert = function(msg) { capturedOutput = msg; return msg; };
+      var console = { 
+        log: function(msg) { capturedOutput = msg; return msg; },
+        error: function() {},
+        warn: function() {}
+      };
+      
+      // Execute the aaencoded script
+      try {
+        ${encodedText}
+        return capturedOutput;
+      } catch(e) {
+        console.log('Execution error:', e);
+        return '';
+      }
+    })();
+  `;
+  
+  try {
+    // Use Function constructor for safer eval
+    const func = new Function(sandbox);
+    return func();
+  } catch (e) {
+    console.log('AADecode: Full execution failed:', e);
+    throw e;
+  }
+}/**
  * AADecode Plugin - Decodes JavaScript obfuscated with aaencode
  * 
  * This plugin combines robust detection with efficient decoding methods
@@ -24,8 +87,21 @@ function aadecode(sourceCode) {
     
     console.log('AADecode: Extracted content of length:', aaencodedContent.length);
     
-    // Try the more reliable direct decode method first
+    // Try the most reliable full execution method first
     try {
+      console.log('AADecode: Trying full execution method...');
+      const decoded = executeFullAADecode(aaencodedContent);
+      if (decoded && isValidResult(decoded)) {
+        console.log('AADecode: Full execution successful');
+        return decoded;
+      }
+    } catch (e) {
+      console.log('AADecode: Full execution failed:', e.message);
+    }
+    
+    // Try direct decode method next
+    try {
+      console.log('AADecode: Trying direct decode method...');
       const decoded = directDecode(aaencodedContent);
       if (decoded && isValidResult(decoded)) {
         console.log('AADecode: Direct decode successful');
@@ -35,8 +111,9 @@ function aadecode(sourceCode) {
       console.log('AADecode: Direct decode failed:', e.message);
     }
     
-    // Try fallback methods if direct decode fails
+    // Try fallback methods if previous methods fail
     try {
+      console.log('AADecode: Trying fallback decode method...');
       const decoded = fallbackDecode(aaencodedContent);
       if (decoded && isValidResult(decoded)) {
         console.log('AADecode: Fallback decode successful');
@@ -48,6 +125,7 @@ function aadecode(sourceCode) {
     
     // Try pattern extraction as last resort
     try {
+      console.log('AADecode: Trying pattern extraction method...');
       const decoded = patternExtractDecode(aaencodedContent);
       if (decoded && isValidResult(decoded)) {
         console.log('AADecode: Pattern extraction successful');
@@ -134,12 +212,12 @@ function directDecode(encodedText) {
   encodedText = encodedText.replace(/^\s*/, "").replace(/\s*$/, "");
 
   // Check if it matches the expected pattern
-  if (encodedText.lastIndexOf(evalPreamble) < 0) {
-    throw new Error("Not matching aaencode pattern");
-  }
+  const hasEvalPattern = encodedText.includes(evalPreamble) && 
+                         encodedText.includes(evalPostamble);
   
-  if (encodedText.lastIndexOf(evalPostamble) !== encodedText.length - evalPostamble.length) {
-    throw new Error("Not matching aaencode pattern");
+  if (!hasEvalPattern) {
+    // If not matching the specific pattern, try a full execution approach
+    return executeFullAADecode(encodedText);
   }
 
   // Replace the eval pattern with a decode pattern
@@ -150,21 +228,33 @@ function directDecode(encodedText) {
   try {
     return evaluateSafely(decodingScript);
   } catch (e) {
-    throw e;
+    // If pattern replacement fails, try full execution
+    return executeFullAADecode(encodedText);
   }
 }
 
 function fallbackDecode(encodedText) {
-  // Create a sandbox environment
-  let result = '';
-  
+  // Create a more complete environment with AA-specific variables
   try {
-    // Create a safe context with capture functions
+    // Try the most complete approach first
+    const fullResult = executeFullAADecode(encodedText);
+    if (fullResult && fullResult !== '') {
+      return fullResult;
+    }
+    
+    // If that fails, try a simpler sandbox
     const sandbox = `
       (function() {
+        // Set up basic AA environment
+        var ﾟωﾟﾉ = /｀ｍ'）ﾉ ~┻━┻ //*'∇｀*/ ['_'];
+        var ﾟΘﾟ = '1';
+        var ﾟｰﾟ = '2';
+        var ﾟДﾟ = '3';
+        var o = '3';
+        var c = '0';
+        
+        // Capture function outputs
         var capturedOutput = '';
-        var window = {};
-        var document = {};
         var alert = function(msg) { capturedOutput = msg; return msg; };
         var console = { 
           log: function(msg) { capturedOutput = msg; return msg; },
@@ -172,10 +262,26 @@ function fallbackDecode(encodedText) {
           warn: function() {}
         };
         
+        // Try each decoding pattern
         try {
+          // Look for the common alert pattern
+          var match = ${JSON.stringify(encodedText)}.match(/alert\\s*\\(\\s*["']([^"']+)["']\\s*\\)/);
+          if (match) {
+            return match[1];
+          }
+          
+          // Execute and see if we get a result
           ${encodedText}
           return capturedOutput;
         } catch(e) {
+          // Try extracting from the pattern
+          try {
+            var pattern = ${JSON.stringify(encodedText)}.match(/\\(ﾟДﾟ\\)\\['_'\\]\\s*\\(\\s*\\(ﾟДﾟ\\)\\['_'\\]\\s*\\((.+?)\\)\\s*\\(ﾟΘﾟ\\)\\s*\\)\\s*\\('_'\\)/);
+            if (pattern) {
+              return "Potential hidden message in aaencode pattern: " + pattern[1];
+            }
+          } catch(e2) {}
+          
           return '';
         }
       })();
@@ -183,11 +289,12 @@ function fallbackDecode(encodedText) {
     
     // Use Function constructor for safer eval
     const func = new Function(sandbox);
-    result = func();
+    const result = func();
     
-    return result;
+    return result || '';
   } catch (e) {
-    throw e;
+    console.log('AADecode: Fallback decode error:', e);
+    return '';
   }
 }
 
