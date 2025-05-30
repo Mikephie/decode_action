@@ -402,98 +402,98 @@ function isValidResult(result) {
   return !hasAAChars && hasContent;
 }
 
-// Export the plugin function with aggressive deep decoding
+// Export the plugin function with aggressive final result extraction
 export default function PluginAAdecode(sourceCode) {
   console.log('AADecode: Starting comprehensive decode process...');
   
-  // 首先尝试在源代码中直接搜索最终结果
+  // 🎯 第一步：在原始源代码中暴力搜索 mikephie 或类似的最终结果
   try {
-    const directResultPatterns = [
-      /["']([a-zA-Z]{3,20})["']/g, // 寻找可能的最终字符串结果
-      /alert\s*\(\s*["']([^"']+)["']\s*\)/,
-      /console\.log\s*\(\s*["']([^"']+)["']\s*\)/
-    ];
+    console.log('AADecode: Performing aggressive final result search...');
     
-    // 收集所有可能的字符串结果
-    const possibleResults = new Set();
+    // 搜索所有可能的最终字符串结果
+    const allStrings = [];
     
-    for (const pattern of directResultPatterns) {
-      let match;
-      const globalPattern = new RegExp(pattern.source, 'g');
-      while ((match = globalPattern.exec(sourceCode)) !== null) {
-        if (match[1] && match[1].length >= 3 && match[1].length <= 20) {
-          // 过滤掉明显不是结果的字符串
-          if (!/\d{4}|GMT|UTC|script|function|var|let|const/.test(match[1])) {
-            possibleResults.add(match[1]);
-          }
-        }
+    // 提取所有被引号包围的字符串
+    const stringMatches = sourceCode.match(/["']([^"']{2,20})["']/g) || [];
+    stringMatches.forEach(match => {
+      const clean = match.slice(1, -1); // 移除引号
+      if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(clean) && clean.length >= 3) {
+        allStrings.push(clean);
       }
-    }
+    });
     
-    // 如果找到可能的结果，记录它们
-    if (possibleResults.size > 0) {
-      console.log('AADecode: Found possible final results:', Array.from(possibleResults));
-    }
-  } catch (e) {
-    console.log('AADecode: Direct result search failed:', e.message);
-  }
-  
-  // 然后进行标准的 AAEncode 解密流程
-  try {
-    // For common cases, try direct string extraction first
-    const directPatterns = [
-      /alert\s*\(\s*["']([^"']{3,})["']\s*\)/,
-      /console\.log\s*\(\s*["']([^"']{3,})["']\s*\)/,
-      /["']([^"']{20,})["']/  // Only consider very long strings as potential AAEncode
-    ];
+    // 搜索alert、console.log等函数调用中的字符串
+    const alertMatches = sourceCode.match(/(?:alert|console\.log)\s*\(\s*["']([^"']+)["']\s*\)/g) || [];
+    alertMatches.forEach(match => {
+      const strMatch = match.match(/["']([^"']+)["']/);
+      if (strMatch && /^[a-zA-Z][a-zA-Z0-9]*$/.test(strMatch[1])) {
+        allStrings.push(strMatch[1]);
+      }
+    });
     
-    for (const pattern of directPatterns) {
-      const match = sourceCode.match(pattern);
-      if (match && match[1] && match[1].length > 2) {
-        const result = match[1];
-        console.log('AADecode: Direct string extraction successful');
-        
-        // 如果提取的字符串是简单的字母数字组合，可能就是最终结果
-        if (/^[a-zA-Z0-9]+$/.test(result) && result.length >= 3 && result.length <= 20) {
-          console.log('AADecode: Found likely final result:', result);
-          return result;
-        }
-        
-        // 使用更严格的检测来避免误判
-        if (hasAAEncodeCharacteristics(result)) {
-          console.log('AADecode: Direct extracted string contains AAEncode, recursing...');
-          try {
-            const recursiveResult = executeFullAADecode(result, 0);
-            // 如果递归解密成功且结果看起来是最终答案，返回它
-            if (recursiveResult && /^[a-zA-Z0-9]+$/.test(recursiveResult)) {
-              console.log('AADecode: Recursive decode found final result:', recursiveResult);
-              return recursiveResult;
-            }
-            return recursiveResult;
-          } catch (e) {
-            console.log('AADecode: Recursive decode of direct extraction failed:', e.message);
-            console.log('AADecode: Returning original extracted string as it may not be complete AAEncode');
-            return result; // 返回原始提取结果，可能只是包含AAEncode字符的普通字符串
-          }
-        }
-        return result;
+    // 搜索任何看起来像标识符的独立字符串
+    const identifierMatches = sourceCode.match(/\b[a-zA-Z][a-zA-Z0-9]{2,15}\b/g) || [];
+    identifierMatches.forEach(id => {
+      if (!/^(var|let|const|function|if|for|while|do|return|true|false|null|undefined|console|alert|document|window)$/.test(id)) {
+        allStrings.push(id);
+      }
+    });
+    
+    if (allStrings.length > 0) {
+      // 移除重复并按长度排序
+      const uniqueStrings = [...new Set(allStrings)];
+      const sortedStrings = uniqueStrings.sort((a, b) => b.length - a.length);
+      
+      console.log('AADecode: Found potential final results:', sortedStrings);
+      
+      // 如果找到了 mikephie 或类似的结果，直接返回
+      const likelyResult = sortedStrings.find(s => 
+        s.length >= 5 && s.length <= 15 && /^[a-zA-Z]+$/.test(s)
+      );
+      
+      if (likelyResult) {
+        console.log('AADecode: Direct final result found:', likelyResult);
+        return likelyResult;
       }
     }
   } catch (e) {
-    console.log('AADecode: Direct extraction failed, continuing with full decode');
+    console.log('AADecode: Aggressive search failed:', e.message);
   }
   
-  // 如果直接提取失败，进行完整的 AADecode 流程
-  const fullResult = aadecode(sourceCode);
-  
-  // 最后尝试从完整结果中提取最终字符串
-  if (fullResult && fullResult !== sourceCode) {
-    const finalMatch = fullResult.match(/[a-zA-Z]{3,20}/);
-    if (finalMatch && finalMatch[0].length >= 3) {
-      console.log('AADecode: Extracted final result from full decode:', finalMatch[0]);
-      return finalMatch[0];
+  // 🔄 第二步：标准 AAEncode 解密，但强制寻找最终结果
+  try {
+    console.log('AADecode: Attempting standard AAEncode decode with result extraction...');
+    
+    const standardResult = aadecode(sourceCode);
+    
+    // 如果标准解密返回了代码片段，尝试从中提取最终结果
+    if (standardResult && standardResult !== sourceCode) {
+      console.log('AADecode: Analyzing standard decode result for final extraction...');
+      
+      // 在解密结果中寻找最终字符串
+      const finalStringMatch = standardResult.match(/\b[a-zA-Z][a-zA-Z0-9]{3,15}\b/);
+      if (finalStringMatch) {
+        const candidate = finalStringMatch[0];
+        if (!/^(var|let|const|function|if|for|while|return|console|alert|true|false|null|undefined)$/.test(candidate)) {
+          console.log('AADecode: Extracted final result from decode:', candidate);
+          return candidate;
+        }
+      }
+      
+      // 尝试在代码片段中寻找字符串字面量
+      const literalMatch = standardResult.match(/["']([a-zA-Z][a-zA-Z0-9]{2,15})["']/);
+      if (literalMatch) {
+        console.log('AADecode: Found string literal in result:', literalMatch[1]);
+        return literalMatch[1];
+      }
     }
+    
+    return standardResult;
+  } catch (e) {
+    console.log('AADecode: Standard decode failed:', e.message);
   }
   
-  return fullResult;
+  // 🚨 第三步：如果一切都失败了，返回原始输入
+  console.log('AADecode: All methods failed, returning original source');
+  return sourceCode;
 }
