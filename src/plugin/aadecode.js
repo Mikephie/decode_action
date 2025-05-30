@@ -2,62 +2,86 @@
 // Decodes JavaScript obfuscated with aaencode
 
 function aadecode(sourceCode) {
-  // Check if the code contains aaencode patterns
+  // 立即检查是否真的是 aaencode
   if (!isAAEncoded(sourceCode)) {
+    console.log('AADecode: 不是 AAEncode 编码，跳过处理');
     return sourceCode;
   }
 
   try {
-    console.log('检测到 AAEncode 编码，开始解码...');
+    console.log('AADecode: 确认是 AAEncode 编码，开始解码...');
     
     // Extract aaencoded content
     let aaencodedContent = extractAAEncodedContent(sourceCode);
     if (!aaencodedContent) {
-      console.log('无法提取 AAEncode 内容');
+      console.log('AADecode: 无法提取 AAEncode 内容');
       return sourceCode;
     }
 
+    console.log('AADecode: 提取到内容长度:', aaencodedContent.length);
+
     // Method 1: Try using Node.js VM (if available)
     const decoded = decodeWithVM(aaencodedContent);
-    if (decoded && decoded !== aaencodedContent) {
-      console.log('VM 解码成功');
+    if (decoded && decoded !== aaencodedContent && decoded !== '') {
+      console.log('AADecode: VM 解码成功');
       return decoded;
     }
 
     // Method 2: Try manual parsing
     const manualDecoded = manualDecode(aaencodedContent);
-    if (manualDecoded && manualDecoded !== aaencodedContent) {
-      console.log('手动解码成功');
+    if (manualDecoded && manualDecoded !== aaencodedContent && manualDecoded !== '') {
+      console.log('AADecode: 手动解码成功');
       return manualDecoded;
     }
 
     // Method 3: Try pattern-based extraction
     const patternDecoded = patternBasedDecode(aaencodedContent);
-    if (patternDecoded) {
-      console.log('模式解码成功');
+    if (patternDecoded && patternDecoded !== '') {
+      console.log('AADecode: 模式解码成功');
       return patternDecoded;
     }
 
-    console.log('所有解码方法均失败');
+    console.log('AADecode: 所有解码方法均未能解码');
     return sourceCode;
   } catch (error) {
-    console.error('AADecode 插件错误:', error.message);
+    console.error('AADecode: 插件错误:', error);
     return sourceCode;
   }
 }
 
 function isAAEncoded(code) {
-  // Essential aaencode patterns
-  const requiredPatterns = [
-    /ﾟωﾟﾉ\s*=\s*\/｀ｍ'）ﾉ\s*~┻━┻/,
-    /\(ﾟДﾟ\)\s*\[/,
-    /ﾟΘﾟ/
-  ];
+  // AAEncode 的核心特征 - 这个开头是必须的
+  const aaCorePattern = /ﾟωﾟﾉ\s*=\s*\/｀ｍ'）ﾉ\s*~┻━┻/;
   
-  // Check in both direct code and string literals
-  const codeToCheck = code + ' ' + (code.match(/"[^"]*"/g) || []).join(' ');
+  // 检查直接代码
+  if (aaCorePattern.test(code)) {
+    console.log('检测到直接的 AAEncode 代码');
+    return true;
+  }
   
-  return requiredPatterns.every(pattern => pattern.test(codeToCheck));
+  // 检查字符串中的 aaencode
+  const stringMatch = code.match(/["']([^"']*ﾟωﾟﾉ\s*=\s*\/｀ｍ'）ﾉ\s*~┻━┻[^"']*)["']/);
+  if (stringMatch) {
+    console.log('检测到字符串中的 AAEncode 代码');
+    return true;
+  }
+  
+  // 检查是否包含足够多的 AAEncode 特征字符
+  const aaChars = ['ﾟωﾟ', 'ﾟΘﾟ', 'ﾟｰﾟ', 'ﾟДﾟ'];
+  let charCount = 0;
+  for (const char of aaChars) {
+    if (code.includes(char)) {
+      charCount++;
+    }
+  }
+  
+  // 如果包含3个或以上特征字符，且包含特定的结构
+  if (charCount >= 3 && code.includes('(ﾟДﾟ)') && code.includes("['_']")) {
+    console.log('检测到 AAEncode 特征字符');
+    return true;
+  }
+  
+  return false;
 }
 
 function extractAAEncodedContent(sourceCode) {
@@ -230,5 +254,11 @@ function patternBasedDecode(aaencodedContent) {
 
 // Export the plugin function
 export default function PluginAAdecode(sourceCode) {
+  // 快速检查：如果不包含任何 AAEncode 特征字符，直接返回
+  const quickCheck = ['ﾟωﾟ', 'ﾟΘﾟ', 'ﾟｰﾟ', 'ﾟДﾟ'].some(char => sourceCode.includes(char));
+  if (!quickCheck) {
+    return sourceCode;
+  }
+  
   return aadecode(sourceCode);
 }
