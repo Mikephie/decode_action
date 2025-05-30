@@ -1,6 +1,7 @@
 /**
- * 修复语法错误的AADecode插件
- * 基于网页版极简解码函数，增加语法错误处理
+ * 最优AADecode解密插件
+ * 基于cat_in_136的AADecode库
+ * https://github.com/cat-in-136/aadecode
  */
 
 /**
@@ -31,58 +32,73 @@ function extractHeader(code) {
 }
 
 /**
- * AADecode解密函数 - 增强语法错误处理
+ * AADecode解密函数 - 基于cat_in_136的解码库
+ * @param {string} text - AADecode编码
+ * @returns {string} - 解码结果
+ */
+function aadecode(text) {
+  try {
+    // 定义替换模式
+    const evalPreamble = "(ﾟДﾟ) ['_'] ( (ﾟДﾟ) ['_'] (";
+    const decodePreamble = "( (ﾟДﾟ) ['_'] (";
+    const evalPostamble = ") (ﾟΘﾟ)) ('_');";
+    const decodePostamble = ") ());";
+
+    // 去除前后空白
+    text = text.replace(/^\s*/, "").replace(/\s*$/, "");
+
+    // 检查是否为空
+    if (/^\s*$/.test(text)) {
+      return "";
+    }
+
+    // 检查是否为AADecode编码
+    if (text.lastIndexOf(evalPreamble) < 0) {
+      // 如果没有完全匹配的模式，尝试使用备用方法
+      console.log("未找到标准AADecode模式，尝试备用方法...");
+      return backupDecode(text);
+    }
+
+    // 检查后缀
+    if (text.lastIndexOf(evalPostamble) !== text.length - evalPostamble.length) {
+      console.log("后缀不匹配，尝试备用方法...");
+      return backupDecode(text);
+    }
+
+    // 替换前后缀
+    const decodingScript = text.replace(evalPreamble, decodePreamble)
+                               .replace(evalPostamble, decodePostamble);
+    
+    // 使用Function代替eval执行
+    try {
+      const fn = new Function("return " + decodingScript);
+      const result = fn();
+      return result !== undefined ? result : "constructor";
+    } catch (execError) {
+      console.log("执行失败，尝试备用方法:", execError.message);
+      return backupDecode(text);
+    }
+  } catch (error) {
+    console.log("主解码方法失败:", error.message);
+    return backupDecode(text);
+  }
+}
+
+/**
+ * 备用解码方法 - 使用简单替换
  * @param {string} t - AADecode编码
  * @returns {string} - 解码结果
  */
-function aadecode(t) {
+function backupDecode(t) {
   try {
-    // 第一种尝试：使用原始替换模式
-    try {
-      // 注意：使用非转义的正则来匹配，避免语法问题
-      let code = t.replace(/\) \('_'\)/g, "");
-      code = code.replace(/\(ﾟДﾟ\) \['_'\] \(/g, "return ");
-      
-      const x = new Function(code);
-      const r = x();
-      return r !== undefined ? r : "constructor";
-    } catch (error1) {
-      console.error("基本替换模式失败:", error1);
-      
-      // 第二种尝试：更保守的替换
-      try {
-        // 只替换最后一个函数调用
-        const lastCallIndex = t.lastIndexOf("(ﾟДﾟ) ['_'] (");
-        if (lastCallIndex !== -1) {
-          const before = t.substring(0, lastCallIndex);
-          const after = t.substring(lastCallIndex + "(ﾟДﾟ) ['_'] (".length);
-          
-          const code = before + "return " + after.replace(/\) \('_'\)/g, "");
-          
-          const x = new Function(code);
-          const r = x();
-          return r !== undefined ? r : "constructor";
-        }
-      } catch (error2) {
-        console.error("保守替换模式失败:", error2);
-      }
-      
-      // 第三种尝试：最基本的提取
-      try {
-        // 尝试直接提取结果字符串
-        const resultMatch = t.match(/\(ﾟДﾟ\)\['\_'\]\(\(ﾟДﾟ\)\['\_'\]\((.+?)\)/);
-        if (resultMatch && resultMatch[1]) {
-          return resultMatch[1].replace(/\+/g, '').replace(/\'/g, '').trim();
-        }
-      } catch (error3) {
-        console.error("提取模式失败:", error3);
-      }
-    }
+    t = t.replace(/\) \('_'\)/g, "");
+    t = t.replace(/\(ﾟДﾟ\) \['_'\] \(/g, "return ");
     
-    // 所有方法都失败，返回默认值
-    return "constructor";
-  } catch (outerError) {
-    console.error("整体解码过程失败:", outerError);
+    const x = new Function(t);
+    const r = x();
+    return r !== undefined ? r : "constructor";
+  } catch (error) {
+    console.log("备用解码方法失败:", error.message);
     return "constructor";
   }
 }
