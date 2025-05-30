@@ -1,169 +1,231 @@
 // AADecode Plugin for JavaScript Deobfuscation
 // Decodes JavaScript obfuscated with aaencode
 
-function aadecode(encodedCode) {
-  // Check if the code appears to be aaencoded
-  if (!isAAEncoded(encodedCode)) {
-    return encodedCode;
+function aadecode(sourceCode) {
+  // Check if the code contains aaencode patterns
+  if (!isAAEncoded(sourceCode)) {
+    return sourceCode;
   }
 
   try {
-    // Extract the aaencoded part from the code
-    let code = encodedCode;
+    console.log('检测到 AAEncode 编码，开始解码...');
     
-    // Check if the aaencode is assigned to a variable
-    const varAssignMatch = code.match(/var\s+\w+\s*=\s*"([^"]+)"/);
-    if (varAssignMatch) {
-      code = varAssignMatch[1];
-      // Unescape the string
-      code = code.replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-    }
-    
-    // Check for the typical aaencode pattern
-    const aaencodePattern = /ﾟωﾟﾉ\s*=\s*\/｀ｍ'）ﾉ\s*~┻━┻/;
-    if (!aaencodePattern.test(code)) {
-      return encodedCode;
+    // Extract aaencoded content
+    let aaencodedContent = extractAAEncodedContent(sourceCode);
+    if (!aaencodedContent) {
+      console.log('无法提取 AAEncode 内容');
+      return sourceCode;
     }
 
-    // Try to decode by executing the aaencode in a sandbox
-    try {
-      // Create a sandboxed environment for execution
-      const sandbox = `
-        (function() {
-          ${code}
-          
-          // aaencode typically creates alert() calls, capture them
-          const results = [];
-          const originalAlert = typeof alert !== 'undefined' ? alert : null;
-          
-          // Override alert to capture output
-          if (typeof window !== 'undefined') {
-            window.alert = function(msg) { results.push(msg); };
-          }
-          if (typeof global !== 'undefined') {
-            global.alert = function(msg) { results.push(msg); };
-          }
-          const alert = function(msg) { results.push(msg); };
-          
-          // Try to find and execute the decoded function
-          try {
-            // AAEncode usually calls (ﾟДﾟ)['_'] with the encoded data
-            if (typeof ﾟДﾟ !== 'undefined' && ﾟДﾟ['_']) {
-              const func = ﾟДﾟ['_'];
-              if (typeof func === 'function') {
-                // Execute the function to trigger alert
-                func();
-              }
-            }
-          } catch (e) {}
-          
-          // Restore original alert if it existed
-          if (originalAlert) {
-            if (typeof window !== 'undefined') window.alert = originalAlert;
-            if (typeof global !== 'undefined') global.alert = originalAlert;
-          }
-          
-          return results.join('');
-        })();
-      `;
-      
-      const decoded = eval(sandbox);
-      if (decoded && decoded !== '') {
-        return decoded;
-      }
-    } catch (e) {
-      console.error('AADecode sandbox execution failed:', e.message);
-    }
-    
-    // Alternative approach: manually decode the aaencode
-    try {
-      // Execute the initialization code safely
-      const initCode = code.substring(0, code.indexOf('(ﾟДﾟ) [\'_\']'));
-      eval(initCode);
-      
-      // Extract the encoded data
-      const dataMatch = code.match(/\(ﾟДﾟ\)\s*\['_'\]\s*\(\s*\(ﾟДﾟ\)\s*\['_'\]\s*\(([\s\S]+?)\)\s*\(\s*ﾟΘﾟ\s*\)\s*\)\s*\('_'\)/);
-      if (dataMatch) {
-        const encodedData = dataMatch[1];
-        
-        // Build the character from the encoded data
-        let result = '';
-        const charCodes = encodedData.split('+').map(part => {
-          part = part.trim();
-          if (part.match(/^\(ﾟДﾟ\)\[ﾟεﾟ\]/)) {
-            // This represents a backslash
-            return '\\';
-          } else if (part.match(/^\(ﾟДﾟ\)\[ﾟoﾟ\]/)) {
-            // This represents a quote
-            return '"';
-          } else if (part.match(/^\([\s\S]+\)$/)) {
-            // This is an expression to evaluate
-            try {
-              return eval(part);
-            } catch (e) {
-              return '';
-            }
-          } else {
-            // Direct evaluation
-            try {
-              return eval(part);
-            } catch (e) {
-              return '';
-            }
-          }
-        });
-        
-        // Convert character codes to string
-        for (let i = 0; i < charCodes.length; i++) {
-          if (typeof charCodes[i] === 'number') {
-            result += String.fromCharCode(charCodes[i]);
-          } else if (typeof charCodes[i] === 'string') {
-            result += charCodes[i];
-          }
-        }
-        
-        if (result) {
-          return result;
-        }
-      }
-    } catch (e) {
-      console.error('Manual AADecode failed:', e.message);
+    // Method 1: Try using Node.js VM (if available)
+    const decoded = decodeWithVM(aaencodedContent);
+    if (decoded && decoded !== aaencodedContent) {
+      console.log('VM 解码成功');
+      return decoded;
     }
 
-    return encodedCode;
+    // Method 2: Try manual parsing
+    const manualDecoded = manualDecode(aaencodedContent);
+    if (manualDecoded && manualDecoded !== aaencodedContent) {
+      console.log('手动解码成功');
+      return manualDecoded;
+    }
+
+    // Method 3: Try pattern-based extraction
+    const patternDecoded = patternBasedDecode(aaencodedContent);
+    if (patternDecoded) {
+      console.log('模式解码成功');
+      return patternDecoded;
+    }
+
+    console.log('所有解码方法均失败');
+    return sourceCode;
   } catch (error) {
-    console.error('AADecode 解码错误:', error.message);
-    return encodedCode;
+    console.error('AADecode 插件错误:', error.message);
+    return sourceCode;
   }
 }
 
 function isAAEncoded(code) {
-  // Check for characteristic aaencode patterns
-  const aaPatterns = [
+  // Essential aaencode patterns
+  const requiredPatterns = [
     /ﾟωﾟﾉ\s*=\s*\/｀ｍ'）ﾉ\s*~┻━┻/,
-    /\(ﾟДﾟ\)\[ﾟoﾟ\]/,
-    /\(ﾟДﾟ\)\['_'\]/,
-    /ﾟΘﾟ/,
-    /ﾟｰﾟ/,
-    /ﾟДﾟ/
+    /\(ﾟДﾟ\)\s*\[/,
+    /ﾟΘﾟ/
   ];
   
-  // Check if it's in a string variable
-  const stringPattern = /["'].*ﾟωﾟﾉ\s*=\s*\/｀ｍ'）ﾉ.*["']/;
-  if (stringPattern.test(code)) {
-    return true;
+  // Check in both direct code and string literals
+  const codeToCheck = code + ' ' + (code.match(/"[^"]*"/g) || []).join(' ');
+  
+  return requiredPatterns.every(pattern => pattern.test(codeToCheck));
+}
+
+function extractAAEncodedContent(sourceCode) {
+  // Try to extract from variable assignment
+  const varMatch = sourceCode.match(/(?:var|let|const)\s+\w+\s*=\s*"([^"]+)"/);
+  if (varMatch) {
+    // Unescape the string
+    return varMatch[1]
+      .replace(/\\n/g, '\n')
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, '\\');
   }
   
-  // Count how many patterns match
-  let matches = 0;
-  for (const pattern of aaPatterns) {
-    if (pattern.test(code)) {
-      matches++;
+  // Try to extract direct aaencode
+  const directMatch = sourceCode.match(/ﾟωﾟﾉ\s*=[\s\S]+?\)\s*\(\s*'_'\s*\)\s*;/);
+  if (directMatch) {
+    return directMatch[0];
+  }
+  
+  return sourceCode;
+}
+
+function decodeWithVM(aaencodedContent) {
+  try {
+    // Check if we're in Node.js environment
+    if (typeof require !== 'undefined') {
+      const vm = require('vm');
+      
+      const script = `
+        const results = [];
+        const originalAlert = global.alert;
+        global.alert = function(msg) { results.push(msg); };
+        
+        try {
+          ${aaencodedContent}
+        } catch (e) {}
+        
+        if (originalAlert) global.alert = originalAlert;
+        results.join('');
+      `;
+      
+      const context = vm.createContext({
+        global: { alert: null },
+        results: []
+      });
+      
+      return vm.runInContext(script, context);
     }
+  } catch (e) {
+    console.log('VM 方法不可用:', e.message);
   }
   
-  // If at least 3 patterns match, it's likely aaencoded
-  return matches >= 3;
+  // Fallback: try direct execution with alert capture
+  try {
+    let result = '';
+    const originalAlert = global.alert || window.alert;
+    
+    // Override alert
+    const alertOverride = (msg) => { result = msg; };
+    if (typeof global !== 'undefined') global.alert = alertOverride;
+    if (typeof window !== 'undefined') window.alert = alertOverride;
+    
+    // Execute
+    eval(aaencodedContent);
+    
+    // Restore
+    if (typeof global !== 'undefined') global.alert = originalAlert;
+    if (typeof window !== 'undefined') window.alert = originalAlert;
+    
+    return result;
+  } catch (e) {
+    console.log('直接执行失败:', e.message);
+  }
+  
+  return null;
+}
+
+function manualDecode(aaencodedContent) {
+  try {
+    // Initialize aaencode environment
+    const env = {};
+    
+    // Execute initialization
+    const initMatch = aaencodedContent.match(/^([\s\S]+?)\(ﾟДﾟ\)\s*\['_'\]/);
+    if (!initMatch) return null;
+    
+    // Create isolated execution context
+    const execContext = `
+      (function() {
+        ${initMatch[1]}
+        return { ﾟДﾟ, ﾟΘﾟ, ﾟｰﾟ, ﾟεﾟ, ﾟoﾟ, c, o };
+      })()
+    `;
+    
+    const context = eval(execContext);
+    
+    // Extract the encoded payload
+    const payloadMatch = aaencodedContent.match(/\(ﾟДﾟ\)\s*\['_'\]\s*\(\s*\(ﾟДﾟ\)\s*\['_'\]\s*\(([^)]+)\)/);
+    if (!payloadMatch) return null;
+    
+    // Parse the encoded string construction
+    const parts = payloadMatch[1].split('+').map(part => part.trim());
+    let decoded = '';
+    
+    for (const part of parts) {
+      if (part === '(ﾟДﾟ)[ﾟεﾟ]') {
+        decoded += '\\';
+      } else if (part === '(ﾟДﾟ)[ﾟoﾟ]') {
+        decoded += '"';
+      } else {
+        try {
+          // Evaluate in context
+          const value = eval(`
+            (function() {
+              const ﾟДﾟ = ${JSON.stringify(context.ﾟДﾟ)};
+              const ﾟΘﾟ = ${context.ﾟΘﾟ};
+              const ﾟｰﾟ = ${context.ﾟｰﾟ};
+              const ﾟεﾟ = "${context.ﾟεﾟ || ''}";
+              const ﾟoﾟ = "${context.ﾟoﾟ || ''}";
+              const c = ${context.c};
+              const o = ${context.o};
+              return ${part};
+            })()
+          `);
+          
+          if (typeof value === 'number') {
+            decoded += String.fromCharCode(value);
+          }
+        } catch (e) {
+          // Skip invalid parts
+        }
+      }
+    }
+    
+    return decoded || null;
+  } catch (e) {
+    console.log('手动解码失败:', e.message);
+    return null;
+  }
+}
+
+function patternBasedDecode(aaencodedContent) {
+  try {
+    // Look for common patterns in aaencode output
+    
+    // Pattern 1: alert("message")
+    const alertMatch = aaencodedContent.match(/alert\s*\(\s*["']([^"']+)["']\s*\)/);
+    if (alertMatch) {
+      return alertMatch[1];
+    }
+    
+    // Pattern 2: String literals in the encoded data
+    const stringLiterals = [];
+    const stringMatches = aaencodedContent.matchAll(/["']([^"']{10,})["']/g);
+    for (const match of stringMatches) {
+      stringLiterals.push(match[1]);
+    }
+    
+    // Return the longest meaningful string
+    if (stringLiterals.length > 0) {
+      return stringLiterals.reduce((a, b) => a.length > b.length ? a : b);
+    }
+    
+    return null;
+  } catch (e) {
+    console.log('模式解码失败:', e.message);
+    return null;
+  }
 }
 
 // Export the plugin function
