@@ -1,12 +1,16 @@
 // src/plugin/aadecode.js
 
 /**
- * 最简版 AADecode 插件
- * 完全专注于提供 plugin.plugin 方法
+ * AADecode 插件 - 解码 aaencode 格式的 JavaScript
+ * ESM 格式
  */
 
-// 定义解码函数
-function decode(code) {
+/**
+ * 解码 aaencode 格式的 JavaScript
+ * @param {string} code - 输入代码
+ * @returns {string} - 解码后的代码
+ */
+function decodeAAencode(code) {
   // 安全检查
   if (typeof code !== 'string' || !code.trim()) {
     return code;
@@ -60,10 +64,15 @@ function decode(code) {
   }
 }
 
-// 创建并导出插件对象
+// 创建一个具有 plugin 方法的对象
 const plugin = {
-  plugin: decode
+  plugin: decodeAAencode
 };
 
-// 导出方式 1: 作为默认导出
-export default plugin;
+// 命名导出 - ESM 风格
+export { plugin };
+
+// 提供函数作为默认导出 - 与你分享的其他插件模式匹配
+export default function(code) {
+  return decodeAAencode(code);
+}
