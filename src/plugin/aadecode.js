@@ -81,6 +81,22 @@ function isAAEncoded(code) {
     return true;
   }
   
+  
+  // 检查是否包含足够多的 AAEncode 特征字符
+  const aaChars = ['ﾟωﾟ', 'ﾟΘﾟ', 'ﾟｰﾟ', 'ﾟДﾟ'];
+  let charCount = 0;
+  for (const char of aaChars) {
+    if (code.includes(char)) {
+      charCount++;
+    }
+  }
+  
+  // 如果包含3个或以上特征字符，且包含特定的结构
+  if (charCount >= 3 && code.includes('(ﾟДﾟ)') && code.includes("['_']")) {
+    console.log('检测到 AAEncode 特征字符');
+    return true;
+  }
+  
   return false;
 }
 
