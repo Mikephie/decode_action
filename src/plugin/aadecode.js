@@ -1,35 +1,20 @@
-// ./plugin/aadecode.js
-// AADecode - Decode JavaScript that has been encoded with aaencode format
-
-/**
- * 检测代码是否是 aaencode 格式
- * @param {string} code - 输入代码
- * @returns {boolean} - 如果是 aaencode 格式则返回 true
- */
-function isAAEncoded(code) {
-  if (typeof code !== 'string' || !code.trim()) {
-    return false;
-  }
-  
-  // aaencode 内容中的常见模式
-  const patterns = [
-    /ﾟωﾟﾉ= \/｀ｍ'）ﾉ ~┻━┻/,
-    /\(ﾟДﾟ\) \['_'\]/,
-    /\(ﾟΘﾟ\)/,
-    /\(o\^_\^o\)/
-  ];
-  
-  return patterns.some(pattern => pattern.test(code));
-}
+// src/plugin/aadecode.js
 
 /**
  * 解码 AAencode 格式的 JavaScript
- * @param {string} code - 编码后的 JavaScript
- * @returns {string} - 解码后的 JavaScript 或原始代码
+ * 此函数将 aaencode 格式的代码转换回正常的 JavaScript
+ * @param {string} code - 编码后的代码
+ * @returns {string} - 解码后的代码
  */
-function aadecode(code) {
-  // 如果不是 aaencode 格式，跳过处理
-  if (!isAAEncoded(code)) {
+export default function(code) {
+  // 基本检查 - 如果不是字符串或为空，直接返回
+  if (typeof code !== 'string' || !code.trim()) {
+    return code;
+  }
+  
+  // 简单检查是否可能是 aaencode 格式
+  // aaencode 格式通常包含这些特殊字符
+  if (!code.includes('ﾟДﾟ') || !code.includes('_')) {
     return code;
   }
 
@@ -37,17 +22,16 @@ function aadecode(code) {
     // 清理代码
     const encodedText = code.replace(/\/\*'∇｀\*\//g, '').trim();
     
-    // 检查是否是有效的 aaencode 内容
+    // 检查是否有 aaencode 的标志性结构
     const evalPreamble = "(ﾟДﾟ) ['_'] ( (ﾟДﾟ) ['_'] (";
     const evalPostamble = ") (ﾟΘﾟ)) ('_');";
     
     if (encodedText.lastIndexOf(evalPreamble) < 0 || 
         encodedText.lastIndexOf(evalPostamble) !== encodedText.length - evalPostamble.length) {
-      console.log("代码不是有效的 aaencode 格式");
       return code;
     }
     
-    // 转换为解码
+    // 转换为可解码的形式
     const decodePreamble = "( (ﾟДﾟ) ['_'] (";
     const decodePostamble = ") ());";
     
@@ -55,17 +39,19 @@ function aadecode(code) {
       .replace(evalPreamble, decodePreamble)
       .replace(evalPostamble, decodePostamble);
     
-    // 使用 eval 解码 - 这对于这种特定的编码方法是必要的
+    // 使用 eval 解码
     // eslint-disable-next-line no-eval
     const decodedCode = eval(decodingScript);
     
-    console.log("AADecode 解码成功");
-    return decodedCode;
+    // 如果解码成功且结果不为空，返回解码后的代码
+    if (decodedCode && typeof decodedCode === 'string') {
+      return decodedCode;
+    }
+    
+    // 如果解码结果为空或不是字符串，返回原始代码
+    return code;
   } catch (error) {
-    console.error(`AADecode 解码错误: ${error.message}`);
-    return code; // 出错时返回原始代码
+    // 解码失败，返回原始代码
+    return code;
   }
 }
-
-// 使插件与你的框架兼容
-export default aadecode;
