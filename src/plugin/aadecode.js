@@ -5,7 +5,7 @@
  * to handle various forms of aaencoded JavaScript.
  */
 
-// 正确的 AADecode 解密器实现（支持递归解密）
+// 正确的 AADecode 解密器实现（支持递归解密和变量修复）
 function executeFullAADecode(encodedText, depth = 0) {
   const MAX_DEPTH = 10; // 防止无限递归
   
@@ -15,6 +15,9 @@ function executeFullAADecode(encodedText, depth = 0) {
   }
 
   try {
+    // 修复可能缺失的变量定义
+    let fixedText = fixAAEncodeVariables(encodedText);
+    
     // 使用标准的 AADecode 实现
     var evalPreamble = "(\uFF9F\u0414\uFF9F) ['_'] ( (\uFF9F\u0414\uFF9F) ['_'] (";
     var decodePreamble = "( (\uFF9F\u0414\uFF9F) ['_'] (";
@@ -22,14 +25,14 @@ function executeFullAADecode(encodedText, depth = 0) {
     var decodePostamble = ") ());";
 
     // 清理输入文本
-    var text = encodedText.replace(/^\s*/, "").replace(/\s*$/, "");
+    var text = fixedText.replace(/^\s*/, "").replace(/\s*$/, "");
 
     // 检查是否为空输入
     if (/^\s*$/.test(text)) {
       return "";
     }
 
-    // 更严格的AAEncode格式检查
+    // 更宽松的AAEncode格式检查
     if (text.lastIndexOf(evalPreamble) < 0) {
       throw new Error("Given code is not encoded as aaencode - missing eval preamble.");
     }
@@ -96,6 +99,33 @@ function executeFullAADecode(encodedText, depth = 0) {
       throw new Error(`All decode methods failed: ${error.message}, ${fallbackError.message}`);
     }
   }
+}
+
+// 修复 AAEncode 变量定义
+function fixAAEncodeVariables(text) {
+  // 检查是否缺少开头的变量定义
+  if (!text.includes('ﾟωﾟﾉ=') && text.includes('ﾟωﾟﾉ')) {
+    console.log('AADecode: Adding missing ﾟωﾟﾉ variable definition');
+    
+    // 添加标准的 AAEncode 开头
+    const aaHeader = `ﾟωﾟﾉ= /｀ｍ'）ﾉ ~┻━┻   //*'∇｀*/ ['_']; `;
+    
+    // 如果文本不是以变量定义开头，添加它
+    if (!text.match(/^\s*ﾟωﾟﾉ\s*=/)) {
+      text = aaHeader + text;
+    }
+  }
+  
+  // 确保其他必要的变量定义存在
+  if (!text.includes('o=(ﾟｰﾟ)') && text.includes('(ﾟｰﾟ)')) {
+    console.log('AADecode: Adding missing variable definitions');
+    const varDefs = `o=(ﾟｰﾟ)  =_=3; c=(ﾟΘﾟ) =(ﾟｰﾟ)-(ﾟｰﾟ); `;
+    
+    // 在 ﾟωﾟﾉ 定义后添加其他变量
+    text = text.replace(/(ﾟωﾟﾉ[^;]*;)\s*/, '$1 ' + varDefs);
+  }
+  
+  return text;
 }
 
 function aadecode(sourceCode) {
@@ -331,10 +361,14 @@ function directDecode(encodedText) {
 }
 
 function fallbackDecode(encodedText) {
-  // Try a direct string extraction approach first
+  console.log('AADecode: Attempting fallback decode methods...');
+  
+  // 方法1: 尝试字符串提取
   const stringMatch = encodedText.match(/["']([^"']{5,})["']/);
   if (stringMatch) {
     const result = stringMatch[1];
+    console.log('AADecode: Found string in fallback:', result);
+    
     // 检查提取的结果是否还包含 AAEncode
     if (hasAAEncodeCharacteristics(result)) {
       try {
@@ -346,42 +380,109 @@ function fallbackDecode(encodedText) {
     return result;
   }
   
+  // 方法2: 尝试手动解析字符码
   try {
-    // Try a completely different approach using regex to find the payload
-    const stringPatterns = [
+    console.log('AADecode: Attempting manual character code parsing...');
+    const charCodeResult = parseAAEncodeManually(encodedText);
+    if (charCodeResult) {
+      console.log('AADecode: Manual parsing successful:', charCodeResult);
+      return charCodeResult;
+    }
+  } catch (e) {
+    console.log('AADecode: Manual parsing failed:', e.message);
+  }
+  
+  // 方法3: 尝试不同的解密模式
+  try {
+    console.log('AADecode: Trying alternative decode patterns...');
+    
+    // 搜索常见的输出模式
+    const patterns = [
       /alert\s*\(\s*["']([^"']+)["']\s*\)/,
       /console\.log\s*\(\s*["']([^"']+)["']\s*\)/,
       /document\.write\s*\(\s*["']([^"']+)["']\s*\)/,
-      /["']([^"']{10,})["']/
+      /return\s*["']([^"']+)["']/,
+      /["']([^"']{3,20})["']/
     ];
     
-    for (const pattern of stringPatterns) {
+    for (const pattern of patterns) {
       const match = encodedText.match(pattern);
       if (match && match[1]) {
         const result = match[1];
-        // 检查每个匹配结果是否还包含 AAEncode
-        if (hasAAEncodeCharacteristics(result)) {
-          try {
-            return executeFullAADecode(result, 0);
-          } catch (e) {
-            console.log("Recursive decode of pattern match failed:", e.message);
-            continue; // 尝试下一个模式
+        // 过滤掉明显不是最终结果的字符串
+        if (!/^(var|let|const|function|if|for|while|return|console|alert|true|false|null|undefined|script|GMT|UTC|\d{4})$/i.test(result)) {
+          console.log('AADecode: Found potential result with pattern:', result);
+          if (hasAAEncodeCharacteristics(result)) {
+            try {
+              return executeFullAADecode(result, 0);
+            } catch (e) {
+              console.log("Recursive decode of pattern match failed:", e.message);
+              continue;
+            }
           }
+          return result;
         }
-        return result;
       }
-    }
-    
-    // Try character code extraction
-    const charCodeMatches = encodedText.match(/String\.fromCharCode\(([^)]+)\)/g) || [];
-    if (charCodeMatches.length) {
-      return "Found character codes: " + charCodeMatches[0];
     }
     
     return "No decodable content found";
   } catch (e) {
     console.log("Fallback decode error:", e);
     return "";
+  }
+}
+
+// 手动解析 AAEncode 字符码
+function parseAAEncodeManually(encodedText) {
+  try {
+    // 查找编码的字符串部分
+    const encodedSection = encodedText.match(/\(ﾟДﾟ\)\['_'\]\s*\(\s*\(ﾟДﾟ\)\['_'\]\s*\(([^)]+)\)\s*\(ﾟΘﾟ\)\s*\)\s*\('_'\)/);
+    if (!encodedSection) {
+      return null;
+    }
+    
+    const codeExpression = encodedSection[1];
+    console.log('AADecode: Found encoded expression:', codeExpression.substring(0, 100) + '...');
+    
+    // 尝试解析表达式中的字符码
+    // 这是一个简化的解析器，用于处理常见的AAEncode模式
+    const segments = codeExpression.split('+').map(s => s.trim());
+    const charCodes = [];
+    
+    for (const segment of segments) {
+      try {
+        // 映射常见的AAEncode值
+        let value = segment
+          .replace(/\(ﾟΘﾟ\)/g, '1')
+          .replace(/\(ﾟｰﾟ\)/g, '2') 
+          .replace(/\(o\^_\^o\)/g, '3')
+          .replace(/\(c\^_\^o\)/g, '0')
+          .replace(/ﾟΘﾟ/g, '1')
+          .replace(/ﾟｰﾟ/g, '2')
+          .replace(/o\^_\^o/g, '3')
+          .replace(/c\^_\^o/g, '0');
+        
+        // 简单的数学表达式求值
+        const evaluated = eval(value);
+        if (typeof evaluated === 'number' && evaluated >= 0 && evaluated <= 127) {
+          charCodes.push(evaluated);
+        }
+      } catch (e) {
+        // 如果某个段解析失败，跳过它
+        console.log('AADecode: Failed to parse segment:', segment);
+      }
+    }
+    
+    if (charCodes.length > 0) {
+      const decoded = charCodes.map(code => String.fromCharCode(code)).join('');
+      console.log('AADecode: Manual decode result:', decoded);
+      return decoded;
+    }
+    
+    return null;
+  } catch (e) {
+    console.log('AADecode: Manual parsing error:', e.message);
+    return null;
   }
 }
 
