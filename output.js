@@ -1,5 +1,5 @@
-// 解码时间: 5/31/2025, 3:19:54 AM
-// 使用插件: obfuscator
+// 解码时间: 5/31/2025, 3:25:31 AM
+// 使用插件链: obfuscator -> awsc
 
 the;
 only;
@@ -7,27 +7,21 @@ var encode_version = "jsjiami.com.v5";
 if (typeof $rocket !== "undefined") {
   function getBoxJSValue(_0x2e827e) {
     try {
-      {
-        if (typeof $persistentStore !== "undefined" && typeof $persistentStore.read === "function") {
-          const _0x5cf54c = $persistentStore.read(_0x2e827e);
-          console.log("🔍 成功读取 BoxJS 值（$persistentStore）：" + _0x2e827e + " = " + _0x5cf54c);
-          return _0x5cf54c;
+      if (typeof $persistentStore !== "undefined" && typeof $persistentStore.read === "function") {
+        const _0x5cf54c = $persistentStore.read(_0x2e827e);
+        console.log("🔍 成功读取 BoxJS 值（$persistentStore）：" + _0x2e827e + " = " + _0x5cf54c);
+        return _0x5cf54c;
+      } else {
+        if (typeof $prefs !== "undefined" && typeof $prefs.valueForKey === "function") {
+          const _0xca4144 = $prefs.valueForKey(_0x2e827e);
+          console.log("🔍 成功读取 BoxJS 值（$prefs）：" + _0x2e827e + " = " + _0xca4144);
+          return _0xca4144;
         } else {
-          if (typeof $prefs !== "undefined" && typeof $prefs.valueForKey === "function") {
-            {
-              const _0xca4144 = $prefs.valueForKey(_0x2e827e);
-              console.log("🔍 成功读取 BoxJS 值（$prefs）：" + _0x2e827e + " = " + _0xca4144);
-              return _0xca4144;
-            }
-          } else {
-            console.log("⚠️ 无法检测到可用的 BoxJS 环境！");
-          }
+          console.log("⚠️ 无法检测到可用的 BoxJS 环境！");
         }
       }
     } catch (_0x4f3ab7) {
-      {
-        console.log("⚠️ 读取 BoxJS 配置失败：" + _0x4f3ab7.message);
-      }
+      console.log("⚠️ 读取 BoxJS 配置失败：" + _0x4f3ab7.message);
     }
     return null;
   }
@@ -79,21 +73,29 @@ for (const i in list) {
     });
     switch (cm) {
       case "timea":
-        data = [Object.assign({}, receiptdata, expirestime)];
-        break;
+        {
+          data = [Object.assign({}, receiptdata, expirestime)];
+          break;
+        }
       case "timeb":
-        data = [receiptdata];
-        break;
+        {
+          data = [receiptdata];
+          break;
+        }
       case "timec":
-        data = [];
-        break;
+        {
+          data = [];
+          break;
+        }
       case "timed":
-        data = [Object.assign({}, receiptdata, expirestime, {
-          product_id: ids
-        }), Object.assign({}, receiptdata, expirestime, {
-          product_id: id
-        })];
-        break;
+        {
+          data = [Object.assign({}, receiptdata, expirestime, {
+            product_id: ids
+          }), Object.assign({}, receiptdata, expirestime, {
+            product_id: id
+          })];
+          break;
+        }
     }
     if (hx.includes("hxpda")) {
       ddm.receipt.in_app = data;
