@@ -1,6 +1,8 @@
-// 解码时间: 5/31/2025, 2:10:02 AM
+// 解码时间: 5/31/2025, 2:22:24 AM
 // 使用插件: obfuscator
 
+the;
+only;
 var encode_version = "jsjiami.com.v5";
 if (typeof $rocket !== "undefined") {
   function getBoxJSValue(_0x2e827e) {
