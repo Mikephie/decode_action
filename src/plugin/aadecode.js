@@ -2,12 +2,12 @@
 export default function aadecode(code) {
   if (typeof code !== "string" || code.trim() === "") return code;
   try {
-    // 优先用 Function（更安全）
+    // 优先用 Function 更安全
     const decoded = Function('"use strict";return (' + code + ')')();
     if (typeof decoded === "string" && decoded !== code && decoded.length > 0) return decoded;
   } catch (e) {}
   try {
-    // 兼容部分Node环境 Function不行时 fallback eval
+    // fallback eval
     const decoded = eval(code);
     if (typeof decoded === "string" && decoded !== code && decoded.length > 0) return decoded;
   } catch (e2) {}
