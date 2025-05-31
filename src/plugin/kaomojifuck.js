@@ -5,6 +5,7 @@ export default function kaomojiFuckPlugin(code) {
   try {
     let captured = null
 
+    // 拦截 `_` 调用的 payload
     const sandbox = {
       _: function(input) {
         captured = input
@@ -16,10 +17,11 @@ export default function kaomojiFuckPlugin(code) {
       has: () => true,
       get: (target, key) => {
         if (key in target) return target[key]
-        return () => undefined
+        return () => undefined // 返回 dummy 函数，防止执行失败
       }
     })
 
+    // 关键点：**只执行到 (ﾟДﾟ)['_'](...)('_')，不真正运行 payload**
     const fn = new Function('with(this) { ' + code + ' }')
     fn.call(proxy)
 
