@@ -4,7 +4,6 @@ export default function kaomojiFuckPlugin(code) {
   try {
     let captured = null
 
-    // sandbox: 提供 _ 拦截调用
     const sandbox = {
       _: function(input) {
         captured = input
@@ -12,10 +11,12 @@ export default function kaomojiFuckPlugin(code) {
       }
     }
 
-    // fallback 变量都用空函数处理
     const proxy = new Proxy(sandbox, {
       has: () => true,
-      get: () => () => undefined
+      get: (target, key) => {
+        if (key in target) return target[key]
+        return function () { return undefined }
+      }
     })
 
     const fn = new Function('with(this) { ' + code + ' }')
