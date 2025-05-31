@@ -3,15 +3,32 @@ export default function kaomojiFuckPlugin(code) {
   if (!isKaomoji) return null
 
   try {
-    // 提取 _['']("payload")('_') 中的 payload
-    const match = code.match(/_'\]\(\s*["'`](.*?)["'`]\s*\)/)
-    if (match && match[1]) {
-      const payload = match[1]
-      console.log(`[kaomoji] ✅ 提取成功，eval 参数长度: ${payload.length}`)
-      return `eval("${payload}")`
+    let captured = null
+
+    const sandbox = {
+      _: function(input) {
+        captured = input
+        return input // 避免代码崩溃
+      }
+    }
+
+    const proxy = new Proxy(sandbox, {
+      has: () => true,
+      get: (target, key) => {
+        if (key in target) return target[key]
+        return () => undefined // 返回 dummy 函数
+      }
+    })
+
+    const fn = new Function('with(this) { ' + code + ' }')
+    fn.call(proxy)
+
+    if (typeof captured === 'string') {
+      console.log(`[kaomoji] ✅ 捕获 eval 内容，长度: ${captured.length}`)
+      return captured
     }
   } catch (e) {
-    console.warn(`[kaomoji] ❌ 提取失败: ${e.message}`)
+    console.warn(`[kaomoji] ❌ 执行失败: ${e.message}`)
   }
 
   return null
