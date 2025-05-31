@@ -1,22 +1,17 @@
-export default function aadecode(code) {
-  if (!/ﾟωﾟﾉ=/.test(code)) return null
-
+// plugins/aadecode.js
+export function aadecode(code) {
+  if (typeof code !== "string") return null;
+  // 简单特征判断，可省略
+  if (!/ﾟ\wﾟ|ﾟωﾟ|ﾟДﾟ/.test(code)) return null;
   try {
-    // 提取 (ﾟДﾟ)['_']("alert(...)")('_') 中的 "alert(...)"
-    const match = code.match(/\['_'\]\((.*?)\)\s*\(.*?\)/)
-    if (!match) return null
-
-    const encoded = match[1]
-    const fn = new Function(`return ${encoded}`)
-    const result = fn()
-
-    if (typeof result === 'string') {
-      console.log(`[aadecode] ✅ 解码成功，长度: ${result.length}`)
-      return result
-    }
+    // 推荐用 Function 封闭 eval
+    return Function('"use strict";return (' + code + ')')();
   } catch (e) {
-    console.warn(`[aadecode] ❌ 解码失败: ${e.message}`)
+    // fallback
+    try {
+      return eval(code);
+    } catch (ee) {
+      return null;
+    }
   }
-
-  return null
 }
