@@ -1,59 +1,62 @@
-// ============ plugin/aadecode2.js ============
 /**
  * AADecode 第二阶段 - 处理嵌套或非典型 aaencode 剩余层
  */
-export default function decodeAA2(code) {
-  // 如果不包含AAEncode特征，直接返回
+function decodeAA2(code) {
   if (!/ﾟωﾟ|･ﾟ･|｀;'|==3|\/\*.*\*\//.test(code)) return code;
-  
-  console.log('[aadecode2] 检测到可能的嵌套AAEncode，尝试进一步解码...');
-  
+
   try {
-    // 检查是否是函数字符串
-    if (code.includes('function') || code.includes('=>')) {
-      // 尝试执行函数
-      const fn = eval(`(${code})`);
-      if (typeof fn === 'function') {
-        const result = fn();
-        if (typeof result === 'string') {
-          console.log('[aadecode2] 成功执行函数并获取结果');
-          return result;
-        }
-      }
+    // 如果是纯字符串结果，直接返回
+    if (!code.includes('(') && !code.includes('{') && !code.includes(';')) {
+      return code;
     }
     
-    // 检查是否是表达式
-    if (!code.includes(';') && !code.includes('{')) {
-      const result = eval(code);
-      if (typeof result === 'string') {
-        console.log('[aadecode2] 成功计算表达式');
-        return result;
-      }
-    }
-    
-    // 尝试其他变体
-    const variations = [
-      `(${code})`,
-      `(${code})()`,
-      `eval(${code})`,
-      code
-    ];
-    
-    for (const variant of variations) {
-      try {
-        const result = eval(variant);
-        if (typeof result === 'string' && result !== code) {
-          console.log('[aadecode2] 通过变体成功解码');
-          return result;
-        }
-      } catch (e) {
-        // 继续尝试下一个
-      }
-    }
-    
+    // 防止环境变量污染
+    const fn = new Function('return ' + code);
+    const result = fn();
+    if (typeof result === 'string') return result;
+    if (typeof result === 'function') return result.toString();
   } catch (e) {
     console.warn('[aadecode2] 执行失败:', e.message);
   }
-  
   return code;
+}
+
+export default decodeAA2;
+```
+
+### 3. 创建测试文件 `testDirect.js`
+
+```javascript
+// 直接测试，不依赖框架
+import fs from 'fs';
+
+const code = fs.readFileSync('input.js', 'utf8');
+
+console.log('原始代码长度:', code.length);
+
+// 直接执行解码
+const decoder = new Function(`
+  var ﾟωﾟﾉ, o, c, ﾟΘﾟ, ﾟｰﾟ, ﾟДﾟ, ﾟεﾟ, ﾟoﾟ, oﾟｰﾟo;
+  var _result = '';
+  var alert = function(msg) { _result = String(msg); };
+  
+  try {
+    ${code}
+  } catch(e) {
+    if (e.message && e.message.includes('is not defined')) {
+      var match = e.message.match(/([\\w]+) is not defined/);
+      if (match) _result = match[1];
+    }
+  }
+  
+  return _result;
+`);
+
+const result = decoder();
+console.log('解码结果:', result);
+
+// 保存结果
+if (result) {
+  fs.writeFileSync('output.js', `// Decoded result\n"${result}"`, 'utf8');
+  console.log('已保存到 output.js');
 }
