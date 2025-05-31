@@ -1,38 +1,37 @@
 /**
- * AADecode 终极版 - 使用 vm 模块
+ * AADecode 插件 - 处理 aaencode 混淆
  */
-import vm from 'vm';
-
 function decodeAA(code) {
   if (!/ﾟωﾟ|ﾟΘﾟ|ﾟｰﾟ|ﾟДﾟ/.test(code)) return code;
   
   console.log('[aadecode] 检测到AAEncode特征，开始解码...');
   
   try {
-    // 创建沙箱环境
-    let capturedOutput = '';
-    const sandbox = {
-      alert: (msg) => { capturedOutput = String(msg); },
-      console: { log: (msg) => { capturedOutput = String(msg); } }
-    };
-    
-    // 创建上下文
-    const context = vm.createContext(sandbox);
-    
-    // 执行代码
-    try {
-      vm.runInContext(code, context);
-    } catch (e) {
-      // 从错误信息提取结果
-      if (e.message && e.message.includes('is not defined')) {
-        const match = e.message.match(/(\w+) is not defined/);
-        if (match) capturedOutput = match[1];
+    // 使用Function构造器创建独立执行环境
+    const decoder = new Function(`
+      var ﾟωﾟﾉ, o, c, ﾟΘﾟ, ﾟｰﾟ, ﾟДﾟ, ﾟεﾟ, ﾟoﾟ, oﾟｰﾟo;
+      var _result = '';
+      var alert = function(msg) { _result = String(msg); };
+      var console = { log: function(msg) { _result = String(msg); } };
+      
+      try {
+        ${code}
+      } catch(e) {
+        // AAEncode执行解码后的字符串时会报错
+        // 从错误信息提取结果
+        if (e.message) {
+          var match = e.message.match(/([\\w]+) is not defined/);
+          if (match) _result = match[1];
+        }
       }
-    }
+      
+      return _result;
+    `);
     
-    if (capturedOutput) {
-      console.log('[aadecode] 解码成功:', capturedOutput);
-      return capturedOutput;
+    const result = decoder();
+    if (result) {
+      console.log('[aadecode] 解码成功:', result);
+      return result;
     }
   } catch (e) {
     console.warn('[aadecode] 解码失败:', e.message);
