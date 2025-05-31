@@ -1,9 +1,9 @@
 export default function aadecode(code) {
-  if (!/ﾟωﾟﾉ=|\/\*\*\*\*\//.test(code)) return null
+  if (!/ﾟωﾟﾉ=/.test(code)) return null
 
   try {
-    // 从 (ﾟДﾟ)['_']("...")('_') 中提取字符串参数
-    const match = code.match(/\['_'\]\((.*?)\)\('_'\)/)
+    // 提取 (ﾟДﾟ)['_']("alert(...)")('_') 中的 "alert(...)"
+    const match = code.match(/\['_'\]\((.*?)\)\s*\(.*?\)/)
     if (!match) return null
 
     const encoded = match[1]
