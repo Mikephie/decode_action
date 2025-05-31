@@ -8,7 +8,7 @@ export default function kaomojiFuckPlugin(code) {
     const sandbox = {
       _: function(input) {
         captured = input
-        return input // 避免代码崩溃
+        return input
       }
     }
 
@@ -16,7 +16,7 @@ export default function kaomojiFuckPlugin(code) {
       has: () => true,
       get: (target, key) => {
         if (key in target) return target[key]
-        return () => undefined // 返回 dummy 函数
+        return () => undefined
       }
     })
 
