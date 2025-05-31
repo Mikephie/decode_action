@@ -1,5 +1,6 @@
-//Fri May 30 2025 17:17:48 GMT+0000 (Coordinated Universal Time)
-//解密脚本在此
+// 解码时间: 5/31/2025, 1:45:10 AM
+// 使用插件: obfuscator
+
 var encode_version = "jsjiami.com.v5";
 var _0x56f1f9 = $response.body;
 var _0x246f07 = $request.url;
