@@ -1,10 +1,10 @@
 export default function kaomojiFuckPlugin(code) {
-  const isKaomoji = /ﾟ[\wﾟ]+\s*=/.test(code) || /[(ﾟДﾟ)]\s*\['_'\]/.test(code)
-  if (!isKaomoji) return null
+  if (!code.includes('(ﾟДﾟ)') || !code.includes("['_']")) return null
 
   try {
     let captured = null
 
+    // sandbox: 提供 _ 拦截调用
     const sandbox = {
       _: function(input) {
         captured = input
@@ -12,19 +12,17 @@ export default function kaomojiFuckPlugin(code) {
       }
     }
 
+    // fallback 变量都用空函数处理
     const proxy = new Proxy(sandbox, {
       has: () => true,
-      get: (target, key) => {
-        if (key in target) return target[key]
-        return () => undefined
-      }
+      get: () => () => undefined
     })
 
     const fn = new Function('with(this) { ' + code + ' }')
     fn.call(proxy)
 
     if (typeof captured === 'string') {
-      console.log(`[kaomoji] ✅ 捕获 eval 内容，长度: ${captured.length}`)
+      console.log(`[kaomoji] ✅ 成功捕获 eval 字符串，长度: ${captured.length}`)
       return captured
     }
 
