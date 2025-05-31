@@ -5,17 +5,23 @@ import { fileURLToPath } from 'url'
 
 // 动态导入插件模块
 const modules = {
-  aadecode: await import('./plugin/aadecode.js'),
-  aadecode2: await import('./plugin/aadecode2.js'),
-  eval: await import('./plugin/eval.js'),
-  obfuscator: await import('./plugin/obfuscator.js'),
-  sojsonv7: await import('./plugin/sojsonv7.js'),
-  sojson: await import('./plugin/sojson.js'),
-  jsconfuser: await import('./plugin/jsconfuser.js'),
-  awsc: await import('./plugin/awsc.js'),
-  jjencode: await import('./plugin/jjencode.js'),
-  common: await import('./plugin/common.js'),
-  kaomojifuck: await import('./plugin/kaomojifuck.js'),
+  kaomojifuck: await import('./plugin/kaomojifuck.js'),   // ✅ 第一优先，识别外层 JSFuck/颜文字 eval 构造器
+  eval:         await import('./plugin/eval.js'),         // ✅ 第二优先，负责执行第一步结果（eval字符串）
+
+  // 🔁 混合解包常见嵌套顺序
+  sojsonv7:     await import('./plugin/sojsonv7.js'),
+  sojson:       await import('./plugin/sojson.js'),
+  jsconfuser:   await import('./plugin/jsconfuser.js'),
+  obfuscator:   await import('./plugin/obfuscator.js'),
+
+  // 🔎 启发式、结构型混淆解包器
+  awsc:         await import('./plugin/awsc.js'),
+  jjencode:     await import('./plugin/jjencode.js'),
+  aadecode:     await import('./plugin/aadecode.js'),
+  aadecode2:    await import('./plugin/aadecode2.js'),
+
+  // 🧩 通用/兜底插件（放最后）
+  common:       await import('./plugin/common.js'),
 }
 
 // 兼容插件导出
