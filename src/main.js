@@ -7,10 +7,7 @@ import { fileURLToPath } from 'url'
 // ========= 仅启用当前必要插件 =========
 const modules = {
   kaomojifuck: await import('./plugin/kaomojifuck.js'),
-  eval:         await import('./plugin/eval.js'),
-  sojsonv7:     await import('./plugin/sojsonv7.js'),
-  sojson:       await import('./plugin/sojson.js'),
-  jsconfuser:   await import('./plugin/jsconfuser.js'),
+  eval: await import('./plugin/eval.js'),
 }
 
 // ========= 插件封装函数，兼容多种导出结构 =========

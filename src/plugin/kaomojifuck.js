@@ -3,7 +3,7 @@ export default function kaomojiFuckPlugin(code) {
   if (!isKaomoji) return null
 
   try {
-    // 匹配 eval 参数字符串
+    // 提取 _['']("payload")('_') 中的 payload
     const match = code.match(/_'\]\(\s*["'`](.*?)["'`]\s*\)/)
     if (match && match[1]) {
       const payload = match[1]
