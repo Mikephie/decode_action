@@ -1,4 +1,4 @@
-// 解码时间: 5/31/2025, 2:08:27 AM
+// 解码时间: 5/31/2025, 2:09:01 AM
 // 使用插件: obfuscator
 
 var encode_version = "jsjiami.com.v5";
