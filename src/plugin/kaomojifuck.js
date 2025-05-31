@@ -5,8 +5,32 @@ export default function kaomojiFuckPlugin(code) {
   try {
     let captured = null
 
-    // 拦截 `_` 函数，捕获参数（即 payload）
     const sandbox = {
-      '_': function(input) {
+      _: function(input) {
         captured = input
-        return
+        return input
+      }
+    }
+
+    const proxy = new Proxy(sandbox, {
+      has: () => true,
+      get: (target, key) => {
+        if (key in target) return target[key]
+        return () => undefined
+      }
+    })
+
+    const fn = new Function('with(this) { ' + code + ' }')
+    fn.call(proxy)
+
+    if (typeof captured === 'string') {
+      console.log(`[kaomoji] ✅ 捕获 eval 内容，长度: ${captured.length}`)
+      return captured
+    }
+
+    return null
+  } catch (e) {
+    console.warn(`[kaomoji] ❌ 执行失败: ${e.message}`)
+    return null
+  }
+}
