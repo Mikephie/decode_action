@@ -1,35 +1,22 @@
-export default function kaomojiFuckPlugin(code) {
-  if (!code.includes('(ﾟДﾟ)') || !code.includes("['_']")) return null
+export default function aadecode(code) {
+  if (!/ﾟωﾟﾉ=|\/\*\*\*\*\//.test(code)) return null
 
   try {
-    let captured = null
+    // 从 (ﾟДﾟ)['_']("...")('_') 中提取字符串参数
+    const match = code.match(/\['_'\]\((.*?)\)\('_'\)/)
+    if (!match) return null
 
-    const sandbox = {
-      _: function(input) {
-        captured = input
-        return input
-      }
+    const encoded = match[1]
+    const fn = new Function(`return ${encoded}`)
+    const result = fn()
+
+    if (typeof result === 'string') {
+      console.log(`[aadecode] ✅ 解码成功，长度: ${result.length}`)
+      return result
     }
-
-    const proxy = new Proxy(sandbox, {
-      has: () => true,
-      get: (target, key) => {
-        if (key in target) return target[key]
-        return function () { return undefined }
-      }
-    })
-
-    const fn = new Function('with(this) { ' + code + ' }')
-    fn.call(proxy)
-
-    if (typeof captured === 'string') {
-      console.log(`[kaomoji] ✅ 成功捕获 eval 字符串，长度: ${captured.length}`)
-      return captured
-    }
-
-    return null
   } catch (e) {
-    console.warn(`[kaomoji] ❌ 执行失败: ${e.message}`)
-    return null
+    console.warn(`[aadecode] ❌ 解码失败: ${e.message}`)
   }
+
+  return null
 }
