@@ -5,22 +5,25 @@ export default function kaomojiFuckPlugin(code) {
   try {
     let captured = null
 
-    // 注入 sandbox 中的 '_' 函数，捕获被传入的字符串
+    // 注入 sandbox：定义 eval 模拟函数 "_"
     const sandbox = {
-      ['_']: function(input) {
+      '_': function(input) {
         captured = input
         return input
       }
     }
 
-    const handler = {
+    // 安全地构造 Proxy，避免 undefined 函数异常
+    const fakeGlobal = new Proxy(sandbox, {
       has: () => true,
-      get: (_, key) => sandbox[key] || (() => key)
-    }
+      get: (target, key) => {
+        if (key in target) return target[key]
+        // 返回一个 dummy 函数避免调用时报错
+        return () => undefined
+      }
+    })
 
-    const fakeGlobal = new Proxy({}, handler)
-
-    // 执行 kaomoji 构造函数，实际只提取 eval 参数
+    // 使用 with(this) 执行代码（模拟全局变量环境）
     const fn = new Function('with(this) { ' + code + ' }')
     fn.call(fakeGlobal)
 
