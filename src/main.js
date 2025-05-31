@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url'
 const modules = {
   aadecode: await import('./plugin/aadecode.js'),
   aadecode2: await import('./plugin/aadecode2.js'),
+  kaomojifuck: await import('./plugin/kaomojifuck.js'),
   eval: await import('./plugin/eval.js'),
   obfuscator: await import('./plugin/obfuscator.js'),
   sojsonv7: await import('./plugin/sojsonv7.js'),
