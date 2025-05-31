@@ -617,7 +617,7 @@
         <div class="header-content">
             <div style="display: flex; align-items: center;">
                 <h1 class="logo">羊毛助手</h1>
-                <span class="version">v2.0</span>
+                <span class="version">v3.3</span>
             </div>
             <div style="color: #6b7280; font-size: 0.875rem;">
                 自动解密脚本工具
@@ -1112,16 +1112,7 @@
                     
                     if (response.ok) {
                         const data = await response.json();
-                        // 修复编码问题：先解码base64，再处理UTF-8编码
-                        const base64Content = data.content.replace(/\n/g, '');
-                        const binaryContent = atob(base64Content);
-                        
-                        // 将二进制字符串转换为UTF-8
-                        const uint8Array = new Uint8Array(binaryContent.length);
-                        for (let i = 0; i < binaryContent.length; i++) {
-                            uint8Array[i] = binaryContent.charCodeAt(i);
-                        }
-                        const content = new TextDecoder('utf-8').decode(uint8Array);
+                        const content = atob(data.content.replace(/\n/g, ''));
                         
                         if (content && content.trim().length > 10) {
                             this.displayResult(content);
@@ -1142,10 +1133,7 @@
                     const response = await fetch(rawUrl);
                     
                     if (response.ok) {
-                        // 确保以UTF-8编码读取
-                        const arrayBuffer = await response.arrayBuffer();
-                        const content = new TextDecoder('utf-8').decode(arrayBuffer);
-                        
+                        const content = await response.text();
                         if (content && content.trim().length > 10) {
                             this.displayResult(content);
                             this.addLog('Raw URL获取成功！', 'success');
@@ -1166,10 +1154,7 @@
                     const response = await fetch(proxyUrl);
                     
                     if (response.ok) {
-                        // 确保以UTF-8编码读取
-                        const arrayBuffer = await response.arrayBuffer();
-                        const content = new TextDecoder('utf-8').decode(arrayBuffer);
-                        
+                        const content = await response.text();
                         if (content && content.trim().length > 10) {
                             this.displayResult(content);
                             this.addLog('代理获取成功！', 'success');
@@ -1898,15 +1883,7 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     try {
-                        let content;
-                        
-                        // 如果是ArrayBuffer，转换为UTF-8字符串
-                        if (e.target.result instanceof ArrayBuffer) {
-                            content = new TextDecoder('utf-8').decode(e.target.result);
-                        } else {
-                            content = e.target.result;
-                        }
-                        
+                        const content = e.target.result;
                         const inputTextarea = document.getElementById('input-code');
                         
                         if (inputTextarea) {
@@ -1931,8 +1908,7 @@
                 };
                 
                 try {
-                    // 使用readAsArrayBuffer确保正确处理编码
-                    reader.readAsArrayBuffer(file);
+                    reader.readAsText(file);
                 } catch (error) {
                     this.showToast('无法读取文件', 'error');
                     this.addLog(`无法读取文件: ${error.message}`, 'error');
@@ -1951,10 +1927,7 @@
                     const response = await fetch(url);
                     if (!response.ok) throw new Error('无法加载文件');
                     
-                    // 确保以UTF-8编码读取
-                    const arrayBuffer = await response.arrayBuffer();
-                    const text = new TextDecoder('utf-8').decode(arrayBuffer);
-                    
+                    const text = await response.text();
                     const inputTextarea = document.getElementById('input-code');
                     inputTextarea.value = text;
                     inputTextarea.style.display = 'block';
