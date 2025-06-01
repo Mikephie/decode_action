@@ -1,5 +1,5 @@
 /*************************************
-1112223333
+111222333344
 
 [rewrite_local]
 ^https?:\/\/leancloud\.emotionwp\.com\/.+\/(classes|batch\/save) url script-response-body https://raw.githubusercontent.com/Mike-offers/Rewrite/refs/heads/master/QuantumultX/BiZhi.js
