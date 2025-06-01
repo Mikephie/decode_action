@@ -1,4 +1,4 @@
-//Sun Jun 01 2025 11:03:11 GMT+0000 (Coordinated Universal Time)
+//2025-06-01T11:52:09.844Z
 //解密脚本在此
 const version = 'V1.0.9';
 var _0xodH = 'jsjiami.com.v7';
