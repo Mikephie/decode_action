@@ -1,8 +1,9 @@
 import { parse } from '@babel/parser'
 import _traverse from '@babel/traverse'
 import * as t from '@babel/types'
-import generator from '@babel/generator'
+import _generator from '@babel/generator'
 const traverse = _traverse.default
+const generator = _generator.default
 
 // 动态执行 AST 中 function 拿到字符串表
 function getStringTable(ast, fnName) {
