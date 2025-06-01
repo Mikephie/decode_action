@@ -1,9 +1,12 @@
 // plugins/aadecode.js - AAEncode Decoder Plugin (ES Module)
-// Adapted from Java AADecoder (https://github.com/madushan1000/jdtrunk/blob/00b2e9b3b18124ed39ece74b24afe6f08007b23f/src/org/jdownloader/encoding/AADecoder.java)
+// Adapted from Java AADecoder (https://www.scribd.com/document/764750109/AADecoder)
 
 const HEX_HASH_MARKER = "(oﾟｰﾟo)+ ";
 const BLOCK_START_MARKER = "(ﾟДﾟ)[ﾟεﾟ]+";
-const AA_PREFIX = "ﾟωﾟﾉ= /｀ｍ´）ﾉ ~┻━┻   //*´∇｀*/ ['_']; o=(ﾟｰﾟ)  =_=3; c=(ﾟΘﾟ) =(ﾟｰﾟ)-(ﾟｰﾟ); ";
+// Adjusted AA_PREFIX to be more flexible with whitespace and the optional comment part
+// The original Java code removes /*´∇｀*/ before checking prefix/suffix.
+// We'll define a more robust regex for prefix matching.
+const AA_PREFIX_REGEX = /^ﾟωﾟﾉ= \/｀ｍ´）ﾉ ~┻━┻\s*(?:\/\*´∇｀\*\/)?\s*\[\'_'\\];\s*o=\(ﾟｰﾟ\)\s*=_=3;\s*c=\(ﾟΘﾟ\)\s*=\(ﾟｰﾟ\)-\(ﾟｰﾟ\);\s*/;
 const AA_SUFFIX = "(ﾟДﾟ)[ﾟoﾟ]) (ﾟΘﾟ)) ('_');";
 
 // Mappings from AAEncode byte patterns to their numerical values (0-15)
@@ -36,7 +39,8 @@ const BYTES = [
  * @returns {string|null} The matched group or null.
  */
 function getPatternMatch(pattern, input, group) {
-    const matcher = new RegExp(pattern, 'i').exec(input); // 'i' for CASE_INSENSITIVE, 's' for DOTALL (handled by regex engine default/node: ^[\s\S]$)
+    // Ensure regex is treated as multiline and dotall if needed, but for single-line match, 's' flag is not essential in JS regex for '.'
+    const matcher = new RegExp(pattern, 'i').exec(input); 
     if (matcher && matcher[group] !== undefined) {
         return matcher[group];
     }
@@ -153,7 +157,8 @@ function decodeBlock(encodedBlock, radix) {
     let currentBlock = encodedBlock;
     for (let i = 0; i < BYTES.length; i++) {
         // Replace all occurrences of the byte pattern with its number
-        currentBlock = currentBlock.split(BYTES[i]).join(String(i));
+        // Use a global regex replacement to ensure all instances are covered
+        currentBlock = currentBlock.replace(new RegExp(escapeRegExp(BYTES[i]), 'g'), String(i));
     }
 
     const expressions = [];
@@ -164,8 +169,6 @@ function decodeBlock(encodedBlock, radix) {
         const c = currentBlock.charAt(i);
         if (c === '(') {
             if (currentExp.length > 0 && braceCount === 0) {
-                // If we encounter an opening brace and we are at the top level,
-                // and we have a non-empty expression, add it.
                 expressions.push(currentExp);
                 currentExp = "";
             }
@@ -174,25 +177,26 @@ function decodeBlock(encodedBlock, radix) {
         } else if (c === ')') {
             braceCount--;
             currentExp += c;
-        } else if (c === ' ') {
-            // Space as a delimiter (only when braceCount is 0, indicating end of top-level expression)
+        } else if (c === ' ') { // Space as a potential delimiter
             if (braceCount === 0) {
-                if (currentExp.length > 0) {
-                    expressions.push(currentExp);
-                    currentExp = "";
+                // Java's specific delimiter heuristic: space after a '+'
+                // Java code checks `i > 0 && c == ' ' && encodedBlock.charAt(i - 1) == '+'`
+                // This means: if current char is space, and previous char was '+', and not inside braces.
+                if (i > 0 && currentBlock.charAt(i - 1) === '+') { 
+                    if (currentExp.length > 0) {
+                        expressions.push(currentExp);
+                        currentExp = "";
+                    }
+                } else { // Standard space delimiter if not that specific '+ ' case
+                    if (currentExp.length > 0) {
+                        expressions.push(currentExp);
+                        currentExp = "";
+                    }
                 }
             } else {
-                currentExp += c; // Inside braces, spaces are part of the expression
+                currentExp += c; // Space inside braces is part of expression
             }
-        } else if (c === '+') { // Handle plus as a potential delimiter
-            currentExp += c;
-            // If braceCount is 0 and the next char is not a space, it might be a block end if followed by space.
-            // Or if it's the end of a block.
-            if (braceCount === 0 && (i + 1 < currentBlock.length && currentBlock.charAt(i + 1) === ' ')) {
-                // This is a heuristic adapted from Java, sometimes '+' followed by space delimits.
-                // We'll let the expression parsing handle it mostly.
-            }
-        } else {
+        } else { // Any other character (including '+')
             currentExp += c;
         }
     }
@@ -205,59 +209,81 @@ function decodeBlock(encodedBlock, radix) {
     for (let expression of expressions) {
         expression = expression.trim();
         // Remove trailing '+' if it's a delimiter from Java's split logic
-        if (expression.endsWith('+') && !expression.endsWith('++')) { // Avoid removing '++'
-            expression = expression.substring(0, expression.length - 1);
+        if (expression.endsWith('+') && !expression.endsWith('++') && !expression.endsWith('--') && !expression.endsWith('*-') && !expression.endsWith('/-') && !expression.endsWith('^-')) { // Avoid removing if it's an operator
+             expression = expression.substring(0, expression.length - 1);
         }
 
         if (expression.length === 0) continue; // Skip empty expressions
 
         let evaluatedValue;
         try {
-            evaluatedValue = evalExpression(expression); // Use our custom eval
+            evaluatedValue = evalExpression(expression);
         } catch (e) {
-            throw new Error(`Failed to evaluate expression '${expression}': ${e.message}`);
+            throw new Error(`Failed to evaluate expression '${expression}' in radix ${radix}: ${e.message}`);
         }
         
-        // Convert the evaluated number to a string in the specified radix
-        // This is typically the number that forms the character code.
         resultNumString += Math.floor(evaluatedValue).toString(radix);
     }
     
     return resultNumString;
 }
 
+/**
+ * Escapes a string for use in a regular expression.
+ * @param {string} string - The string to escape.
+ * @returns {string} The escaped string.
+ */
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
 
 // --- Main AAEncode Decoder Function ---
 const AADecode = {
     decode: function(js) {
-        // Remove Java-specific /*´∇｀*/ comment marker
-        js = js.replace(/\/\*´∇｀\*\//g, ""); // Use global regex to remove all occurrences
+        // Remove Java-specific /*´∇｀*/ comment marker before processing
+        js = js.replace(/\/\*´∇｀\*\//g, ""); 
         
         // trim whitespace
-        js = js.replace(/^\s+|\s+$/g, ""); // Use global regex for full trim
+        js = js.replace(/^\s+|\s+$/g, ""); 
 
         // Check if it's AAEncoded using our specific prefix/suffix
-        if (!js.startsWith(AA_PREFIX)) {
+        // Use the regex for prefix matching
+        const prefixMatch = js.match(AA_PREFIX_REGEX);
+        if (!prefixMatch || prefixMatch.index !== 0) { // Ensure it matches at the very beginning
             throw new Error("Given code does not start with expected AAEncode prefix.");
         }
+        
+        // Check suffix
         if (!js.endsWith(AA_SUFFIX)) {
             throw new Error("Given code does not end with expected AAEncode suffix.");
         }
 
         // Extract the main data payload (between (ﾟДﾟ)[ﾟoﾟ]+ and the final character before the suffix)
-        // Regex: literal `(ﾟДﾟ)[ﾟoﾟ]+ ` (escaped in regex), then capture everything `(.+)`, then literal `(ﾟДﾟ)[ﾟoﾟ])`
-        const dataMatchPattern = "\\(ﾟДﾟ\\)\\[ﾟoﾟ\\]\\+ (.+?)\\(ﾟДﾟ\\)\\[ﾟoﾟ\\]\\)";
-        let data = getPatternMatch(dataMatchPattern, js, 1);
+        // This regex now accounts for the dynamic prefix length by finding the suffix first.
+        // We need to find the part between `(ﾟДﾟ)[ﾟoﾟ]+` and `(ﾟДﾟ)[ﾟoﾟ])`
+        // The `data` in Java is `js.substring(start, end)` where start is `(ﾟДﾟ)[ﾟoﾟ]+`
+        // The Java code extracts `data` from `(ﾟДﾟ)[ﾟoﾟ]+ (.+?) (ﾟДﾟ)[ﾟoﾟ])`
+        // So we need to find the content between the first `(ﾟДﾟ)[ﾟoﾟ]+` and the last `(ﾟДﾟ)[ﾟoﾟ])`
+        
+        const dataBlockStartMarker = "(ﾟДﾟ)[ﾟoﾟ]+ "; // Note the space
+        const dataBlockEndMarker = "(ﾟДﾟ)[ﾟoﾟ])";
 
-        if (!data) {
-            throw new Error("AAEncode data block not found within the expected pattern.");
+        const dataStartIndex = js.indexOf(dataBlockStartMarker);
+        const dataEndIndex = js.lastIndexOf(dataBlockEndMarker);
+
+        if (dataStartIndex === -1 || dataEndIndex === -1 || dataStartIndex >= dataEndIndex) {
+            throw new Error("AAEncode data block markers not found or invalid structure.");
         }
+
+        // Extract the raw data string that contains all the encoded blocks
+        let data = js.substring(dataStartIndex + dataBlockStartMarker.length, dataEndIndex);
 
         let out = "";
         while (data.length > 0) {
             // Check for BLOCK_START_MARKER
             if (!data.startsWith(BLOCK_START_MARKER)) {
-                throw new Error("No AAEncode block start marker found: " + data.substring(0, 50) + "...");
+                throw new Error("No AAEncode block start marker found in data: " + data.substring(0, Math.min(data.length, 50)) + "...");
             }
             data = data.substring(BLOCK_START_MARKER.length);
 
@@ -280,36 +306,13 @@ const AADecode = {
 
             const uniCodeNumString = decodeBlock(encodedBlock, radix);
             if (uniCodeNumString.length === 0) { // isEmpty check
-                throw new Error("Bad decoding for block: " + encodedBlock.substring(0, 50) + "...");
+                throw new Error("Bad decoding for block: " + encodedBlock.substring(0, Math.min(encodedBlock.length, 50)) + "...");
             }
             
             // Convert the numerical string (e.g., "65" or "41") to its character representation
-            // We need to parse it as an integer from the accumulated uniCodeNumString in base `radix`.
-            // The Java code builds `uniCodeNumString` across *multiple* expressions within a block,
-            // so we need to ensure this character conversion logic is correct.
-            // The Java `Integer.parseInt(uniCodeNumString, radix)` is critical.
-            // It suggests `uniCodeNumString` for *each character* is produced by `decodeBlock`.
-            // Re-reading Java: `out += Character.toString((char) Integer.parseInt(uniCodeNumString, radix));`
-            // This means `decodeBlock` returns a single character's numerical string representation.
-
-            // The issue is that decodeBlock currently returns the *concatenated* numerical string for the block.
-            // Let's adjust decodeBlock to return an array of number strings or parse it differently.
-            // For now, we'll assume decodeBlock returns a string of concatenated hex/octal digits.
-            // We need to parse these digits into characters. This is the role of AADecode2 after all.
-
-            // Let's ensure decodeBlock returns the actual number, and then convert to char.
-            // Re-evaluating `decodeBlock` output from Java: `ret += Integer.toString((int) eval(expression), radix);`
-            // This means each expression corresponds to a *digit* in the Unicode char.
-            // No, `uniCodeNumString` is the *concatenated string* of digits for one *character*.
-            // Example: `uniCodeNumString = "123"` (octal), then `(char)Integer.parseInt("123", 8)`.
-
-            // This means `decodeBlock` should output the complete numerical string for ONE character.
-            // Let's make decodeBlock return the parsed int value, and then convert to char.
-            // NO, `decodeBlock` is correct in returning the `ret` string like "41" for 'A' (hex).
-            // The actual character conversion happens here: `Character.toString((char) Integer.parseInt(uniCodeNumString, radix))`
+            // The Java code uses `Integer.parseInt(uniCodeNumString, radix)` to get the char code.
+            // `uniCodeNumString` is the complete numerical representation for ONE character.
             out += String.fromCharCode(parseInt(uniCodeNumString, radix));
-
-            // console.log("AADecode Debug: Decoded char: " + out[out.length - 1]);
         }
 
         return out;
