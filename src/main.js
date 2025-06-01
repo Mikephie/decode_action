@@ -21,6 +21,7 @@ const loadPlugins = async () => {
         const files = await fs.promises.readdir(actualPluginDir);
         for (const file of files) {
             // Only load .js files and exclude files like 'aadecode-2.js' if 'aadecode.js' exists
+            // Also exclude 'main.js' itself if it somehow ends up in the plugin directory
             if (file.endsWith('.js') && !file.includes('-2.js') && !file.includes('main')) { 
                 const pluginName = path.basename(file, '.js');
                 // Construct the module path as a file URL for dynamic import
@@ -48,10 +49,17 @@ const loadPlugins = async () => {
         console.error(`❌ Error reading plugins directory at '${actualPluginDir}': ${err.message}`); 
     }
     // Sort plugins to ensure a consistent order of application
-    // For this specific case, aadecode -> aadecode2 -> jsbeautify is a logical order.
+    // Prioritize deobfuscation plugins, then formatting.
     plugins.sort((a, b) => {
-        const order = { 'aadecode': 1, 'aadecode2': 2, 'jsbeautify': 3 };
-        return (order[a.name] || 99) - (order[b.name] || 99);
+        const order = { 'aadecode': 1, 'aadecode2': 2, 'jsbeautify': 99 }; // jsbeautify should run last
+        const orderA = order[a.name] || 50; // Default order for other plugins
+        const orderB = order[b.name] || 50;
+        
+        if (orderA !== orderB) {
+            return orderA - orderB;
+        }
+        // For plugins with the same priority, sort alphabetically
+        return a.name.localeCompare(b.name);
     });
 
     return plugins;
@@ -131,6 +139,14 @@ Example:
             let changedInThisPass = false; // Track if *any* plugin made a change in this pass
 
             for (const { name, plugin } of plugins) {
+                const isBeautifyPlugin = (name === 'jsbeautify');
+                
+                // Skip beautify plugin in early passes if no actual deobfuscation has occurred yet
+                // Or if it's not the last pass and no significant changes happened in this pass yet
+                if (isBeautifyPlugin && pass < maxPass && !changedInThisPass && usedPlugins.length === 0) {
+                    continue; 
+                }
+
                 try {
                     const beforeProcessing = processed;
                     const result = plugin(processed);
@@ -139,7 +155,7 @@ Example:
                         console.log(`🔁 Pass ${pass}: Plugin '${name}' applied successfully.`);
                         processed = result;
                         // Add plugin to used list only if it's new or if it's a beautifier (which can be applied multiple times)
-                        if (!usedPlugins.includes(name) || name === 'jsbeautify') {
+                        if (!usedPlugins.includes(name) || isBeautifyPlugin) {
                            usedPlugins.push(name);
                         }
                         changedInThisPass = true; // Mark that a change occurred
@@ -153,21 +169,58 @@ Example:
                         // The outer loop will restart if changedInThisPass is true.
                     }
                 } catch (e) {
-                    // Suppress "not encoded as aaencode" error for 'aadecode' in subsequent passes
-                    // as this is expected if a previous pass already decoded it.
-                    if (name === 'aadecode' && e.message.includes("not encoded as aaencode") && pass > 1) {
-                         // console.log(`AADecode Debug: Plugin '${name}' did not apply (expected, already decoded).`);
+                    // Define common "expected" error messages for plugins that might not apply
+                    const expectedErrors = [
+                        "not encoded as aaencode", // For aadecode
+                        "Preamble or Postamble not found", // For aadecode
+                        "did not return a string", // If a decoder expects a string but gets something else
+                        "Unexpected parent type", // Common from AST parsers if input is not JS or malformed
+                        "Cannot parse code", // Common from parsers
+                        "Missing semicolon", // Common from parsers
+                        "The number of code blocks is incorrect!" // Specific to some block-based deobfuscators
+                    ];
+
+                    const isExpectedError = expectedErrors.some(errText => e.message.includes(errText));
+
+                    if (isExpectedError && !isBeautifyPlugin) { // Don't log expected errors for deobfuscators
+                         // console.log(`Debug: Plugin '${name}' did not apply (expected error: ${e.message}).`);
                     } else {
                          console.error(`⚠️ Plugin '${name}' failed in pass ${pass}: ${e.message}`);
                     }
                 }
             }
 
-            if (!changedInThisPass) {
+            // If no deobfuscation plugin made a change, but beautify ran, and it's not the last pass,
+            // we might want to continue for one more pass if beautify made a change,
+            // but generally, we stop if deobfuscation is stuck.
+            if (!changedInThisPass && pass > 1) { // Stop if no changes in this pass (after first pass)
                 console.log(`🛑 Pass ${pass}: No changes detected. Terminating iteration.`);
-                break; // No changes in this pass, so stop
+                break; 
+            } else if (!changedInThisPass && pass === 1 && plugins.length > 0) {
+                // Special case for first pass: if no plugin changed anything, stop early
+                console.log(`🛑 Pass ${pass}: No changes detected in the first pass. Terminating iteration.`);
+                break;
             }
         }
+
+        // Final beautification pass if any deobfuscation occurred and beautify is available
+        const finalBeautifyPlugin = plugins.find(p => p.name === 'jsbeautify');
+        if (finalBeautifyPlugin && processed.trim() !== source.trim()) {
+            try {
+                const beforeFinalBeautify = processed;
+                const finalBeautified = finalBeautifyPlugin.plugin(processed);
+                if (finalBeautified.trim() !== beforeFinalBeautify.trim()) {
+                    processed = finalBeautified;
+                    if (!usedPlugins.includes('jsbeautify')) {
+                        usedPlugins.push('jsbeautify');
+                    }
+                    console.log(`✨ Final pass: 'jsbeautify' applied for final formatting.`);
+                }
+            } catch (e) {
+                console.warn(`⚠️ Final beautification failed: ${e.message}`);
+            }
+        }
+
 
         // ========= Write Output =========
         if (processed.trim() !== source.trim()) {
@@ -194,4 +247,3 @@ Example:
 }
 
 // Run the main function
-main();
