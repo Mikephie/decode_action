@@ -1,7 +1,8 @@
 import { parse } from '@babel/parser'
-import traverse from '@babel/traverse'
+import _traverse from '@babel/traverse'
 import * as t from '@babel/types'
 import generator from '@babel/generator'
+const traverse = _traverse.default
 
 // 检测是否 jsjiami.com.v7 混淆
 function isJsjiamiV7(code) {
