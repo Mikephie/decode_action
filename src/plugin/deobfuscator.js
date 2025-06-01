@@ -13,15 +13,37 @@ const __dirname = path.dirname(__filename);
 const loadPlugins = async () => {
     const plugins = [];
     // Correctly resolve plugin directory relative to the current script's location
-    const pluginDir = path.join(__dirname, 'plugins');
+    // Assuming the structure is src/main.js and src/plugin/plugins/
+    const pluginDir = path.join(__dirname, 'plugins'); // Original path, let's try to make it work
+    
+    // Check if the common nested structure exists, if not, fall back to direct 'plugins'
+    // This makes it more robust for different user setups
+    const potentialNestedPluginDir = path.join(__dirname, 'plugin', 'plugins');
+    let actualPluginDir = pluginDir; // Default to direct 'plugins'
 
     try {
-        const files = await fs.promises.readdir(pluginDir);
+        // Test if the nested path exists and has files
+        const nestedFiles = await fs.promises.readdir(potentialNestedPluginDir);
+        if (nestedFiles.length > 0) {
+            actualPluginDir = potentialNestedPluginDir;
+            console.log(`Debug: Found plugins in nested directory: ${actualPluginDir}`);
+        } else {
+            console.log(`Debug: No plugins found in nested directory. Checking direct 'plugins' directory.`);
+        }
+    } catch (nestedErr) {
+        // If nested directory doesn't exist, it will throw, which is fine.
+        // We'll proceed with the assumption of a direct 'plugins' directory.
+        console.log(`Debug: Nested plugin directory '${potentialNestedPluginDir}' not found or empty. Falling back to '${pluginDir}'.`);
+    }
+
+
+    try {
+        const files = await fs.promises.readdir(actualPluginDir);
         for (const file of files) {
             if (file.endsWith('.js')) {
                 const pluginName = path.basename(file, '.js');
                 // Construct the module path as a file URL for dynamic import
-                const modulePath = new URL(path.join(pluginDir, file), import.meta.url).href;
+                const modulePath = new URL(path.join(actualPluginDir, file), import.meta.url).href;
                 try {
                     const mod = await import(modulePath);
                     // Handle various export structures (default export, named 'plugin' export)
@@ -41,7 +63,7 @@ const loadPlugins = async () => {
             }
         }
     } catch (err) {
-        console.error(`❌ Error reading plugins directory at '${pluginDir}': ${err.message}`); // Log the problematic path
+        console.error(`❌ Error reading plugins directory at '${actualPluginDir}': ${err.message}`); // Log the problematic path
     }
     // Sort plugins to ensure a consistent order of application
     // For this specific case, aadecode -> aadecode2 -> jsbeautify is a logical order.
