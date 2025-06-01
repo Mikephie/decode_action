@@ -7,6 +7,8 @@ import { fileURLToPath } from 'url'
 const modules = {
   aadecode:     await import('./plugin/aadecode.js'),
   aadecode2:    await import('./plugin/aadecode2.js'),
+  deobfuscator:     await import('./plugin/deobfuscator.js'),
+  jsbeautify:    await import('./plugin/jsbeautify.js'),
 }
 
 // ========= 插件封装函数，兼容多种导出结构 =========
