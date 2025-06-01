@@ -1,5 +1,5 @@
 export function plugin(text) {
-  const aaencodeRegex = /(ﾟωﾟ|ﾟДﾟ|ﾟｰﾟ|ﾟΘﾟ)[\s\S]+\('_'\)\s*\(\s*\);?/;
+  const aaencodeRegex = /ﾟωﾟ|ﾟДﾟ|ﾟｰﾟ|ﾟΘﾟ|\(ﾟДﾟ\)\s*\['_']\s*\(|\('_'\)\s*\(\);?/;
 
   text = text.trim();
 
