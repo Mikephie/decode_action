@@ -5,8 +5,8 @@ import process from 'process';
 
 // Dynamically import ESM modules
 const evalModule = await import('./plugin/eval.js');
-const aadecodeModule = await import('./plugin/aadecode.js');
-const aadecode2Module = await import('./plugin/aadecode2.js');
+//const aadecodeModule = await import('./plugin/aadecode.js');
+//const aadecode2Module = await import('./plugin/aadecode2.js');
 const commonModule = await import('./plugin/common.js');
 const jjencodeModule = await import('./plugin/jjencode.js');
 const sojsonModule = await import('./plugin/sojson.js');
@@ -16,8 +16,8 @@ const awscModule = await import('./plugin/awsc.js');
 const jsconfuserModule = await import('./plugin/jsconfuser.js');
 
 // Provide default exports if necessary
-const PluginAAdecode = aadecodeModule.default || aadecodeModule;
-const PluginAAdecode2 = aadecode2Module.default || aadecode2Module;
+//const PluginAAdecode = aadecodeModule.default || aadecodeModule;
+//const PluginAAdecode2 = aadecode2Module.default || aadecode2Module;
 const PluginEval = evalModule.default || evalModule;
 const PluginCommon = commonModule.default || commonModule;
 const PluginJjencode = jjencodeModule.default || jjencodeModule;
@@ -50,8 +50,8 @@ let time;
 
 // Try plugins in sequence until the processed code differs from the original
 const plugins = [
-  { name: 'aadecode', plugin: PluginAAdecode }, // 👈 插入 aadecode 插件
-  { name: 'aadecode2', plugin: PluginAAdecode2 }, // 👈 插入 aadecode2 插件
+  //{ name: 'aadecode', plugin: PluginAAdecode }, // 👈 插入 aadecode 插件
+  //{ name: 'aadecode2', plugin: PluginAAdecode2 }, // 👈 插入 aadecode2 插件
   { name: 'eval', plugin: PluginEval }, // 👈 插入 eval 插件
   { name: 'obfuscator', plugin: PluginObfuscator },
   { name: 'sojsonv7', plugin: PluginSojsonV7 },
