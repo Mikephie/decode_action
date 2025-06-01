@@ -1,111 +1,174 @@
 /**
- * 通用JavaScript反混淆插件
- * 集成多种解混淆技术
+ * 高级JavaScript反混淆插件
+ * 专门处理jsjiami.com类型的混淆
  */
 
-export default function universalDeobfuscator(code) {
+export default function advancedDeobfuscator(code) {
   let result = code;
-  let hasChanges = false;
   
   try {
-    // 第一步：字符串解码
-    result = decodeStrings(result);
+    console.log('开始高级反混淆处理...');
     
-    // 第二步：Base64解码
-    result = decodeBase64Strings(result);
+    // 第一步：移除注释和版本信息
+    result = removeComments(result);
     
-    // 第三步：RC4解密
-    result = decryptRC4(result);
+    // 第二步：修复语法错误
+    result = fixSyntaxErrors(result);
+    
+    // 第三步：还原字符串数组
+    result = restoreStringArray(result);
     
     // 第四步：还原函数调用
     result = restoreFunctionCalls(result);
     
-    // 第五步：简化控制流
-    result = simplifyControlFlow(result);
+    // 第五步：简化复杂表达式
+    result = simplifyExpressions(result);
     
-    // 第六步：变量名还原
-    result = restoreVariableNames(result);
+    // 第六步：还原对象属性访问
+    result = restorePropertyAccess(result);
     
-    // 第七步：代码美化
-    result = beautifyCode(result);
+    // 第七步：清理无用代码
+    result = cleanupCode(result);
     
-    // 第八步：移除无用代码
-    result = removeDeadCode(result);
+    // 第八步：美化代码
+    result = formatCode(result);
     
-    hasChanges = result !== code;
+    console.log('反混淆处理完成');
     
   } catch (error) {
-    console.error('解混淆过程中发生错误:', error.message);
-    return code; // 出错时返回原代码
+    console.error('反混淆过程中发生错误:', error.message);
+    return code;
   }
-  
-  return hasChanges ? result : code;
-}
-
-// 1. 字符串解码 (十六进制、Unicode等)
-function decodeStrings(code) {
-  let result = code;
-  
-  // 十六进制字符串 \x41 -> A
-  result = result.replace(/\\x([0-9a-fA-F]{2})/g, (match, hex) => {
-    return String.fromCharCode(parseInt(hex, 16));
-  });
-  
-  // Unicode字符串 \u0041 -> A
-  result = result.replace(/\\u([0-9a-fA-F]{4})/g, (match, unicode) => {
-    return String.fromCharCode(parseInt(unicode, 16));
-  });
-  
-  // 八进制字符串 \101 -> A
-  result = result.replace(/\\([0-7]{3})/g, (match, octal) => {
-    return String.fromCharCode(parseInt(octal, 8));
-  });
   
   return result;
 }
 
-// 2. Base64解码
-function decodeBase64Strings(code) {
-  // 查找可能的Base64字符串并尝试解码
-  const base64Pattern = /['"`]([A-Za-z0-9+/]{4,}={0,2})['"`]/g;
-  
-  return code.replace(base64Pattern, (match, b64str) => {
-    try {
-      if (b64str.length % 4 === 0 && /^[A-Za-z0-9+/]*={0,2}$/.test(b64str)) {
-        const decoded = Buffer.from(b64str, 'base64').toString('utf-8');
-        // 只有当解码结果是可打印字符时才替换
-        if (/^[\x20-\x7E]*$/.test(decoded)) {
-          return `"${decoded}"`;
-        }
-      }
-    } catch (e) {
-      // 解码失败，保持原样
-    }
-    return match;
-  });
-}
-
-// 3. RC4解密 (针对常见的RC4混淆模式)
-function decryptRC4(code) {
+// 1. 移除注释和版本信息
+function removeComments(code) {
   let result = code;
   
-  // 查找RC4解密函数定义
-  const rc4FuncPattern = /function\s+(\w+)\s*\([^)]+\)\s*{[^}]*RC4[^}]*}/gi;
-  const rc4Match = rc4FuncPattern.exec(code);
+  // 移除时间戳注释
+  result = result.replace(/\/\/\d{4}-\d{2}-\d{2}T[\d:.]+Z\s*\n/g, '');
   
-  if (rc4Match) {
-    const funcName = rc4Match[1];
-    // 查找使用该函数的调用并尝试解密
-    const callPattern = new RegExp(`${funcName}\\s*\\([^)]+\\)`, 'g');
+  // 移除解密脚本注释
+  result = result.replace(/\/\/解密脚本在此\s*\n/g, '');
+  
+  // 移除jsjiami版本信息
+  result = result.replace(/var\s+\w+\s*=\s*['"`]jsjiami\.com\.v\d+['"`];\s*/g, '');
+  result = result.replace(/var\s+version_\s*=\s*['"`]jsjiami\.com\.v\d+['"`];\s*/g, '');
+  
+  return result;
+}
+
+// 2. 修复语法错误
+function fixSyntaxErrors(code) {
+  let result = code;
+  
+  // 修复 >> 操作符的空格问题
+  result = result.replace(/>\s*>\s*/g, '>>');
+  
+  // 修复 ++ 操作符的空格问题
+  result = result.replace(/\+\s*\+/g, '++');
+  result = result.replace(/--\s+/g, '--');
+  
+  // 修复 += 操作符
+  result = result.replace(/\+\s*=/g, '+=');
+  
+  // 修复 == 操作符
+  result = result.replace(/=\s*=/g, '==');
+  result = result.replace(/!\s*=/g, '!=');
+  result = result.replace(/<\s*=/g, '<=');
+  
+  // 修复正则表达式中的空格
+  result = result.replace(/\/\s+([^\/\s]+)\s+\/([gimuy]*)/g, '/$1/$2');
+  
+  // 修复对象属性访问
+  result = result.replace(/\.\s+(\w+)/g, '.$1');
+  
+  return result;
+}
+
+// 3. 还原字符串数组
+function restoreStringArray(code) {
+  let result = code;
+  
+  // 查找字符串数组定义
+  const arrayMatch = result.match(/function\s+(\w+)\s*\(\)\s*\{\s*const\s+\w+\s*=\s*\(function\s*\(\)\s*\{\s*return\s*\[([^\]]+)\]/);
+  
+  if (arrayMatch) {
+    const funcName = arrayMatch[1];
+    const arrayContent = arrayMatch[2];
     
-    result = result.replace(callPattern, (match) => {
-      try {
-        // 这里可以添加具体的RC4解密逻辑
-        return `"[RC4_DECRYPTED]"`;
-      } catch (e) {
-        return match;
+    // 解析字符串数组
+    const strings = [];
+    let current = '';
+    let inString = false;
+    let stringChar = '';
+    let escapeNext = false;
+    
+    for (let i = 0; i < arrayContent.length; i++) {
+      const char = arrayContent[i];
+      
+      if (escapeNext) {
+        current += char;
+        escapeNext = false;
+        continue;
       }
+      
+      if (char === '\\') {
+        current += char;
+        escapeNext = true;
+        continue;
+      }
+      
+      if (!inString && (char === '"' || char === "'" || char === '`')) {
+        inString = true;
+        stringChar = char;
+        current = char;
+      } else if (inString && char === stringChar) {
+        current += char;
+        strings.push(current);
+        current = '';
+        inString = false;
+        stringChar = '';
+      } else if (inString) {
+        current += char;
+      } else if (char === ',') {
+        if (current.trim()) {
+          strings.push(current.trim());
+        }
+        current = '';
+      } else if (char !== ' ' && char !== '\n' && char !== '\t') {
+        current += char;
+      }
+    }
+    
+    if (current.trim()) {
+      strings.push(current.trim());
+    }
+    
+    // 替换函数调用
+    const callPattern = new RegExp(`${funcName}\\s*\\(\\s*(0x[a-f0-9]+|\\d+)\\s*,\\s*['"\`]([^'"\`]*)['"\`]\\s*\\)`, 'g');
+    
+    result = result.replace(callPattern, (match, index, key) => {
+      const idx = parseInt(index, index.startsWith('0x') ? 16 : 10);
+      if (idx < strings.length && strings[idx]) {
+        try {
+          // 尝试解码字符串（如果是编码的）
+          let str = strings[idx];
+          if (str.startsWith('"') || str.startsWith("'") || str.startsWith('`')) {
+            str = str.slice(1, -1);
+          }
+          return `"${str}"`;
+        } catch (e) {
+          return strings[idx] || match;
+        }
+      }
+      return match;
     });
+    
+    // 移除字符串数组函数定义
+    result = result.replace(new RegExp(`function\\s+${funcName}\\s*\\(\\)\\s*\\{[^}]+\\}\\s*;?`, 'g'), '');
   }
   
   return result;
@@ -115,129 +178,145 @@ function decryptRC4(code) {
 function restoreFunctionCalls(code) {
   let result = code;
   
-  // 还原数组索引形式的函数调用 arr['push'] -> arr.push
-  result = result.replace(/(\w+)\[['"`](\w+)['"`]\]/g, '$1.$2');
+  // 查找主要的解密函数
+  const funcMatch = result.match(/const\s+(\w+)\s*=\s*(\w+);\s*function\s+\2/);
+  if (funcMatch) {
+    const mainFunc = funcMatch[1];
+    
+    // 这个函数通常用于字符串解密，我们尝试简化其调用
+    const pattern = new RegExp(`${mainFunc}\\s*\\(\\s*(0x[a-f0-9]+|\\d+)\\s*,\\s*['"\`]([^'"\`]*)['"\`]\\s*\\)`, 'g');
+    
+    result = result.replace(pattern, (match, hex, str) => {
+      // 简单返回字符串，实际应用中可能需要更复杂的解密逻辑
+      return `"${str}"`;
+    });
+  }
   
-  // 还原字符串拼接形式的属性访问
-  result = result.replace(/(\w+)\[(['"`])(\w+)\2\s*\+\s*\2(\w+)\2\]/g, '$1.$3$4');
+  return result;
+}
+
+// 5. 简化复杂表达式
+function simplifyExpressions(code) {
+  let result = code;
   
-  // 还原复杂的计算属性访问
-  result = result.replace(/\[([^[\]]+)\]\s*\(/g, (match, prop) => {
-    if (/^['"`]\w+['"`]$/.test(prop.trim())) {
-      return '.' + prop.trim().slice(1, -1) + '(';
-    }
-    return match;
+  // 简化 !![] 为 true
+  result = result.replace(/!!\s*\[\s*\]/g, 'true');
+  
+  // 简化 ![] 为 false  
+  result = result.replace(/!\s*\[\s*\]/g, 'false');
+  
+  // 简化复杂的数字表达式
+  result = result.replace(/0x([a-f0-9]+)/gi, (match, hex) => {
+    return parseInt(hex, 16).toString();
   });
   
-  return result;
-}
-
-// 5. 简化控制流
-function simplifyControlFlow(code) {
-  let result = code;
-  
-  // 简化无意义的三元操作符
-  result = result.replace(/(\w+)\s*\?\s*\1\s*:\s*(\w+)/g, '$1 || $2');
-  
-  // 简化复杂的布尔表达式
-  result = result.replace(/!!\s*(\w+)/g, 'Boolean($1)');
-  
-  // 简化无用的条件判断
-  result = result.replace(/if\s*\(\s*true\s*\)\s*\{([^}]+)\}/g, '$1');
-  result = result.replace(/if\s*\(\s*false\s*\)\s*\{[^}]+\}/g, '');
-  
-  // 简化switch-case混淆
-  result = result.replace(/switch\s*\([^)]+\)\s*\{\s*case\s*['"`](\w+)['"`]:\s*([^;]+);?\s*break;\s*\}/g, '$2');
-  
-  return result;
-}
-
-// 6. 变量名还原
-function restoreVariableNames(code) {
-  let result = code;
-  const varMap = new Map();
-  
-  // 识别混淆变量模式
-  const obfVarPattern = /_0x[a-f0-9]+|_0x\w+/g;
-  const matches = [...code.matchAll(obfVarPattern)];
-  
-  // 为混淆变量生成有意义的名称
-  const usedNames = new Set();
-  matches.forEach((match, index) => {
-    const obfName = match[0];
-    if (!varMap.has(obfName)) {
-      let newName = generateMeaningfulName(obfName, code, index);
-      
-      // 确保名称唯一
-      let counter = 1;
-      while (usedNames.has(newName)) {
-        newName = `${newName}_${counter}`;
-        counter++;
-      }
-      
-      varMap.set(obfName, newName);
-      usedNames.add(newName);
-    }
+  // 简化算术表达式
+  result = result.replace(/(\d+)\s*\*\s*(\d+)/g, (match, a, b) => {
+    return (parseInt(a) * parseInt(b)).toString();
   });
   
-  // 按长度排序，避免替换冲突
-  const sortedEntries = [...varMap.entries()].sort((a, b) => b[0].length - a[0].length);
-  
-  // 执行替换
-  sortedEntries.forEach(([obfName, newName]) => {
-    const regex = new RegExp(`\\b${escapeRegExp(obfName)}\\b`, 'g');
-    result = result.replace(regex, newName);
+  result = result.replace(/(\d+)\s*\+\s*(\d+)/g, (match, a, b) => {
+    return (parseInt(a) + parseInt(b)).toString();
   });
   
-  return result;
-}
-
-// 7. 代码美化
-function beautifyCode(code) {
-  let result = code;
-  
-  // 添加适当的换行和缩进
-  result = result.replace(/;(?!\s*[\n\r])/g, ';\n');
-  result = result.replace(/\{(?!\s*[\n\r])/g, '{\n');
-  result = result.replace(/\}(?!\s*[\n\r;,])/g, '\n}');
-  
-  // 在操作符周围添加空格
-  result = result.replace(/([+\-*/%=!<>])(?![=+\-*/%!<>=])/g, ' $1 ');
-  result = result.replace(/\s+/g, ' '); // 合并多余空格
+  // 简化字符串拼接
+  result = result.replace(/'([^']*?)'\s*\+\s*'([^']*?)'/g, "'$1$2'");
+  result = result.replace(/"([^"]*?)"\s*\+\s*"([^"]*?)"/g, '"$1$2"');
   
   return result;
 }
 
-// 8. 移除无用代码
-function removeDeadCode(code) {
+// 6. 还原对象属性访问
+function restorePropertyAccess(code) {
   let result = code;
   
-  // 移除空的语句块
-  result = result.replace(/\{\s*\}/g, '{}');
+  // 还原常见的属性访问模式
+  const propertyMap = {
+    'length': 'length',
+    'push': 'push',
+    'pop': 'pop',
+    'shift': 'shift',
+    'unshift': 'unshift',
+    'slice': 'slice',
+    'splice': 'splice',
+    'indexOf': 'indexOf',
+    'charAt': 'charAt',
+    'charCodeAt': 'charCodeAt',
+    'replace': 'replace',
+    'split': 'split',
+    'join': 'join',
+    'toString': 'toString',
+    'parse': 'parse',
+    'stringify': 'stringify'
+  };
   
-  // 移除无用的变量声明
-  result = result.replace(/var\s+\w+\s*;\s*\n/g, '');
+  // 还原 ['property'] 形式的访问
+  Object.entries(propertyMap).forEach(([key, value]) => {
+    const pattern = new RegExp(`\\[['"\`]${key}['"\`]\\]`, 'g');
+    result = result.replace(pattern, `.${value}`);
+  });
+  
+  // 通用的属性访问还原
+  result = result.replace(/\[['"`](\w+)['"`]\]/g, '.$1');
+  
+  return result;
+}
+
+// 7. 清理无用代码
+function cleanupCode(code) {
+  let result = code;
+  
+  // 移除空的条件块
+  result = result.replace(/if\s*\([^)]*\)\s*{\s*}/g, '');
+  
+  // 移除无用的变量声明（如果变量名看起来是混淆的）
+  result = result.replace(/(?:var|let|const)\s+(?:unknown_\d+|func_\d+|obj_\d+|arr_\d+)\s*;?\s*\n?/g, '');
+  
+  // 移除空行
+  result = result.replace(/\n\s*\n/g, '\n');
   
   // 移除调试信息
   result = result.replace(/console\.log\([^)]*\);\s*/g, '');
-  result = result.replace(/debugger;\s*/g, '');
   
   return result;
 }
 
-// 辅助函数：生成有意义的变量名
-function generateMeaningfulName(obfName, code, index) {
-  // 根据变量的使用模式推断其用途
-  if (code.includes(`${obfName}.length`)) return `arr_${index}`;
-  if (code.includes(`${obfName}(`)) return `func_${index}`;
-  if (code.includes(`${obfName}[`)) return `obj_${index}`;
-  if (code.includes(`new ${obfName}`)) return `Class_${index}`;
-  if (code.includes(`${obfName} =`)) return `var_${index}`;
+// 8. 美化代码
+function formatCode(code) {
+  let result = code;
   
-  return `unknown_${index}`;
-}
-
-// 辅助函数：转义正则表达式特殊字符
-function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // 在 { 后添加换行
+  result = result.replace(/\{(?!\s*\n)/g, '{\n');
+  
+  // 在 } 前添加换行
+  result = result.replace(/(?<!\n)\s*\}/g, '\n}');
+  
+  // 在 ; 后添加换行（除非已经有了）
+  result = result.replace(/;(?!\s*[\n}])/g, ';\n');
+  
+  // 修复操作符周围的空格
+  result = result.replace(/([=+\-*/%<>!])(?![=+\-*/%<>!])/g, ' $1 ');
+  result = result.replace(/\s+([=+\-*/%<>!]{2})\s+/g, ' $1 ');
+  
+  // 清理多余空格
+  result = result.replace(/ +/g, ' ');
+  result = result.replace(/^ +/gm, '');
+  
+  // 基本缩进
+  const lines = result.split('\n');
+  let indent = 0;
+  const indentedLines = lines.map(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return '';
+    
+    if (trimmed.includes('}')) indent = Math.max(0, indent - 2);
+    const indentedLine = ' '.repeat(indent) + trimmed;
+    if (trimmed.includes('{')) indent += 2;
+    
+    return indentedLine;
+  });
+  
+  result = indentedLines.join('\n');
+  
+  return result;
 }
