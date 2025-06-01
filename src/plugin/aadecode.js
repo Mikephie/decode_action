@@ -42,6 +42,16 @@ const AADecode = {
             },
             window: {}, // Mock window object for browser-like environments
             document: {}, // Mock document object
+            // Add mock for $response and $done for QuantumultX/Surge scripts
+            $response: {
+                body: '{}' // Provide a dummy JSON body to prevent JSON.parse errors
+            },
+            $done: (obj) => {
+                // If $done is called, it usually means the script finished its work.
+                // We might capture the final body if it's relevant, but for deobfuscation,
+                // we're primarily interested in eval/Function calls.
+                // console.log('SANDBOX_$DONE called with:', obj);
+            },
             // Overriding eval and Function to capture the deobfuscated string
             eval: (code) => {
                 // If eval is called, capture the code. Assume the first string-like eval is the decoded one.
