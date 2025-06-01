@@ -3,80 +3,77 @@ import traverse from '@babel/traverse'
 import * as t from '@babel/types'
 import generator from '@babel/generator'
 
-// 1. 判断特征
-function isJsjiami(code) {
-  return code.includes("jsjiami.com.v7") && code.includes("function _0x1e61") && code.includes("function _0x1715")
-}
-
-// 2. 提取字符串表
-function extractTable(code) {
-  // 提取 function _0x1715() { ... }
-  const m = code.match(/function\s+_0x1715[^{]*\{([\s\S]*?)\}\s*;/)
-  if (!m) return null
-  let funcSrc = "var _0xodH='jsjiami.com.v7';" + "\nfunction _0x1715{" + m[1] + "};"
-  // node中支持 eval function 语法，部分平台要 function _0x1715() {}
-  funcSrc = code.match(/function\s+_0x1715\s*\(\)\s*\{([\s\S]*?)\}/)
-    ? "var _0xodH='jsjiami.com.v7';" + "\n" + m[0]
-    : funcSrc
-  try {
-    // 沙箱执行取到字符串表
-    let _0x1715
-    eval(funcSrc + '\n_0x1715 = _0x1715();')
-    if (Array.isArray(_0x1715)) return _0x1715
-  } catch (e) {
-    // 提取失败
-    return null
+// 动态运行环境
+function getStringTableRuntime(code) {
+  // 尝试提取整个 _0x1715 函数定义和执行
+  const fnBodyMatch = code.match(/function _0x1715\s*\(\)\s*{([\s\S]+?)};?/)
+  if (fnBodyMatch) {
+    try {
+      // 还原 _0xodH，防止全局变量污染
+      let _0xodH = 'jsjiami.com.v7'
+      let table = null
+      // eval 只执行字符串表相关，不跑危险部分
+      eval('table = (' + fnBodyMatch[1].replace(/return;/, 'return undefined;') + ';_0x1715());')
+      if (Array.isArray(table)) return table
+    } catch (e) {}
   }
   return null
 }
 
-// 3. 识别索引器名字
-function findIndexerName(code) {
-  // 一般 const _0xc3dd0a = _0x1e61;
-  const m = code.match(/const\s+(_0x\w+)\s*=\s*_0x1e61/)
-  return m ? m[1] : null
+// 静态提取
+function getStringTableStatic(code) {
+  // 查找 function _0x1715(){...return(function(){return[...]})()}
+  const arrMatch = code.match(/return\s*\(\s*function\s*\(\)\s*{\s*return\s*(\[[\s\S]+?\])\s*;\s*}\s*\)\(\s*\)/)
+  if (arrMatch && arrMatch[1]) {
+    try {
+      return eval(arrMatch[1])
+    } catch (e) {}
+  }
+  return null
 }
 
-// 4. 还原所有索引器调用
-function restoreObfuscated(ast, indexerName, stringTable) {
-  if (!indexerName || !Array.isArray(stringTable)) return
+// 主插件
+export default function jsjiamiPlugin(code) {
+  // 一定要包含 jsjiami.com.v7 和 _0x1e61 调用
+  if (!/jsjiami\.com\.v7/.test(code) || !/_0x1e61/.test(code)) return code
+
+  let stringTable = getStringTableStatic(code)
+  if (!stringTable) stringTable = getStringTableRuntime(code)
+
+  if (!Array.isArray(stringTable)) {
+    console.log('[jsjiami] 没获得字符串表')
+    return code
+  }
+
+  // AST 查找所有 _0x1e61(a,b) 还原
+  let ast = parse(code)
+  let count = 0
   traverse(ast, {
     CallExpression(path) {
       if (
-        t.isIdentifier(path.node.callee, { name: indexerName }) &&
-        path.node.arguments.length >= 1
+        t.isIdentifier(path.node.callee, { name: '_0x1e61' }) &&
+        path.node.arguments.length >= 1 &&
+        (t.isNumericLiteral(path.node.arguments[0]) || t.isStringLiteral(path.node.arguments[0]))
       ) {
-        // 支持 _0xc3dd0a(0xeb, ...) 也支持 _0xc3dd0a('0xeb', ...)
-        let idx = path.node.arguments[0]
-        if (t.isNumericLiteral(idx)) {
-          let val = stringTable[idx.value - 0xdd] // 0xdd 是实际的偏移
-          if (typeof val === "string") path.replaceWith(t.stringLiteral(val))
-        } else if (t.isStringLiteral(idx)) {
-          let n = parseInt(idx.value, 16)
-          if (!isNaN(n)) {
-            let val = stringTable[n - 0xdd]
-            if (typeof val === "string") path.replaceWith(t.stringLiteral(val))
-          }
+        // 只处理 _0x1e61(x, y) 形式
+        let idx = path.node.arguments[0].value
+        // jsjiami 有偏移量，这里直接静态猜
+        if (typeof idx === 'string' && /^0x/.test(idx)) {
+          idx = parseInt(idx, 16)
+        }
+        if (typeof idx === 'number' && idx < stringTable.length) {
+          path.replaceWith(t.stringLiteral(String(stringTable[idx])))
+          count++
         }
       }
     }
   })
-}
 
-// 主插件入口
-export default function jsjiamiPlugin(code) {
-  if (!isJsjiami(code)) return code
-  const stringTable = extractTable(code)
-  if (!stringTable) {
-    console.log('[jsjiami] 没获得字符串表')
+  // 一轮未替换任何，说明已解完
+  if (!count) {
     return code
   }
-  const indexerName = findIndexerName(code)
-  if (!indexerName) {
-    console.log('[jsjiami] 没找到索引函数名')
-    return code
-  }
-  let ast = parse(code)
-  restoreObfuscated(ast, indexerName, stringTable)
+
+  // 输出已还原的代码
   return generator(ast, { jsescOption: { minimal: true } }).code
 }
