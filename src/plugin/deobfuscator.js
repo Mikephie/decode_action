@@ -3,20 +3,25 @@
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
+import { fileURLToPath } from 'url'; // Import fileURLToPath for path resolution
+
+// Get __dirname equivalent for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ========= Dynamic Import Plugins =========
-// These imports assume the plugin files are in a 'plugins' directory relative to this script.
-// Using dynamic import() to mimic the original multi-module loading.
 const loadPlugins = async () => {
     const plugins = [];
-    const pluginDir = new URL('./plugins/', import.meta.url); // Correctly resolve plugin directory
+    // Correctly resolve plugin directory relative to the current script's location
+    const pluginDir = path.join(__dirname, 'plugins');
 
     try {
         const files = await fs.promises.readdir(pluginDir);
         for (const file of files) {
             if (file.endsWith('.js')) {
                 const pluginName = path.basename(file, '.js');
-                const modulePath = new URL(file, pluginDir).href; // Get full URL for dynamic import
+                // Construct the module path as a file URL for dynamic import
+                const modulePath = new URL(path.join(pluginDir, file), import.meta.url).href;
                 try {
                     const mod = await import(modulePath);
                     // Handle various export structures (default export, named 'plugin' export)
@@ -36,7 +41,7 @@ const loadPlugins = async () => {
             }
         }
     } catch (err) {
-        console.error(`❌ Error reading plugins directory: ${err.message}`);
+        console.error(`❌ Error reading plugins directory at '${pluginDir}': ${err.message}`); // Log the problematic path
     }
     // Sort plugins to ensure a consistent order of application
     // For this specific case, aadecode -> aadecode2 -> jsbeautify is a logical order.
