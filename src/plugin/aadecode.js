@@ -46,6 +46,9 @@ const AADecode = {
             $response: {
                 body: '{}' // Provide a dummy JSON body to prevent JSON.parse errors
             },
+            $request: { // ADDED: Mock $request object
+                url: 'http://example.com/mock/url' // Provide a dummy URL
+            },
             $done: (obj) => {
                 // If $done is called, it usually means the script finished its work.
                 // We might capture the final body if it's relevant, but for deobfuscation,
