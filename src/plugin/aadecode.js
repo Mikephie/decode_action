@@ -1,5 +1,5 @@
 export function plugin(text) {
-  const aaencodeRegex = /(\(ﾟДﾟ\)\s*\['_']\s*\()([\s\S]*?)(\)\s*\(\)\);?)/;
+  const aaencodeRegex = /(ﾟωﾟ|ﾟДﾟ|ﾟｰﾟ|ﾟΘﾟ)[\s\S]+\('_'\)\s*\(\s*\);?/;
 
   text = text.trim();
 
@@ -7,7 +7,7 @@ export function plugin(text) {
     return text;
   }
 
-  const decodingScript = text.replace(aaencodeRegex, '(function(){return $2})();');
+  const decodingScript = `(function(){return ${text}})();`;
 
   try {
     const decoded = eval(decodingScript);
