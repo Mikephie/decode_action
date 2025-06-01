@@ -12,13 +12,16 @@ const __dirname = path.dirname(__filename);
 // ========= Dynamic Import Plugins =========
 const loadPlugins = async () => {
     const plugins = [];
-    // The plugins directory is expected to be a direct sibling of this script.
-    const actualPluginDir = path.join(__dirname, 'plugins'); 
+    // FIX: Based on the screenshot, the plugin files (aadecode.js, aadecode2.js, etc.)
+    // are located directly inside the 'src/plugin/' directory.
+    // So, if 'main.js' is in 'src/', 'actualPluginDir' should point to 'src/plugin/'.
+    const actualPluginDir = path.join(__dirname, 'plugin'); // CORRECTED PATH to the directory containing plugin .js files
 
     try {
         const files = await fs.promises.readdir(actualPluginDir);
         for (const file of files) {
-            if (file.endsWith('.js')) {
+            // Only load .js files and exclude files like 'aadecode-2.js' if 'aadecode.js' exists
+            if (file.endsWith('.js') && !file.includes('-2.js') && !file.includes('main')) { 
                 const pluginName = path.basename(file, '.js');
                 // Construct the module path as a file URL for dynamic import
                 const modulePath = new URL(path.join(actualPluginDir, file), import.meta.url).href;
