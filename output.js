@@ -1,4 +1,4 @@
-// Decoded Time: 6/1/2025, 5:54:38 AM
-// Plugins Used: kaomojifuck -> jsbeautify -> common
+// Decoded Time: 6/1/2025, 5:58:54 AM
+// Plugins Used: aadecode -> awsc
 
- ,ﾟωﾟﾉ : ((ﾟωﾟﾉ==3) +
+response;
