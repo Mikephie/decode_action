@@ -1,57 +1,82 @@
 import { parse } from '@babel/parser'
 import traverse from '@babel/traverse'
 import * as t from '@babel/types'
-import generate from '@babel/generator'
+import generator from '@babel/generator'
 
-export default function jsjiamiPlugin(code) {
-  if (!code.includes('jsjiami.com.v7')) return code;
+// 1. 判断特征
+function isJsjiami(code) {
+  return code.includes("jsjiami.com.v7") && code.includes("function _0x1e61") && code.includes("function _0x1715")
+}
 
-  // 1. 提取 _0x1715 函数源码
-  const fnMatch = code.match(/function\s+_0x1715[^{]*\{[\s\S]*?\}\s*;/);
-  if (!fnMatch) {
-    console.log('[jsjiami] 未找到字符串表函数');
-    return code;
-  }
-  // 2. 准备变量（防止没定义 _0xodH）
-  let evalContext = "globalThis._0xodH='jsjiami.com.v7';";
-  evalContext += "globalThis._0x1715=undefined;";
-  evalContext += fnMatch[0];
-
+// 2. 提取字符串表
+function extractTable(code) {
+  // 提取 function _0x1715() { ... }
+  const m = code.match(/function\s+_0x1715[^{]*\{([\s\S]*?)\}\s*;/)
+  if (!m) return null
+  let funcSrc = "var _0xodH='jsjiami.com.v7';" + "\nfunction _0x1715{" + m[1] + "};"
+  // node中支持 eval function 语法，部分平台要 function _0x1715() {}
+  funcSrc = code.match(/function\s+_0x1715\s*\(\)\s*\{([\s\S]*?)\}/)
+    ? "var _0xodH='jsjiami.com.v7';" + "\n" + m[0]
+    : funcSrc
   try {
-    eval(evalContext);
-  } catch(e) {
-    console.log('[jsjiami] eval 字符串表失败:', e);
-    return code;
+    // 沙箱执行取到字符串表
+    let _0x1715
+    eval(funcSrc + '\n_0x1715 = _0x1715();')
+    if (Array.isArray(_0x1715)) return _0x1715
+  } catch (e) {
+    // 提取失败
+    return null
   }
-  if (typeof globalThis._0x1715 !== 'function') {
-    console.log('[jsjiami] 字符串表函数无效');
-    return code;
-  }
-  const stringTable = globalThis._0x1715();
+  return null
+}
 
-  // 3. AST 扫描还原所有 _0x1e61(a, b) 调用（第一个参数是数字）
-  let ast = parse(code, { errorRecovery: true });
-  let hits = 0;
+// 3. 识别索引器名字
+function findIndexerName(code) {
+  // 一般 const _0xc3dd0a = _0x1e61;
+  const m = code.match(/const\s+(_0x\w+)\s*=\s*_0x1e61/)
+  return m ? m[1] : null
+}
+
+// 4. 还原所有索引器调用
+function restoreObfuscated(ast, indexerName, stringTable) {
+  if (!indexerName || !Array.isArray(stringTable)) return
   traverse(ast, {
     CallExpression(path) {
       if (
-        t.isIdentifier(path.node.callee, { name: '_0x1e61' }) &&
-        (t.isNumericLiteral(path.node.arguments[0]) || t.isStringLiteral(path.node.arguments[0]))
+        t.isIdentifier(path.node.callee, { name: indexerName }) &&
+        path.node.arguments.length >= 1
       ) {
-        const idx = t.isNumericLiteral(path.node.arguments[0])
-          ? path.node.arguments[0].value
-          : parseInt(path.node.arguments[0].value);
-        // 第二参数是密钥，但可选，不必管
-        if (typeof stringTable[idx] === 'string') {
-          path.replaceWith(t.stringLiteral(stringTable[idx]));
-          hits++;
+        // 支持 _0xc3dd0a(0xeb, ...) 也支持 _0xc3dd0a('0xeb', ...)
+        let idx = path.node.arguments[0]
+        if (t.isNumericLiteral(idx)) {
+          let val = stringTable[idx.value - 0xdd] // 0xdd 是实际的偏移
+          if (typeof val === "string") path.replaceWith(t.stringLiteral(val))
+        } else if (t.isStringLiteral(idx)) {
+          let n = parseInt(idx.value, 16)
+          if (!isNaN(n)) {
+            let val = stringTable[n - 0xdd]
+            if (typeof val === "string") path.replaceWith(t.stringLiteral(val))
+          }
         }
       }
     }
-  });
-  if (!hits) {
-    console.log('[jsjiami] 没找到任何混淆调用');
-    return code;
+  })
+}
+
+// 主插件入口
+export default function jsjiamiPlugin(code) {
+  if (!isJsjiami(code)) return code
+  const stringTable = extractTable(code)
+  if (!stringTable) {
+    console.log('[jsjiami] 没获得字符串表')
+    return code
   }
-  return generate(ast, { jsescOption: { minimal: true } }).code;
+  const indexerName = findIndexerName(code)
+  if (!indexerName) {
+    console.log('[jsjiami] 没找到索引函数名')
+    return code
+  }
+  let ast = parse(code)
+  restoreObfuscated(ast, indexerName, stringTable)
+  return generator(ast, { jsescOption: { minimal: true } }).code
 }
