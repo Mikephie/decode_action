@@ -1,94 +1,75 @@
-// plugin/aadecode2.js
-// AADecode2 Plugin - Alternative implementation with pattern matching
-// Handles edge cases and variations of AAEncode
+// plugins/aadecode2.js - Octal/Unicode Escape Decoder Plugin (ES Module)
 
-export default function aadecode2(text) {
-    // Check if text contains AAEncode emoticons
-    if (!text.includes('ﾟωﾟﾉ') && !text.includes('ﾟДﾟ') && !text.includes('ﾟΘﾟ')) {
-        return text; // Not AAEncoded
-    }
-    
-    try {
-        // Method 1: Try to capture output from alert/console.log/document.write
-        let capturedOutput = '';
-        
-        // Create a safe execution environment
-        const sandbox = {
-            alert: (msg) => { capturedOutput = String(msg); },
-            console: { log: (msg) => { capturedOutput = String(msg); } },
-            document: { write: (msg) => { capturedOutput = String(msg); } },
-            window: {},
-            global: {}
-        };
-        
-        // Wrap the code to execute in sandbox context
-        const wrappedCode = `
-            (function() {
-                let alert = (msg) => { return msg; };
-                let console = { log: (msg) => { return msg; } };
-                let document = { write: (msg) => { return msg; } };
-                
+const AADecode2 = {
+    decode: function(text) {
+        let changed = false;
+        // Regex to find double-quoted string literals that might contain escapes.
+        // It specifically looks for backslashes within the string that are part of escape sequences.
+        // This is more robust than just looking for any backslash.
+        const escapedStringRegex = /"(?:[^"\\]|\\.)*?\\(?:[0-7]{1,3}|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|u\{[0-9a-fA-F]+\}|[\s\S])(?:[^"\\]|\\.)*?"/g;
+
+        let newText = text;
+        let match;
+        let replacements = []; // Store replacements to avoid issues with exec() and string modification
+
+        // Collect all matches and their unescaped versions
+        while ((match = escapedStringRegex.exec(newText)) !== null) {
+            const fullMatch = match[0]; // The entire matched string literal, e.g., "\166\141\162"
+            try {
+                // JSON.parse is the most reliable way to unescape JavaScript string literals.
+                // It handles octal, hex, unicode, and standard escapes correctly.
+                const unescaped = JSON.parse(fullMatch);
+                // Store the replacement: original string and its unescaped, re-quoted version
+                replacements.push({ original: fullMatch, replacement: JSON.stringify(unescaped) });
+                changed = true;
+                // console.log(`AADecode2 Debug: Unescaped string literal: ${fullMatch} -> ${JSON.stringify(unescaped)}`);
+            } catch (e) {
+                // console.warn(`AADecode2 Warning: Failed to JSON.parse string literal '${fullMatch}': ${e.message}`);
+                // Fallback to direct Function evaluation for complex cases if JSON.parse fails
                 try {
-                    ${text}
-                } catch(e) {
-                    // Ignore execution errors
+                    const fallbackUnescaped = new Function(`return ${fullMatch}`)();
+                    if (typeof fallbackUnescaped === 'string') {
+                        replacements.push({ original: fullMatch, replacement: JSON.stringify(fallbackUnescaped) });
+                        changed = true;
+                        // console.log(`AADecode2 Debug: Fallback unescape successful for '${fullMatch}'.`);
+                    }
+                } catch (fallbackE) {
+                    // console.warn(`AADecode2 Warning: Fallback unescape also failed for '${fullMatch}': ${fallbackE.message}`);
                 }
-                
-                return typeof capturedOutput !== 'undefined' ? capturedOutput : '';
-            })()
-        `;
-        
-        // Try to execute and capture output
-        const func = new Function('capturedOutput', wrappedCode);
-        const result = func(capturedOutput);
-        
-        if (result && typeof result === 'string' && result.trim()) {
-            return result;
-        }
-        
-        // Method 2: Pattern extraction for encoded strings
-        // Look for patterns like \xxx (octal encoded characters)
-        const octalPattern = /\\(\d{1,3})/g;
-        const matches = text.match(octalPattern);
-        
-        if (matches && matches.length > 10) {
-            // Try to decode octal values
-            let decoded = '';
-            matches.forEach(match => {
-                const octalValue = parseInt(match.slice(1), 8);
-                if (octalValue >= 32 && octalValue <= 126) {
-                    decoded += String.fromCharCode(octalValue);
-                }
-            });
-            
-            if (decoded.length > 5) {
-                return decoded;
             }
         }
-        
-        // Method 3: Look for string literals that might be the decoded content
-        const stringPattern = /["']([^"']{10,})["']/g;
-        let stringMatch;
-        const possibleDecodedStrings = [];
-        
-        while ((stringMatch = stringPattern.exec(text)) !== null) {
-            const content = stringMatch[1];
-            // Check if it's not emoticon-based
-            if (!content.includes('ﾟ') && /[a-zA-Z]/.test(content)) {
-                possibleDecodedStrings.push(content);
+
+        // Apply all replacements. Iterate backwards to avoid index issues if replacements overlap
+        // or affect indices of subsequent matches (though regex.exec handles this by moving lastIndex).
+        // A simpler approach for multiple non-overlapping replacements is fine.
+        for (const rep of replacements) {
+            // Use a global regex to replace all occurrences of this specific original string
+            // This assumes the original string literal is unique enough not to replace other parts of code.
+            // For true robustness, an AST-based approach would be better.
+            newText = newText.split(rep.original).join(rep.replacement);
+        }
+
+
+        // After unescaping all string literals, check if the entire text is now a simple `return "..."`
+        // If so, and it was previously an escaped string, we can extract the inner content.
+        const finalReturnMatch = newText.match(/^return\s*("((?:[^"\\]|\\.)*)")\s*;?$/s);
+        if (finalReturnMatch && finalReturnMatch[1]) {
+            try {
+                const finalUnescaped = JSON.parse(finalReturnMatch[1]);
+                if (typeof finalUnescaped === 'string') {
+                    // console.log("AADecode2 Debug: Final return statement unescaped.");
+                    return finalUnescaped;
+                }
+            } catch (e) {
+                // console.warn(`AADecode2 Warning: Failed to JSON.parse final return string: ${e.message}`);
             }
         }
-        
-        if (possibleDecodedStrings.length > 0) {
-            // Return the longest non-emoticon string found
-            return possibleDecodedStrings.reduce((a, b) => a.length > b.length ? a : b);
+
+        if (changed) {
+            return newText;
         }
-        
-        // If all methods fail, return original
-        return text;
-        
-    } catch (error) {
-        console.warn('AADecode2 processing error:', error.message);
-        return text;
+        return text; // No change if no escaped strings were found or unescaped successfully
     }
-}
+};
+
+export default AADecode2.decode;
