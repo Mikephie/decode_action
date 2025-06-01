@@ -22,7 +22,8 @@ const loadPlugins = async () => {
         for (const file of files) {
             // Only load .js files and exclude files like 'aadecode-2.js' if 'aadecode.js' exists
             // Also exclude 'main.js' itself if it somehow ends up in the plugin directory
-            if (file.endsWith('.js') && !file.includes('-2.js') && !file.includes('main')) { 
+            // ADDED: Exclude 'eval.js' explicitly if it's not a valid plugin.
+            if (file.endsWith('.js') && !file.includes('-2.js') && !file.includes('main') && file !== 'eval.js') { 
                 const pluginName = path.basename(file, '.js');
                 // Construct the module path as a file URL for dynamic import
                 const modulePath = new URL(path.join(actualPluginDir, file), import.meta.url).href;
@@ -177,7 +178,8 @@ Example:
                         "Unexpected parent type", // Common from AST parsers if input is not JS or malformed
                         "Cannot parse code", // Common from parsers
                         "Missing semicolon", // Common from parsers
-                        "The number of code blocks is incorrect!" // Specific to some block-based deobfuscators
+                        "The number of code blocks is incorrect!", // Specific to some block-based deobfuscators
+                        "NumberIdentifier" // From your log, e.g., "Cannot parse code: NumberIdentifier"
                     ];
 
                     const isExpectedError = expectedErrors.some(errText => e.message.includes(errText));
@@ -247,3 +249,4 @@ Example:
 }
 
 // Run the main function
+main();
