@@ -1,10 +1,13 @@
 import fs from 'fs';
 import process from 'process';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function getPluginsConfig() {
-  // 动态读取插件顺序，支持热更新
-  return JSON.parse(fs.readFileSync('./config/plugins.json', 'utf-8'));
+  const configPath = path.join(__dirname, 'config/plugins.json');
+  return JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 }
 
 // 动态加载所有插件
