@@ -139,15 +139,12 @@ Example:
         for (let pass = 1; pass <= maxPass; pass++) {
             let changedInThisPass = false; // Track if *any* plugin made a change in this pass
 
-            for (const { name, plugin } of plugins) {
-                const isBeautifyPlugin = (name === 'jsbeautify');
-                
-                // Skip beautify plugin in early passes if no actual deobfuscation has occurred yet
-                // Or if it's not the last pass and no significant changes happened in this pass yet
-                if (isBeautifyPlugin && pass < maxPass && !changedInThisPass && usedPlugins.length === 0) {
-                    continue; 
-                }
+            // Separate deobfuscation plugins from beautify plugin for this pass
+            const deobfuscationPlugins = plugins.filter(p => p.name !== 'jsbeautify');
+            const beautifyPlugin = plugins.find(p => p.name === 'jsbeautify');
 
+            // First, try all deobfuscation plugins
+            for (const { name, plugin } of deobfuscationPlugins) {
                 try {
                     const beforeProcessing = processed;
                     const result = plugin(processed);
@@ -155,74 +152,61 @@ Example:
                     if (typeof result === 'string' && result.trim() !== beforeProcessing.trim()) {
                         console.log(`🔁 Pass ${pass}: Plugin '${name}' applied successfully.`);
                         processed = result;
-                        // Add plugin to used list only if it's new or if it's a beautifier (which can be applied multiple times)
-                        if (!usedPlugins.includes(name) || isBeautifyPlugin) {
+                        if (!usedPlugins.includes(name)) { // Only add if new
                            usedPlugins.push(name);
                         }
-                        changedInThisPass = true; // Mark that a change occurred
-
+                        changedInThisPass = true;
                         if (debugMode) {
                             console.log(`Debug: Intermediate state after pass ${pass} with '${name}' (length: ${processed.length})`);
-                            // Optionally save intermediate files in debug mode
-                            // fs.writeFileSync(`${outputFile}.debug_pass${pass}_${name}.js`, processed, 'utf8');
                         }
-                        // Continue to apply other plugins in the same pass.
-                        // The outer loop will restart if changedInThisPass is true.
                     }
                 } catch (e) {
-                    // Define common "expected" error messages for plugins that might not apply
                     const expectedErrors = [
-                        "not encoded as aaencode", // For aadecode
-                        "Preamble or Postamble not found", // For aadecode
-                        "did not return a string", // If a decoder expects a string but gets something else
-                        "Unexpected parent type", // Common from AST parsers if input is not JS or malformed
-                        "Cannot parse code", // Common from parsers
-                        "Missing semicolon", // Common from parsers
-                        "The number of code blocks is incorrect!", // Specific to some block-based deobfuscators
-                        "NumberIdentifier" // From your log, e.g., "Cannot parse code: NumberIdentifier"
+                        "not encoded as aaencode",
+                        "Preamble or Postamble not found",
+                        "did not return a string",
+                        "Unexpected parent type",
+                        "Cannot parse code",
+                        "Missing semicolon",
+                        "The number of code blocks is incorrect!",
+                        "NumberIdentifier"
                     ];
-
                     const isExpectedError = expectedErrors.some(errText => e.message.includes(errText));
 
-                    if (isExpectedError && !isBeautifyPlugin) { // Don't log expected errors for deobfuscators
-                         // console.log(`Debug: Plugin '${name}' did not apply (expected error: ${e.message}).`);
-                    } else {
+                    if (!isExpectedError) { // Only log unexpected errors
                          console.error(`⚠️ Plugin '${name}' failed in pass ${pass}: ${e.message}`);
                     }
                 }
             }
 
-            // If no deobfuscation plugin made a change, but beautify ran, and it's not the last pass,
-            // we might want to continue for one more pass if beautify made a change,
-            // but generally, we stop if deobfuscation is stuck.
-            if (!changedInThisPass && pass > 1) { // Stop if no changes in this pass (after first pass)
+            // After all deobfuscation plugins, if any change occurred, or if it's the last pass,
+            // try to apply beautify.
+            if (beautifyPlugin && (changedInThisPass || pass === maxPass)) {
+                try {
+                    const beforeBeautify = processed;
+                    const beautifiedResult = beautifyPlugin.plugin(processed);
+                    if (typeof beautifiedResult === 'string' && beautifiedResult.trim() !== beforeBeautify.trim()) {
+                        console.log(`✨ Pass ${pass}: Plugin 'jsbeautify' applied successfully.`);
+                        processed = beautifiedResult;
+                        if (!usedPlugins.includes('jsbeautify')) { // Add only if new
+                            usedPlugins.push('jsbeautify');
+                        }
+                        changedInThisPass = true; // Beautify also counts as a change for iteration purposes
+                        if (debugMode) {
+                            console.log(`Debug: Intermediate state after pass ${pass} with 'jsbeautify' (length: ${processed.length})`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`⚠️ Plugin 'jsbeautify' failed in pass ${pass}: ${e.message}`);
+                }
+            }
+
+
+            if (!changedInThisPass) {
                 console.log(`🛑 Pass ${pass}: No changes detected. Terminating iteration.`);
                 break; 
-            } else if (!changedInThisPass && pass === 1 && plugins.length > 0) {
-                // Special case for first pass: if no plugin changed anything, stop early
-                console.log(`🛑 Pass ${pass}: No changes detected in the first pass. Terminating iteration.`);
-                break;
             }
         }
-
-        // Final beautification pass if any deobfuscation occurred and beautify is available
-        const finalBeautifyPlugin = plugins.find(p => p.name === 'jsbeautify');
-        if (finalBeautifyPlugin && processed.trim() !== source.trim()) {
-            try {
-                const beforeFinalBeautify = processed;
-                const finalBeautified = finalBeautifyPlugin.plugin(processed);
-                if (finalBeautified.trim() !== beforeFinalBeautify.trim()) {
-                    processed = finalBeautified;
-                    if (!usedPlugins.includes('jsbeautify')) {
-                        usedPlugins.push('jsbeautify');
-                    }
-                    console.log(`✨ Final pass: 'jsbeautify' applied for final formatting.`);
-                }
-            } catch (e) {
-                console.warn(`⚠️ Final beautification failed: ${e.message}`);
-            }
-        }
-
 
         // ========= Write Output =========
         if (processed.trim() !== source.trim()) {
