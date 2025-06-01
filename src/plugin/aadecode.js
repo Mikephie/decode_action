@@ -1,63 +1,94 @@
 // plugins/aadecode.js - AAEncode Decoder Plugin (ES Module)
 
-// AADecode - Decode encoded-as-aaencode JavaScript program.
-// Adapted for Node.js ES Module environment.
+import vm from 'vm'; // Add this import for sandboxing
+
 const AADecode = {
     decode: function(text) {
-        // Standard AAEncode preambles and postambles
-        var evalPreamble = "(\uFF9F\u0414\uFF9F) ['_'] ( (\uFF9F\u0414\uFF9F) ['_'] (";
-        var evalPostamble = ") (\uFF9F\u0398\uFF9F)) ('_');";
+        // AAEncode typically defines variables like ﾟДﾟ, ﾟωﾟﾉ, etc., which are then used
+        // to construct and execute the final string.
+        // We need to capture the string that would be executed, not just let it run.
 
         // strip beginning/ending space.
         text = text.replace(/^\s*/, "").replace(/\s*$/, "");
-
-        // returns empty text for empty input.
         if (/^\s*$/.test(text)) {
             return "";
         }
 
-        // Attempt to strip leading multi-line comments
+        // Attempt to strip leading multi-line comments (assuming they are at the very beginning)
         let cleanedText = text.replace(/^\/\*[\s\S]*?\*\/\s*/, '');
         // console.log("AADecode Debug: Text after stripping comments (start):", cleanedText.substring(0, Math.min(cleanedText.length, 100)) + (cleanedText.length > 100 ? "..." : ""));
 
-        // Find the actual start and end of the AAEncode block
-        const preambleIndex = cleanedText.indexOf(evalPreamble);
-        const postambleIndex = cleanedText.lastIndexOf(evalPostamble);
+        // Check if it looks like an AAEncode structure for full execution interception.
+        // This is a heuristic based on the user's provided sample, which includes initial var defs.
+        const aaencodeIndicator = "ﾟωﾟﾉ="; // Common start for this AAEncode variant's definitions
+        const aaencodeEndIndicator = ") ('_');"; // Common end for the outermost execution
 
-        // console.log("AADecode Debug: evalPreamble:", evalPreamble);
-        // console.log("AADecode Debug: evalPostamble:", evalPostamble);
-        // console.log("AADecode Debug: preambleIndex:", preambleIndex);
-        // console.log("AADecode Debug: postambleIndex:", postambleIndex);
-
-        // Check if the AAEncode structure exists and is valid
-        if (preambleIndex === -1 || postambleIndex === -1 || postambleIndex < preambleIndex) {
-            throw new Error("Given code is not encoded as aaencode. (Preamble or Postamble not found, or structure is invalid)");
+        if (!cleanedText.startsWith(aaencodeIndicator) || !cleanedText.endsWith(aaencodeEndIndicator)) {
+            // If it doesn't match this variant's start/end, it's not the AAEncode type this decoder handles.
+            // Throw an error so other plugins can try, or the main script knows it's not AAEncode.
+            throw new Error("Given code is not recognized as the specific AAEncode variant for full execution interception.");
         }
 
-        // Replace the outermost eval/execution wrappers with return wrappers
-        let modifiedScript = cleanedText;
+        let capturedCode = null;
 
-        // This effectively changes `(function(){...})()` to `return (...)`
-        modifiedScript = modifiedScript.replace(evalPreamble, "return (");
-        modifiedScript = modifiedScript.replace(evalPostamble, ");");
+        // Create a new VM context to run the obfuscated code in isolation
+        // and to intercept 'eval' and 'Function' calls.
+        const context = vm.createContext({
+            // Mock common global objects if the code expects them (optional but good for robustness)
+            console: { 
+                log: (...args) => { /* console.log('SANDBOX_LOG:', ...args); */ },
+                warn: (...args) => { /* console.warn('SANDBOX_WARN:', ...args); */ },
+                error: (...args) => { /* console.error('SANDBOX_ERROR:', ...args); */ }
+            },
+            window: {}, // Mock window object for browser-like environments
+            document: {}, // Mock document object
+            // Overriding eval and Function to capture the deobfuscated string
+            eval: (code) => {
+                // If eval is called, capture the code. Assume the first string-like eval is the decoded one.
+                if (typeof code === 'string' && capturedCode === null) {
+                    capturedCode = code;
+                    // Prevent further execution of the captured code within this context
+                    // By returning a non-executable value or throwing a controlled error,
+                    // we stop the sandbox from actually running the captured code.
+                    throw new Error("DEOBFUSCATION_CAPTURED"); // Use a unique error to break out
+                }
+                return undefined; // Prevent other eval calls from running uncontrolled
+            },
+            Function: function(...args) {
+                // If Function constructor is called, capture the body of the function.
+                // The last argument is usually the function body.
+                const funcBody = args[args.length - 1];
+                if (typeof funcBody === 'string' && capturedCode === null) {
+                    capturedCode = funcBody;
+                    // Throw an error to stop execution within the sandbox once captured
+                    throw new Error("DEOBFUSCATION_CAPTURED");
+                }
+                // Return a dummy function to prevent actual execution within the sandbox
+                return function() {}; 
+            },
+            // The obfuscated code itself defines variables like ﾟДﾟ.
+            // By running the entire `cleanedText`, these variables will be defined by the script itself
+            // within the sandbox. No need to pre-define them here.
+        });
 
-        // console.log("AADecode Debug: Generated modifiedScript for evaluation:", modifiedScript);
-
-        let decodedValue;
         try {
-            // Node.js's vm module or direct Function constructor can be used.
-            // For simple string return, Function constructor is sufficient and simpler.
-            decodedValue = new Function(modifiedScript)();
-            // console.log("AADecode Debug: AAEncode decodedValue type:", typeof decodedValue);
-            // console.log("AADecode Debug: AAEncode decodedValue:", decodedValue);
+            // Run the entire obfuscated code in the sandboxed context
+            vm.runInContext(cleanedText, context);
         } catch (e) {
-            throw new Error(`Execution error during AAEncode decoding: ${e.message}. Script was: ${modifiedScript.substring(0, 200)}...`);
+            if (e.message === "DEOBFUSCATION_CAPTURED") {
+                // This is our expected "success" state
+                // console.log("AADecode Debug: Code successfully captured.");
+            } else {
+                throw new Error(`Sandbox execution error during AAEncode decoding: ${e.message}`);
+            }
         }
 
-        if (typeof decodedValue !== 'string') {
-            throw new Error(`AADecode did not return a string. Expected string, got ${typeof decodedValue}. Value: ${decodedValue}. This might indicate an issue or a different encoding.`);
+        if (capturedCode === null) {
+            throw new Error("AAEncode decoding failed: No code captured from eval/Function calls. It might be a different variant or executed directly without calling eval/Function.");
         }
-        return decodedValue;
+
+        // `aadecode2` will handle octal/unicode escapes, so we just return the captured string.
+        return capturedCode;
     }
 };
 
