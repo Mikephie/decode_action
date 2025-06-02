@@ -8,8 +8,22 @@
   "jjencode",
   "obfuscator",
   "common",
+  
   "variableRenaming",
   "expressionSimplify", 
   "deadCodeElimination",
   "beautify"
+    "eval", 
+    "sojsonv7",
+    "sojson",
+    "jsconfuser",
+    "awsc",
+    "jjencode", 
+    "obfuscator",
+    "common",
+    
+    "variableRenaming",
+    "expressionSimplify", 
+    "deadCodeElimination",
+    "beautify"
 ]
