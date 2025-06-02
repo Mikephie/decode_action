@@ -14,17 +14,6 @@ export default function beautify(code) {
         maxLineLength: 120,
         spaceBeforeParen: false,
         spaceInParen: false
-// beautify.js - 代码美化插件
-
-function process(code, options = {}) {
-    const config = {
-        indent: options.indent || 4,
-        maxLineLength: options.maxLineLength || 120,
-        insertNewlines: options.insertNewlines !== false,
-        preserveComments: options.preserveComments !== false,
-        spaceBeforeParen: options.spaceBeforeParen !== false,
-        spaceInParen: options.spaceInParen || false,
-        ...options
     };
     
     let result = code;
@@ -42,7 +31,6 @@ function process(code, options = {}) {
         const char = result[i];
         const prevChar = result[i - 1] || '';
         const nextChar = result[i + 1] || '';
-        const prev2Char = result[i - 2] || '';
         
         // 处理注释
         if (!inString) {
@@ -136,7 +124,6 @@ function process(code, options = {}) {
                 
                 // 在}后添加换行，除非后面是特定字符
                 if (nextChar && ![')', ';', ',', '}', '.'].includes(nextChar)) {
-                if (nextChar && ![')', ';', ',', '}', ')', '.'].includes(nextChar)) {
                     output += '\n' + ' '.repeat(level * config.indent);
                 }
                 break;
@@ -231,7 +218,6 @@ function process(code, options = {}) {
     }
     
     return code;
-    return output;
 }
 
 // 辅助函数
@@ -290,10 +276,3 @@ function isInArrayOrObject(output, level) {
     
     return lastBrace > lastCloseBrace;
 }
-}
-
-module.exports = {
-    name: 'beautify',
-    description: '美化JavaScript代码格式',
-    process: process
-};
