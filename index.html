@@ -617,7 +617,7 @@
         <div class="header-content">
             <div style="display: flex; align-items: center;">
                 <h1 class="logo">羊毛助手</h1>
-                <span class="version">v4.1</span>
+                <span class="version">v4.2</span>
             </div>
             <div style="color: #6b7280; font-size: 0.875rem;">
                 自动解密脚本工具
@@ -756,8 +756,12 @@
             githubToken: '',
             repoName: '',
             currentTab: 'paste',
-            checkInterval: null, // 添加定时器引用
-            lastLoggedTime: 0, // 记录上次日志时间
+            checkInterval: null,
+            quickCheckInterval: null,
+            lastLoggedTime: 0,
+            currentCheckFunction: null,
+            waitResolve: null,
+            rafCounter: undefined,
             
             init() {
                 // 加载保存的配置
@@ -779,27 +783,37 @@
             },
             
             setupVisibilityHandling() {
-                // 监听页面可见性变化，确保后台运行
+                // 监听页面可见性变化
                 document.addEventListener('visibilitychange', () => {
                     if (document.hidden) {
                         this.addLog('页面进入后台，但计时器将继续运行', 'info');
                     } else {
                         this.addLog('页面回到前台', 'info');
-                        // 回到前台时，如果有进行中的任务，显示当前状态
-                        if (this.checkInterval) {
-                            this.addLog('检测到进行中的解密任务', 'info');
+                        // 回到前台时，如果有进行中的任务，立即检查一次
+                        if (this.currentCheckFunction) {
+                            this.addLog('检测到进行中的解密任务，立即检查状态', 'info');
+                            setTimeout(() => {
+                                if (this.currentCheckFunction) {
+                                    this.currentCheckFunction();
+                                }
+                            }, 100);
                         }
                     }
                 });
                 
-                // 防止页面被暂停 - 使用更积极的保活策略
+                // 更积极的保活策略
                 setInterval(() => {
-                    if (this.checkInterval) {
-                        // 发送一个真实的网络请求保持连接活跃
+                    if (this.checkInterval || this.currentCheckFunction) {
+                        // 发送真实的网络请求
                         fetch('/favicon.ico', { mode: 'no-cors' }).catch(() => {});
                         console.log('页面保活心跳');
+                        
+                        // 如果有检查函数且页面可见，额外执行一次检查
+                        if (!document.hidden && this.currentCheckFunction) {
+                            this.currentCheckFunction();
+                        }
                     }
-                }, 15000); // 每15秒发送一次
+                }, 10000); // 每10秒发送一次，更频繁
             },
             
             bindEvents() {
@@ -897,15 +911,11 @@
                 document.getElementById('output-display').innerHTML = '<span style="color: #6a9955">// 解密结果将显示在这里...</span>';
                 document.getElementById('progress-bar').style.width = '0%';
                 
-                // 清除可能运行的定时器
-                if (this.checkInterval) {
-                    clearInterval(this.checkInterval);
-                    this.checkInterval = null;
-                    this.addLog('已停止运行中的等待任务', 'info');
-                }
+                // 清除所有可能运行的定时器
+                this.stopWaiting();
                 
                 this.showToast('已清除所有内容');
-                this.addLog('清除所有内容', 'info');
+                this.addLog('清除所有内容和停止后台任务', 'info');
             },
             
             async decrypt() {
