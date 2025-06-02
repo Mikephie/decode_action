@@ -1,11 +1,16 @@
 [
   "unwrapIIFE",
-  "eval",
-  "sojsonv7",
-  "sojson",
-  "jsconfuser",
-  "awsc",
-  "jjencode",
-  "obfuscator",
-  "common"
+    "eval", 
+    "sojsonv7",
+    "sojson",
+    "jsconfuser",
+    "awsc",
+    "jjencode", 
+    "obfuscator",
+    "common",
+    
+    "variableRenaming",
+    "expressionSimplify", 
+    "deadCodeElimination",
+    "beautify"
 ]
