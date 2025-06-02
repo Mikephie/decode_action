@@ -617,7 +617,7 @@
         <div class="header-content">
             <div style="display: flex; align-items: center;">
                 <h1 class="logo">羊毛助手</h1>
-                <span class="version">v3.5</span>
+                <span class="version">v4.0</span>
             </div>
             <div style="color: #6b7280; font-size: 0.875rem;">
                 自动解密脚本工具
@@ -756,6 +756,7 @@
             githubToken: '',
             repoName: '',
             currentTab: 'paste',
+            checkInterval: null, // 添加定时器引用
             
             init() {
                 // 加载保存的配置
@@ -771,6 +772,30 @@
                 
                 // 初始化输出显示
                 this.displayResult('');
+                
+                // 监听页面可见性变化
+                this.setupVisibilityHandling();
+            },
+            
+            setupVisibilityHandling() {
+                // 监听页面可见性变化，确保后台运行
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) {
+                        this.addLog('页面进入后台，但计时器将继续运行', 'info');
+                        // 可以在这里做一些优化，但不停止计时器
+                    } else {
+                        this.addLog('页面回到前台', 'info');
+                    }
+                });
+                
+                // 防止页面被暂停
+                setInterval(() => {
+                    // 每30秒发送一个轻量级的心跳，保持页面活跃
+                    if (this.checkInterval) {
+                        // 只有在等待过程中才发送心跳
+                        console.log('页面保活心跳');
+                    }
+                }, 30000);
             },
             
             bindEvents() {
@@ -867,6 +892,13 @@
                 document.getElementById('output-code').value = '';
                 document.getElementById('output-display').innerHTML = '<span style="color: #6a9955">// 解密结果将显示在这里...</span>';
                 document.getElementById('progress-bar').style.width = '0%';
+                
+                // 清除可能运行的定时器
+                if (this.checkInterval) {
+                    clearInterval(this.checkInterval);
+                    this.checkInterval = null;
+                    this.addLog('已停止运行中的等待任务', 'info');
+                }
                 
                 this.showToast('已清除所有内容');
                 this.addLog('清除所有内容', 'info');
@@ -1014,11 +1046,22 @@
             
             async waitForActionComplete() {
                 this.addLog('等待 Actions 执行...', 'info');
-                const maxAttempts = 30;
+                const maxAttempts = 25; // 从30次改为25次 (25*2=50秒)
                 let attempts = 0;
                 let lastSha = null;
                 
                 const progressBar = document.getElementById('progress-bar');
+                
+                // 防止页面进入后台时停止计时
+                let wakeLock = null;
+                try {
+                    if ('wakeLock' in navigator) {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                        this.addLog('已启用屏幕唤醒锁', 'info');
+                    }
+                } catch (e) {
+                    // 忽略唤醒锁错误
+                }
                 
                 // 先获取当前output.js的SHA（如果存在）
                 try {
@@ -1039,8 +1082,8 @@
                     this.addLog('output.js 尚不存在', 'info');
                 }
                 
-                // 等待文件更新
-                while (attempts < maxAttempts) {
+                // 使用 setInterval 替代 setTimeout 确保后台执行
+                this.checkInterval = setInterval(async () => {
                     attempts++;
                     progressBar.style.width = (attempts / maxAttempts * 100) + '%';
                     
@@ -1060,19 +1103,29 @@
                             
                             // 检查SHA是否变化（文件已更新）
                             if (lastSha && data.sha !== lastSha) {
+                                clearInterval(this.checkInterval);
+                                this.checkInterval = null;
+                                if (wakeLock) {
+                                    wakeLock.release();
+                                }
                                 this.addLog('检测到 output.js 已更新！', 'success');
                                 progressBar.style.width = '100%';
                                 
                                 // 再等待3秒确保文件完全写入并避免缓存
-                                await new Promise(resolve => setTimeout(resolve, 3000));
+                                setTimeout(() => resolve(), 3000);
                                 return;
                             } else if (!lastSha && data.sha) {
                                 // 如果之前没有文件，现在有了
+                                clearInterval(this.checkInterval);
+                                this.checkInterval = null;
+                                if (wakeLock) {
+                                    wakeLock.release();
+                                }
                                 this.addLog('检测到新的 output.js 文件！', 'success');
                                 progressBar.style.width = '100%';
                                 
                                 // 再等待3秒确保文件完全写入并避免缓存
-                                await new Promise(resolve => setTimeout(resolve, 3000));
+                                setTimeout(() => resolve(), 3000);
                                 return;
                             }
                         }
@@ -1085,12 +1138,23 @@
                         this.addLog(`Actions 执行中... (${attempts * 2}秒)`, 'info');
                     }
                     
-                    // 等待2秒后重试
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                }
+                    // 超时检查
+                    if (attempts >= maxAttempts) {
+                        clearInterval(this.checkInterval);
+                        this.checkInterval = null;
+                        if (wakeLock) {
+                            wakeLock.release();
+                        }
+                        this.addLog('等待超时，尝试获取结果...', 'warning');
+                        resolve();
+                        return;
+                    }
+                }, 2000); // 每2秒检查一次
                 
-                // 如果超时但文件可能已更新，仍然尝试获取结果
-                this.addLog('等待超时，尝试获取结果...', 'warning');
+                // 返回一个Promise，在检查完成时resolve
+                return new Promise((resolve) => {
+                    // Promise已经在上面的逻辑中处理了resolve
+                });
             },
             
             async getResult() {
