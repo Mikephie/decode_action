@@ -149,14 +149,31 @@
         }
         
         input::placeholder, textarea::placeholder {
-            color: rgba(255,255,255,0.5);
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
         }
         
         textarea {
-            height: 180px;
+            height: 200px;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             resize: vertical;
-            line-height: 1.5;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+        
+        /* 修复输入框问题 */
+        #input {
+            background: rgba(0,0,0,0.3) !important;
+            border: 2px solid rgba(255,255,255,0.2) !important;
+            color: #ffffff !important;
+            min-height: 200px;
+            white-space: pre;
+            word-wrap: break-word;
+        }
+        
+        #input:focus {
+            background: rgba(0,0,0,0.4) !important;
+            border-color: #3b82f6 !important;
         }
         
         .file-upload {
@@ -248,10 +265,6 @@
             border-color: rgba(233,30,99,0.5);
         }
         
-        .file-option.aaencode:hover, .file-option.eval:hover {
-            background: linear-gradient(45deg, rgba(255,193,7,0.4), rgba(255,152,0,0.4));
-        }
-        
         .buttons {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -291,10 +304,6 @@
         button:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        }
-        
-        button:active {
-            transform: translateY(-1px);
         }
         
         .btn-icon {
@@ -385,15 +394,6 @@
             margin-top: 10px;
         }
         
-        .note a {
-            color: #93c5fd;
-            text-decoration: none;
-        }
-        
-        .note a:hover {
-            text-decoration: underline;
-        }
-        
         .hidden {
             display: none !important;
         }
@@ -405,10 +405,6 @@
         .hljs-comment { color: #6a9955; font-style: italic; }
         .hljs-function { color: #dcdcaa; }
         .hljs-variable { color: #9cdcfe; }
-        .hljs-operator { color: #d4d4d4; }
-        .hljs-property { color: #9cdcfe; }
-        .hljs-literal { color: #569cd6; }
-        .hljs-built_in { color: #4ec9b0; }
         
         /* 滚动条 */
         ::-webkit-scrollbar {
@@ -423,10 +419,6 @@
         ::-webkit-scrollbar-thumb {
             background: rgba(255,255,255,0.3);
             border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.5);
         }
         
         /* 移动端适配 */
@@ -452,10 +444,6 @@
                 margin: 0;
                 border-radius: 0;
                 border-top: 1px solid rgba(255,255,255,0.2);
-            }
-            
-            .file-options {
-                grid-template-columns: repeat(2, 1fr);
             }
             
             body {
@@ -647,70 +635,38 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        // =============================================
-        // 专业AADecode插件（基于您提供的代码）
-        // =============================================
-        
-        /**
-         * AADecode插件包装器 - 将Node.js的AADecode模块转换为浏览器可用版本
-         */
+        // 专业AADecode插件
         (function() {
-            // 模拟Node.js环境
             const module = { exports: {} };
             
-            /**
-             * 识别并提取AADecode编码之前的注释和配置信息
-             * @param {string} code - 完整的代码字符串
-             * @returns {object} - 包含头部信息和编码部分的对象
-             */
             function extractHeader(code) {
-                // 查找AADecode特征的起始位置
                 const aaStartIndex = code.search(/ﾟωﾟﾉ\s*=|ﾟдﾟ\s*=|ﾟДﾟ\s*=|ﾟΘﾟ\s*=/);
                 
                 if (aaStartIndex > 0) {
-                    // 提取头部内容和AA编码部分
                     const header = code.substring(0, aaStartIndex).trim();
                     const encodedPart = code.substring(aaStartIndex);
-                    
-                    return {
-                        header,
-                        encodedPart
-                    };
+                    return { header, encodedPart };
                 }
                 
-                // 如果没有找到AADecode特征，则返回完整代码作为编码部分
-                return {
-                    header: '',
-                    encodedPart: code
-                };
+                return { header: '', encodedPart: code };
             }
 
-            /**
-             * 解码AA编码的JavaScript代码，同时保留原始脚本的头部注释
-             * @param {string} code - 包含可能的头部注释和AA编码的完整代码
-             * @returns {string|null} - 解码后的脚本（保留头部注释）或null（如果解码失败）
-             */
             function plugin(code) {
                 try {
-                    // 提取头部注释和编码部分
                     const { header, encodedPart } = extractHeader(code);
                     
-                    // 检查是否为AA编码内容
                     if (!(encodedPart.includes('ﾟДﾟ') || encodedPart.includes('(ﾟΘﾟ)') || 
                           encodedPart.includes('ﾟωﾟﾉ') || encodedPart.includes('ﾟдﾟ'))) {
                         return null;
                     }
                     
-                    // 应用AADecode解码逻辑
                     let decodePart = encodedPart;
                     decodePart = decodePart.replace(") ('_')", "");
                     decodePart = decodePart.replace("(ﾟДﾟ) ['_'] (", "return ");
                     
-                    // 创建函数并执行解码
                     const x = new Function(decodePart);
                     const decodedContent = x();
                     
-                    // 如果存在头部，则保留并拼接
                     if (header) {
                         return `${header}\n\n${decodedContent}`;
                     }
@@ -722,24 +678,18 @@
                 }
             }
 
-            // 直接导出plugin函数
             module.exports = plugin;
             
-            // 将插件注册到全局解密插件库
             window.DecodePlugins = window.DecodePlugins || {};
             window.DecodePlugins.aadecode = {
                 detect: function(code) {
-                    // 检测是否包含AADecode的特征标记
                     return code.includes('ﾟωﾟﾉ') || code.includes('ﾟДﾟ') || 
                            code.includes('ﾟдﾟ') || code.includes('ﾟΘﾟ');
                 },
                 plugin: function(code) {
-                    // 调用原始插件函数
                     try {
                         console.log("尝试解密AADecode编码...");
                         const result = module.exports(code);
-                        
-                        // 如果解码失败，返回原始代码；否则返回解码后的结果
                         return result !== null ? result : code;
                     } catch (e) {
                         console.error("AADecode插件错误:", e);
@@ -748,45 +698,24 @@
                 }
             };
             
-            // 保存插件函数到全局
             window.professionalAADecode = module.exports;
-            
             console.log("专业AADecode插件已加载");
         })();
 
-        // =============================================
         // Eval解包插件
-        // =============================================
-        
-        /**
-         * Eval解包工具包装器 - 将Eval解包工具转换为浏览器可用版本
-         */
-        // 创建自执行函数来隔离作用域
         (function() {
-          // 模拟Node.js环境
           const module = { exports: {} };
           const exports = module.exports;
           
-          // ====== 开始: 原始eval-decoder.js代码 ======
-          
-          /**
-           * 解包eval加密的代码
-           * @param {string} code - 要解包的代码
-           * @returns {string|null} - 解包后的代码或null（解包失败时）
-           */
           function plugin(code) {
             try {
-              // 如果不包含eval，直接返回null
               if (!code.includes('eval(') && !code.includes('eval (')) {
                 return null;
               }
               
-              // 替换eval为一个捕获函数
               let modifiedCode = code.replace(/eval\s*\(/g, '(function(x) { return x; })(');
               
-              // 尝试执行修改后的代码获取eval的参数
               try {
-                // 创建一个执行环境
                 const env = {
                   window: {},
                   document: {},
@@ -794,12 +723,10 @@
                   location: {}
                 };
                 
-                // 执行代码
                 const result = Function('window', 'document', 'navigator', 'location',
                                       `return ${modifiedCode}`)(
                                       env.window, env.document, env.navigator, env.location);
                 
-                // 如果结果是字符串且包含eval，递归解包
                 if (typeof result === 'string') {
                   if (result.includes('eval(')) {
                     return plugin(result);
@@ -811,7 +738,6 @@
               } catch (err) {
                 console.log("执行替换eval的方法失败，尝试直接替换方法");
                 
-                // 尝试直接替换eval
                 try {
                   modifiedCode = code.replace(/eval\s*\(/g, '(');
                   return modifiedCode;
@@ -826,36 +752,25 @@
             }
           }
           
-          // 导出插件接口
           exports.plugin = function(code) {
             return plugin(code);
           };
           
-          // ====== 结束: 原始eval-decoder.js代码 ======
-          
-          // 将插件注册到全局解密插件库
           window.DecodePlugins = window.DecodePlugins || {};
           window.DecodePlugins.eval = {
             detect: function(code) {
-              // 检测是否包含eval调用
               return code.includes('eval(') || code.includes('eval (');
             },
             plugin: function(code) {
-              // 使用原始模块的功能
               return module.exports.plugin(code);
             }
           };
           
-          // 保存插件函数到全局
           window.professionalEvalDecode = module.exports.plugin;
-          
           console.log("Eval解包插件已加载");
         })();
         
-        // =============================================
-        // 应用配置和全局变量
-        // =============================================
-        
+        // 应用配置
         const APP_CONFIG = {
             VERSION: '5.7',
             VERSION_NAME: '增强版AADecode+Eval解密工具',
@@ -870,39 +785,22 @@
             lastDetection: null
         };
         
-        // =============================================
-        // 编码检测和解密函数
-        // =============================================
-        
-        /**
-         * 智能检测AAEncode格式
-         */
+        // 检测函数
         function detectAAEncode(input) {
-            // AAEncode特征字符检测
             const aaencodeChars = /[ﾟωノΘΔДεｰｍ'∇｀~┻━_=3o\^c\/\*\\\"()[\]!+]/g;
             const matches = input.match(aaencodeChars) || [];
             const ratio = matches.length / input.length;
             
-            // AAEncode特有模式检测
             const aaencodePatterns = [
-                /ﾟωﾟﾉ/,
-                /ﾟｰﾟ/,
-                /ﾟΘﾟ/,
-                /ﾟДﾟ/,
-                /ﾟдﾟ/,
-                /o\^_\^o/,
-                /c\^_\^o/,
-                /\(ﾟΘﾟ\)/,
-                /\['_'\]/
+                /ﾟωﾟﾉ/, /ﾟｰﾟ/, /ﾟΘﾟ/, /ﾟДﾟ/, /ﾟдﾟ/,
+                /o\^_\^o/, /c\^_\^o/, /\(ﾟΘﾟ\)/, /\['_'\]/
             ];
             
             const patternMatches = aaencodePatterns.filter(pattern => pattern.test(input)).length;
             
-            // 长度和复杂度检查
             const hasMinLength = input.length >= 100;
             const hasAASignature = input.includes('ﾟДﾟ') && input.includes('ﾟωﾟﾉ');
             
-            // 综合判断AAEncode概率
             let confidence = 0;
             if (hasAASignature) confidence += 40;
             if (patternMatches >= 3) confidence += 30;
@@ -923,17 +821,10 @@
             };
         }
         
-        /**
-         * 智能检测Eval包装格式
-         */
         function detectEval(input) {
-            // Eval模式检测
             const evalPatterns = [
-                /eval\s*\(/g,
-                /eval\s+\(/g,
-                /window\['eval'\]/g,
-                /this\['eval'\]/g,
-                /Function\s*\(/g
+                /eval\s*\(/g, /eval\s+\(/g, /window\['eval'\]/g,
+                /this\['eval'\]/g, /Function\s*\(/g
             ];
             
             const evalMatches = evalPatterns.map(pattern => {
@@ -942,14 +833,11 @@
             });
             
             const totalEvalMatches = evalMatches.reduce((sum, count) => sum + count, 0);
-            
-            // 检查嵌套eval的复杂度
             const nestedEvalDepth = checkNestedEvalDepth(input);
-            const hasStringEncoding = /['"]\s*\+\s*['"]/.test(input); // 字符串拼接
-            const hasUnicodeEscape = /\\u[0-9a-fA-F]{4}/.test(input); // Unicode转义
-            const hasHexEncoding = /\\x[0-9a-fA-F]{2}/.test(input); // 十六进制编码
+            const hasStringEncoding = /['"]\s*\+\s*['"]/.test(input);
+            const hasUnicodeEscape = /\\u[0-9a-fA-F]{4}/.test(input);
+            const hasHexEncoding = /\\x[0-9a-fA-F]{2}/.test(input);
             
-            // 计算置信度
             let confidence = 0;
             if (totalEvalMatches > 0) confidence += 30;
             if (totalEvalMatches > 2) confidence += 20;
@@ -974,9 +862,6 @@
             };
         }
         
-        /**
-         * 检查嵌套eval深度
-         */
         function checkNestedEvalDepth(code) {
             let depth = 0;
             let maxDepth = 0;
@@ -987,7 +872,6 @@
                 const char = code[i];
                 const nextChars = code.substr(i, 4);
                 
-                // 处理字符串状态
                 if (!inString && (char === '"' || char === "'")) {
                     inString = true;
                     stringChar = char;
@@ -998,7 +882,6 @@
                     continue;
                 }
                 
-                // 只在非字符串状态下检测eval
                 if (!inString && nextChars === 'eval') {
                     depth++;
                     maxDepth = Math.max(maxDepth, depth);
@@ -1008,14 +891,10 @@
             return maxDepth;
         }
         
-        /**
-         * 综合检测函数
-         */
         function comprehensiveDetection(input) {
             const aaResult = detectAAEncode(input);
             const evalResult = detectEval(input);
             
-            // 确定主要编码类型
             let primaryType = 'Unknown';
             let primaryConfidence = 0;
             let primaryResult = null;
@@ -1040,14 +919,10 @@
             };
         }
         
-        /**
-         * 使用专业AADecode插件解密
-         */
         function decodeAAEncode(code) {
             try {
                 addLog('🔤 使用专业AADecode插件解密...', 'info');
                 
-                // 使用专业插件
                 const result = window.professionalAADecode(code);
                 
                 if (result !== null && result !== undefined && result !== code) {
@@ -1066,7 +941,6 @@
             } catch (error) {
                 addLog('❌ 专业AADecode解密失败: ' + error.message, 'error');
                 
-                // 备用：尝试通用解密插件
                 try {
                     addLog('🔄 尝试通用AADecode插件...', 'info');
                     if (window.DecodePlugins && window.DecodePlugins.aadecode) {
@@ -1094,21 +968,16 @@
             }
         }
         
-        /**
-         * 使用专业Eval解包插件解密
-         */
         function decodeEval(code) {
             try {
                 addLog('🔧 使用专业Eval解包插件解密...', 'info');
                 
-                // 使用专业插件
                 const result = window.professionalEvalDecode(code);
                 
                 if (result !== null && result !== undefined && result !== code) {
                     const resultStr = String(result);
                     addLog('✅ 专业Eval解包成功！', 'success');
                     
-                    // 检查是否需要递归解包
                     const detection = comprehensiveDetection(resultStr);
                     if (detection.primaryType !== 'Unknown' && detection.primaryConfidence > 60) {
                         addLog('🔄 检测到嵌套编码，开始递归解密...', 'info');
@@ -1137,7 +1006,6 @@
             } catch (error) {
                 addLog('❌ 专业Eval解包失败: ' + error.message, 'error');
                 
-                // 备用：尝试通用解密插件
                 try {
                     addLog('🔄 尝试通用Eval插件...', 'info');
                     if (window.DecodePlugins && window.DecodePlugins.eval) {
@@ -1165,9 +1033,6 @@
             }
         }
         
-        /**
-         * 执行解密（根据检测结果选择方法）
-         */
         function performDecryption(code) {
             const detection = comprehensiveDetection(code);
             
@@ -1176,30 +1041,23 @@
             } else if (detection.primaryType === 'Eval') {
                 return decodeEval(code);
             } else {
-                // 尝试其他解密方法
                 return tryOtherDecryptMethods(code);
             }
         }
         
-        /**
-         * 更新检测面板显示
-         */
         function updateDetectionPanel(detection) {
             const panel = document.getElementById('detectionPanel');
             const aaIndicator = document.getElementById('aaencodeIndicator');
             const evalIndicator = document.getElementById('evalIndicator');
             
-            // 重置指示器
             aaIndicator.classList.remove('show');
             evalIndicator.classList.remove('show');
             window.appData.isAAEncodeMode = false;
             window.appData.isEvalMode = false;
             
             if (detection.primaryType !== 'Unknown') {
-                // 显示检测面板
                 panel.style.display = 'block';
                 
-                // 更新检测数据
                 document.getElementById('detectionType').textContent = detection.primaryType;
                 document.getElementById('detectionConfidence').textContent = detection.primaryConfidence + '%';
                 
@@ -1215,14 +1073,12 @@
                     document.getElementById('detectionDetails').textContent = '嵌套深度' + detection.evalResult.nestedDepth;
                 }
                 
-                // 如果检测到多重编码
                 if (detection.hasMultipleEncodings) {
                     aaIndicator.classList.add('show');
                     evalIndicator.classList.add('show');
                     document.getElementById('detectionDetails').textContent = '多重编码';
                 }
                 
-                // 设置置信度颜色
                 const confidenceEl = document.getElementById('detectionConfidence');
                 if (detection.primaryConfidence >= 90) {
                     confidenceEl.style.color = '#10b981';
@@ -1234,19 +1090,12 @@
                 
                 window.appData.lastDetection = detection;
             } else {
-                // 隐藏检测面板
                 panel.style.display = 'none';
                 window.appData.lastDetection = null;
             }
         }
         
-        // =============================================
-        // 用户界面交互函数
-        // =============================================
-        
-        /**
-         * 测试AAEncode输入
-         */
+        // 用户界面函数
         function testAAEncodeInput() {
             const input = document.getElementById('input').value.trim();
             if (!input) {
@@ -1265,7 +1114,6 @@
                 showToast(`🎯 检测到AAEncode格式！置信度: ${detection.confidence}%`);
                 addLog(`AAEncode检测成功: 置信度 ${detection.confidence}%, 特征匹配 ${detection.patternMatches}/9`, 'success');
                 
-                // 自动解密
                 setTimeout(() => {
                     const decodeResult = decodeAAEncode(input);
                     if (decodeResult.success) {
@@ -1289,9 +1137,6 @@
             }
         }
         
-        /**
-         * 测试Eval输入
-         */
         function testEvalInput() {
             const input = document.getElementById('input').value.trim();
             if (!input) {
@@ -1310,7 +1155,6 @@
                 showToast(`🎯 检测到Eval包装！置信度: ${detection.confidence}%`);
                 addLog(`Eval检测成功: 置信度 ${detection.confidence}%, eval数量 ${detection.evalCount}, 嵌套深度 ${detection.nestedDepth}`, 'success');
                 
-                // 自动解密
                 setTimeout(() => {
                     const decodeResult = decodeEval(input);
                     if (decodeResult.success) {
@@ -1334,9 +1178,6 @@
             }
         }
         
-        /**
-         * 智能检测并自动解密
-         */
         function autoDetectAndDecrypt() {
             const input = document.getElementById('input').value.trim();
             if (!input) {
@@ -1346,7 +1187,6 @@
             
             addLog('🤖 开始智能检测...', 'info');
             
-            // 综合检测
             const detection = comprehensiveDetection(input);
             updateDetectionPanel(detection);
             
@@ -1370,25 +1210,21 @@
                 }
             }
             
-            // 如果主要检测失败，尝试其他格式
             addLog('🔍 检测其他编码格式...', 'info');
             
-            const result = await tryOtherDecryptMethods(input);
-            if (result.success) {
-                displayResult(result.content);
-                showToast(`🎉 ${result.method}解密成功！`);
-                addLog(`自动解密完成: ${result.method}`, 'success');
-            } else {
-                showToast('❌ 未能自动识别编码格式');
-                addLog('智能检测未找到支持的编码格式', 'warning');
-            }
+            tryOtherDecryptMethods(input).then(result => {
+                if (result.success) {
+                    displayResult(result.content);
+                    showToast(`🎉 ${result.method}解密成功！`);
+                    addLog(`自动解密完成: ${result.method}`, 'success');
+                } else {
+                    showToast('❌ 未能自动识别编码格式');
+                    addLog('智能检测未找到支持的编码格式', 'warning');
+                }
+            });
         }
         
-        /**
-         * 加载演示代码
-         */
         function loadDemoCode() {
-            // 随机选择一种演示类型
             const demoTypes = ['aaencode', 'eval', 'mixed'];
             const selectedType = demoTypes[Math.floor(Math.random() * demoTypes.length)];
             
@@ -1432,7 +1268,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             showToast(`📝 已加载${selectedType === 'aaencode' ? 'AAEncode' : selectedType === 'eval' ? 'Eval' : '混合编码'}演示代码`);
             addLog(`加载${selectedType}演示代码`, 'info');
             
-            // 自动检测
             setTimeout(() => {
                 const detection = comprehensiveDetection(demoCode);
                 updateDetectionPanel(detection);
@@ -1442,9 +1277,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }, 500);
         }
         
-        /**
-         * 从剪贴板粘贴
-         */
         async function pasteFromClipboard() {
             try {
                 const text = await navigator.clipboard.readText();
@@ -1453,7 +1285,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                     showToast('📋 剪贴板内容已粘贴');
                     addLog('从剪贴板粘贴内容', 'success');
                     
-                    // 自动检测
                     setTimeout(() => {
                         const detection = comprehensiveDetection(text);
                         updateDetectionPanel(detection);
@@ -1470,13 +1301,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
         }
         
-        // =============================================
-        // 代码处理和分析函数
-        // =============================================
-        
-        /**
-         * 清理输入代码
-         */
         function cleanInput() {
             const input = document.getElementById('input').value.trim();
             if (!input) {
@@ -1484,19 +1308,17 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                 return;
             }
             
-            // 检测编码类型，如果是特殊编码，不进行常规清理
             const detection = comprehensiveDetection(input);
             if (detection.primaryType !== 'Unknown') {
                 showToast(`⚠️ 检测到${detection.primaryType}，跳过清理以保持完整性`);
                 return;
             }
             
-            // 常规代码清理
             let cleaned = input
-                .replace(/\/\/.*$/gm, '') // 移除行注释
-                .replace(/\/\*[\s\S]*?\*\//g, '') // 移除块注释
-                .replace(/^\s*[\r\n]/gm, '') // 移除空行
-                .replace(/^\s+/gm, '') // 移除行首空格
+                .replace(/\/\/.*$/gm, '')
+                .replace(/\/\*[\s\S]*?\*\//g, '')
+                .replace(/^\s*[\r\n]/gm, '')
+                .replace(/^\s+/gm, '')
                 .trim();
             
             document.getElementById('input').value = cleaned;
@@ -1504,9 +1326,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
         }
         
-        /**
-         * 验证输入质量
-         */
         function validateInput() {
             const input = document.getElementById('input').value.trim();
             if (!input) {
@@ -1516,12 +1335,10 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             
             const issues = [];
             
-            // 检查长度
             if (input.length < 50) {
                 issues.push('代码长度过短');
             }
             
-            // 综合检测
             const detection = comprehensiveDetection(input);
             if (detection.primaryType !== 'Unknown') {
                 if (detection.primaryConfidence < 80) {
@@ -1536,7 +1353,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                     issues.push('Eval调用次数较少');
                 }
             } else {
-                // 常规代码检查
                 if (/[\u4e00-\u9fff]/.test(input)) {
                     issues.push('包含中文字符');
                 }
@@ -1554,9 +1370,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
         }
         
-        /**
-         * 清空输入
-         */
         function clearInput() {
             document.getElementById('input').value = '';
             updateDetectionPanel({ primaryType: 'Unknown' });
@@ -1564,13 +1377,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             addLog('清空输入内容', 'info');
         }
         
-        // =============================================
-        // 解密和结果处理函数
-        // =============================================
-        
-        /**
-         * 开始解密流程
-         */
         async function startDecrypt() {
             const input = document.getElementById('input').value.trim();
             
@@ -1584,7 +1390,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                 displayResult('');
                 setProgress(0);
                 
-                // 综合检测
                 const detection = comprehensiveDetection(input);
                 updateDetectionPanel(detection);
                 
@@ -1612,7 +1417,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                         
                         setProgress(100);
                         
-                        // 滚动到结果
                         document.getElementById('output').scrollIntoView({ 
                             behavior: 'smooth', 
                             block: 'center' 
@@ -1623,11 +1427,9 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                     }
                 }
                 
-                // 如果主要检测失败，尝试其他方法
                 addLog('🔍 尝试其他解密方法...', 'info');
                 setProgress(50);
                 
-                // 尝试通用解密方法
                 const result = await tryOtherDecryptMethods(input);
                 if (result.success) {
                     displayResult(result.content);
@@ -1635,7 +1437,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                     addLog(`解密完成: ${result.method}`, 'success');
                     setProgress(100);
                 } else {
-                    // 如果配置了GitHub，尝试GitHub Actions
                     if (window.appData.token && window.appData.repo) {
                         addLog('🌐 使用GitHub Actions解密...', 'info');
                         await submitToGitHub(input);
@@ -1654,9 +1455,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
         }
         
-        /**
-         * 尝试其他解密方法
-         */
         async function tryOtherDecryptMethods(input) {
             // Base64解密
             if (/^[A-Za-z0-9+/]+=*$/.test(input.replace(/\s/g, ''))) {
@@ -1710,9 +1508,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             return { success: false, method: null, content: null };
         }
         
-        /**
-         * 显示结果（带语法高亮）
-         */
         function displayResult(content) {
             const output = document.getElementById('output');
             
@@ -1721,10 +1516,8 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                 return;
             }
             
-            // 移除已有的HTML标签
             content = content.replace(/<[^>]*>/g, '');
             
-            // 简单的JavaScript语法高亮
             if (content.includes('function') || content.includes('var ') || content.includes('let ') || 
                 content.includes('const ') || content.includes('{') || content.includes('}')) {
                 output.innerHTML = highlightJS(content);
@@ -1733,9 +1526,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
         }
         
-        /**
-         * 简单的JavaScript语法高亮
-         */
         function highlightJS(code) {
             return code
                 .replace(/&/g, '&amp;')
@@ -1752,20 +1542,10 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                 .replace(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/g, '.<span class="hljs-property">$1</span>');
         }
         
-        /**
-         * 设置进度条
-         */
         function setProgress(percent) {
             document.getElementById('progress').style.width = percent + '%';
         }
         
-        // =============================================
-        // GitHub Actions 相关函数（可选）
-        // =============================================
-        
-        /**
-         * 提交代码到GitHub
-         */
         async function submitToGitHub(code) {
             if (!window.appData.token || !window.appData.repo) {
                 throw new Error('GitHub配置不完整');
@@ -1818,12 +1598,9 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             addLog('✅ 代码已提交，等待Actions处理...', 'success');
         }
         
-        /**
-         * 等待GitHub Actions结果
-         */
         async function waitForResult() {
             const startTime = Date.now();
-            const timeout = 60000; // 60秒超时
+            const timeout = 60000;
             
             return new Promise((resolve) => {
                 const checkLoop = async () => {
@@ -1848,9 +1625,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             });
         }
         
-        /**
-         * 获取GitHub解密结果
-         */
         async function getResult() {
             addLog('📥 获取解密结果...', 'info');
             
@@ -1862,7 +1636,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             const timestamp = Date.now();
             
             try {
-                // 尝试GitHub API
                 const apiUrl = `https://api.github.com/repos/${window.appData.repo}/contents/output.js`;
                 const response = await fetch(`${apiUrl}?ref=main&_=${timestamp}`, {
                     headers: {
@@ -1894,7 +1667,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                 addLog('GitHub API失败: ' + error.message, 'warning');
             }
             
-            // 尝试Raw URL
             try {
                 const rawUrl = `https://raw.githubusercontent.com/${window.appData.repo}/main/output.js?_=${timestamp}`;
                 const response = await fetch(rawUrl);
@@ -1918,9 +1690,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             return false;
         }
         
-        /**
-         * Base64解码
-         */
         function decodeBase64(base64) {
             try {
                 const binaryString = atob(base64.replace(/\n/g, ''));
@@ -1934,13 +1703,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
         }
         
-        // =============================================
-        // 结果操作函数
-        // =============================================
-        
-        /**
-         * 代码美化
-         */
         function beautifyCode() {
             const output = document.getElementById('output');
             let content = output.innerHTML.includes('<span') ? 
@@ -1963,15 +1725,11 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
         }
         
-        /**
-         * JavaScript代码美化
-         */
         function beautifyJavaScript(code) {
             let beautified = code;
             let indentLevel = 0;
             const indent = '    ';
             
-            // 格式化代码
             beautified = beautified.replace(/\s+/g, ' ').trim();
             beautified = beautified.replace(/([{;}])/g, '$1\n');
             beautified = beautified.replace(/([}])/g, '\n$1\n');
@@ -1997,18 +1755,12 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             return result.join('\n');
         }
         
-        /**
-         * 移除HTML标签
-         */
         function stripHTMLTags(html) {
             const div = document.createElement('div');
             div.innerHTML = html;
             return div.textContent || div.innerText || '';
         }
         
-        /**
-         * 复制结果
-         */
         function copyResult() {
             const output = document.getElementById('output');
             let content;
@@ -2036,9 +1788,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
         }
         
-        /**
-         * 备用复制方案
-         */
         function fallbackCopy(content) {
             const textarea = document.createElement('textarea');
             textarea.value = content;
@@ -2052,9 +1801,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             addLog('复制成功（备用方案）', 'success');
         }
         
-        /**
-         * 下载结果
-         */
         function downloadResult() {
             const output = document.getElementById('output');
             let content;
@@ -2101,9 +1847,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
         }
         
-        /**
-         * 验证结果
-         */
         function validateResult() {
             const output = document.getElementById('output');
             let content = output.innerHTML.includes('<span') ? 
@@ -2116,7 +1859,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
             
             try {
-                // 简单的JavaScript语法检查
                 new Function(content);
                 showToast('✅ JavaScript语法检查通过');
                 addLog('代码语法验证成功', 'success');
@@ -2126,9 +1868,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
         }
         
-        /**
-         * 清除所有内容
-         */
         function clearAll() {
             document.getElementById('input').value = '';
             displayResult('');
@@ -2141,13 +1880,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
-        // =============================================
-        // 文件处理函数
-        // =============================================
-        
-        /**
-         * 处理文件选择
-         */
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
@@ -2155,9 +1887,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
         }
         
-        /**
-         * 处理拖拽
-         */
         function handleDragOver(event) {
             event.preventDefault();
             event.currentTarget.classList.add('dragover');
@@ -2177,9 +1906,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
         }
         
-        /**
-         * 读取文件
-         */
         function readFile(file) {
             addLog(`📁 开始读取文件: ${file.name}`, 'info');
             
@@ -2192,7 +1918,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                     showToast(`📁 文件加载成功: ${file.name}`);
                     addLog(`文件加载成功 (${content.length} 字符)`, 'success');
                     
-                    // 自动检测
                     setTimeout(() => {
                         const detection = comprehensiveDetection(content);
                         updateDetectionPanel(detection);
@@ -2215,13 +1940,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             reader.readAsText(file, 'UTF-8');
         }
         
-        // =============================================
-        // 工具函数
-        // =============================================
-        
-        /**
-         * 添加日志
-         */
         function addLog(message, type = 'info') {
             const logs = document.getElementById('logs');
             const time = new Date().toLocaleTimeString();
@@ -2231,15 +1949,11 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             logs.appendChild(div);
             logs.scrollTop = logs.scrollHeight;
             
-            // 限制日志数量
             if (logs.children.length > 50) {
                 logs.removeChild(logs.firstChild);
             }
         }
         
-        /**
-         * 显示Toast提示
-         */
         function showToast(message, duration = 3000) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
@@ -2247,16 +1961,10 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             setTimeout(() => toast.classList.remove('show'), duration);
         }
         
-        // =============================================
-        // 初始化和事件绑定
-        // =============================================
-        
         document.addEventListener('DOMContentLoaded', function() {
-            // 恢复保存的配置
             document.getElementById('token').value = window.appData.token;
             document.getElementById('repo').value = window.appData.repo;
             
-            // 保存配置到localStorage
             document.getElementById('token').addEventListener('input', function(e) {
                 window.appData.token = e.target.value;
                 localStorage.setItem('github_token', e.target.value);
@@ -2267,16 +1975,13 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                 localStorage.setItem('repo_name', e.target.value);
             });
             
-            // 文件上传事件
             document.getElementById('fileInput').addEventListener('change', handleFileSelect);
             
-            // 拖拽上传
             const fileUpload = document.querySelector('.file-upload');
             fileUpload.addEventListener('dragover', handleDragOver);
             fileUpload.addEventListener('dragleave', handleDragLeave);
             fileUpload.addEventListener('drop', handleDrop);
             
-            // 输入框变化时自动检测
             document.getElementById('input').addEventListener('input', function() {
                 const input = this.value.trim();
                 if (input.length > 50) {
@@ -2287,7 +1992,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                 }
             });
             
-            // 键盘快捷键
             document.addEventListener('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                     e.preventDefault();
@@ -2310,7 +2014,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             addLog('💡 快捷键: Ctrl+Enter解密, Ctrl+S下载, Ctrl+C复制, Esc清除', 'info');
         });
         
-        // 错误处理
         window.addEventListener('error', function(e) {
             addLog('❌ 发生错误: ' + e.message, 'error');
             console.error('Global error:', e);
