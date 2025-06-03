@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v5.0</title>
+    <title>羊毛助手 v4.3</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -635,6 +635,158 @@
             repo: localStorage.getItem('repo_name') || '',
             checkTimer: null,
             isChecking: false
+        };
+        
+        // 历史记录管理器 - 提前定义
+        window.HistoryManager = {
+            // 保存解密记录
+            saveRecord(input, output, analysis = null) {
+                try {
+                    const records = this.getRecords();
+                    const record = {
+                        id: Date.now(),
+                        timestamp: new Date().toISOString(),
+                        input: input.substring(0, 1000) + (input.length > 1000 ? '...' : ''), // 限制长度
+                        output: output.substring(0, 1000) + (output.length > 1000 ? '...' : ''),
+                        inputLength: input.length,
+                        outputLength: output.length,
+                        analysis: analysis ? {
+                            codeType: analysis.codeType,
+                            security: analysis.security.level,
+                            complexity: analysis.complexity.level
+                        } : null,
+                        starred: false
+                    };
+                    
+                    records.unshift(record); // 添加到开头
+                    
+                    // 限制记录数量（最多保存100条）
+                    if (records.length > 100) {
+                        records.splice(100);
+                    }
+                    
+                    localStorage.setItem('decrypt_history', JSON.stringify(records));
+                    addLog('解密记录已保存', 'success');
+                } catch (e) {
+                    addLog('保存历史记录失败: ' + e.message, 'warning');
+                }
+            },
+            
+            // 获取所有记录
+            getRecords() {
+                try {
+                    return JSON.parse(localStorage.getItem('decrypt_history') || '[]');
+                } catch (e) {
+                    return [];
+                }
+            },
+            
+            // 删除记录
+            deleteRecord(id) {
+                try {
+                    const records = this.getRecords();
+                    const index = records.findIndex(r => r.id === id);
+                    if (index !== -1) {
+                        records.splice(index, 1);
+                        localStorage.setItem('decrypt_history', JSON.stringify(records));
+                        return true;
+                    }
+                    return false;
+                } catch (e) {
+                    return false;
+                }
+            },
+            
+            // 收藏/取消收藏
+            toggleStar(id) {
+                try {
+                    const records = this.getRecords();
+                    const record = records.find(r => r.id === id);
+                    if (record) {
+                        record.starred = !record.starred;
+                        localStorage.setItem('decrypt_history', JSON.stringify(records));
+                        return record.starred;
+                    }
+                    return false;
+                } catch (e) {
+                    return false;
+                }
+            },
+            
+            // 清空历史
+            clearHistory() {
+                try {
+                    localStorage.removeItem('decrypt_history');
+                    addLog('历史记录已清空', 'info');
+                } catch (e) {
+                    addLog('清空历史记录失败', 'warning');
+                }
+            },
+            
+            // 导出历史
+            exportHistory() {
+                try {
+                    const records = this.getRecords();
+                    if (records.length === 0) {
+                        showToast('没有历史记录可导出');
+                        return;
+                    }
+                    
+                    const data = {
+                        exportTime: new Date().toISOString(),
+                        totalRecords: records.length,
+                        records: records
+                    };
+                    
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `decrypt_history_${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    showToast('历史记录已导出');
+                    addLog('历史记录导出完成', 'success');
+                } catch (e) {
+                    showToast('导出失败: ' + e.message);
+                    addLog('导出失败: ' + e.message, 'error');
+                }
+            },
+            
+            // 导入历史
+            importHistory(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.records && Array.isArray(data.records)) {
+                            const existingRecords = this.getRecords();
+                            const mergedRecords = [...data.records, ...existingRecords];
+                            
+                            // 去重（基于timestamp）
+                            const uniqueRecords = mergedRecords.filter((record, index, self) => 
+                                index === self.findIndex(r => r.timestamp === record.timestamp)
+                            );
+                            
+                            // 限制数量
+                            if (uniqueRecords.length > 100) {
+                                uniqueRecords.splice(100);
+                            }
+                            
+                            localStorage.setItem('decrypt_history', JSON.stringify(uniqueRecords));
+                            showToast(`成功导入 ${data.records.length} 条记录`);
+                            addLog(`历史记录导入完成: ${data.records.length} 条`, 'success');
+                        } else {
+                            throw new Error('无效的历史记录文件格式');
+                        }
+                    } catch (error) {
+                        showToast('导入失败: ' + error.message);
+                        addLog('历史记录导入失败: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
         };
         
         // 简单的语法高亮
@@ -1728,9 +1880,13 @@ ${analysis.suggestions.map(s => `- ${s}`).join('\n')}
                         
                         // 保存到历史记录
                         const input = document.getElementById('input').value;
-                        if (input) {
-                            const analysis = analyzeDecryptedCode(content);
-                            HistoryManager.saveRecord(input, content, analysis);
+                        if (input && typeof HistoryManager !== 'undefined') {
+                            try {
+                                const analysis = analyzeDecryptedCode(content);
+                                HistoryManager.saveRecord(input, content, analysis);
+                            } catch (e) {
+                                addLog('保存历史记录失败: ' + e.message, 'warning');
+                            }
                         }
                         
                         // 滚动到结果区域
@@ -1760,9 +1916,13 @@ ${analysis.suggestions.map(s => `- ${s}`).join('\n')}
                         
                         // 保存到历史记录
                         const input = document.getElementById('input').value;
-                        if (input) {
-                            const analysis = analyzeDecryptedCode(content);
-                            HistoryManager.saveRecord(input, content, analysis);
+                        if (input && typeof HistoryManager !== 'undefined') {
+                            try {
+                                const analysis = analyzeDecryptedCode(content);
+                                HistoryManager.saveRecord(input, content, analysis);
+                            } catch (e) {
+                                addLog('保存历史记录失败: ' + e.message, 'warning');
+                            }
                         }
                         
                         // 滚动到结果区域
@@ -1793,9 +1953,13 @@ ${analysis.suggestions.map(s => `- ${s}`).join('\n')}
                         
                         // 保存到历史记录
                         const input = document.getElementById('input').value;
-                        if (input) {
-                            const analysis = analyzeDecryptedCode(content);
-                            HistoryManager.saveRecord(input, content, analysis);
+                        if (input && typeof HistoryManager !== 'undefined') {
+                            try {
+                                const analysis = analyzeDecryptedCode(content);
+                                HistoryManager.saveRecord(input, content, analysis);
+                            } catch (e) {
+                                addLog('保存历史记录失败: ' + e.message, 'warning');
+                            }
                         }
                         
                         // 滚动到结果区域
