@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v4.4 - AAEncode增强版</title>
+    <title>羊毛助手 v5.2 - AAEncode通用解密版</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -578,7 +578,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>羊毛助手 <span class="version">v4.4</span><span id="aaencodeIndicator" class="aaencode-indicator hidden">AAEncode</span></h1>
+        <h1>羊毛助手 <span class="version">v5.2</span><span id="aaencodeIndicator" class="aaencode-indicator hidden">AAEncode</span></h1>
         
         <!-- GitHub 配置 -->
         <div class="section">
@@ -600,7 +600,7 @@
                 3. 仓库地址格式：用户名/仓库名<br>
                 4. 确保仓库已集成 <a href="https://github.com/smallfawn/decode_action" target="_blank">decode_action</a> 解密框架<br>
                 5. <strong>解密流程：</strong>密文 → input.js → GitHub Actions → output.js<br>
-                6. <strong>新增：</strong>支持AAEncode本地解密，无需GitHub Actions
+                6. <strong>v5.2新增：</strong>通用AAEncode解密引擎，支持任意格式的AAEncode代码
             </div>
         </div>
         
@@ -643,7 +643,7 @@
         <!-- 代码输入 -->
         <div class="section">
             <div class="section-title">📝 密文输入</div>
-            <textarea id="input" placeholder="请粘贴需要解密的密文代码...&#10;&#10;✅ 支持自动处理：&#10;- AAEncode混淆代码（🔤新增！）&#10;- 混合了注释的密文&#10;- eval包装的代码&#10;- Base64/十六进制编码&#10;- Unicode转义序列&#10;- JavaScript混淆代码&#10;- 时间戳和说明文字&#10;&#10;💡 工具会自动识别格式并选择最佳解密方案"></textarea>
+            <textarea id="input" placeholder="请粘贴需要解密的密文代码...&#10;&#10;✅ v5.2 支持自动处理：&#10;- AAEncode混淆代码（🔤通用解密引擎！）&#10;- 混合了注释的密文&#10;- eval包装的代码&#10;- Base64/十六进制编码&#10;- Unicode转义序列&#10;- JavaScript混淆代码&#10;- 时间戳和说明文字&#10;&#10;💡 工具会自动识别格式并选择最佳解密方案"></textarea>
             
             <div class="file-options" style="margin-top: 8px;">
                 <div class="file-option" onclick="showPreprocessPreview()">
@@ -724,9 +724,9 @@
     <script>
         // 应用配置
         const APP_CONFIG = {
-            VERSION: '4.4',
-            VERSION_NAME: 'AAEncode增强版',
-            UPDATE_NOTES: '新增AAEncode本地解密功能，支持符号混淆代码'
+            VERSION: '5.2',
+            VERSION_NAME: 'AAEncode通用解密版',
+            UPDATE_NOTES: '全新AAEncode解密引擎，支持任意格式的AAEncode代码'
         };
         
         // 全局变量
@@ -1488,7 +1488,7 @@
             });
             
             addLog(`系统初始化完成 v${APP_CONFIG.VERSION} - ${APP_CONFIG.VERSION_NAME}`, 'success');
-            addLog('✨ 新功能：支持AAEncode本地解密', 'info');
+            addLog('🚀 v5.2新特性：通用AAEncode解密引擎，支持任意格式', 'info');
         });
         
         // 日志
