@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v4.5</title>
+    <title>羊毛助手 v4.3</title>
     <style>
         * {
             margin: 0;
@@ -562,6 +562,7 @@
             // 检查文件是否存在
             let sha = null;
             try {
+                addLog('检查现有 input.js 文件...', 'info');
                 const checkResp = await fetch(url, {
                     headers: {
                         'Authorization': `token ${window.appData.token}`,
@@ -573,9 +574,11 @@
                     const data = await checkResp.json();
                     sha = data.sha;
                     addLog('检测到已存在的 input.js，将更新', 'info');
+                } else {
+                    addLog('将创建新的 input.js 文件', 'info');
                 }
             } catch (e) {
-                addLog('将创建新的 input.js 文件', 'info');
+                addLog('检查文件时出错: ' + e.message, 'warning');
             }
             
             // 提交文件
@@ -587,6 +590,7 @@
             
             if (sha) payload.sha = sha;
             
+            addLog('正在提交文件到 GitHub...', 'info');
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
@@ -602,7 +606,11 @@
                 throw new Error(`GitHub API 错误: ${error.message}`);
             }
             
-            addLog('密文已提交到 input.js，Actions 即将自动触发解密...', 'success');
+            const result = await response.json();
+            addLog('✅ input.js 提交成功！', 'success');
+            addLog(`📂 查看文件: https://github.com/${window.appData.repo}/blob/main/input.js`, 'info');
+            addLog(`🔄 查看Actions: https://github.com/${window.appData.repo}/actions`, 'info');
+            addLog('Actions 即将自动触发解密...', 'success');
         }
 
         // 等待解密结果
@@ -729,20 +737,27 @@
         function showTimeoutHelp() {
             const helpText = `// ⏰ 等待60秒超时
 //
-// 🔄 GitHub Actions 可能仍在执行解密中，请尝试:
+// 🔄 GitHub Actions 可能仍在执行解密中，请检查:
 //
-// 1️⃣ 点击 "📥 读取" 按钮手动获取解密结果
-// 2️⃣ 访问GitHub查看: https://github.com/${window.appData.repo}/blob/main/output.js
-// 3️⃣ 检查Actions状态: https://github.com/${window.appData.repo}/actions
-// 4️⃣ 查看密文输入: https://github.com/${window.appData.repo}/blob/main/input.js
+// 1️⃣ input.js 文件: https://github.com/${window.appData.repo}/blob/main/input.js
+// 2️⃣ Actions 状态: https://github.com/${window.appData.repo}/actions  
+// 3️⃣ output.js 结果: https://github.com/${window.appData.repo}/blob/main/output.js
 //
-// 💡 提示: 
-// - 解密流程：密文 → input.js → Actions解密 → output.js
-// - Actions 可能需要1-3分钟才能完成解密`;
+// 💡 解密流程检查:
+// ✅ 密文已提交到 input.js
+// ⏳ 等待 Actions 自动执行解密
+// 📥 点击"读取"按钮手动获取 output.js
+//
+// 🚨 如果 Actions 没有执行，请检查:
+// - 仓库是否已配置 decode_action 工作流
+// - Actions 是否被启用 (Settings → Actions)
+// - 工作流文件是否存在 (.github/workflows/)`;
             
             displayResult(helpText);
-            addLog('显示超时帮助信息', 'warning');
-            showToast('超时了！请点击"📥 读取"按钮手动获取结果', 5000);
+            addLog('显示调试帮助信息', 'warning');
+            addLog(`🔗 快速链接 - Actions: https://github.com/${window.appData.repo}/actions`, 'info');
+            addLog(`🔗 快速链接 - input.js: https://github.com/${window.appData.repo}/blob/main/input.js`, 'info');
+            showToast('超时了！请检查 GitHub Actions 执行状态', 5000);
         }
 
         // 简单的语法高亮
