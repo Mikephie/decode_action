@@ -450,12 +450,12 @@
     <div class="container">
         <h1>
             羊毛助手 
-            <span class="version">v5.6</span>
-            <span id="aaencodeIndicator" class="aaencode-indicator">AAEncode已检测</span>
+            <span class="version">v5.7</span>
+            <span id="aaencodeIndicator" class="aaencode-indicator">编码已检测</span>
         </h1>
         
         <div class="features-banner">
-            🎯 v5.6增强版：集成专业AADecode插件 | 支持头部注释保留 | 智能检测算法 | 一键本地解密
+            🎯 v5.7专业版：AADecode + Eval解包 + 5种编码格式本地解密 | 智能检测 | 头部注释保留 | 一键操作
         </div>
         
         <!-- GitHub 配置 -->
@@ -472,7 +472,8 @@
                 </div>
             </div>
             <div class="note">
-                <strong>💡 说明：</strong>AAEncode代码可直接本地解密，无需GitHub配置。GitHub配置仅用于其他复杂混淆代码的云端解密。
+                <strong>💡 说明：</strong>本工具支持5种编码格式本地解密，无需网络连接。GitHub配置仅用于复杂混淆代码的云端解密。
+                <br><strong>支持格式：</strong>AAEncode、Eval解包、Base64、Unicode转义、十六进制编码
             </div>
         </div>
         
@@ -496,7 +497,7 @@
                     📋<br>粘贴剪贴板
                 </div>
                 <div class="file-option aaencode" onclick="testAAEncodeInput()">
-                    🔤<br>AAEncode测试
+                    🔤<br>智能检测
                 </div>
                 <div class="file-option" onclick="loadDemoCode()">
                     🧪<br>加载示例
@@ -504,9 +505,9 @@
             </div>
         </div>
         
-        <!-- AAEncode检测面板 -->
+        <!-- 编码检测面板 -->
         <div id="detectionPanel" class="detection-panel" style="display: none;">
-            <div class="section-title">🔍 AAEncode检测结果</div>
+            <div class="section-title">🔍 编码检测结果</div>
             <div class="detection-grid">
                 <div class="detection-item">
                     <div id="detectionType" class="detection-value">未检测</div>
@@ -522,7 +523,7 @@
                 </div>
                 <div class="detection-item">
                     <div id="detectionRatio" class="detection-value">0%</div>
-                    <div class="detection-label">特征字符占比</div>
+                    <div class="detection-label">特征信息</div>
                 </div>
             </div>
         </div>
@@ -530,20 +531,24 @@
         <!-- 代码输入 -->
         <div class="section">
             <div class="section-title">📝 密文输入</div>
-            <textarea id="input" placeholder="请粘贴需要解密的密文代码...
+            <textarea id="input" placeholder="请粘贴需要解密的代码...
 
-✅ v5.6 专业AADecode支持：
-- 自动检测AAEncode格式
-- 保留脚本头部注释
-- 智能提取编码部分
-- 高精度解码算法
-- 完整错误处理机制
+✅ v5.7 专业多格式解密支持：
+- AAEncode (专业插件，保留头部注释)
+- Eval解包 (专业插件，支持递归解包)
+- Base64编码
+- Unicode转义序列
+- 十六进制编码
+
+🤖 智能检测功能：
+- 自动识别编码格式
+- 实时置信度评估
+- 一键智能解密
 
 💡 其他支持格式：
 - JavaScript混淆代码
-- Base64/十六进制编码
-- Unicode转义序列
-- eval包装的代码"></textarea>
+- Function构造器包装
+- 多层嵌套编码"></textarea>
             
             <div class="file-options">
                 <div class="file-option" onclick="autoDetectAndDecrypt()">
@@ -747,13 +752,16 @@
         };
         
         // =============================================
-        // AAEncode检测和解密函数
+        // 编码检测和解密函数
         // =============================================
         
         /**
-         * 智能检测AAEncode格式
+         * 智能检测各种编码格式
          */
-        function detectAAEncode(input) {
+        function detectEncodingType(input) {
+            const results = {
+                aaencode: detectAAEncode(input),
+                eval
             // AAEncode特征字符检测
             const aaencodeChars = /[ﾟωノΘΔДεｰｍ'∇｀~┻━_=3o\^c\/\*\\\"()[\]!+]/g;
             const matches = input.match(aaencodeChars) || [];
@@ -815,6 +823,150 @@
                         success: true,
                         method: '专业AADecode插件',
                         result: resultStr,
+                        preservedHeader: result.includes('\n\n') && code.search(/ﾟωﾟﾉ|ﾟДﾟ/) > 0
+                    };
+                } else {
+                    throw new Error('专业插件返回空结果或未改变');
+                }
+                
+            } catch (error) {
+                addLog('❌ 专业AADecode解密失败: ' + error.message, 'error');
+                
+                // 备用：尝试通用解密插件
+                try {
+                    addLog('🔄 尝试通用AADecode插件...', 'info');
+                    if (window.DecodePlugins && window.DecodePlugins.aadecode) {
+                        const backupResult = window.DecodePlugins.aadecode.plugin(code);
+                        if (backupResult && backupResult !== code) {
+                            addLog('✅ 通用AADecode解密成功！', 'success');
+                            return {
+                                success: true,
+                                method: '通用AADecode插件',
+                                result: String(backupResult),
+                                warning: '使用备用解密方案'
+                            };
+                        }
+                    }
+                } catch (e2) {
+                    addLog('❌ 备用插件也失败: ' + e2.message, 'error');
+                }
+                
+                return {
+                    success: false,
+                    method: '解密失败',
+                    result: null,
+                    error: 'AAEncode解密失败: ' + error.message
+                };
+            }
+        }
+        
+        /**
+         * 使用专业Eval解包插件解密
+         */
+        function decodeEval(code) {
+            try {
+                addLog('🔧 使用专业Eval解包插件解密...', 'info');
+                
+                // 使用专业Eval解包插件
+                const result = window.professionalEvalDecoder.plugin(code);
+                
+                if (result !== null && result !== undefined && result !== code) {
+                    const resultStr = String(result);
+                    addLog('✅ 专业Eval解包成功！', 'success');
+                    return {
+                        success: true,
+                        method: '专业Eval解包插件',
+                        result: resultStr,
+                        recursive: result.includes('eval(') // 检查是否需要递归解包
+                    };
+                } else {
+                    throw new Error('Eval解包插件返回空结果或未改变');
+                }
+                
+            } catch (error) {
+                addLog('❌ 专业Eval解包失败: ' + error.message, 'error');
+                
+                // 备用：简单的字符串替换方法
+                try {
+                    addLog('🔄 尝试简单替换方法...', 'info');
+                    const simpleResult = code.replace(/eval\s*\(\s*['"`](.*?)['"`]\s*\)/g, '$1');
+                    if (simpleResult !== code) {
+                        addLog('✅ 简单替换方法成功！', 'success');
+                        return {
+                            success: true,
+                            method: '简单字符串替换',
+                            result: simpleResult,
+                            warning: '使用备用替换方案'
+                        };
+                    }
+                } catch (e2) {
+                    addLog('❌ 简单替换也失败: ' + e2.message, 'error');
+                }
+                
+                return {
+                    success: false,
+                    method: '解密失败',
+                    result: null,
+                    error: 'Eval解包失败: ' + error.message
+                };
+            }
+        }
+        
+        /**
+         * 更新检测面板显示（支持多种格式）
+         */
+        function updateDetectionPanel(detection) {
+            const panel = document.getElementById('detectionPanel');
+            const indicator = document.getElementById('aaencodeIndicator');
+            
+            if (detection.bestMatch && detection.bestMatch.confidence >= 70) {
+                // 显示检测面板
+                panel.style.display = 'block';
+                
+                const { type, confidence, details } = detection.bestMatch;
+                
+                // 更新检测数据
+                document.getElementById('detectionType').textContent = type.toUpperCase();
+                document.getElementById('detectionConfidence').textContent = confidence + '%';
+                
+                // 根据不同类型显示不同信息
+                if (type === 'aaencode') {
+                    document.getElementById('detectionFeatures').textContent = details.patternMatches + '/9';
+                    document.getElementById('detectionRatio').textContent = details.ratio + '%';
+                    indicator.textContent = 'AAEncode已检测';
+                    indicator.classList.add('show');
+                } else if (type === 'eval') {
+                    document.getElementById('detectionFeatures').textContent = details.patternMatches + '/6';
+                    document.getElementById('detectionRatio').textContent = details.evalCount + '个eval';
+                    indicator.textContent = 'Eval已检测';
+                    indicator.classList.add('show');
+                } else {
+                    document.getElementById('detectionFeatures').textContent = '检测到';
+                    document.getElementById('detectionRatio').textContent = type;
+                    indicator.textContent = type.toUpperCase() + '已检测';
+                    indicator.classList.add('show');
+                }
+                
+                // 设置置信度颜色
+                const confidenceEl = document.getElementById('detectionConfidence');
+                if (confidence >= 90) {
+                    confidenceEl.style.color = '#10b981';
+                } else if (confidence >= 70) {
+                    confidenceEl.style.color = '#f59e0b';
+                } else {
+                    confidenceEl.style.color = '#ef4444';
+                }
+                
+                window.appData.isEncodeMode = true;
+                window.appData.lastDetection = detection;
+            } else {
+                // 隐藏检测面板
+                panel.style.display = 'none';
+                indicator.classList.remove('show');
+                window.appData.isEncodeMode = false;
+                window.appData.lastDetection = null;
+            }
+        }Str,
                         preservedHeader: result.includes('\n\n') && code.search(/ﾟωﾟﾉ|ﾟДﾟ/) > 0
                     };
                 } else {
@@ -1847,11 +1999,11 @@
             // 输入框变化时自动检测
             document.getElementById('input').addEventListener('input', function() {
                 const input = this.value.trim();
-                if (input.length > 50) {
-                    const detection = detectAAEncode(input);
+                if (input.length > 30) {
+                    const detection = detectEncodingType(input);
                     updateDetectionPanel(detection);
                 } else {
-                    updateDetectionPanel({ isAAEncode: false });
+                    updateDetectionPanel({ bestMatch: { confidence: 0 } });
                 }
             });
             
@@ -1869,12 +2021,16 @@
                 } else if (e.key === 'Escape') {
                     e.preventDefault();
                     clearAll();
+                } else if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                    e.preventDefault();
+                    autoDetectAndDecrypt();
                 }
             });
             
             addLog(`🚀 系统初始化完成 v${APP_CONFIG.VERSION}`, 'success');
-            addLog('🎯 专业AADecode插件已加载，支持头部注释保留', 'info');
-            addLog('💡 快捷键: Ctrl+Enter解密, Ctrl+S下载, Ctrl+C复制, Esc清除', 'info');
+            addLog('🎯 专业解密插件已加载：AADecode + Eval解包', 'info');
+            addLog('🤖 支持5种编码格式智能检测和本地解密', 'info');
+            addLog('💡 快捷键: Ctrl+Enter解密, Ctrl+D智能解密, Ctrl+S下载, Ctrl+C复制, Esc清除', 'info');
         });
         
         // 错误处理
