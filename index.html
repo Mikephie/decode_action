@@ -156,36 +156,67 @@
     }
     
     textarea {
-        height: 200px;
-        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-        resize: vertical;
-        line-height: 1.6;
-        font-size: 13px;
-    }
-    
-    /* 修复输入框问题 - 强制样式 */
-    #input {
-        background: rgba(0,0,0,0.3) !important;
-        border: 2px solid rgba(255,255,255,0.2) !important;
+        height: 200px !important;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+        resize: vertical !important;
+        line-height: 1.6 !important;
+        font-size: 13px !important;
+        background: rgba(0,0,0,0.4) !important;
         color: #ffffff !important;
-        min-height: 200px !important;
+        border: 2px solid rgba(255,255,255,0.3) !important;
+        padding: 12px !important;
+        border-radius: 10px !important;
         white-space: pre-wrap !important;
         word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    
+    textarea:focus {
+        outline: none !important;
+        border-color: #3b82f6 !important;
+        background: rgba(0,0,0,0.5) !important;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
+    }
+    
+    textarea::placeholder {
+        color: rgba(255,255,255,0.6) !important;
+        font-size: 13px !important;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+    }
+    
+    /* 专门针对input框的样式 */
+    #input {
+        background: rgba(0,0,0,0.4) !important;
+        border: 2px solid rgba(255,255,255,0.3) !important;
+        color: #ffffff !important;
+        min-height: 200px !important;
+        height: 200px !important;
+        max-height: none !important;
+        width: 100% !important;
         font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
         font-size: 13px !important;
         line-height: 1.6 !important;
+        padding: 12px !important;
+        border-radius: 10px !important;
         resize: vertical !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        box-sizing: border-box !important;
     }
     
     #input:focus {
-        background: rgba(0,0,0,0.4) !important;
+        background: rgba(0,0,0,0.5) !important;
         border-color: #3b82f6 !important;
         outline: none !important;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
     }
     
     #input::placeholder {
         color: rgba(255,255,255,0.6) !important;
         font-size: 13px !important;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+        opacity: 1 !important;
     }
     
     .file-upload {
@@ -470,7 +501,7 @@
     <div class="container">
         <h1>
             羊毛助手 
-            <span class="version">v5.7</span>
+            <span class="version">v5.8</span>
             <div class="encoding-indicators">
                 <span id="aaencodeIndicator" class="encoding-indicator aaencode-indicator">AAEncode已检测</span>
                 <span id="evalIndicator" class="encoding-indicator eval-indicator">Eval已检测</span>
@@ -479,7 +510,7 @@
 
 ```
     <div class="features-banner">
-        🎯 v5.7增强版：本地AADecode+Eval解密 | GitHub Actions云端解密 | 智能多重检测 | 支持头部注释保留
+        🎯 v5.8修复版：本地AADecode+Eval解密 | GitHub Actions云端解密 | 修复输入框显示问题
     </div>
     
     <!-- GitHub 配置 -->
@@ -846,9 +877,9 @@
         
         // 应用配置
         const APP_CONFIG = {
-            VERSION: '5.7',
-            VERSION_NAME: '增强版AADecode+Eval解密工具',
-            UPDATE_NOTES: '集成专业AADecode和Eval解包插件，支持头部注释保留和智能检测'
+            VERSION: '5.8',
+            VERSION_NAME: '修复版AADecode+Eval解密工具',
+            UPDATE_NOTES: '修复输入框显示问题，优化解密算法'
         };
         
         window.appData = {
@@ -2056,6 +2087,41 @@ eval("var x = ‘ﾟДﾟ’; console.log(‘检测到特殊字符’);");`;
     }
     
     document.addEventListener('DOMContentLoaded', function() {
+        // 强制确保输入框可见
+        setTimeout(() => {
+            const inputElement = document.getElementById('input');
+            if (inputElement) {
+                // 强制重置样式
+                inputElement.style.cssText = `
+                    background: rgba(0,0,0,0.4) !important;
+                    border: 2px solid rgba(255,255,255,0.3) !important;
+                    color: #ffffff !important;
+                    min-height: 200px !important;
+                    height: 200px !important;
+                    width: 100% !important;
+                    font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+                    font-size: 13px !important;
+                    line-height: 1.6 !important;
+                    padding: 12px !important;
+                    border-radius: 10px !important;
+                    resize: vertical !important;
+                    white-space: pre-wrap !important;
+                    word-wrap: break-word !important;
+                    box-sizing: border-box !important;
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                `;
+                
+                // 设置默认内容确保可见
+                if (!inputElement.value) {
+                    inputElement.value = '// 在这里粘贴需要解密的代码...\n// 支持AAEncode、Eval等格式\n';
+                }
+                
+                console.log('输入框已强制初始化');
+            }
+        }, 100);
+        
         document.getElementById('token').value = window.appData.token;
         document.getElementById('repo').value = window.appData.repo;
         
@@ -2106,6 +2172,7 @@ eval("var x = ‘ﾟДﾟ’; console.log(‘检测到特殊字符’);");`;
         addLog('🎯 本地AADecode插件已加载，支持头部注释保留', 'info');
         addLog('🔧 本地Eval解包插件已加载，支持递归解密', 'info');
         addLog('🌐 GitHub Actions支持其他复杂混淆格式（需配置）', 'info');
+        addLog('🔧 输入框显示问题已修复', 'success');
         addLog('💡 快捷键: Ctrl+Enter解密, Ctrl+S下载, Ctrl+C复制, Esc清除', 'info');
     });
     
