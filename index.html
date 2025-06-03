@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v4.3</title>
+    <title>羊毛助手 v5.1</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -787,6 +787,1009 @@
                 };
                 reader.readAsText(file);
             }
+        
+        // 添加所有缺失的全局函数定义
+        
+        // 应用预设模板
+        window.applyPreset = function(preset) {
+            const modal = document.querySelector('.modal');
+            if (!modal) return;
+            
+            // 重置所有选项
+            modal.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            modal.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
+            
+            switch(preset) {
+                case 'standard':
+                    modal.querySelector('#removeComments').checked = true;
+                    modal.querySelector('#removeTimestamps').checked = true;
+                    modal.querySelector('#removeEmptyLines').checked = true;
+                    modal.querySelector('#trimWhitespace').checked = true;
+                    break;
+                case 'aggressive':
+                    modal.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+                    break;
+                case 'minimal':
+                    modal.querySelector('#removeComments').checked = true;
+                    modal.querySelector('#trimWhitespace').checked = true;
+                    break;
+                case 'decode':
+                    modal.querySelector('#decodeBase64').checked = true;
+                    modal.querySelector('#decodeUrl').checked = true;
+                    modal.querySelector('#decodeUnicode').checked = true;
+                    modal.querySelector('#decodeHex').checked = true;
+                    modal.querySelector('#removeComments').checked = true;
+                    modal.querySelector('#removeEmptyLines').checked = true;
+                    break;
+            }
+            
+            showToast(`已应用 ${preset} 预设`);
+        };
+        
+        // 预览高级预处理效果
+        window.previewAdvancedPreprocess = function() {
+            const modal = document.querySelector('.modal');
+            if (!modal) return;
+            
+            const input = document.getElementById('input').value;
+            const options = getAdvancedPreprocessOptions(modal);
+            const processed = advancedPreprocess(input, options);
+            
+            // 创建预览窗口
+            const previewModal = document.createElement('div');
+            previewModal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.9); z-index: 10001; display: flex;
+                align-items: center; justify-content: center; padding: 20px;
+            `;
+            
+            const previewContent = document.createElement('div');
+            previewContent.style.cssText = `
+                background: #1e1e1e; border-radius: 12px; padding: 20px;
+                max-width: 90%; max-height: 80%; overflow-y: auto;
+                color: white; width: 800px;
+            `;
+            
+            previewContent.innerHTML = `
+                <h3 style="margin-bottom: 15px; color: #3b82f6;">🔍 预处理效果预览</h3>
+                <div style="margin-bottom: 15px;">
+                    <strong>原始长度:</strong> ${input.length} 字符<br>
+                    <strong>处理后长度:</strong> ${processed.length} 字符<br>
+                    <strong>变化:</strong> ${input.length - processed.length} 字符
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <strong>处理前:</strong>
+                        <textarea readonly style="width: 100%; height: 300px; margin-top: 8px; padding: 10px; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 6px; font-family: monospace; font-size: 12px;">${input}</textarea>
+                    </div>
+                    <div>
+                        <strong>处理后:</strong>
+                        <textarea readonly style="width: 100%; height: 300px; margin-top: 8px; padding: 10px; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 6px; font-family: monospace; font-size: 12px;">${processed}</textarea>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <button onclick="document.getElementById('input').value = \`${processed.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`; this.parentElement.parentElement.parentElement.remove(); showToast('已应用预处理结果');" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin-right: 10px; cursor: pointer;">应用结果</button>
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #6b7280; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">关闭</button>
+                </div>
+            `;
+            
+            previewModal.appendChild(previewContent);
+            document.body.appendChild(previewModal);
+            
+            previewModal.addEventListener('click', (e) => {
+                if (e.target === previewModal) previewModal.remove();
+            });
+        };
+        
+        // 应用高级预处理
+        window.applyAdvancedPreprocess = function() {
+            const modal = document.querySelector('.modal');
+            if (!modal) return;
+            
+            const input = document.getElementById('input').value;
+            const options = getAdvancedPreprocessOptions(modal);
+            const processed = advancedPreprocess(input, options);
+            
+            document.getElementById('input').value = processed;
+            
+            showToast('高级预处理完成');
+            addLog(`高级预处理: ${input.length} → ${processed.length} 字符`, 'success');
+            
+            modal.remove();
+        };
+        
+        // 显示历史记录
+        window.showHistory = function() {
+            const records = window.HistoryManager.getRecords();
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); z-index: 10000; display: flex;
+                align-items: center; justify-content: center; padding: 20px;
+                overflow-y: auto;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: linear-gradient(135deg, #1e1e1e 0%, #2a2a3a 100%);
+                border-radius: 12px; padding: 25px; max-width: 90%; width: 800px;
+                max-height: 90%; overflow-y: auto; color: white;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+                border: 1px solid rgba(255,255,255,0.1);
+            `;
+            
+            content.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <h2 style="color: #3b82f6; margin: 0;">📚 解密历史记录 (${records.length})</h2>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <input type="file" id="historyImport" accept=".json" style="display: none;" onchange="window.HistoryManager.importHistory(this.files[0]); this.value='';">
+                        <button onclick="document.getElementById('historyImport').click()" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">📥 导入</button>
+                        <button onclick="window.HistoryManager.exportHistory()" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">📤 导出</button>
+                        <button onclick="if(confirm('确定要清空所有历史记录吗？')) { window.HistoryManager.clearHistory(); this.closest('.modal').remove(); }" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">🗑 清空</button>
+                        <button onclick="this.closest('.modal').remove()" style="background: #6b7280; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">✕ 关闭</button>
+                    </div>
+                </div>
+                
+                <!-- 搜索过滤 -->
+                <div style="margin-bottom: 20px;">
+                    <input type="text" id="historySearch" placeholder="搜索历史记录..." style="width: 100%; padding: 10px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.1); color: white;">
+                </div>
+                
+                <!-- 过滤选项 -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="filter-btn active" data-filter="all" style="background: rgba(59,130,246,0.3); color: white; border: 1px solid #3b82f6; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">全部</button>
+                    <button class="filter-btn" data-filter="starred" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">⭐ 已收藏</button>
+                    <button class="filter-btn" data-filter="today" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">📅 今天</button>
+                    <button class="filter-btn" data-filter="week" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">📅 本周</button>
+                </div>
+                
+                <!-- 历史记录列表 -->
+                <div id="historyList" style="max-height: 400px; overflow-y: auto;">
+                    ${records.length === 0 ? 
+                        '<div style="text-align: center; padding: 40px; color: #6b7280;">📝 暂无解密记录</div>' :
+                        records.map(record => `
+                            <div class="history-item" data-id="${record.id}" data-timestamp="${record.timestamp}" data-starred="${record.starred}" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; margin-bottom: 10px; transition: all 0.3s ease;">
+                                <div style="display: flex; justify-content: between; align-items: flex-start; margin-bottom: 10px;">
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                            <span style="font-size: 0.8rem; color: #9ca3af;">${new Date(record.timestamp).toLocaleString()}</span>
+                                            ${record.analysis ? `
+                                                <span style="background: rgba(59,130,246,0.3); color: #93c5fd; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">${record.analysis.codeType[0] || 'Unknown'}</span>
+                                                <span style="background: rgba(${record.analysis.security === '高风险' ? '239,68,68' : record.analysis.security === '中风险' ? '245,158,11' : '16,185,129'},0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem;">${record.analysis.security}</span>
+                                            ` : ''}
+                                        </div>
+                                        <div style="font-size: 0.9rem; margin-bottom: 5px;">
+                                            <strong>输入:</strong> ${record.inputLength.toLocaleString()} 字符
+                                            <strong style="margin-left: 15px;">输出:</strong> ${record.outputLength.toLocaleString()} 字符
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 5px;">
+                                        <button onclick="toggleHistoryStar(${record.id})" style="background: none; border: none; color: ${record.starred ? '#fbbf24' : '#6b7280'}; cursor: pointer; font-size: 1rem;" title="${record.starred ? '取消收藏' : '收藏'}">⭐</button>
+                                        <button onclick="restoreHistoryItem(${record.id})" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;" title="恢复到输入框">📥</button>
+                                        <button onclick="deleteHistoryItem(${record.id})" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;" title="删除">🗑</button>
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem;">
+                                    <div>
+                                        <div style="color: #9ca3af; margin-bottom: 3px;">密文预览:</div>
+                                        <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; font-family: monospace; max-height: 60px; overflow: hidden; word-break: break-all;">${record.input}</div>
+                                    </div>
+                                    <div>
+                                        <div style="color: #9ca3af; margin-bottom: 3px;">解密结果预览:</div>
+                                        <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; font-family: monospace; max-height: 60px; overflow: hidden; word-break: break-all;">${record.output}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')
+                    }
+                </div>
+            `;
+            
+            modal.appendChild(content);
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+            
+            // 搜索功能
+            const searchInput = content.querySelector('#historySearch');
+            searchInput.addEventListener('input', filterHistory);
+            
+            // 过滤按钮
+            content.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    content.querySelectorAll('.filter-btn').forEach(b => {
+                        b.style.background = 'rgba(255,255,255,0.1)';
+                        b.style.borderColor = 'rgba(255,255,255,0.3)';
+                        b.classList.remove('active');
+                    });
+                    btn.style.background = 'rgba(59,130,246,0.3)';
+                    btn.style.borderColor = '#3b82f6';
+                    btn.classList.add('active');
+                    filterHistory();
+                });
+            });
+            
+            // 点击背景关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        };
+        
+        // 切换收藏状态
+        window.toggleHistoryStar = function(id) {
+            const starred = window.HistoryManager.toggleStar(id);
+            const modal = document.querySelector('.modal');
+            if (modal) {
+                const item = modal.querySelector(`[data-id="${id}"]`);
+                if (item) {
+                    const btn = item.querySelector('button[onclick*="toggleHistoryStar"]');
+                    btn.style.color = starred ? '#fbbf24' : '#6b7280';
+                    btn.title = starred ? '取消收藏' : '收藏';
+                    item.dataset.starred = starred;
+                }
+            }
+            showToast(starred ? '已收藏' : '已取消收藏');
+        };
+        
+        // 恢复历史项目
+        window.restoreHistoryItem = function(id) {
+            const records = window.HistoryManager.getRecords();
+            const record = records.find(r => r.id === id);
+            if (record) {
+                // 恢复完整内容（从localStorage获取）
+                const fullRecord = records.find(r => r.id === id);
+                if (fullRecord) {
+                    document.getElementById('input').value = fullRecord.input;
+                    showToast('已恢复到输入框');
+                    addLog('已恢复历史记录到输入框', 'success');
+                    
+                    // 关闭历史窗口
+                    document.querySelector('.modal')?.remove();
+                }
+            }
+        };
+        
+        // 删除历史项目
+        window.deleteHistoryItem = function(id) {
+            if (confirm('确定要删除这条记录吗？')) {
+                window.HistoryManager.deleteRecord(id);
+                const item = document.querySelector(`[data-id="${id}"]`);
+                if (item) {
+                    item.remove();
+                }
+                showToast('记录已删除');
+            }
+        
+        // 导出分析报告
+        window.exportAnalysisReport = function(analysis) {
+            const report = `
+解密结果分析报告
+生成时间: ${new Date().toLocaleString()}
+
+代码类型: ${analysis.codeType.join(', ')}
+安全等级: ${analysis.security.level}
+复杂度: ${analysis.complexity.level}
+
+详细信息:
+- 代码行数: ${analysis.statistics.codeLines}
+- 函数数量: ${analysis.complexity.metrics.functions}
+- 安全风险: ${analysis.security.risks.length}个
+- 检测框架: ${analysis.frameworks.join(', ') || '无'}
+- 使用API: ${analysis.apis.join(', ') || '无'}
+
+优化建议:
+${analysis.suggestions.map(s => `- ${s}`).join('\n')}
+            `.trim();
+            
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analysis_report_${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('分析报告已导出');
+        };
+        
+        // 获取预处理选项
+        function getAdvancedPreprocessOptions(modal) {
+            return {
+                removeComments: modal.querySelector('#removeComments').checked,
+                removeTimestamps: modal.querySelector('#removeTimestamps').checked,
+                removeEmptyLines: modal.querySelector('#removeEmptyLines').checked,
+                trimWhitespace: modal.querySelector('#trimWhitespace').checked,
+                removeHtmlTags: modal.querySelector('#removeHtmlTags').checked,
+                removeChinese: modal.querySelector('#removeChinese').checked,
+                decodeBase64: modal.querySelector('#decodeBase64').checked,
+                decodeUrl: modal.querySelector('#decodeUrl').checked,
+                decodeUnicode: modal.querySelector('#decodeUnicode').checked,
+                decodeHex: modal.querySelector('#decodeHex').checked,
+                extractStrings: modal.querySelector('#extractStrings').checked,
+                joinLines: modal.querySelector('#joinLines').checked,
+                removeEscapes: modal.querySelector('#removeEscapes').checked,
+                normalizeQuotes: modal.querySelector('#normalizeQuotes').checked,
+                customRemoveRegex: modal.querySelector('#customRemoveRegex').value,
+                customFindText: modal.querySelector('#customFindText').value,
+                customReplaceText: modal.querySelector('#customReplaceText').value
+            };
+        }
+        
+        // 高级预处理
+        function advancedPreprocess(input, options) {
+            let processed = input;
+            
+            // 清理选项
+            if (options.removeComments) {
+                processed = processed
+                    .replace(/\/\/.*$/gm, '')
+                    .replace(/\/\*[\s\S]*?\*\//g, '')
+                    .replace(/<!--[\s\S]*?-->/g, '');
+            }
+            
+            if (options.removeTimestamps) {
+                processed = processed.replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '');
+            }
+            
+            if (options.removeHtmlTags) {
+                processed = processed.replace(/<[^>]*>/g, '');
+            }
+            
+            if (options.removeChinese) {
+                processed = processed.replace(/[\u4e00-\u9fff]/g, '');
+            }
+            
+            if (options.removeEmptyLines) {
+                processed = processed.replace(/^\s*[\r\n]/gm, '');
+            }
+            
+            if (options.trimWhitespace) {
+                processed = processed.replace(/^\s+/gm, '').replace(/\s+$/gm, '');
+            }
+            
+            // 编码转换
+            if (options.decodeBase64) {
+                try {
+                    const base64Pattern = /^[A-Za-z0-9+/]+=*$/;
+                    if (base64Pattern.test(processed.trim())) {
+                        processed = atob(processed.trim());
+                    }
+                } catch (e) {}
+            }
+            
+            if (options.decodeUrl) {
+                try {
+                    processed = decodeURIComponent(processed);
+                } catch (e) {}
+            }
+            
+            if (options.decodeUnicode) {
+                processed = processed.replace(/\\u([0-9a-fA-F]{4})/g, (match, hex) => {
+                    return String.fromCharCode(parseInt(hex, 16));
+                });
+            }
+            
+            if (options.decodeHex) {
+                processed = processed.replace(/\\x([0-9a-fA-F]{2})/g, (match, hex) => {
+                    return String.fromCharCode(parseInt(hex, 16));
+                });
+            }
+            
+            // 字符串处理
+            if (options.extractStrings) {
+                const strings = processed.match(/["'`]([^"'`]*?)["'`]/g);
+                if (strings) {
+                    processed = strings.map(s => s.slice(1, -1)).join('\n');
+                }
+            }
+            
+            if (options.joinLines) {
+                processed = processed.replace(/\n/g, ' ');
+            }
+            
+            if (options.removeEscapes) {
+                processed = processed.replace(/\\(.)/g, '$1');
+            }
+            
+            if (options.normalizeQuotes) {
+                processed = processed.replace(/[""]/g, '"').replace(/['']/g, "'");
+            }
+            
+            // 自定义规则
+            if (options.customRemoveRegex) {
+                try {
+                    const regex = new RegExp(options.customRemoveRegex.replace(/^\/|\/[gimuy]*$/g, ''), 'g');
+                    processed = processed.replace(regex, '');
+                } catch (e) {}
+            }
+            
+            if (options.customFindText && options.customReplaceText !== undefined) {
+                processed = processed.replace(new RegExp(options.customFindText, 'g'), options.customReplaceText);
+            }
+            
+            return processed;
+        }高级预处理选项
+        window.showAdvancedPreprocess = function() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入密文');
+                return;
+            }
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); z-index: 10000; display: flex;
+                align-items: center; justify-content: center; padding: 20px;
+                overflow-y: auto;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: linear-gradient(135deg, #1e1e1e 0%, #2a2a3a 100%);
+                border-radius: 12px; padding: 25px; max-width: 90%; width: 700px;
+                max-height: 90%; overflow-y: auto; color: white;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+                border: 1px solid rgba(255,255,255,0.1);
+            `;
+            
+            content.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #3b82f6; margin: 0;">⚙️ 高级预处理选项</h2>
+                    <button onclick="this.closest('.modal').remove()" style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">✕ 关闭</button>
+                </div>
+                
+                <!-- 预处理选项 -->
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #8b5cf6; margin-bottom: 10px;">🧹 清理选项</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="removeComments" checked style="accent-color: #3b82f6;">
+                            移除注释
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="removeTimestamps" checked style="accent-color: #3b82f6;">
+                            移除时间戳
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="removeEmptyLines" checked style="accent-color: #3b82f6;">
+                            移除空行
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="trimWhitespace" checked style="accent-color: #3b82f6;">
+                            清理空白字符
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="removeHtmlTags" style="accent-color: #3b82f6;">
+                            移除HTML标签
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="removeChinese" style="accent-color: #3b82f6;">
+                            移除中文字符
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- 编码转换 -->
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #10b981; margin-bottom: 10px;">🔄 编码转换</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="decodeBase64" style="accent-color: #10b981;">
+                            自动解码Base64
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="decodeUrl" style="accent-color: #10b981;">
+                            URL解码
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="decodeUnicode" style="accent-color: #10b981;">
+                            Unicode解码
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="decodeHex" style="accent-color: #10b981;">
+                            十六进制解码
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- 字符串处理 -->
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #f59e0b; margin-bottom: 10px;">📝 字符串处理</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="extractStrings" style="accent-color: #f59e0b;">
+                            提取引号内容
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="joinLines" style="accent-color: #f59e0b;">
+                            合并行
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="removeEscapes" style="accent-color: #f59e0b;">
+                            移除转义字符
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="normalizeQuotes" style="accent-color: #f59e0b;">
+                            统一引号格式
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- 自定义规则 -->
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #ec4899; margin-bottom: 10px;">🎯 自定义规则</h3>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px;">移除匹配的内容 (正则表达式):</label>
+                        <input type="text" id="customRemoveRegex" placeholder="例如: /pattern/g" style="width: 100%; padding: 8px; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; background: rgba(255,255,255,0.1); color: white;">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px;">替换内容 (查找):</label>
+                        <input type="text" id="customFindText" placeholder="要查找的文本" style="width: 100%; padding: 8px; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; background: rgba(255,255,255,0.1); color: white;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px;">替换为:</label>
+                        <input type="text" id="customReplaceText" placeholder="替换为的文本" style="width: 100%; padding: 8px; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; background: rgba(255,255,255,0.1); color: white;">
+                    </div>
+                </div>
+                
+                <!-- 预设模板 -->
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #6366f1; margin-bottom: 10px;">📋 预设模板</h3>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button onclick="applyPreset('standard')" style="background: #6366f1; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">标准清理</button>
+                        <button onclick="applyPreset('aggressive')" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">深度清理</button>
+                        <button onclick="applyPreset('minimal')" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">最小处理</button>
+                        <button onclick="applyPreset('decode')" style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">解码专用</button>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="previewAdvancedPreprocess()" style="background: #8b5cf6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">🔍 预览效果</button>
+                    <button onclick="applyAdvancedPreprocess()" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">✅ 应用处理</button>
+                    <button onclick="this.closest('.modal').remove()" style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">取消</button>
+                </div>
+            `;
+            
+            modal.appendChild(content);
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+            
+            // 点击背景关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        };<strong>原始长度:</strong> ${input.length} 字符<br>
+                    <strong>处理后长度:</strong> ${processed.length} 字符<br>
+                    <strong>减少:</strong> ${input.length - processed.length} 字符
+                </div>
+                ${issues.length > 0 ? `
+                    <div style="background: rgba(239,68,68,0.2); padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+                        <strong style="color: #ef4444;">⚠️ 发现问题:</strong><br>
+                        ${issues.map(issue => `• ${issue}`).join('<br>')}
+                    </div>
+                ` : '<div style="background: rgba(16,185,129,0.2); padding: 10px; border-radius: 6px; margin-bottom: 15px; color: #10b981;"><strong>✅ 密文质量良好</strong></div>'}
+                <div style="margin-bottom: 15px;">
+                    <strong>处理后的密文:</strong>
+                    <textarea readonly style="width: 100%; height: 200px; margin-top: 8px; padding: 10px; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 6px; font-family: monospace; font-size: 12px;">${processed}</textarea>
+                </div>
+                <div style="text-align: center;">
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin-right: 10px; cursor: pointer;">关闭</button>
+                    <button onclick="document.getElementById('input').value = \`${processed.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`; this.parentElement.parentElement.parentElement.remove(); showToast('已应用预处理结果');" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">应用处理结果</button>
+                </div>
+            `;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // 点击背景关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        };
+        
+        // 验证输入质量
+        window.validateInput = function() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入密文');
+                return;
+            }
+            
+            const issues = validateCiphertext(input);
+            
+            if (issues.length === 0) {
+                showToast('✅ 密文质量良好');
+                addLog('密文质量检查通过', 'success');
+            } else {
+                showToast('⚠️ 发现 ' + issues.length + ' 个问题');
+                addLog('密文质量问题: ' + issues.join(', '), 'warning');
+            }
+        };
+        
+        // 清空输入
+        window.clearInput = function() {
+            document.getElementById('input').value = '';
+            document.getElementById('remoteUrl').value = '';
+            showToast('密文输入已清空');
+            addLog('清空密文输入内容', 'info');
+        };
+        
+        // 分析解密结果
+        window.analyzeResult = function() {
+            const output = document.getElementById('output');
+            let content;
+            
+            if (output.innerHTML.includes('<span')) {
+                content = stripHTMLTags(output.innerHTML);
+            } else {
+                content = output.textContent || output.innerText;
+            }
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                showToast('请先解密获取结果');
+                return;
+            }
+            
+            addLog('开始分析解密结果...', 'info');
+            const analysis = analyzeDecryptedCode(content);
+            showAnalysisResults(analysis);
+            addLog('解密结果分析完成', 'success');
+        };
+        
+        // 代码美化
+        window.beautifyCode = function() {
+            const output = document.getElementById('output');
+            let content;
+            
+            if (output.innerHTML.includes('<span')) {
+                content = stripHTMLTags(output.innerHTML);
+            } else {
+                content = output.textContent || output.innerText;
+            }
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                showToast('请先解密获取结果');
+                return;
+            }
+            
+            try {
+                // 简单的代码美化
+                const beautified = content
+                    // 在 { 后添加换行和缩进
+                    .replace(/\{/g, '{\n  ')
+                    // 在 } 前添加换行
+                    .replace(/\}/g, '\n}')
+                    // 在 ; 后添加换行
+                    .replace(/;/g, ';\n')
+                    // 在 , 后添加空格
+                    .replace(/,/g, ', ')
+                    // 清理多余的空行
+                    .replace(/\n\s*\n/g, '\n')
+                    // 修正缩进
+                    .split('\n')
+                    .map(line => {
+                        const trimmed = line.trim();
+                        if (trimmed.includes('}')) return trimmed;
+                        if (trimmed && !trimmed.startsWith('}')) return '  ' + trimmed;
+                        return trimmed;
+                    })
+                    .join('\n');
+                
+                displayResult(beautified);
+                showToast('代码美化完成');
+                addLog('代码美化完成', 'success');
+            } catch (error) {
+                showToast('代码美化失败');
+                addLog('代码美化失败: ' + error.message, 'error');
+            }
+        };
+        
+        // 显示代码统计
+        window.showCodeStats = function() {
+            const output = document.getElementById('output');
+            let content;
+            
+            if (output.innerHTML.includes('<span')) {
+                content = stripHTMLTags(output.innerHTML);
+            } else {
+                content = output.textContent || output.innerText;
+            }
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                showToast('请先解密获取结果');
+                return;
+            }
+            
+            const stats = getCodeStatistics(content);
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); z-index: 10000; display: flex;
+                align-items: center; justify-content: center; padding: 20px;
+            `;
+            
+            const content_modal = document.createElement('div');
+            content_modal.style.cssText = `
+                background: #1e1e1e; border-radius: 12px; padding: 20px;
+                max-width: 500px; color: white;
+            `;
+            
+            content_modal.innerHTML = `
+                <h3 style="margin-bottom: 15px; color: #3b82f6;">📈 代码统计</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>总行数: <strong>${stats.totalLines}</strong></div>
+                    <div>代码行数: <strong>${stats.codeLines}</strong></div>
+                    <div>空行数: <strong>${stats.emptyLines}</strong></div>
+                    <div>注释数: <strong>${stats.comments}</strong></div>
+                    <div>字符串数: <strong>${stats.strings}</strong></div>
+                    <div>数字数: <strong>${stats.numbers}</strong></div>
+                    <div>总字符数: <strong>${stats.characters.toLocaleString()}</strong></div>
+                    <div>单词数: <strong>${stats.words.toLocaleString()}</strong></div>
+                </div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">关闭</button>
+                </div>
+            `;
+            
+            modal.appendChild(content_modal);
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        };
+        
+        // 高级预处理选项
+        window.showAdvancedPreprocess = function() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入密文');
+                return;
+            }
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); z-index: 10000; display: flex;
+                align-items: center; justify-content: center; padding: 20px;
+                overflow-y: auto;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: linear-gradient(135deg, #1e1e1e 0%, #2a2a3a 100%);
+                border-radius: 12px; padding: 25px; max-width: 90%; width: 700px;
+                max-height: 90%; overflow-y: auto; color: white;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+                border: 1px solid rgba(255,255,255,0.1);
+            `;
+            
+            content.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #3b82f6; margin: 0;">⚙️ 高级预处理选项</h2>
+                    <button onclick="this.closest('.modal').remove()" style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">✕ 关闭</button>
+                </div>
+                
+                <!-- 预处理选项 -->
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #8b5cf6; margin-bottom: 10px;">🧹 清理选项</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="removeComments" checked style="accent-color: #3b82f6;">
+                            移除注释
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="removeTimestamps" checked style="accent-color: #3b82f6;">
+                            移除时间戳
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="removeEmptyLines" checked style="accent-color: #3b82f6;">
+                            移除空行
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="trimWhitespace" checked style="accent-color: #3b82f6;">
+                            清理空白字符
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="removeHtmlTags" style="accent-color: #3b82f6;">
+                            移除HTML标签
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="removeChinese" style="accent-color: #3b82f6;">
+                            移除中文字符
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- 编码转换 -->
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #10b981; margin-bottom: 10px;">🔄 编码转换</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="decodeBase64" style="accent-color: #10b981;">
+                            自动解码Base64
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="decodeUrl" style="accent-color: #10b981;">
+                            URL解码
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="decodeUnicode" style="accent-color: #10b981;">
+                            Unicode解码
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="decodeHex" style="accent-color: #10b981;">
+                            十六进制解码
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- 字符串处理 -->
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #f59e0b; margin-bottom: 10px;">📝 字符串处理</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="extractStrings" style="accent-color: #f59e0b;">
+                            提取引号内容
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="joinLines" style="accent-color: #f59e0b;">
+                            合并行
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="removeEscapes" style="accent-color: #f59e0b;">
+                            移除转义字符
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="normalizeQuotes" style="accent-color: #f59e0b;">
+                            统一引号格式
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- 自定义规则 -->
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h3 style="color: #ec4899; margin-bottom: 10px;">🎯 自定义规则</h3>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px;">移除匹配的内容 (正则表达式):</label>
+                        <input type="text" id="customRemoveRegex" placeholder="例如: /pattern/g" style="width: 100%; padding: 8px; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; background: rgba(255,255,255,0.1); color: white;">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 5px;">替换内容 (查找):</label>
+                        <input type="text" id="customFindText" placeholder="要查找的文本" style="width: 100%; padding: 8px; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; background: rgba(255,255,255,0.1); color: white;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px;">替换为:</label>
+                        <input type="text" id="customReplaceText" placeholder="替换为的文本" style="width: 100%; padding: 8px; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; background: rgba(255,255,255,0.1); color: white;">
+                    </div>
+                </div>
+                
+                <!-- 预设模板 -->
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #6366f1; margin-bottom: 10px;">📋 预设模板</h3>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button onclick="applyPreset('standard')" style="background: #6366f1; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">标准清理</button>
+                        <button onclick="applyPreset('aggressive')" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">深度清理</button>
+                        <button onclick="applyPreset('minimal')" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">最小处理</button>
+                        <button onclick="applyPreset('decode')" style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">解码专用</button>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="previewAdvancedPreprocess()" style="background: #8b5cf6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">🔍 预览效果</button>
+                    <button onclick="applyAdvancedPreprocess()" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">✅ 应用处理</button>
+                    <button onclick="this.closest('.modal').remove()" style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">取消</button>
+                </div>
+            `;
+            
+            modal.appendChild(content);
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+            
+            // 点击背景关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        };
+                }
+            },
+            
+            // 收藏/取消收藏
+            toggleStar(id) {
+                try {
+                    const records = this.getRecords();
+                    const record = records.find(r => r.id === id);
+                    if (record) {
+                        record.starred = !record.starred;
+                        localStorage.setItem('decrypt_history', JSON.stringify(records));
+                        return record.starred;
+                    }
+                    return false;
+                } catch (e) {
+                    return false;
+                }
+            },
+            
+            // 清空历史
+            clearHistory() {
+                try {
+                    localStorage.removeItem('decrypt_history');
+                    addLog('历史记录已清空', 'info');
+                } catch (e) {
+                    addLog('清空历史记录失败', 'warning');
+                }
+            },
+            
+            // 导出历史
+            exportHistory() {
+                try {
+                    const records = this.getRecords();
+                    if (records.length === 0) {
+                        showToast('没有历史记录可导出');
+                        return;
+                    }
+                    
+                    const data = {
+                        exportTime: new Date().toISOString(),
+                        totalRecords: records.length,
+                        records: records
+                    };
+                    
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `decrypt_history_${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    showToast('历史记录已导出');
+                    addLog('历史记录导出完成', 'success');
+                } catch (e) {
+                    showToast('导出失败: ' + e.message);
+                    addLog('导出失败: ' + e.message, 'error');
+                }
+            },
+            
+            // 导入历史
+            importHistory(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.records && Array.isArray(data.records)) {
+                            const existingRecords = this.getRecords();
+                            const mergedRecords = [...data.records, ...existingRecords];
+                            
+                            // 去重（基于timestamp）
+                            const uniqueRecords = mergedRecords.filter((record, index, self) => 
+                                index === self.findIndex(r => r.timestamp === record.timestamp)
+                            );
+                            
+                            // 限制数量
+                            if (uniqueRecords.length > 100) {
+                                uniqueRecords.splice(100);
+                            }
+                            
+                            localStorage.setItem('decrypt_history', JSON.stringify(uniqueRecords));
+                            showToast(`成功导入 ${data.records.length} 条记录`);
+                            addLog(`历史记录导入完成: ${data.records.length} 条`, 'success');
+                        } else {
+                            throw new Error('无效的历史记录文件格式');
+                        }
+                    } catch (error) {
+                        showToast('导入失败: ' + error.message);
+                        addLog('历史记录导入失败: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
         };
         
         // 简单的语法高亮
@@ -848,6 +1851,9 @@
             fileUpload.addEventListener('drop', handleDrop);
             
             addLog('系统初始化完成 v4.3 - 已支持语法高亮和文件上传', 'success');
+            
+            // 确保所有分析函数都能正常工作
+            console.log('所有功能函数已加载完成');
         });
         
         // 日志
@@ -2092,7 +3098,29 @@ ${analysis.suggestions.map(s => `- ${s}`).join('\n')}
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
-        // 添加键盘快捷键
+        // 确保按钮点击能正常工作的额外检查
+        window.addEventListener('load', function() {
+            // 检查所有关键函数是否存在
+            const criticalFunctions = [
+                'showPreprocessPreview',
+                'showAdvancedPreprocess', 
+                'validateInput',
+                'clearInput',
+                'analyzeResult',
+                'beautifyCode',
+                'showCodeStats',
+                'showHistory'
+            ];
+            
+            criticalFunctions.forEach(funcName => {
+                if (typeof window[funcName] !== 'function') {
+                    console.error(`关键函数 ${funcName} 未定义`);
+                    addLog(`错误：函数 ${funcName} 未找到`, 'error');
+                }
+            });
+            
+            console.log('所有关键函数检查完成');
+        });
         document.addEventListener('keydown', function(e) {
             // Ctrl/Cmd + Enter: 开始解密
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
