@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v4.3 - 修复版</title>
+    <title>羊毛助手 v5.0 - 修复版</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -558,7 +558,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>羊毛助手 <span class="version">v4.3</span></h1>
+        <h1>羊毛助手 <span class="version">v5.0</span></h1>
         
         <!-- GitHub 配置 -->
         <div class="section">
@@ -626,11 +626,11 @@
                 <div class="file-option" onclick="showPreprocessPreview()">
                     🔍<br>预处理预览
                 </div>
-                <div class="file-option" onclick="autoCleanMixed()">
-                    🧹<br>混合清理
+                <div class="file-option" onclick="cleanInput()">
+                    🧹<br>智能清理
                 </div>
-                <div class="file-option" onclick="extractCipherOnly()">
-                    ✂️<br>提取密文
+                <div class="file-option" onclick="validateInput()">
+                    ✅<br>质量检查
                 </div>
                 <div class="file-option" onclick="clearInput()">
                     🗑<br>清空输入
@@ -1558,7 +1558,7 @@
             fileUpload.addEventListener('dragleave', handleDragLeave);
             fileUpload.addEventListener('drop', handleDrop);
             
-            addLog('系统初始化完成 v4.3 - 修复版，已添加高级分析功能', 'success');
+            addLog('系统初始化完成 v5.0 - 修复版，已添加高级分析功能', 'success');
         });
         
         // 日志
@@ -1788,199 +1788,7 @@
             createModal('🔍 预处理预览', content, buttons);
         }
         
-        // 自动清理混合内容
-        function autoCleanMixed() {
-            const input = document.getElementById('input').value.trim();
-            if (!input) {
-                showToast('请先输入内容');
-                return;
-            }
-            
-            const cleaned = cleanMixedContent(input);
-            document.getElementById('input').value = cleaned;
-            
-            showToast('混合内容清理完成');
-            addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
-        }
-        
-        // 混合内容清理算法
-        function cleanMixedContent(input) {
-            addLog('开始清理混合内容...', 'info');
-            
-            let lines = input.split('\n');
-            let cleanedLines = [];
-            let foundCipher = false;
-            
-            // 第一遍：找到明显的密文行
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                
-                // 跳过空行
-                if (!line) continue;
-                
-                // 跳过明显的注释行
-                if (line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) {
-                    continue;
-                }
-                
-                // 跳过明显的明文变量声明
-                if (/^(?:var|let|const)\s+\w+\s*=\s*['"`][^'"`]{1,100}['"`]\s*;?\s*$/.test(line)) {
-                    addLog(`跳过明文变量: ${line.substring(0, 50)}...`, 'info');
-                    continue;
-                }
-                
-                // 跳过简单的赋值语句
-                if (/^\w+\s*=\s*['"`][^'"`]{1,100}['"`]\s*;?\s*$/.test(line)) {
-                    addLog(`跳过简单赋值: ${line.substring(0, 50)}...`, 'info');
-                    continue;
-                }
-                
-                // 跳过调试语句
-                if (/^(?:console\.|alert\(|document\.)/.test(line)) {
-                    addLog(`跳过调试语句: ${line.substring(0, 50)}...`, 'info');
-                    continue;
-                }
-                
-                // 检查是否是密文行
-                let cipherScore = 0;
-                
-                // 密文特征评分
-                if (line.includes('eval(')) cipherScore += 50;
-                if (line.includes('function(')) cipherScore += 30;
-                if (line.includes('return ')) cipherScore += 20;
-                if (/[a-zA-Z0-9]{50,}/.test(line)) cipherScore += 30;
-                if (line.includes('String.fromCharCode')) cipherScore += 40;
-                if (/\b_0x[a-f0-9]+/i.test(line)) cipherScore += 35;
-                if (line.length > 200) cipherScore += 25;
-                if (/\(function\s*\(/.test(line)) cipherScore += 35;
-                
-                // 如果评分高，认为是密文
-                if (cipherScore >= 50 || (line.length > 500 && cipherScore >= 20)) {
-                    cleanedLines.push(line);
-                    foundCipher = true;
-                    addLog(`发现密文行 (评分: ${cipherScore}, 长度: ${line.length})`, 'success');
-                } else if (cipherScore > 0) {
-                    addLog(`可疑行 (评分: ${cipherScore}): ${line.substring(0, 100)}...`, 'warning');
-                }
-            }
-            
-            // 如果没找到明显的密文，尝试更宽松的条件
-            if (!foundCipher) {
-                addLog('未找到明显密文，使用宽松条件重新分析...', 'warning');
-                
-                for (const line of lines) {
-                    const trimmed = line.trim();
-                    if (trimmed.length > 100 && !trimmed.startsWith('//')) {
-                        cleanedLines.push(trimmed);
-                    }
-                }
-            }
-            
-            const result = cleanedLines.join('\n').trim();
-            addLog(`清理完成，保留 ${cleanedLines.length} 行内容`, 'success');
-            
-            return result;
-        }
-        
-        // 仅提取密文
-        function extractCipherOnly() {
-            const input = document.getElementById('input').value.trim();
-            if (!input) {
-                showToast('请先输入内容');
-                return;
-            }
-            
-            const extracted = extractPureCipher(input);
-            
-            if (extracted !== input) {
-                document.getElementById('input').value = extracted;
-                showToast('密文提取完成');
-                addLog(`提取前: ${input.length} 字符，提取后: ${extracted.length} 字符`, 'success');
-            } else {
-                showToast('未检测到需要提取的密文');
-                addLog('内容已经是纯密文或无法识别密文模式', 'info');
-            }
-        }
-        
-        // 纯密文提取算法
-        function extractPureCipher(input) {
-            // 优先级顺序的密文模式
-            const extractors = [
-                // 1. eval包装（最高优先级）
-                {
-                    name: 'eval包装',
-                    pattern: /eval\s*\(\s*(['"`])((?:\\.|(?!\1)[^\\])*?)\1\s*\)/s,
-                    extract: (match) => match[2]
-                },
-                // 2. eval + 函数
-                {
-                    name: 'eval函数',
-                    pattern: /eval\s*\(\s*(function\s*\([^)]*\)[\s\S]*?\([^)]*\))\s*\)/s,
-                    extract: (match) => match[1]
-                },
-                // 3. Function构造器
-                {
-                    name: 'Function构造器',
-                    pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\.|(?!\1)[^\\])*?)\1\s*\)/s,
-                    extract: (match) => match[2]
-                },
-                // 4. 自执行函数
-                {
-                    name: 'IIFE',
-                    pattern: /(\(function\s*\([^)]*\)\s*\{[\s\S]*?\}\s*\([^)]*\))/s,
-                    extract: (match) => match[1]
-                },
-                // 5. 完整函数定义
-                {
-                    name: '函数定义',
-                    pattern: /(function\s*\([^)]*\)\s*\{[\s\S]*?\}[\s\S]*?\([^)]*\))/s,
-                    extract: (match) => match[1]
-                }
-            ];
-            
-            // 按优先级尝试提取
-            for (const extractor of extractors) {
-                const match = input.match(extractor.pattern);
-                if (match) {
-                    const extracted = extractor.extract(match);
-                    if (extracted && extracted.length > 50) {
-                        addLog(`使用${extractor.name}模式提取密文 (${extracted.length}字符)`, 'success');
-                        return extracted;
-                    }
-                }
-            }
-            
-            // 如果没有匹配到模式，查找最长的疑似密文行
-            const lines = input.split('\n');
-            let longestCipherLine = '';
-            
-            for (const line of lines) {
-                const trimmed = line.trim();
-                if (trimmed.length > longestCipherLine.length && 
-                    trimmed.length > 200 && 
-                    !trimmed.startsWith('//') &&
-                    !trimmed.startsWith('/*')) {
-                    
-                    // 简单验证是否像密文
-                    const cipherLike = /[a-zA-Z0-9]{20,}/.test(trimmed) || 
-                                      trimmed.includes('function') || 
-                                      trimmed.includes('eval');
-                    
-                    if (cipherLike) {
-                        longestCipherLine = trimmed;
-                    }
-                }
-            }
-            
-            if (longestCipherLine) {
-                addLog(`提取最长疑似密文行 (${longestCipherLine.length}字符)`, 'success');
-                return longestCipherLine;
-            }
-            
-            return input; // 如果都失败，返回原始输入
-        }
-        
-        // 智能清理输入（保留原有功能）
+        // 智能清理输入
         function cleanInput() {
             const input = document.getElementById('input').value.trim();
             if (!input) {
@@ -2021,11 +1829,11 @@
             addLog('清空密文输入内容', 'info');
         }
         
-        // 智能预处理密文 - 增强版
+        // 智能预处理密文
         function preprocessCiphertext(input) {
             addLog('开始智能预处理密文...', 'info');
             
-            // 第一步：移除明显的非密文内容
+            // 去除注释和多余内容
             let processed = input
                 // 移除单行注释
                 .replace(/\/\/.*$/gm, '')
@@ -2040,131 +1848,66 @@
                 // 移除其他说明性文字
                 .replace(/^\s*\/\/.*?(解密|脚本|说明|注释).*$/gm, '');
             
-            // 第二步：检测并提取密文模式
+            // 检测并提取不同类型的密文
             const patterns = [
-                // 1. eval包装的密文（最常见）
+                // 1. eval包装的密文
                 {
                     name: 'eval包装',
-                    pattern: /eval\s*\(\s*(['"`])((?:\\.|(?!\1)[^\\])*?)\1\s*\)/s,
-                    extract: (match) => match[2],
-                    priority: 10
+                    pattern: /eval\s*\(\s*['"`](.*?)['"`]\s*\)/s,
+                    extract: (match) => match[1]
                 },
-                // 2. eval with function
-                {
-                    name: 'eval函数调用',
-                    pattern: /eval\s*\(\s*(function\s*\([^)]*\)\s*\{[\s\S]*?\}\s*\([^)]*\))\s*\)/s,
-                    extract: (match) => match[1],
-                    priority: 9
-                },
-                // 3. Function构造器包装
+                // 2. Function构造器包装
                 {
                     name: 'Function构造器',
-                    pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\.|(?!\1)[^\\])*?)\1\s*\)/s,
-                    extract: (match) => match[2],
-                    priority: 8
+                    pattern: /(?:new\s+)?Function\s*\(\s*['"`](.*?)['"`]\s*\)/s,
+                    extract: (match) => match[1]
                 },
-                // 4. 自执行函数（IIFE）- 混淆代码常用
-                {
-                    name: 'IIFE混淆代码',
-                    pattern: /\(function\s*\([^)]*\)\s*\{[\s\S]*?\}\s*\([^)]*\)\)/g,
-                    extract: (match) => match[0],
-                    priority: 7
-                },
-                // 5. 完整的混淆函数（包含长参数列表）
-                {
-                    name: '复杂混淆函数',
-                    pattern: /function\s*\([^)]*\)\s*\{[\s\S]*?return\s+[^}]*\}[\s\S]*?\([^)]*\)/s,
-                    extract: (match) => match[0],
-                    priority: 6
-                },
-                // 6. 数组解构混淆
-                {
-                    name: '数组混淆',
-                    pattern: /\[\s*['"`][^'"`]*['"`](?:\s*,\s*['"`][^'"`]*['"`]){10,}\s*\]/g,
-                    extract: (match) => match[0],
-                    priority: 5
-                },
-                // 7. 纯Base64编码
+                // 3. 纯Base64编码
                 {
                     name: 'Base64编码',
                     pattern: /^[A-Za-z0-9+/]+=*$/m,
-                    extract: (match) => match[0],
-                    priority: 4
+                    extract: (match) => match[0]
                 },
-                // 8. 十六进制编码
+                // 4. 十六进制编码
                 {
                     name: '十六进制编码',
-                    pattern: /^[0-9a-fA-F\s]{100,}$/m,
-                    extract: (match) => match[0].replace(/\s/g, ''),
-                    priority: 3
+                    pattern: /^[0-9a-fA-F\s]+$/m,
+                    extract: (match) => match[0].replace(/\s/g, '')
                 },
-                // 9. Unicode转义序列
+                // 5. Unicode转义序列
                 {
                     name: 'Unicode转义',
                     pattern: /\\u[0-9a-fA-F]{4}/g,
-                    extract: (match) => processed,
-                    priority: 2
+                    extract: (match) => processed
+                },
+                // 6. 混淆的JavaScript代码块
+                {
+                    name: 'JS混淆代码',
+                    pattern: /\(function\s*\([^)]*\)\s*\{[\s\S]*?\}\s*\([^)]*\)\)/g,
+                    extract: (match) => match[0]
+                },
+                // 7. 数组形式的密文
+                {
+                    name: '数组密文',
+                    pattern: /\[\s*['"`][^'"`]*['"`](?:\s*,\s*['"`][^'"`]*['"`])*\s*\]/g,
+                    extract: (match) => match[0]
                 }
             ];
             
-            // 第三步：按优先级尝试提取密文
-            patterns.sort((a, b) => b.priority - a.priority);
-            
+            // 尝试匹配各种模式
             for (const pattern of patterns) {
                 const matches = processed.match(pattern.pattern);
                 if (matches) {
                     const extracted = pattern.extract(matches);
-                    if (extracted && extracted.length > 50) {
-                        addLog(`检测到${pattern.name}格式，已提取密文 (${extracted.length}字符)`, 'success');
+                    if (extracted && extracted.length > 50) { // 确保提取的内容足够长
+                        addLog(`检测到${pattern.name}格式，已提取密文`, 'success');
                         return extracted;
                     }
                 }
             }
             
-            // 第四步：智能行分析 - 找到最可能的密文行
-            const lines = processed.split('\n');
-            let longestCodeLine = '';
-            let maxScore = 0;
-            
-            for (const line of lines) {
-                const trimmed = line.trim();
-                if (trimmed.length < 100) continue; // 密文通常很长
-                
-                let score = 0;
-                
-                // 评分标准
-                if (trimmed.includes('eval(')) score += 50;
-                if (trimmed.includes('function(')) score += 40;
-                if (trimmed.includes('return ')) score += 30;
-                if (/[a-zA-Z0-9]{20,}/.test(trimmed)) score += 20; // 长字符串
-                if (trimmed.includes('String.fromCharCode')) score += 30;
-                if (trimmed.includes('unescape')) score += 25;
-                if (trimmed.includes('atob')) score += 25;
-                if (/\b_0x[a-f0-9]+/i.test(trimmed)) score += 35; // 十六进制变量
-                
-                // 减分项
-                if (/console\.log|alert|document\./.test(trimmed)) score -= 20;
-                if (/^var\s+\w+\s*=\s*['"`][^'"`]{1,50}['"`]/.test(trimmed)) score -= 30;
-                
-                if (score > maxScore && trimmed.length > 100) {
-                    maxScore = score;
-                    longestCodeLine = trimmed;
-                }
-            }
-            
-            if (longestCodeLine && maxScore > 30) {
-                addLog(`通过行分析提取密文 (评分: ${maxScore}, 长度: ${longestCodeLine.length})`, 'success');
-                return longestCodeLine;
-            }
-            
-            // 第五步：最后的清理尝试
+            // 如果没有匹配到特定模式，尝试清理后返回
             processed = processed
-                // 移除明显的变量声明行
-                .replace(/^\s*(?:var|let|const)\s+\w+\s*=\s*['"`][^'"`]{1,100}['"`]\s*;?\s*$/gm, '')
-                // 移除简单的赋值语句
-                .replace(/^\s*\w+\s*=\s*['"`][^'"`]{1,100}['"`]\s*;?\s*$/gm, '')
-                // 移除 console.log 等调试语句
-                .replace(/^\s*console\.\w+\([^)]*\)\s*;?\s*$/gm, '')
                 // 移除空行
                 .replace(/^\s*[\r\n]/gm, '')
                 // 移除行首空白
@@ -2173,21 +1916,7 @@
                 .replace(/\s+/g, ' ')
                 .trim();
             
-            // 如果清理后的内容仍然很长，可能是密文
-            if (processed.length > 200) {
-                addLog('使用清理后的内容作为密文', 'info');
-                return processed;
-            }
-            
-            // 实在找不到，返回原始输入的第一个长行
-            const firstLongLine = input.split('\n').find(line => line.trim().length > 200);
-            if (firstLongLine) {
-                addLog('使用第一个长行作为密文', 'warning');
-                return firstLongLine.trim();
-            }
-            
-            addLog('未能识别有效的密文格式', 'warning');
-            return processed || input;
+            return processed;
         }
         
         // 验证密文质量
@@ -2730,7 +2459,7 @@
         
         // 添加版本检查（模拟）
         function checkVersion() {
-            const currentVersion = '4.3';
+            const currentVersion = '5.0';
             const storedVersion = localStorage.getItem('app_version');
             
             if (!storedVersion || storedVersion !== currentVersion) {
