@@ -103,6 +103,7 @@
             line-height: 1.4;
         }
         
+        /* 文件上传区域 */
         .file-upload {
             border: 2px dashed rgba(255,255,255,0.3);
             border-radius: 8px;
@@ -230,6 +231,7 @@
             transition: width 0.3s ease;
         }
         
+        /* 代码语法高亮输出 */
         .output {
             background: #1e1e1e;
             border: 1px solid rgba(255,255,255,0.3);
@@ -246,6 +248,7 @@
             color: #d4d4d4;
         }
         
+        /* 代码语法高亮样式 */
         .hljs {
             display: block;
             overflow-x: auto;
@@ -266,7 +269,6 @@
         .hljs-literal { color: #569cd6; }
         .hljs-built_in { color: #4ec9b0; }
         .hljs-regexp { color: #d16969; }
-        .hljs-jjencode { color: #c678dd; } /* Added for jjencode-specific patterns */
         
         .logs {
             background: rgba(0,0,0,0.4);
@@ -329,6 +331,7 @@
             display: none !important;
         }
         
+        /* 滚动条样式 */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -347,9 +350,10 @@
             background: rgba(255,255,255,0.5);
         }
         
+        /* 移动端优化 */
         @media (max-width: 768px) {
             body {
-                padding-bottom: 80px;
+                padding-bottom: 80px; /* 为底部固定按钮预留空间 */
             }
             
             .container {
@@ -431,11 +435,13 @@
                 transform: translateY(0);
             }
             
+            /* 移动端滚动优化 */
             .section {
                 scroll-margin-top: 80px;
             }
         }
         
+        /* 超小屏幕优化 */
         @media (max-width: 480px) {
             h1 {
                 font-size: 1.2rem;
@@ -464,6 +470,7 @@
             }
         }
         
+        /* 加载动画 */
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
@@ -473,6 +480,7 @@
             animation: pulse 2s infinite;
         }
         
+        /* 平滑滚动 */
         html {
             scroll-behavior: smooth;
         }
@@ -512,7 +520,7 @@
                 <div class="file-upload-icon">📄</div>
                 <div>点击选择文件或拖拽文件到此处</div>
                 <div style="font-size: 0.7rem; opacity: 0.7; margin-top: 4px;">
-                    支持 .js .txt .json .md .py 等文本文件
+                    支持 .js .txt .json .md 等文本文件
                 </div>
             </div>
             <input type="file" id="fileInput" class="hidden" accept=".js,.txt,.json,.md,.log,.conf,.ini,.py,.php,.html,.css,.xml,.yaml,.yml">
@@ -542,13 +550,7 @@
         <!-- 代码输入 -->
         <div class="section">
             <div class="section-title">📝 密文输入</div>
-            <textarea id="input" placeholder="请粘贴需要解密的密文代码...
-
-支持的加密类型：
-- JavaScript 混淆代码 (sojson v6/v7, obfuscator, awsc, jjencode, common)
-- Base64 编码
-- URL 编码
-- 其他常见加密格式"></textarea>
+            <textarea id="input" placeholder="请粘贴需要解密的密文代码...&#10;&#10;支持的加密类型：&#10;- JavaScript 混淆代码&#10;- Base64 编码&#10;- URL 编码&#10;- 其他常见加密格式"></textarea>
         </div>
         
         <!-- 进度条 -->
@@ -605,36 +607,36 @@
             isChecking: false
         };
         
-        // 改进的语法高亮
+        // 简单的语法高亮
         function highlightJS(code) {
-            try {
-                // HTML转义防止XSS
-                const escaped = escapeHtml(code);
-                
-                return escaped
-                    // 关键字
-                    .replace(/\b(function|var|let|const|if|else|for|while|do|switch|case|break|continue|return|try|catch|finally|throw|new|this|typeof|instanceof|in|of|class|extends|import|export|default|async|await|yield|true|false|null|undefined)\b/g, '<span class="hljs-keyword">$1</span>')
-                    // 字符串（支持单引号、双引号、模板字符串）
-                    .replace(/(["'`])(.*?)(?<!\\)\1/g, '<span class="hljs-string">$1$2$1</span>')
-                    // 数字（包括浮点数和科学计数法）
-                    .replace(/\b(\d+\.?\d*(?:e[+-]?\d+)?)\b/g, '<span class="hljs-number">$1</span>')
-                    // 注释（多行和单行）
-                    .replace(/\/\*[\s\S]*?\*\//g, '<span class="hljs-comment">$&</span>')
-                    .replace(/\/\/.*$/gm, '<span class="hljs-comment">$&</span>')
-                    // 函数名
-                    .replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g, '<span class="hljs-function">$1</span>')
-                    // 属性
-                    .replace(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/g, '.<span class="hljs-property">$1</span>')
-                    // 运算符
-                    .replace(/[+\-*/%=&|!><?:]+/g, '<span class="hljs-operator">$&</span>')
-                    // jjencode特有模式（如 ~[]）
-                    .replace(/[~[\]{}()]+/g, '<span class="hljs-jjencode">$&</span>')
-                    // 正则表达式
-                    .replace(/\/[^/\\]*(?:\\.[^/\\]*)*\//g, '<span class="hljs-regexp">$&</span>');
-            } catch (e) {
-                addLog(`语法高亮错误: ${e.message}`, 'warning');
-                return escapeHtml(code); // 错误时返回转义后的原始代码
-            }
+            return code
+                // 先转义HTML字符，避免XSS
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                // 然后应用语法高亮
+                .replace(/\b(function|var|let|const|if|else|for|while|do|switch|case|break|continue|return|try|catch|finally|throw|new|this|typeof|instanceof|in|of|class|extends|import|export|default|async|await|yield|true|false|null|undefined)\b/g, '<span class="hljs-keyword">$1</span>')
+                // 字符串 - 修正正则表达式
+                .replace(/(&#39;|&quot;)(.*?)\1/g, '<span class="hljs-string">$1$2$1</span>')
+                // 数字
+                .replace(/\b(\d+\.?\d*)\b/g, '<span class="hljs-number">$1</span>')
+                // 注释 - 单行注释
+                .replace(/\/\/.*$/gm, '<span class="hljs-comment">$&</span>')
+                // 注释 - 多行注释
+                .replace(/\/\*[\s\S]*?\*\//g, '<span class="hljs-comment">$&</span>')
+                // 函数名
+                .replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g, '<span class="hljs-function">$1</span>')
+                // 属性
+                .replace(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/g, '.<span class="hljs-property">$1</span>');
+        }
+        
+        // 移除HTML标签（用于复制和下载）
+        function stripHTMLTags(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            return div.textContent || div.innerText || '';
         }
         
         // 初始化
@@ -644,13 +646,13 @@
             
             // 保存配置
             document.getElementById('token').addEventListener('input', function(e) {
-                window.appData.token = e.target.value.trim();
-                localStorage.setItem('github_token', window.appData.token);
+                window.appData.token = e.target.value;
+                localStorage.setItem('github_token', e.target.value);
             });
             
             document.getElementById('repo').addEventListener('input', function(e) {
-                window.appData.repo = e.target.value.trim();
-                localStorage.setItem('repo_name', window.appData.repo);
+                window.appData.repo = e.target.value;
+                localStorage.setItem('repo_name', e.target.value);
             });
             
             // 文件上传事件
@@ -663,7 +665,7 @@
             fileUpload.addEventListener('dragleave', handleDragLeave);
             fileUpload.addEventListener('drop', handleDrop);
             
-            addLog('系统初始化完成 v4.3 - 已支持改进的语法高亮', 'success');
+            addLog('系统初始化完成 v4.3 - 已支持语法高亮和文件上传', 'success');
         });
         
         // 日志
@@ -699,15 +701,18 @@
                 return;
             }
             
-            // 判断是否为代码
-            if (content.match(/function|var |let |const |\{|\}|\(|=>|;/)) {
+            // 清理可能存在的HTML标签残留
+            content = content.replace(/<span class="hljs-[^"]*">/g, '').replace(/<\/span>/g, '');
+            
+            // 判断是否为代码并应用语法高亮
+            if (content.includes('function') || content.includes('var ') || content.includes('let ') || content.includes('const ') || content.includes('{') || content.includes('}')) {
                 output.innerHTML = highlightJS(content);
             } else {
                 output.textContent = content;
             }
         }
         
-        // HTML转义
+        // HTML转义（不再需要，已整合到highlightJS函数中）
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
@@ -728,6 +733,7 @@
             if (file) {
                 addLog('图片文字识别功能开发中...', 'warning');
                 showToast('图片文字识别功能开发中');
+                // 这里可以集成OCR API，如Google Vision API或百度OCR
             }
         }
         
@@ -758,15 +764,14 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    let content = e.target.result;
+                    let content;
                     
                     // 处理不同编码
                     if (e.target.result instanceof ArrayBuffer) {
-                        try {
-                            content = new TextDecoder('utf-8').decode(e.target.result);
-                        } catch (error) {
-                            content = String.fromCharCode.apply(null, new Uint8Array(e.target.result));
-                        }
+                        // 尝试UTF-8解码
+                        content = new TextDecoder('utf-8').decode(e.target.result);
+                    } else {
+                        content = e.target.result;
                     }
                     
                     document.getElementById('input').value = content;
@@ -774,7 +779,7 @@
                     addLog(`文件加载成功 (${content.length} 字符)`, 'success');
                     
                     // 滚动到代码输入区域
-                    document.querySelector('.section:nth-child(3)')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    document.querySelector('[data-section="input"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     
                 } catch (error) {
                     addLog(`文件处理失败: ${error.message}`, 'error');
@@ -787,6 +792,7 @@
                 showToast('文件读取失败');
             };
             
+            // 使用ArrayBuffer读取以支持不同编码
             reader.readAsArrayBuffer(file);
         }
         
@@ -810,29 +816,33 @@
         // 加载远程文件
         async function loadRemoteFile() {
             const url = document.getElementById('remoteUrl').value.trim();
-            if (!url || !url.match(/^https?:\/\/.+/)) {
-                showToast('请输入有效的URL地址');
+            if (!url) {
+                showToast('请输入URL地址');
                 return;
             }
             
             try {
                 addLog(`加载远程文件: ${url}`, 'info');
                 
+                // 显示加载状态
                 const button = event.target;
                 button.textContent = '加载中...';
                 button.disabled = true;
                 button.classList.add('loading');
                 
+                // 使用代理服务避免CORS问题
                 let content;
                 try {
+                    // 方法1: 直接获取
                     const response = await fetch(url);
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    if (!response.ok) throw new Error('Direct fetch failed');
                     content = await response.text();
                 } catch (e) {
-                    addLog('直接获取失败，尝试代理...', 'info');
+                    // 方法2: 使用CORS代理
+                    addLog('尝试使用代理服务...', 'info');
                     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
                     const response = await fetch(proxyUrl);
-                    if (!response.ok) throw new Error(`Proxy HTTP ${response.status}`);
+                    if (!response.ok) throw new Error('Proxy fetch failed');
                     content = await response.text();
                 }
                 
@@ -846,6 +856,7 @@
                 addLog('远程文件加载失败: ' + error.message, 'error');
                 showToast('远程文件加载失败: ' + error.message);
             } finally {
+                // 恢复按钮状态
                 const button = document.querySelector('.remote-input button');
                 button.textContent = '加载';
                 button.disabled = false;
@@ -861,24 +872,6 @@
             addLog('清空密文输入内容', 'info');
         }
         
-        // 验证GitHub配置
-        function validateGitHubConfig() {
-            const token = window.appData.token;
-            const repo = window.appData.repo;
-            
-            if (!token || !token.match(/^(ghp_|github_pat_)[A-Za-z0-9_]+$/)) {
-                showToast('请输入有效的GitHub Token');
-                return false;
-            }
-            
-            if (!repo || !repo.match(/^[a-zA-Z0-9-_]+\/[a-zA-Z0-9-_]+$/)) {
-                showToast('请输入有效的仓库地址（格式：username/repo）');
-                return false;
-            }
-            
-            return true;
-        }
-        
         // 开始解密
         async function startDecrypt() {
             const input = document.getElementById('input').value.trim();
@@ -888,7 +881,8 @@
                 return;
             }
             
-            if (!validateGitHubConfig()) {
+            if (!window.appData.token || !window.appData.repo) {
+                showToast('请先配置 GitHub Token 和仓库地址');
                 return;
             }
             
@@ -897,7 +891,10 @@
                 displayResult('');
                 setProgress(0);
                 
+                // 提交密文到 input.js
                 await submitCode(input);
+                
+                // 等待 Actions 执行并获取 output.js 结果
                 await waitForResult();
                 
             } catch (error) {
@@ -912,6 +909,7 @@
             
             const url = `https://api.github.com/repos/${window.appData.repo}/contents/input.js`;
             
+            // 检查文件是否存在
             let sha = null;
             try {
                 const checkResp = await fetch(url, {
@@ -925,15 +923,12 @@
                     const data = await checkResp.json();
                     sha = data.sha;
                     addLog('检测到已存在的 input.js，将更新', 'info');
-                } else if (checkResp.status === 404) {
-                    addLog('将创建新的 input.js 文件', 'info');
-                } else {
-                    throw new Error(`GitHub API 错误: ${checkResp.status}`);
                 }
             } catch (e) {
-                addLog('检查文件失败: ' + e.message, 'warning');
+                addLog('将创建新的 input.js 文件', 'info');
             }
             
+            // 提交文件
             const payload = {
                 message: `Update input.js - ${new Date().toISOString()}`,
                 content: btoa(unescape(encodeURIComponent(code))),
@@ -960,42 +955,10 @@
             addLog('密文已提交到 input.js，Actions 即将自动触发解密...', 'success');
         }
         
-        // 检查Actions状态
-        async function checkActionsStatus() {
-            const url = `https://api.github.com/repos/${window.appData.repo}/actions/runs`;
-            try {
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `token ${window.appData.token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Actions API 错误: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                const latestRun = data.workflow_runs?.[0];
-                
-                if (latestRun && latestRun.status !== 'completed') {
-                    return 'running';
-                } else if (latestRun && latestRun.conclusion === 'success') {
-                    return 'success';
-                } else {
-                    return 'failed';
-                }
-            } catch (e) {
-                addLog('检查Actions状态失败: ' + e.message, 'warning');
-                return 'unknown';
-            }
-        }
-        
         // 等待结果
         async function waitForResult() {
             const startTime = Date.now();
-            const timeout = 120000; // 增加到120秒
-            let lastProgressLog = 0;
+            const timeout = 60000; // 60秒
             
             window.appData.isChecking = true;
             
@@ -1010,34 +973,15 @@
                     const progress = Math.min((elapsed / timeout) * 100, 100);
                     setProgress(progress);
                     
-                    // 每6秒记录一次进度
-                    if (Math.floor(elapsed / 1000) % 6 === 0 && Math.floor(elapsed / 1000) !== lastProgressLog) {
-                        lastProgressLog = Math.floor(elapsed / 1000);
-                        addLog(`Actions 执行中... (${lastProgressLog}秒)`, 'info');
-                    }
-                    
-                    // 检查Actions状态
-                    const status = await checkActionsStatus();
-                    if (status === 'success') {
-                        window.appData.isChecking = false;
-                        const success = await getResult();
-                        if (!success) {
-                            showTimeoutHelp();
-                        }
-                        resolve();
-                        return;
-                    } else if (status === 'failed') {
-                        window.appData.isChecking = false;
-                        addLog('GitHub Actions 执行失败，请检查仓库配置', 'error');
-                        showTimeoutHelp();
-                        resolve();
-                        return;
+                    // 显示进度
+                    if (Math.floor(elapsed / 1000) % 6 === 0) {
+                        addLog(`Actions 执行中... (${Math.floor(elapsed / 1000)}秒)`, 'info');
                     }
                     
                     // 检查超时
                     if (elapsed >= timeout) {
                         window.appData.isChecking = false;
-                        addLog('等待120秒超时，尝试获取结果...', 'warning');
+                        addLog('等待60秒超时，尝试获取结果...', 'warning');
                         
                         setTimeout(async () => {
                             const success = await getResult();
@@ -1050,6 +994,7 @@
                         return;
                     }
                     
+                    // 继续检查
                     setTimeout(checkLoop, 2000);
                 };
                 
@@ -1064,7 +1009,7 @@
         
         // 显示超时帮助
         function showTimeoutHelp() {
-            const helpText = `// ⏰ 等待120秒超时
+            const helpText = `// ⏰ 等待60秒超时
 //
 // 🔄 GitHub Actions 可能仍在执行解密中，请尝试:
 //
@@ -1084,11 +1029,13 @@
         
         // 获取结果
         async function getResult() {
-            if (!validateGitHubConfig()) {
+            addLog('正在获取解密结果...', 'info');
+            
+            if (!window.appData.token || !window.appData.repo) {
+                showToast('请先配置 GitHub Token 和仓库地址');
                 return false;
             }
             
-            addLog('正在获取解密结果...', 'info');
             const timestamp = Date.now();
             
             // 方法1: GitHub API
@@ -1111,13 +1058,13 @@
                         addLog('GitHub API获取成功！', 'success');
                         showToast('解密成功！');
                         setProgress(0);
+                        
+                        // 滚动到结果区域
                         document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
                         return true;
                     }
                 } else if (response.status === 404) {
                     addLog('output.js 文件不存在', 'warning');
-                } else {
-                    throw new Error(`GitHub API 错误: ${response.status}`);
                 }
             } catch (error) {
                 addLog('GitHub API失败: ' + error.message, 'warning');
@@ -1136,6 +1083,8 @@
                         addLog('Raw URL获取成功！', 'success');
                         showToast('解密成功！');
                         setProgress(0);
+                        
+                        // 滚动到结果区域
                         document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
                         return true;
                     }
@@ -1160,6 +1109,8 @@
                         addLog('代理获取成功！', 'success');
                         showToast('解密成功！');
                         setProgress(0);
+                        
+                        // 滚动到结果区域
                         document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
                         return true;
                     }
@@ -1181,23 +1132,23 @@
                 for (let i = 0; i < binaryString.length; i++) {
                     bytes[i] = binaryString.charCodeAt(i);
                 }
-                return typeof TextDecoder !== 'undefined' 
-                    ? new TextDecoder('utf-8').decode(bytes)
-                    : String.fromCharCode.apply(null, bytes);
+                return new TextDecoder('utf-8').decode(bytes);
             } catch (e) {
-                addLog('Base64解码失败: ' + e.message, 'warning');
-                try {
-                    return atob(base64.replace(/\n/g, ''));
-                } catch (e2) {
-                    return '';
-                }
+                return atob(base64.replace(/\n/g, ''));
             }
         }
         
         // 复制结果
         function copyResult() {
             const output = document.getElementById('output');
-            let content = output.textContent || output.innerText;
+            let content;
+            
+            // 如果包含HTML标签，提取纯文本
+            if (output.innerHTML.includes('<span')) {
+                content = stripHTMLTags(output.innerHTML);
+            } else {
+                content = output.textContent || output.innerText;
+            }
             
             if (!content || content.includes('解密结果将显示在这里')) {
                 showToast('没有可复制的内容');
@@ -1218,27 +1169,29 @@
         
         // 备用复制方案
         function fallbackCopy(content) {
-            try {
-                const textarea = document.createElement('textarea');
-                textarea.value = content;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                showToast('结果已复制到剪贴板');
-                addLog('复制成功（备用方案）', 'success');
-            } catch (error) {
-                addLog('复制失败: ' + error.message, 'error');
-                showToast('复制失败');
-            }
+            const textarea = document.createElement('textarea');
+            textarea.value = content;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('结果已复制到剪贴板');
+            addLog('复制成功（备用方案）', 'success');
         }
         
         // 下载结果
         function downloadResult() {
             const output = document.getElementById('output');
-            let content = output.textContent || output.innerText;
+            let content;
+            
+            // 如果包含HTML标签，提取纯文本
+            if (output.innerHTML.includes('<span')) {
+                content = stripHTMLTags(output.innerHTML);
+            } else {
+                content = output.textContent || output.innerText;
+            }
             
             if (!content || content.includes('解密结果将显示在这里')) {
                 showToast('没有可下载的内容');
@@ -1267,37 +1220,51 @@
         
         // 清除所有
         function clearAll() {
+            // 停止检查
             window.appData.isChecking = false;
+            
+            // 清空内容
             document.getElementById('input').value = '';
             document.getElementById('remoteUrl').value = '';
             displayResult('');
             setProgress(0);
+            
+            // 清空文件输入
             document.getElementById('fileInput').value = '';
             document.getElementById('cameraInput').value = '';
             
             showToast('已清除所有内容');
             addLog('清除所有内容', 'info');
+            
+            // 滚动到顶部
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
-        // 键盘快捷键
+        // 添加键盘快捷键
         document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter: 开始解密
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                 e.preventDefault();
                 startDecrypt();
-            } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            }
+            // Ctrl/Cmd + S: 下载结果
+            else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                 e.preventDefault();
                 downloadResult();
-            } else if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !e.target.matches('input, textarea')) {
+            }
+            // Ctrl/Cmd + C: 复制结果（当焦点不在输入框时）
+            else if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !e.target.matches('input, textarea')) {
                 e.preventDefault();
                 copyResult();
-            } else if (e.key === 'Escape') {
+            }
+            // Escape: 清除所有
+            else if (e.key === 'Escape') {
                 e.preventDefault();
                 clearAll();
             }
         });
         
-        // 触摸反馈（移动端）
+        // 添加触摸反馈（移动端）
         if ('ontouchstart' in window) {
             document.addEventListener('touchstart', function(e) {
                 if (e.target.matches('button, .file-option')) {
@@ -1314,12 +1281,13 @@
             });
         }
         
-        // 页面可见性检测
+        // 页面可见性检测（优化后台性能）
         document.addEventListener('visibilitychange', function() {
             if (document.hidden) {
                 addLog('页面进入后台', 'info');
             } else {
                 addLog('页面回到前台', 'info');
+                // 回到前台时，如果正在检查，立即执行一次检查
                 if (window.appData.isChecking) {
                     addLog('检测到进行中的任务，立即检查状态', 'info');
                 }
