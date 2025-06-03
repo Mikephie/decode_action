@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v5.6 - 增强版AADecode解密工具</title>
+    <title>羊毛助手 v5.7 - 增强版AADecode+Eval解密工具</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -44,19 +44,32 @@
             font-weight: bold;
         }
         
-        .aaencode-indicator {
-            background: linear-gradient(45deg, #ffc107, #ff9800);
-            color: #000;
+        .encoding-indicators {
+            display: flex;
+            gap: 10px;
+            margin-left: 10px;
+        }
+        
+        .encoding-indicator {
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: bold;
-            margin-left: 10px;
             display: none;
             animation: pulse 2s infinite;
         }
         
-        .aaencode-indicator.show {
+        .aaencode-indicator {
+            background: linear-gradient(45deg, #ffc107, #ff9800);
+            color: #000;
+        }
+        
+        .eval-indicator {
+            background: linear-gradient(45deg, #e91e63, #9c27b0);
+            color: #fff;
+        }
+        
+        .encoding-indicator.show {
             display: inline-block;
         }
         
@@ -230,7 +243,12 @@
             border-color: rgba(255,193,7,0.5);
         }
         
-        .file-option.aaencode:hover {
+        .file-option.eval {
+            background: linear-gradient(45deg, rgba(233,30,99,0.3), rgba(156,39,176,0.3));
+            border-color: rgba(233,30,99,0.5);
+        }
+        
+        .file-option.aaencode:hover, .file-option.eval:hover {
             background: linear-gradient(45deg, rgba(255,193,7,0.4), rgba(255,152,0,0.4));
         }
         
@@ -451,11 +469,14 @@
         <h1>
             羊毛助手 
             <span class="version">v5.7</span>
-            <span id="aaencodeIndicator" class="aaencode-indicator">编码已检测</span>
+            <div class="encoding-indicators">
+                <span id="aaencodeIndicator" class="encoding-indicator aaencode-indicator">AAEncode已检测</span>
+                <span id="evalIndicator" class="encoding-indicator eval-indicator">Eval已检测</span>
+            </div>
         </h1>
         
         <div class="features-banner">
-            🎯 v5.7专业版：AADecode + Eval解包 + 5种编码格式本地解密 | 智能检测 | 头部注释保留 | 一键操作
+            🎯 v5.7增强版：专业AADecode+Eval解包插件 | 支持头部注释保留 | 智能多重检测 | 一键本地解密
         </div>
         
         <!-- GitHub 配置 -->
@@ -472,8 +493,7 @@
                 </div>
             </div>
             <div class="note">
-                <strong>💡 说明：</strong>本工具支持5种编码格式本地解密，无需网络连接。GitHub配置仅用于复杂混淆代码的云端解密。
-                <br><strong>支持格式：</strong>AAEncode、Eval解包、Base64、Unicode转义、十六进制编码
+                <strong>💡 说明：</strong>AAEncode和Eval代码可直接本地解密，无需GitHub配置。GitHub配置仅用于其他复杂混淆代码的云端解密。
             </div>
         </div>
         
@@ -497,7 +517,10 @@
                     📋<br>粘贴剪贴板
                 </div>
                 <div class="file-option aaencode" onclick="testAAEncodeInput()">
-                    🔤<br>智能检测
+                    🔤<br>AAEncode测试
+                </div>
+                <div class="file-option eval" onclick="testEvalInput()">
+                    🔧<br>Eval测试
                 </div>
                 <div class="file-option" onclick="loadDemoCode()">
                     🧪<br>加载示例
@@ -505,9 +528,9 @@
             </div>
         </div>
         
-        <!-- 编码检测面板 -->
+        <!-- 检测面板 -->
         <div id="detectionPanel" class="detection-panel" style="display: none;">
-            <div class="section-title">🔍 编码检测结果</div>
+            <div class="section-title">🔍 编码格式检测结果</div>
             <div class="detection-grid">
                 <div class="detection-item">
                     <div id="detectionType" class="detection-value">未检测</div>
@@ -522,8 +545,8 @@
                     <div class="detection-label">特征匹配</div>
                 </div>
                 <div class="detection-item">
-                    <div id="detectionRatio" class="detection-value">0%</div>
-                    <div class="detection-label">特征信息</div>
+                    <div id="detectionDetails" class="detection-value">-</div>
+                    <div class="detection-label">详细信息</div>
                 </div>
             </div>
         </div>
@@ -531,23 +554,20 @@
         <!-- 代码输入 -->
         <div class="section">
             <div class="section-title">📝 密文输入</div>
-            <textarea id="input" placeholder="请粘贴需要解密的代码...
+            <textarea id="input" placeholder="请粘贴需要解密的密文代码...
 
-✅ v5.7 专业多格式解密支持：
-- AAEncode (专业插件，保留头部注释)
-- Eval解包 (专业插件，支持递归解包)
-- Base64编码
-- Unicode转义序列
-- 十六进制编码
-
-🤖 智能检测功能：
-- 自动识别编码格式
-- 实时置信度评估
-- 一键智能解密
+✅ v5.7 专业解密支持：
+- AAEncode格式：自动检测和解码
+- Eval包装：智能解包和递归处理
+- 保留脚本头部注释
+- 智能提取编码部分
+- 高精度解码算法
+- 完整错误处理机制
 
 💡 其他支持格式：
 - JavaScript混淆代码
-- Function构造器包装
+- Base64/十六进制编码
+- Unicode转义序列
 - 多层嵌套编码"></textarea>
             
             <div class="file-options">
@@ -733,21 +753,120 @@
             
             console.log("专业AADecode插件已加载");
         })();
+
+        // =============================================
+        // Eval解包插件
+        // =============================================
+        
+        /**
+         * Eval解包工具包装器 - 将Eval解包工具转换为浏览器可用版本
+         */
+        // 创建自执行函数来隔离作用域
+        (function() {
+          // 模拟Node.js环境
+          const module = { exports: {} };
+          const exports = module.exports;
+          
+          // ====== 开始: 原始eval-decoder.js代码 ======
+          
+          /**
+           * 解包eval加密的代码
+           * @param {string} code - 要解包的代码
+           * @returns {string|null} - 解包后的代码或null（解包失败时）
+           */
+          function plugin(code) {
+            try {
+              // 如果不包含eval，直接返回null
+              if (!code.includes('eval(') && !code.includes('eval (')) {
+                return null;
+              }
+              
+              // 替换eval为一个捕获函数
+              let modifiedCode = code.replace(/eval\s*\(/g, '(function(x) { return x; })(');
+              
+              // 尝试执行修改后的代码获取eval的参数
+              try {
+                // 创建一个执行环境
+                const env = {
+                  window: {},
+                  document: {},
+                  navigator: { userAgent: "Mozilla/5.0" },
+                  location: {}
+                };
+                
+                // 执行代码
+                const result = Function('window', 'document', 'navigator', 'location',
+                                      `return ${modifiedCode}`)(
+                                      env.window, env.document, env.navigator, env.location);
+                
+                // 如果结果是字符串且包含eval，递归解包
+                if (typeof result === 'string') {
+                  if (result.includes('eval(')) {
+                    return plugin(result);
+                  }
+                  return result;
+                }
+                
+                return String(result);
+              } catch (err) {
+                console.log("执行替换eval的方法失败，尝试直接替换方法");
+                
+                // 尝试直接替换eval
+                try {
+                  modifiedCode = code.replace(/eval\s*\(/g, '(');
+                  return modifiedCode;
+                } catch (replaceErr) {
+                  console.error("直接替换eval方法也失败:", replaceErr);
+                  return null;
+                }
+              }
+            } catch (error) {
+              console.error("Eval解包发生错误:", error);
+              return null;
+            }
+          }
+          
+          // 导出插件接口
+          exports.plugin = function(code) {
+            return plugin(code);
+          };
+          
+          // ====== 结束: 原始eval-decoder.js代码 ======
+          
+          // 将插件注册到全局解密插件库
+          window.DecodePlugins = window.DecodePlugins || {};
+          window.DecodePlugins.eval = {
+            detect: function(code) {
+              // 检测是否包含eval调用
+              return code.includes('eval(') || code.includes('eval (');
+            },
+            plugin: function(code) {
+              // 使用原始模块的功能
+              return module.exports.plugin(code);
+            }
+          };
+          
+          // 保存插件函数到全局
+          window.professionalEvalDecode = module.exports.plugin;
+          
+          console.log("Eval解包插件已加载");
+        })();
         
         // =============================================
         // 应用配置和全局变量
         // =============================================
         
         const APP_CONFIG = {
-            VERSION: '5.6',
-            VERSION_NAME: '增强版AADecode解密工具',
-            UPDATE_NOTES: '集成专业AADecode插件，支持头部注释保留和智能检测'
+            VERSION: '5.7',
+            VERSION_NAME: '增强版AADecode+Eval解密工具',
+            UPDATE_NOTES: '集成专业AADecode和Eval解包插件，支持头部注释保留和智能检测'
         };
         
         window.appData = {
             token: localStorage.getItem('github_token') || '',
             repo: localStorage.getItem('repo_name') || '',
             isAAEncodeMode: false,
+            isEvalMode: false,
             lastDetection: null
         };
         
@@ -756,12 +875,9 @@
         // =============================================
         
         /**
-         * 智能检测各种编码格式
+         * 智能检测AAEncode格式
          */
-        function detectEncodingType(input) {
-            const results = {
-                aaencode: detectAAEncode(input),
-                eval
+        function detectAAEncode(input) {
             // AAEncode特征字符检测
             const aaencodeChars = /[ﾟωノΘΔДεｰｍ'∇｀~┻━_=3o\^c\/\*\\\"()[\]!+]/g;
             const matches = input.match(aaencodeChars) || [];
@@ -796,13 +912,131 @@
             const isAAEncode = confidence >= 70 || (hasAASignature && patternMatches >= 2);
             
             return {
-                isAAEncode,
+                type: 'AAEncode',
+                isDetected: isAAEncode,
                 confidence: Math.min(confidence, 100),
                 ratio: Math.round(ratio * 100),
                 patternMatches,
                 hasAASignature,
                 length: input.length,
                 features: aaencodePatterns.filter(pattern => pattern.test(input)).map(p => p.source)
+            };
+        }
+        
+        /**
+         * 智能检测Eval包装格式
+         */
+        function detectEval(input) {
+            // Eval模式检测
+            const evalPatterns = [
+                /eval\s*\(/g,
+                /eval\s+\(/g,
+                /window\['eval'\]/g,
+                /this\['eval'\]/g,
+                /Function\s*\(/g
+            ];
+            
+            const evalMatches = evalPatterns.map(pattern => {
+                const matches = input.match(pattern);
+                return matches ? matches.length : 0;
+            });
+            
+            const totalEvalMatches = evalMatches.reduce((sum, count) => sum + count, 0);
+            
+            // 检查嵌套eval的复杂度
+            const nestedEvalDepth = checkNestedEvalDepth(input);
+            const hasStringEncoding = /['"]\s*\+\s*['"]/.test(input); // 字符串拼接
+            const hasUnicodeEscape = /\\u[0-9a-fA-F]{4}/.test(input); // Unicode转义
+            const hasHexEncoding = /\\x[0-9a-fA-F]{2}/.test(input); // 十六进制编码
+            
+            // 计算置信度
+            let confidence = 0;
+            if (totalEvalMatches > 0) confidence += 30;
+            if (totalEvalMatches > 2) confidence += 20;
+            if (nestedEvalDepth > 1) confidence += 20;
+            if (hasStringEncoding) confidence += 10;
+            if (hasUnicodeEscape) confidence += 10;
+            if (hasHexEncoding) confidence += 10;
+            
+            const isEval = confidence >= 50 || totalEvalMatches >= 2;
+            
+            return {
+                type: 'Eval',
+                isDetected: isEval,
+                confidence: Math.min(confidence, 100),
+                evalCount: totalEvalMatches,
+                nestedDepth: nestedEvalDepth,
+                hasStringEncoding,
+                hasUnicodeEscape,
+                hasHexEncoding,
+                patterns: evalMatches,
+                length: input.length
+            };
+        }
+        
+        /**
+         * 检查嵌套eval深度
+         */
+        function checkNestedEvalDepth(code) {
+            let depth = 0;
+            let maxDepth = 0;
+            let inString = false;
+            let stringChar = '';
+            
+            for (let i = 0; i < code.length; i++) {
+                const char = code[i];
+                const nextChars = code.substr(i, 4);
+                
+                // 处理字符串状态
+                if (!inString && (char === '"' || char === "'")) {
+                    inString = true;
+                    stringChar = char;
+                    continue;
+                } else if (inString && char === stringChar && code[i-1] !== '\\') {
+                    inString = false;
+                    stringChar = '';
+                    continue;
+                }
+                
+                // 只在非字符串状态下检测eval
+                if (!inString && nextChars === 'eval') {
+                    depth++;
+                    maxDepth = Math.max(maxDepth, depth);
+                }
+            }
+            
+            return maxDepth;
+        }
+        
+        /**
+         * 综合检测函数
+         */
+        function comprehensiveDetection(input) {
+            const aaResult = detectAAEncode(input);
+            const evalResult = detectEval(input);
+            
+            // 确定主要编码类型
+            let primaryType = 'Unknown';
+            let primaryConfidence = 0;
+            let primaryResult = null;
+            
+            if (aaResult.isDetected && aaResult.confidence > evalResult.confidence) {
+                primaryType = 'AAEncode';
+                primaryConfidence = aaResult.confidence;
+                primaryResult = aaResult;
+            } else if (evalResult.isDetected) {
+                primaryType = 'Eval';
+                primaryConfidence = evalResult.confidence;
+                primaryResult = evalResult;
+            }
+            
+            return {
+                primaryType,
+                primaryConfidence,
+                primaryResult,
+                aaResult,
+                evalResult,
+                hasMultipleEncodings: aaResult.isDetected && evalResult.isDetected
             };
         }
         
@@ -867,40 +1101,59 @@
             try {
                 addLog('🔧 使用专业Eval解包插件解密...', 'info');
                 
-                // 使用专业Eval解包插件
-                const result = window.professionalEvalDecoder.plugin(code);
+                // 使用专业插件
+                const result = window.professionalEvalDecode(code);
                 
                 if (result !== null && result !== undefined && result !== code) {
                     const resultStr = String(result);
                     addLog('✅ 专业Eval解包成功！', 'success');
+                    
+                    // 检查是否需要递归解包
+                    const detection = comprehensiveDetection(resultStr);
+                    if (detection.primaryType !== 'Unknown' && detection.primaryConfidence > 60) {
+                        addLog('🔄 检测到嵌套编码，开始递归解密...', 'info');
+                        const recursiveResult = performDecryption(resultStr);
+                        if (recursiveResult.success) {
+                            return {
+                                success: true,
+                                method: 'Eval解包+递归解密',
+                                result: recursiveResult.result,
+                                recursive: true,
+                                steps: 2
+                            };
+                        }
+                    }
+                    
                     return {
                         success: true,
                         method: '专业Eval解包插件',
                         result: resultStr,
-                        recursive: result.includes('eval(') // 检查是否需要递归解包
+                        recursive: false
                     };
                 } else {
-                    throw new Error('Eval解包插件返回空结果或未改变');
+                    throw new Error('Eval插件返回空结果或未改变');
                 }
                 
             } catch (error) {
                 addLog('❌ 专业Eval解包失败: ' + error.message, 'error');
                 
-                // 备用：简单的字符串替换方法
+                // 备用：尝试通用解密插件
                 try {
-                    addLog('🔄 尝试简单替换方法...', 'info');
-                    const simpleResult = code.replace(/eval\s*\(\s*['"`](.*?)['"`]\s*\)/g, '$1');
-                    if (simpleResult !== code) {
-                        addLog('✅ 简单替换方法成功！', 'success');
-                        return {
-                            success: true,
-                            method: '简单字符串替换',
-                            result: simpleResult,
-                            warning: '使用备用替换方案'
-                        };
+                    addLog('🔄 尝试通用Eval插件...', 'info');
+                    if (window.DecodePlugins && window.DecodePlugins.eval) {
+                        const backupResult = window.DecodePlugins.eval.plugin(code);
+                        if (backupResult && backupResult !== code) {
+                            addLog('✅ 通用Eval解包成功！', 'success');
+                            return {
+                                success: true,
+                                method: '通用Eval解包插件',
+                                result: String(backupResult),
+                                warning: '使用备用解密方案'
+                            };
+                        }
                     }
                 } catch (e2) {
-                    addLog('❌ 简单替换也失败: ' + e2.message, 'error');
+                    addLog('❌ 备用Eval插件也失败: ' + e2.message, 'error');
                 }
                 
                 return {
@@ -913,94 +1166,18 @@
         }
         
         /**
-         * 更新检测面板显示（支持多种格式）
+         * 执行解密（根据检测结果选择方法）
          */
-        function updateDetectionPanel(detection) {
-            const panel = document.getElementById('detectionPanel');
-            const indicator = document.getElementById('aaencodeIndicator');
+        function performDecryption(code) {
+            const detection = comprehensiveDetection(code);
             
-            if (detection.bestMatch && detection.bestMatch.confidence >= 70) {
-                // 显示检测面板
-                panel.style.display = 'block';
-                
-                const { type, confidence, details } = detection.bestMatch;
-                
-                // 更新检测数据
-                document.getElementById('detectionType').textContent = type.toUpperCase();
-                document.getElementById('detectionConfidence').textContent = confidence + '%';
-                
-                // 根据不同类型显示不同信息
-                if (type === 'aaencode') {
-                    document.getElementById('detectionFeatures').textContent = details.patternMatches + '/9';
-                    document.getElementById('detectionRatio').textContent = details.ratio + '%';
-                    indicator.textContent = 'AAEncode已检测';
-                    indicator.classList.add('show');
-                } else if (type === 'eval') {
-                    document.getElementById('detectionFeatures').textContent = details.patternMatches + '/6';
-                    document.getElementById('detectionRatio').textContent = details.evalCount + '个eval';
-                    indicator.textContent = 'Eval已检测';
-                    indicator.classList.add('show');
-                } else {
-                    document.getElementById('detectionFeatures').textContent = '检测到';
-                    document.getElementById('detectionRatio').textContent = type;
-                    indicator.textContent = type.toUpperCase() + '已检测';
-                    indicator.classList.add('show');
-                }
-                
-                // 设置置信度颜色
-                const confidenceEl = document.getElementById('detectionConfidence');
-                if (confidence >= 90) {
-                    confidenceEl.style.color = '#10b981';
-                } else if (confidence >= 70) {
-                    confidenceEl.style.color = '#f59e0b';
-                } else {
-                    confidenceEl.style.color = '#ef4444';
-                }
-                
-                window.appData.isEncodeMode = true;
-                window.appData.lastDetection = detection;
+            if (detection.primaryType === 'AAEncode') {
+                return decodeAAEncode(code);
+            } else if (detection.primaryType === 'Eval') {
+                return decodeEval(code);
             } else {
-                // 隐藏检测面板
-                panel.style.display = 'none';
-                indicator.classList.remove('show');
-                window.appData.isEncodeMode = false;
-                window.appData.lastDetection = null;
-            }
-        }Str,
-                        preservedHeader: result.includes('\n\n') && code.search(/ﾟωﾟﾉ|ﾟДﾟ/) > 0
-                    };
-                } else {
-                    throw new Error('专业插件返回空结果或未改变');
-                }
-                
-            } catch (error) {
-                addLog('❌ 专业AADecode解密失败: ' + error.message, 'error');
-                
-                // 备用：尝试通用解密插件
-                try {
-                    addLog('🔄 尝试通用AADecode插件...', 'info');
-                    if (window.DecodePlugins && window.DecodePlugins.aadecode) {
-                        const backupResult = window.DecodePlugins.aadecode.plugin(code);
-                        if (backupResult && backupResult !== code) {
-                            addLog('✅ 通用AADecode解密成功！', 'success');
-                            return {
-                                success: true,
-                                method: '通用AADecode插件',
-                                result: String(backupResult),
-                                warning: '使用备用解密方案'
-                            };
-                        }
-                    }
-                } catch (e2) {
-                    addLog('❌ 备用插件也失败: ' + e2.message, 'error');
-                }
-                
-                return {
-                    success: false,
-                    method: '解密失败',
-                    result: null,
-                    error: 'AAEncode解密失败: ' + error.message
-                };
+                // 尝试其他解密方法
+                return tryOtherDecryptMethods(code);
             }
         }
         
@@ -1009,36 +1186,56 @@
          */
         function updateDetectionPanel(detection) {
             const panel = document.getElementById('detectionPanel');
-            const indicator = document.getElementById('aaencodeIndicator');
+            const aaIndicator = document.getElementById('aaencodeIndicator');
+            const evalIndicator = document.getElementById('evalIndicator');
             
-            if (detection.isAAEncode) {
+            // 重置指示器
+            aaIndicator.classList.remove('show');
+            evalIndicator.classList.remove('show');
+            window.appData.isAAEncodeMode = false;
+            window.appData.isEvalMode = false;
+            
+            if (detection.primaryType !== 'Unknown') {
                 // 显示检测面板
                 panel.style.display = 'block';
-                indicator.classList.add('show');
                 
                 // 更新检测数据
-                document.getElementById('detectionType').textContent = 'AAEncode';
-                document.getElementById('detectionConfidence').textContent = detection.confidence + '%';
-                document.getElementById('detectionFeatures').textContent = detection.patternMatches + '/9';
-                document.getElementById('detectionRatio').textContent = detection.ratio + '%';
+                document.getElementById('detectionType').textContent = detection.primaryType;
+                document.getElementById('detectionConfidence').textContent = detection.primaryConfidence + '%';
+                
+                if (detection.primaryType === 'AAEncode') {
+                    aaIndicator.classList.add('show');
+                    window.appData.isAAEncodeMode = true;
+                    document.getElementById('detectionFeatures').textContent = detection.aaResult.patternMatches + '/9';
+                    document.getElementById('detectionDetails').textContent = detection.aaResult.ratio + '%字符占比';
+                } else if (detection.primaryType === 'Eval') {
+                    evalIndicator.classList.add('show');
+                    window.appData.isEvalMode = true;
+                    document.getElementById('detectionFeatures').textContent = detection.evalResult.evalCount + '个eval';
+                    document.getElementById('detectionDetails').textContent = '嵌套深度' + detection.evalResult.nestedDepth;
+                }
+                
+                // 如果检测到多重编码
+                if (detection.hasMultipleEncodings) {
+                    aaIndicator.classList.add('show');
+                    evalIndicator.classList.add('show');
+                    document.getElementById('detectionDetails').textContent = '多重编码';
+                }
                 
                 // 设置置信度颜色
                 const confidenceEl = document.getElementById('detectionConfidence');
-                if (detection.confidence >= 90) {
+                if (detection.primaryConfidence >= 90) {
                     confidenceEl.style.color = '#10b981';
-                } else if (detection.confidence >= 70) {
+                } else if (detection.primaryConfidence >= 70) {
                     confidenceEl.style.color = '#f59e0b';
                 } else {
                     confidenceEl.style.color = '#ef4444';
                 }
                 
-                window.appData.isAAEncodeMode = true;
                 window.appData.lastDetection = detection;
             } else {
                 // 隐藏检测面板
                 panel.style.display = 'none';
-                indicator.classList.remove('show');
-                window.appData.isAAEncodeMode = false;
                 window.appData.lastDetection = null;
             }
         }
@@ -1058,9 +1255,13 @@
             }
             
             const detection = detectAAEncode(input);
-            updateDetectionPanel(detection);
+            updateDetectionPanel({ 
+                primaryType: detection.isDetected ? 'AAEncode' : 'Unknown', 
+                primaryConfidence: detection.confidence,
+                aaResult: detection 
+            });
             
-            if (detection.isAAEncode) {
+            if (detection.isDetected) {
                 showToast(`🎯 检测到AAEncode格式！置信度: ${detection.confidence}%`);
                 addLog(`AAEncode检测成功: 置信度 ${detection.confidence}%, 特征匹配 ${detection.patternMatches}/9`, 'success');
                 
@@ -1089,6 +1290,51 @@
         }
         
         /**
+         * 测试Eval输入
+         */
+        function testEvalInput() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入Eval包装的密文');
+                return;
+            }
+            
+            const detection = detectEval(input);
+            updateDetectionPanel({ 
+                primaryType: detection.isDetected ? 'Eval' : 'Unknown', 
+                primaryConfidence: detection.confidence,
+                evalResult: detection 
+            });
+            
+            if (detection.isDetected) {
+                showToast(`🎯 检测到Eval包装！置信度: ${detection.confidence}%`);
+                addLog(`Eval检测成功: 置信度 ${detection.confidence}%, eval数量 ${detection.evalCount}, 嵌套深度 ${detection.nestedDepth}`, 'success');
+                
+                // 自动解密
+                setTimeout(() => {
+                    const decodeResult = decodeEval(input);
+                    if (decodeResult.success) {
+                        displayResult(decodeResult.result);
+                        showToast('🎉 Eval解包成功！');
+                        addLog(`解密完成，使用方法: ${decodeResult.method}`, 'success');
+                        if (decodeResult.recursive) {
+                            addLog(`🔄 执行了${decodeResult.steps}步递归解密`, 'info');
+                        }
+                        if (decodeResult.warning) {
+                            addLog(`⚠️ ${decodeResult.warning}`, 'warning');
+                        }
+                    } else {
+                        showToast('❌ Eval解包失败');
+                        addLog(decodeResult.error, 'error');
+                    }
+                }, 500);
+            } else {
+                showToast(`❌ 未检测到Eval包装 (置信度: ${detection.confidence}%)`);
+                addLog(`Eval检测失败: 置信度不足 ${detection.confidence}%`, 'warning');
+            }
+        }
+        
+        /**
          * 智能检测并自动解密
          */
         function autoDetectAndDecrypt() {
@@ -1100,94 +1346,98 @@
             
             addLog('🤖 开始智能检测...', 'info');
             
-            // 首先检测AAEncode
-            const detection = detectAAEncode(input);
+            // 综合检测
+            const detection = comprehensiveDetection(input);
             updateDetectionPanel(detection);
             
-            if (detection.isAAEncode) {
-                addLog(`🎯 检测到AAEncode格式 (置信度: ${detection.confidence}%)`, 'success');
+            if (detection.primaryType !== 'Unknown') {
+                addLog(`🎯 检测到${detection.primaryType}格式 (置信度: ${detection.primaryConfidence}%)`, 'success');
                 
-                const decodeResult = decodeAAEncode(input);
+                const decodeResult = performDecryption(input);
                 if (decodeResult.success) {
                     displayResult(decodeResult.result);
-                    showToast('🎉 AAEncode自动解密成功！');
+                    showToast(`🎉 ${detection.primaryType}自动解密成功！`);
                     addLog(`自动解密完成: ${decodeResult.method}`, 'success');
                     if (decodeResult.preservedHeader) {
                         addLog('✨ 头部注释已保留', 'info');
                     }
+                    if (decodeResult.recursive) {
+                        addLog(`🔄 执行了递归解密`, 'info');
+                    }
                     return;
                 } else {
-                    addLog('AAEncode解密失败，尝试其他方法...', 'warning');
+                    addLog(`${detection.primaryType}解密失败，尝试其他方法...`, 'warning');
                 }
             }
             
-            // 如果不是AAEncode，尝试其他格式
+            // 如果主要检测失败，尝试其他格式
             addLog('🔍 检测其他编码格式...', 'info');
             
-            // Base64检测
-            if (/^[A-Za-z0-9+/]+=*$/.test(input.replace(/\s/g, ''))) {
-                try {
-                    const decoded = atob(input.replace(/\s/g, ''));
-                    if (decoded.length > 10) {
-                        displayResult(decoded);
-                        showToast('🎉 Base64解密成功！');
-                        addLog('Base64自动解密完成', 'success');
-                        return;
-                    }
-                } catch (e) {
-                    addLog('Base64解密失败', 'warning');
-                }
+            const result = await tryOtherDecryptMethods(input);
+            if (result.success) {
+                displayResult(result.content);
+                showToast(`🎉 ${result.method}解密成功！`);
+                addLog(`自动解密完成: ${result.method}`, 'success');
+            } else {
+                showToast('❌ 未能自动识别编码格式');
+                addLog('智能检测未找到支持的编码格式', 'warning');
             }
-            
-            // Unicode转义检测
-            if (/\\u[0-9a-fA-F]{4}/.test(input)) {
-                try {
-                    const decoded = input.replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => 
-                        String.fromCharCode(parseInt(code, 16))
-                    );
-                    displayResult(decoded);
-                    showToast('🎉 Unicode转义解密成功！');
-                    addLog('Unicode转义自动解密完成', 'success');
-                    return;
-                } catch (e) {
-                    addLog('Unicode转义解密失败', 'warning');
-                }
-            }
-            
-            // eval包装检测
-            const evalMatch = input.match(/eval\s*\(\s*['"`](.*?)['"`]\s*\)/s);
-            if (evalMatch) {
-                displayResult(evalMatch[1]);
-                showToast('🎉 eval包装解密成功！');
-                addLog('eval包装自动解密完成', 'success');
-                return;
-            }
-            
-            showToast('❌ 未能自动识别编码格式');
-            addLog('智能检测未找到支持的编码格式', 'warning');
         }
         
         /**
          * 加载演示代码
          */
         function loadDemoCode() {
-            const demoAAEncode = `// 这是一个AAEncode演示代码
+            // 随机选择一种演示类型
+            const demoTypes = ['aaencode', 'eval', 'mixed'];
+            const selectedType = demoTypes[Math.floor(Math.random() * demoTypes.length)];
+            
+            let demoCode = '';
+            
+            if (selectedType === 'aaencode') {
+                demoCode = `// AAEncode演示代码
 // 作者: 演示用户
 // 时间: 2024-01-01
 // 说明: 这段注释将被保留
 
 ﾟωﾟﾉ= /｀ｍ'）ﾉ ~┻━┻   //*'∇｀*/ ['_']; o=(ﾟｰﾟ)  =_=3; c=(ﾟΘﾟ) =(ﾟｰﾟ)-(ﾟｰﾟ); (ﾟДﾟ) =(ﾟΘﾟ)= (o^_^o)/ (o^_^o);(ﾟДﾟ)={ﾟΘﾟ: '_' ,ﾟωﾟﾉ : ((ﾟωﾟﾉ==3) +'_') [ﾟΘﾟ] ,ﾟｰﾟﾉ :(ﾟωﾟﾉ+ '_')[o^_^o -(ﾟΘﾟ)] ,ﾟДﾟﾉ:((ﾟｰﾟ==3) +'_')[ﾟｰﾟ] }; (ﾟДﾟ) [ﾟΘﾟ] =((ﾟωﾟﾉ==3) +'_') [c^_^o];(ﾟДﾟ) ['c'] = ((ﾟДﾟ)+'_') [ (ﾟｰﾟ)+(ﾟｰﾟ)-(ﾟΘﾟ) ];(ﾟДﾟ) ['o'] = ((ﾟДﾟ)+'_') [ﾟΘﾟ];(ﾟoﾟ)=(ﾟДﾟ) ['c']+(ﾟДﾟ) ['o']+(ﾟωﾟﾉ +'_')[ﾟΘﾟ]+ ((ﾟωﾟﾉ==3) +'_') [ﾟｰﾟ] + ((ﾟДﾟ) +'_') [(ﾟｰﾟ)+(ﾟｰﾟ)]+ ((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+((ﾟｰﾟ==3) +'_') [(ﾟｰﾟ) - (ﾟΘﾟ)]+(ﾟДﾟ) ['c']+((ﾟДﾟ)+'_') [(ﾟｰﾟ)+(ﾟｰﾟ)]+ (ﾟДﾟ) ['o']+((ﾟｰﾟ==3) +'_') [ﾟΘﾟ];(ﾟДﾟ) ['_'] = (o^_^o) [ﾟoﾟ] [ﾟoﾟ];(ﾟεﾟ)=((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+ (ﾟДﾟ) .ﾟДﾟﾉ+((ﾟДﾟ)+'_') [(ﾟｰﾟ) + (ﾟｰﾟ)]+((ﾟｰﾟ==3) +'_') [o^_^o -ﾟΘﾟ]+((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+ (ﾟωﾟﾉ +'_') [ﾟΘﾟ]; (ﾟｰﾟ)+=(ﾟΘﾟ); (ﾟДﾟ)[ﾟεﾟ]='\\\\'; (ﾟДﾟ).ﾟΘﾟﾉ=(ﾟДﾟ+ ﾟｰﾟ)[o^_^o -(ﾟΘﾟ)];(oﾟｰﾟo)=(ﾟωﾟﾉ +'_')[c^_^o];(ﾟДﾟ) [ﾟoﾟ]='\"';(ﾟДﾟ) ['_'] ( (ﾟДﾟ) ['_'] (ﾟεﾟ+(ﾟДﾟ)[ﾟoﾟ]+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ (ﾟΘﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((o^_^o) +(o^_^o))+ ((o^_^o) - (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((o^_^o) +(o^_^o))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+((ﾟｰﾟ) + (ﾟΘﾟ))+ (c^_^o)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟｰﾟ)+ ((o^_^o) - (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟΘﾟ)+ (c^_^o)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ ((ﾟｰﾟ) + (o^_^o))+ (ﾟДﾟ)[ﾟεﾟ]+((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟｰﾟ)+ (c^_^o)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟｰﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟoﾟ]) (ﾟΘﾟ)) ('_');`;
+            } else if (selectedType === 'eval') {
+                demoCode = `// Eval包装演示代码
+// 这是一个简单的eval包装示例
+
+eval(function(p,a,c,k,e,d){e=function(c){return c};if(!''.replace(/^/,String)){while(c--){d[c]=k[c]||c}k=[function(e){return d[e]}];e=function(){return'\\\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\\\b'+e(c)+'\\\\b','g'),k[c])}}return p}('0("1 2!");',3,3,'console|Hello|World'.split('|'),0,{}))
+
+// 更复杂的嵌套eval示例
+eval("eval(\\"console.log('这是嵌套的eval');\\")");
+
+// 带有字符串编码的eval
+eval(unescape('%63%6f%6e%73%6f%6c%65%2e%6c%6f%67%28%22%48%65%6c%6c%6f%20%57%6f%72%6c%64%22%29%3b'));`;
+            } else {
+                demoCode = `// 混合编码演示 - 既有AAEncode又有Eval
+// 请注意：这只是演示，实际可能更复杂
+
+// 第一层：Eval包装
+eval(function(){
+    // 第二层：可能是AAEncode
+    var code = "ﾟωﾟﾉ= /｀ｍ'）ﾉ ~┻━┻   //*'∇｀*/";
+    console.log("混合编码演示");
+    return "alert('解密成功!');";
+}());
+
+// 另一个复杂示例
+eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
+            }
             
-            document.getElementById('input').value = demoAAEncode;
-            showToast('📝 已加载AAEncode演示代码');
-            addLog('加载演示代码，包含头部注释', 'info');
+            document.getElementById('input').value = demoCode;
+            showToast(`📝 已加载${selectedType === 'aaencode' ? 'AAEncode' : selectedType === 'eval' ? 'Eval' : '混合编码'}演示代码`);
+            addLog(`加载${selectedType}演示代码`, 'info');
             
             // 自动检测
             setTimeout(() => {
-                const detection = detectAAEncode(demoAAEncode);
+                const detection = comprehensiveDetection(demoCode);
                 updateDetectionPanel(detection);
-                if (detection.isAAEncode) {
-                    showToast(`🎯 自动检测: AAEncode格式 (${detection.confidence}%置信度)`);
+                if (detection.primaryType !== 'Unknown') {
+                    showToast(`🎯 自动检测: ${detection.primaryType}格式 (${detection.primaryConfidence}%置信度)`);
                 }
             }, 500);
         }
@@ -1205,10 +1455,10 @@
                     
                     // 自动检测
                     setTimeout(() => {
-                        const detection = detectAAEncode(text);
+                        const detection = comprehensiveDetection(text);
                         updateDetectionPanel(detection);
-                        if (detection.isAAEncode) {
-                            showToast(`🎯 检测到AAEncode！置信度: ${detection.confidence}%`);
+                        if (detection.primaryType !== 'Unknown') {
+                            showToast(`🎯 检测到${detection.primaryType}！置信度: ${detection.primaryConfidence}%`);
                         }
                     }, 300);
                 } else {
@@ -1234,10 +1484,10 @@
                 return;
             }
             
-            // 如果是AAEncode，不进行常规清理
-            const detection = detectAAEncode(input);
-            if (detection.isAAEncode) {
-                showToast('⚠️ 检测到AAEncode，跳过清理以保持完整性');
+            // 检测编码类型，如果是特殊编码，不进行常规清理
+            const detection = comprehensiveDetection(input);
+            if (detection.primaryType !== 'Unknown') {
+                showToast(`⚠️ 检测到${detection.primaryType}，跳过清理以保持完整性`);
                 return;
             }
             
@@ -1271,14 +1521,19 @@
                 issues.push('代码长度过短');
             }
             
-            // AAEncode特殊检查
-            const detection = detectAAEncode(input);
-            if (detection.isAAEncode) {
-                if (detection.confidence < 80) {
-                    issues.push(`AAEncode置信度较低 (${detection.confidence}%)`);
+            // 综合检测
+            const detection = comprehensiveDetection(input);
+            if (detection.primaryType !== 'Unknown') {
+                if (detection.primaryConfidence < 80) {
+                    issues.push(`${detection.primaryType}置信度较低 (${detection.primaryConfidence}%)`);
                 }
-                if (detection.patternMatches < 3) {
+                
+                if (detection.primaryType === 'AAEncode' && detection.aaResult.patternMatches < 3) {
                     issues.push('AAEncode特征模式不足');
+                }
+                
+                if (detection.primaryType === 'Eval' && detection.evalResult.evalCount < 2) {
+                    issues.push('Eval调用次数较少');
                 }
             } else {
                 // 常规代码检查
@@ -1304,7 +1559,7 @@
          */
         function clearInput() {
             document.getElementById('input').value = '';
-            updateDetectionPanel({ isAAEncode: false });
+            updateDetectionPanel({ primaryType: 'Unknown' });
             showToast('🗑 输入已清空');
             addLog('清空输入内容', 'info');
         }
@@ -1329,23 +1584,32 @@
                 displayResult('');
                 setProgress(0);
                 
-                // 优先检测AAEncode
-                const detection = detectAAEncode(input);
-                if (detection.isAAEncode) {
-                    addLog(`🎯 检测到AAEncode (置信度: ${detection.confidence}%)`, 'info');
-                    updateDetectionPanel(detection);
+                // 综合检测
+                const detection = comprehensiveDetection(input);
+                updateDetectionPanel(detection);
+                
+                if (detection.primaryType !== 'Unknown') {
+                    addLog(`🎯 检测到${detection.primaryType} (置信度: ${detection.primaryConfidence}%)`, 'info');
                     
                     setProgress(30);
-                    const decodeResult = decodeAAEncode(input);
+                    const decodeResult = performDecryption(input);
                     setProgress(80);
                     
                     if (decodeResult.success) {
                         displayResult(decodeResult.result);
-                        showToast('🎉 AAEncode解密成功！');
+                        showToast(`🎉 ${detection.primaryType}解密成功！`);
                         addLog(`解密完成: ${decodeResult.method}`, 'success');
+                        
                         if (decodeResult.preservedHeader) {
                             addLog('✨ 头部注释已保留', 'info');
                         }
+                        if (decodeResult.recursive) {
+                            addLog(`🔄 执行了${decodeResult.steps || '多'}步递归解密`, 'info');
+                        }
+                        if (decodeResult.warning) {
+                            addLog(`⚠️ ${decodeResult.warning}`, 'warning');
+                        }
+                        
                         setProgress(100);
                         
                         // 滚动到结果
@@ -1355,11 +1619,11 @@
                         });
                         return;
                     } else {
-                        addLog('AAEncode解密失败，尝试其他方法', 'warning');
+                        addLog(`${detection.primaryType}解密失败，尝试其他方法`, 'warning');
                     }
                 }
                 
-                // 如果不是AAEncode或解密失败，尝试其他方法
+                // 如果主要检测失败，尝试其他方法
                 addLog('🔍 尝试其他解密方法...', 'info');
                 setProgress(50);
                 
@@ -1418,14 +1682,20 @@
                 }
             }
             
-            // eval包装解密
-            const evalMatch = input.match(/eval\s*\(\s*['"`](.*?)['"`]\s*\)/s);
-            if (evalMatch) {
-                return { success: true, method: 'eval包装', content: evalMatch[1] };
+            // URL解码
+            if (/%[0-9a-fA-F]{2}/.test(input)) {
+                try {
+                    const decoded = decodeURIComponent(input);
+                    if (decoded !== input) {
+                        return { success: true, method: 'URL解码', content: decoded };
+                    }
+                } catch (e) {
+                    // 继续尝试其他方法
+                }
             }
             
             // 十六进制解密
-            if (/^[0-9a-fA-F\s]+$/.test(input)) {
+            if (/^[0-9a-fA-F\s]+$/.test(input) && input.length > 20) {
                 try {
                     const hex = input.replace(/\s/g, '');
                     const decoded = hex.replace(/../g, (h) => String.fromCharCode(parseInt(h, 16)));
@@ -1805,8 +2075,18 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+                
+                let filename = `decrypted_${timestamp}.js`;
+                if (window.appData.isAAEncodeMode && window.appData.isEvalMode) {
+                    filename = `decrypted_mixed_${timestamp}.js`;
+                } else if (window.appData.isAAEncodeMode) {
+                    filename = `decrypted_aaencode_${timestamp}.js`;
+                } else if (window.appData.isEvalMode) {
+                    filename = `decrypted_eval_${timestamp}.js`;
+                }
+                
                 a.href = url;
-                a.download = `decrypted_${window.appData.isAAEncodeMode ? 'aaencode_' : ''}${timestamp}.js`;
+                a.download = filename;
                 a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
@@ -1853,7 +2133,7 @@
             document.getElementById('input').value = '';
             displayResult('');
             setProgress(0);
-            updateDetectionPanel({ isAAEncode: false });
+            updateDetectionPanel({ primaryType: 'Unknown' });
             
             showToast('🗑 已清除所有内容');
             addLog('清除所有内容', 'info');
@@ -1914,10 +2194,10 @@
                     
                     // 自动检测
                     setTimeout(() => {
-                        const detection = detectAAEncode(content);
+                        const detection = comprehensiveDetection(content);
                         updateDetectionPanel(detection);
-                        if (detection.isAAEncode) {
-                            showToast(`🎯 检测到AAEncode文件！置信度: ${detection.confidence}%`);
+                        if (detection.primaryType !== 'Unknown') {
+                            showToast(`🎯 检测到${detection.primaryType}文件！置信度: ${detection.primaryConfidence}%`);
                         }
                     }, 500);
                     
@@ -1999,11 +2279,11 @@
             // 输入框变化时自动检测
             document.getElementById('input').addEventListener('input', function() {
                 const input = this.value.trim();
-                if (input.length > 30) {
-                    const detection = detectEncodingType(input);
+                if (input.length > 50) {
+                    const detection = comprehensiveDetection(input);
                     updateDetectionPanel(detection);
                 } else {
-                    updateDetectionPanel({ bestMatch: { confidence: 0 } });
+                    updateDetectionPanel({ primaryType: 'Unknown' });
                 }
             });
             
@@ -2021,16 +2301,13 @@
                 } else if (e.key === 'Escape') {
                     e.preventDefault();
                     clearAll();
-                } else if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-                    e.preventDefault();
-                    autoDetectAndDecrypt();
                 }
             });
             
             addLog(`🚀 系统初始化完成 v${APP_CONFIG.VERSION}`, 'success');
-            addLog('🎯 专业解密插件已加载：AADecode + Eval解包', 'info');
-            addLog('🤖 支持5种编码格式智能检测和本地解密', 'info');
-            addLog('💡 快捷键: Ctrl+Enter解密, Ctrl+D智能解密, Ctrl+S下载, Ctrl+C复制, Esc清除', 'info');
+            addLog('🎯 专业AADecode插件已加载，支持头部注释保留', 'info');
+            addLog('🔧 专业Eval解包插件已加载，支持递归解密', 'info');
+            addLog('💡 快捷键: Ctrl+Enter解密, Ctrl+S下载, Ctrl+C复制, Esc清除', 'info');
         });
         
         // 错误处理
