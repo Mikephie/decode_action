@@ -4,615 +4,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v5.8 - 修复版AADecode+Eval解密工具</title>
+    <title>羊毛助手 v5.9 - 简化版</title>
     <style>
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
         }
 
 ```
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        color: #fff;
-        overflow-x: hidden;
-    }
-    
     .container {
-        max-width: 1200px;
+        max-width: 800px;
         margin: 0 auto;
-        padding: 15px;
     }
     
     h1 {
         text-align: center;
-        margin: 20px 0;
-        font-size: 2rem;
         background: rgba(255,255,255,0.1);
-        backdrop-filter: blur(10px);
-        padding: 15px;
-        border-radius: 15px;
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-    
-    .version {
-        background: linear-gradient(45deg, #10b981, #3b82f6);
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        margin-left: 10px;
-        font-weight: bold;
-    }
-    
-    .features-banner {
-        background: linear-gradient(45deg, #f59e0b, #ef4444);
-        color: #fff;
-        padding: 12px;
+        padding: 20px;
         border-radius: 10px;
         margin-bottom: 20px;
-        text-align: center;
-        font-size: 0.9rem;
-        font-weight: 500;
     }
     
     .section {
         background: rgba(255,255,255,0.1);
-        border-radius: 15px;
         padding: 20px;
-        margin: 15px 0;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-    
-    .section-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 15px;
-        color: #fbbf24;
-    }
-    
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-bottom: 15px;
-    }
-    
-    label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        color: #e5e7eb;
-    }
-    
-    input, select {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid rgba(255,255,255,0.3);
         border-radius: 10px;
-        background: rgba(255,255,255,0.1);
-        color: #fff;
-        font-size: 14px;
+        margin-bottom: 20px;
     }
     
-    input:focus, select:focus {
-        outline: none;
-        border-color: #3b82f6;
-        background: rgba(255,255,255,0.15);
-    }
-    
-    input::placeholder {
-        color: rgba(255,255,255,0.6);
-    }
-    
-    #input {
+    textarea {
         width: 100%;
         height: 200px;
-        padding: 12px;
+        background: rgba(0,0,0,0.5);
+        color: white;
         border: 2px solid rgba(255,255,255,0.3);
         border-radius: 10px;
-        background: rgba(0,0,0,0.4);
-        color: #ffffff;
-        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-        font-size: 13px;
-        line-height: 1.6;
+        padding: 15px;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
         resize: vertical;
-        white-space: pre-wrap;
-        word-wrap: break-word;
         box-sizing: border-box;
     }
     
-    #input:focus {
-        outline: none;
-        border-color: #3b82f6;
-        background: rgba(0,0,0,0.5);
-    }
-    
-    #input::placeholder {
-        color: rgba(255,255,255,0.6);
-        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-    }
-    
-    .file-upload {
-        border: 2px dashed rgba(255,255,255,0.3);
-        border-radius: 15px;
-        padding: 30px;
-        text-align: center;
-        cursor: pointer;
-        margin-bottom: 15px;
-        background: rgba(255,255,255,0.05);
-    }
-    
-    .file-upload:hover {
-        border-color: #3b82f6;
-        background: rgba(59,130,246,0.1);
-    }
-    
-    .file-upload-icon {
-        font-size: 3rem;
-        margin-bottom: 10px;
-        opacity: 0.7;
-    }
-    
-    .file-options {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 10px;
-        margin: 15px 0;
-    }
-    
-    .file-option {
-        padding: 12px;
-        background: rgba(255,255,255,0.1);
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 10px;
-        cursor: pointer;
-        text-align: center;
-        font-size: 0.85rem;
-        transition: all 0.3s ease;
-    }
-    
-    .file-option:hover {
-        background: rgba(255,255,255,0.2);
-    }
-    
-    .file-option.aaencode {
-        background: linear-gradient(45deg, rgba(255,193,7,0.3), rgba(255,152,0,0.3));
-    }
-    
-    .file-option.eval {
-        background: linear-gradient(45deg, rgba(233,30,99,0.3), rgba(156,39,176,0.3));
+    textarea::placeholder {
+        color: rgba(255,255,255,0.7);
     }
     
     .buttons {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
         margin: 20px 0;
-        position: sticky;
-        bottom: 15px;
-        background: rgba(102, 126, 234, 0.9);
-        backdrop-filter: blur(10px);
-        padding: 15px;
-        border-radius: 15px;
     }
     
     button {
-        padding: 12px;
+        background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+        color: white;
         border: none;
+        padding: 15px;
         border-radius: 10px;
-        font-weight: 600;
+        font-size: 16px;
         cursor: pointer;
-        font-size: 0.8rem;
-        color: #fff;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
+        transition: all 0.3s;
     }
     
-    .btn-blue { background: linear-gradient(45deg, #3b82f6, #1d4ed8); }
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
     .btn-green { background: linear-gradient(45deg, #10b981, #059669); }
     .btn-yellow { background: linear-gradient(45deg, #f59e0b, #d97706); }
-    .btn-purple { background: linear-gradient(45deg, #8b5cf6, #7c3aed); }
     .btn-red { background: linear-gradient(45deg, #ef4444, #dc2626); }
     
-    .btn-icon {
-        font-size: 1.4rem;
-    }
-    
-    .btn-text {
-        font-size: 0.75rem;
-    }
-    
-    .progress-bar {
-        width: 100%;
-        height: 6px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 3px;
-        margin: 15px 0;
-        overflow: hidden;
-    }
-    
-    .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #3b82f6, #10b981);
-        width: 0%;
-        transition: width 0.3s ease;
-    }
-    
     .output {
-        background: #1e1e1e;
-        border: 1px solid rgba(255,255,255,0.3);
+        background: rgba(0,0,0,0.7);
+        color: #00ff00;
+        padding: 20px;
         border-radius: 10px;
-        padding: 15px;
-        min-height: 200px;
-        max-height: 500px;
-        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-family: 'Courier New', monospace;
         font-size: 13px;
-        line-height: 1.5;
-        overflow-y: auto;
+        min-height: 150px;
         white-space: pre-wrap;
         word-wrap: break-word;
-        color: #d4d4d4;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .demo-buttons {
+        display: flex;
+        gap: 10px;
+        margin: 15px 0;
+        flex-wrap: wrap;
+    }
+    
+    .demo-btn {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    
+    .demo-btn:hover {
+        background: rgba(255,255,255,0.3);
     }
     
     .logs {
-        background: rgba(0,0,0,0.6);
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 10px;
+        background: rgba(0,0,0,0.5);
+        color: #ccc;
         padding: 15px;
-        height: 150px;
-        overflow-y: auto;
-        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        border-radius: 10px;
+        font-family: 'Courier New', monospace;
         font-size: 12px;
+        height: 120px;
+        overflow-y: auto;
+        border: 1px solid rgba(255,255,255,0.3);
     }
     
     .log-success { color: #10b981; }
     .log-error { color: #ef4444; }
     .log-warning { color: #f59e0b; }
     .log-info { color: #3b82f6; }
-    
-    .note {
-        background: rgba(59,130,246,0.2);
-        border: 1px solid rgba(59,130,246,0.3);
-        border-radius: 10px;
-        padding: 12px;
-        font-size: 0.8rem;
-        line-height: 1.5;
-        margin-top: 10px;
-    }
-    
-    .hidden {
-        display: none !important;
-    }
-    
-    .toast {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(0,0,0,0.9);
-        color: white;
-        padding: 15px 20px;
-        border-radius: 10px;
-        transform: translateX(400px);
-        transition: transform 0.3s ease;
-        z-index: 1000;
-        max-width: 300px;
-        font-size: 0.9rem;
-    }
-    
-    .toast.show {
-        transform: translateX(0);
-    }
-    
-    @media (max-width: 768px) {
-        .container {
-            padding: 10px;
-        }
-        
-        h1 {
-            font-size: 1.5rem;
-            padding: 12px;
-        }
-        
-        .form-row {
-            grid-template-columns: 1fr;
-        }
-        
-        .buttons {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            margin: 0;
-            border-radius: 0;
-        }
-        
-        body {
-            padding-bottom: 80px;
-        }
-    }
 </style>
 ```
 
 </head>
 <body>
     <div class="container">
-        <h1>
-            羊毛助手 
-            <span class="version">v5.8</span>
-        </h1>
+        <h1>羊毛助手 v5.9 - 简化版</h1>
 
 ```
-    <div class="features-banner">
-        🎯 v5.8修复版：本地AADecode+Eval解密 | GitHub Actions云端解密 | 修复输入框显示问题
-    </div>
-    
-    <!-- GitHub 配置 -->
     <div class="section">
-        <div class="section-title">⚙️ GitHub 配置（可选）</div>
-        <div class="form-row">
-            <div>
-                <label>GitHub Token</label>
-                <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxx">
-            </div>
-            <div>
-                <label>仓库地址</label>
-                <input type="text" id="repo" placeholder="username/repo">
-            </div>
-        </div>
-        <div class="note">
-            <strong>💡 解密方式说明：</strong><br>
-            🔹 <strong>本地解密</strong>：AAEncode、Eval包装 - 直接在浏览器解密，无需配置<br>
-            🔹 <strong>GitHub Actions解密</strong>：其他复杂混淆 - 通过input.js触发云端解密，需要配置Token和仓库
-        </div>
-    </div>
-    
-    <!-- 文件上传 -->
-    <div class="section">
-        <div class="section-title">📁 文件输入</div>
-        <div class="file-upload" onclick="document.getElementById('fileInput').click()">
-            <div class="file-upload-icon">📄</div>
-            <div>点击选择文件或拖拽文件到此处</div>
-            <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 5px;">
-                支持 .js .txt .json 等文本文件
-            </div>
-        </div>
-        <input type="file" id="fileInput" class="hidden" accept=".js,.txt,.json,.md,.log,.conf,.py,.php,.html,.css">
-        
-        <div class="file-options">
-            <div class="file-option" onclick="document.getElementById('fileInput').click()">
-                📄<br>选择文件
-            </div>
-            <div class="file-option" onclick="pasteFromClipboard()">
-                📋<br>粘贴剪贴板
-            </div>
-            <div class="file-option aaencode" onclick="loadDemoCode('aaencode')">
-                🔤<br>AAEncode测试
-            </div>
-            <div class="file-option eval" onclick="loadDemoCode('eval')">
-                🔧<br>Eval测试
-            </div>
-            <div class="file-option" onclick="loadDemoCode('random')">
-                🧪<br>加载示例
-            </div>
-        </div>
-    </div>
-    
-    <!-- 代码输入 -->
-    <div class="section">
-        <div class="section-title">📝 密文输入</div>
-        <textarea id="input" placeholder="请粘贴需要解密的密文代码...
+        <h3>📝 输入密文</h3>
+        <textarea id="input" placeholder="请粘贴需要解密的代码...
 ```
 
-✅ 本地解密支持（无需配置）：
+支持格式：
 
-- AAEncode格式：自动检测和解码
-- Eval包装：智能解包和递归处理
-- 保留脚本头部注释
-- 高精度解码算法
-
-🌐 GitHub Actions解密（需配置Token）：
-
-- JavaScript复杂混淆
-- Base64/十六进制编码
-- Unicode转义序列
-- 多层嵌套编码
-- 其他未知格式混淆"></textarea>
+- AAEncode (包含ﾟДﾟ等特殊字符)
+- Eval包装 (eval函数包装的代码)
+- 其他JavaScript混淆"></textarea>
   
   ```
-        <div class="file-options">
-            <div class="file-option" onclick="autoDetectAndDecrypt()">
-                🤖<br>智能解密
-            </div>
-            <div class="file-option" onclick="clearInput()">
-                🗑<br>清空
-            </div>
+        <div class="demo-buttons">
+            <button class="demo-btn" onclick="loadDemo('aaencode')">🔤 AAEncode示例</button>
+            <button class="demo-btn" onclick="loadDemo('eval')">🔧 Eval示例</button>
+            <button class="demo-btn" onclick="pasteClipboard()">📋 粘贴剪贴板</button>
+            <button class="demo-btn" onclick="clearInput()">🗑 清空</button>
         </div>
     </div>
     
-    <!-- 进度条 -->
-    <div class="progress-bar">
-        <div id="progress" class="progress-fill"></div>
+    <div class="buttons">
+        <button onclick="decrypt()">🔓 开始解密</button>
+        <button class="btn-green" onclick="copy()">📋 复制结果</button>
+        <button class="btn-yellow" onclick="download()">💾 下载</button>
+        <button class="btn-red" onclick="clearAll()">🗑 清空所有</button>
     </div>
     
-    <!-- 输出结果 -->
     <div class="section">
-        <div class="section-title">✨ 解密结果</div>
+        <h3>✨ 解密结果</h3>
         <div id="output" class="output">// 解密结果将显示在这里...</div>
     </div>
     
-    <!-- 执行日志 -->
     <div class="section">
-        <div class="section-title">📋 执行日志</div>
+        <h3>📋 日志</h3>
         <div id="logs" class="logs"></div>
-    </div>
-    
-    <!-- 控制按钮 -->
-    <div class="buttons">
-        <button class="btn-blue" onclick="startDecrypt()">
-            <div class="btn-icon">🔓</div>
-            <div class="btn-text">开始解密</div>
-        </button>
-        <button class="btn-green" onclick="getResult()">
-            <div class="btn-icon">📥</div>
-            <div class="btn-text">获取结果</div>
-        </button>
-        <button class="btn-yellow" onclick="copyResult()">
-            <div class="btn-icon">📋</div>
-            <div class="btn-text">复制</div>
-        </button>
-        <button class="btn-purple" onclick="downloadResult()">
-            <div class="btn-icon">💾</div>
-            <div class="btn-text">下载</div>
-        </button>
-        <button class="btn-red" onclick="clearAll()">
-            <div class="btn-icon">🗑</div>
-            <div class="btn-text">清除</div>
-        </button>
     </div>
   ```
   
     </div>
   
-    <!-- Toast -->
-  
-    <div id="toast" class="toast"></div>
-  
     <script>
-        // 专业AADecode插件
-        (function() {
-            const module = { exports: {} };
-            
-            function extractHeader(code) {
-                const aaStartIndex = code.search(/ﾟωﾟﾉ\s*=|ﾟдﾟ\s*=|ﾟДﾟ\s*=|ﾟΘﾟ\s*=/);
-                
-                if (aaStartIndex > 0) {
-                    const header = code.substring(0, aaStartIndex).trim();
-                    const encodedPart = code.substring(aaStartIndex);
-                    return { header, encodedPart };
-                }
-                
-                return { header: '', encodedPart: code };
-            }
-  
-            function plugin(code) {
-                try {
-                    const { header, encodedPart } = extractHeader(code);
-                    
-                    if (!(encodedPart.includes('ﾟДﾟ') || encodedPart.includes('(ﾟΘﾟ)') || 
-                          encodedPart.includes('ﾟωﾟﾉ') || encodedPart.includes('ﾟдﾟ'))) {
-                        return null;
-                    }
-                    
-                    let decodePart = encodedPart;
-                    decodePart = decodePart.replace(") ('_')", "");
-                    decodePart = decodePart.replace("(ﾟДﾟ) ['_'] (", "return ");
-                    
-                    const x = new Function(decodePart);
-                    const decodedContent = x();
-                    
-                    if (header) {
-                        return `${header}\n\n${decodedContent}`;
-                    }
-                    
-                    return decodedContent;
-                } catch (error) {
-                    console.error('AADecode解码错误:', error);
+        // AADecode解密函数
+        function aaDecode(code) {
+            try {
+                if (!(code.includes('ﾟДﾟ') || code.includes('ﾟωﾟﾉ') || code.includes('ﾟΘﾟ'))) {
                     return null;
                 }
-            }
-  
-            window.professionalAADecode = plugin;
-            console.log("专业AADecode插件已加载");
-        })();
-  
-        // Eval解包插件
-        (function() {
-          function plugin(code) {
-            try {
-              if (!code.includes('eval(') && !code.includes('eval ')) {
+                
+                let decoded = code;
+                decoded = decoded.replace(") ('_')", "");
+                decoded = decoded.replace("(ﾟДﾟ) ['_'] (", "return ");
+                
+                const func = new Function(decoded);
+                return func();
+            } catch (e) {
+                console.error('AADecode失败:', e);
                 return null;
-              }
-              
-              console.log("检测到eval，开始解包...");
-              
-              try {
-                let modifiedCode = code.replace(/eval\s*\(/g, '(function(x) { return x; })(');
-                
-                const sandbox = {
-                  window: {},
-                  document: {},
-                  navigator: { userAgent: "Mozilla/5.0" },
-                  location: {},
-                  console: { log: function() {} }
-                };
-                
-                const func = new Function(
-                  'window', 'document', 'navigator', 'location', 'console',
-                  `try { return ${modifiedCode}; } catch(e) { return null; }`
-                );
-                
-                const result = func(sandbox.window, sandbox.document, sandbox.navigator, sandbox.location, sandbox.console);
-                
-                if (typeof result === 'string' && result.length > 10) {
-                  console.log("方法1成功，结果长度:", result.length);
-                  
-                  if (result.includes('eval(')) {
-                    console.log("检测到嵌套eval，递归解包...");
-                    const recursiveResult = plugin(result);
-                    return recursiveResult || result;
-                  }
-                  
-                  return result;
-                }
-              } catch (err) {
-                console.log("方法1失败:", err.message);
-              }
-              
-              try {
-                console.log("尝试方法2：简单替换...");
-                let result = code.replace(/eval\s*\(/g, '(');
-                
-                if (result !== code && result.length > 10) {
-                  console.log("方法2成功");
-                  return result;
-                }
-              } catch (err) {
-                console.log("方法2失败:", err.message);
-              }
-              
-              console.log("所有方法都失败");
-              return null;
-              
-            } catch (error) {
-              console.error("Eval解包发生严重错误:", error);
-              return null;
             }
-          }
-          
-          window.professionalEvalDecode = plugin;
-          console.log("Eval解包插件已加载");
-        })();
+        }
         
-        // 应用配置
-        const APP_CONFIG = {
-            VERSION: '5.8',
-            VERSION_NAME: '修复版AADecode+Eval解密工具',
-            UPDATE_NOTES: '修复输入框显示问题，优化解密算法'
-        };
+        // Eval解包函数
+        function evalDecode(code) {
+            try {
+                if (!code.includes('eval(')) {
+                    return null;
+                }
+                
+                // 简单替换方法
+                let result = code.replace(/eval\s*\(/g, '(function(x){return x;})(');
+                
+                try {
+                    const func = new Function(`return ${result}`);
+                    const decoded = func();
+                    return typeof decoded === 'string' ? decoded : String(decoded);
+                } catch (e) {
+                    // 备用方法：直接替换
+                    return code.replace(/eval\s*\(/g, '(');
+                }
+            } catch (e) {
+                console.error('Eval解包失败:', e);
+                return null;
+            }
+        }
         
-        window.appData = {
-            token: localStorage.getItem('github_token') || '',
-            repo: localStorage.getItem('repo_name') || ''
-        };
-        
-        // 工具函数
+        // 日志函数
         function addLog(message, type = 'info') {
             const logs = document.getElementById('logs');
             const time = new Date().toLocaleTimeString();
@@ -622,325 +234,144 @@
             logs.appendChild(div);
             logs.scrollTop = logs.scrollHeight;
             
-            if (logs.children.length > 50) {
+            if (logs.children.length > 30) {
                 logs.removeChild(logs.firstChild);
             }
         }
         
-        function showToast(message, duration = 3000) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), duration);
+        // 显示结果
+        function showResult(text) {
+            document.getElementById('output').textContent = text;
         }
         
-        function setProgress(percent) {
-            document.getElementById('progress').style.width = percent + '%';
-        }
-        
-        function displayResult(content) {
-            const output = document.getElementById('output');
-            
-            if (!content || content.includes('解密结果将显示在这里')) {
-                output.innerHTML = '<span style="color: #6b7280;">// 解密结果将显示在这里...</span>';
+        // 主解密函数
+        function decrypt() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                alert('请先输入代码');
                 return;
             }
             
-            output.textContent = content;
+            addLog('开始解密...', 'info');
+            
+            // 尝试AADecode
+            if (input.includes('ﾟДﾟ') || input.includes('ﾟωﾟﾉ')) {
+                addLog('检测到AAEncode格式', 'info');
+                const result = aaDecode(input);
+                if (result && result !== input) {
+                    showResult(result);
+                    addLog('AAEncode解密成功！', 'success');
+                    return;
+                }
+                addLog('AAEncode解密失败', 'error');
+            }
+            
+            // 尝试Eval解包
+            if (input.includes('eval(')) {
+                addLog('检测到Eval包装', 'info');
+                const result = evalDecode(input);
+                if (result && result !== input) {
+                    showResult(result);
+                    addLog('Eval解包成功！', 'success');
+                    return;
+                }
+                addLog('Eval解包失败', 'error');
+            }
+            
+            // 尝试Base64
+            try {
+                if (/^[A-Za-z0-9+/]+=*$/.test(input.replace(/\s/g, ''))) {
+                    const decoded = atob(input.replace(/\s/g, ''));
+                    if (decoded.length > 10) {
+                        showResult(decoded);
+                        addLog('Base64解密成功！', 'success');
+                        return;
+                    }
+                }
+            } catch (e) {}
+            
+            addLog('未能识别编码格式', 'warning');
+            alert('未能识别编码格式，请检查输入');
         }
         
-        function loadDemoCode(type) {
-            let demoCode = '';
+        // 复制结果
+        function copy() {
+            const output = document.getElementById('output').textContent;
+            if (output.includes('解密结果将显示在这里')) {
+                alert('没有可复制的内容');
+                return;
+            }
             
+            navigator.clipboard.writeText(output).then(() => {
+                addLog('复制成功', 'success');
+                alert('已复制到剪贴板');
+            }).catch(() => {
+                alert('复制失败');
+            });
+        }
+        
+        // 下载结果
+        function download() {
+            const output = document.getElementById('output').textContent;
+            if (output.includes('解密结果将显示在这里')) {
+                alert('没有可下载的内容');
+                return;
+            }
+            
+            const blob = new Blob([output], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'decrypted_' + Date.now() + '.js';
+            a.click();
+            URL.revokeObjectURL(url);
+            addLog('下载完成', 'success');
+        }
+        
+        // 加载示例
+        function loadDemo(type) {
+            let demo = '';
             if (type === 'aaencode') {
-                demoCode = `// AAEncode演示代码
+                demo = `// AAEncode示例
 
-// 作者: 演示用户
-// 说明: 这段注释将被保留
-
-ﾟωﾟﾉ= /｀ｍ'）ﾉ ~┻━┻   //*'∇｀*/ [’*’]; o=(ﾟｰﾟ)  =*=3; c=(ﾟΘﾟ) =(ﾟｰﾟ)-(ﾟｰﾟ); (ﾟДﾟ) =(ﾟΘﾟ)= (o^*^o)/ (o^*^o);(ﾟДﾟ)={ﾟΘﾟ: ‘*’ ,ﾟωﾟﾉ : ((ﾟωﾟﾉ==3) +’*’) [ﾟΘﾟ] };(ﾟДﾟ) [ﾟΘﾟ] =((ﾟωﾟﾉ==3) +’*’) [c^*^o];(ﾟДﾟ) [‘c’] = ((ﾟДﾟ)+’*’) [ (ﾟｰﾟ)+(ﾟｰﾟ)-(ﾟΘﾟ) ];(ﾟДﾟ) [‘o’] = ((ﾟДﾟ)+’*’) [ﾟΘﾟ];(ﾟoﾟ)=(ﾟДﾟ) [‘c’]+(ﾟДﾟ) [‘o’];(ﾟДﾟ) [’*’] = (o^*^o) [ﾟoﾟ] [ﾟoﾟ];(ﾟДﾟ) [’*’] ( (ﾟДﾟ) [’*’] (‘console.log("Hello World");’) ()) (’_’);`; } else if (type === 'eval') { demoCode = `// Eval包装演示代码
+ﾟωﾟﾉ= /｀ｍ'）ﾉ ~┻━┻   //*'∇｀*/ [’*’]; o=(ﾟｰﾟ)  =*=3; c=(ﾟΘﾟ) =(ﾟｰﾟ)-(ﾟｰﾟ); (ﾟДﾟ) =(ﾟΘﾟ)= (o^*^o)/ (o^*^o);(ﾟДﾟ)={ﾟΘﾟ: ‘*’ ,ﾟωﾟﾉ : ((ﾟωﾟﾉ==3) +’*’) [ﾟΘﾟ] };(ﾟДﾟ) [ﾟΘﾟ] =((ﾟωﾟﾉ==3) +’*’) [c^*^o];(ﾟДﾟ) [‘c’] = ((ﾟДﾟ)+’*’) [ (ﾟｰﾟ)+(ﾟｰﾟ)-(ﾟΘﾟ) ];(ﾟДﾟ) [‘o’] = ((ﾟДﾟ)+’*’) [ﾟΘﾟ];(ﾟoﾟ)=(ﾟДﾟ) [‘c’]+(ﾟДﾟ) [‘o’];(ﾟДﾟ) [’*’] = (o^*^o) [ﾟoﾟ] [ﾟoﾟ];(ﾟДﾟ) [’*’] ( (ﾟДﾟ) [’*’] (‘console.log("Hello World");’) ()) (’_’);`; } else if (type === 'eval') { demo = `// Eval示例
 eval("console.log(‘Hello World’);");
-
-// 带字符串的eval
-eval("var message = ‘This is a test’; console.log(message);");
-
-// 嵌套eval测试
-eval("eval(\"console.log(‘Nested eval test’);\")");`;
-} else {
-const types = [‘aaencode’, ‘eval’];
-const randomType = types[Math.floor(Math.random() * types.length)];
-return loadDemoCode(randomType);
+eval("var x = ‘test’; alert(x);");`;
 }
 
 ```
-        document.getElementById('input').value = demoCode;
-        showToast(`📝 已加载${type === 'aaencode' ? 'AAEncode' : 'Eval'}演示代码`);
-        addLog(`加载${type}演示代码`, 'info');
+        document.getElementById('input').value = demo;
+        addLog(`加载${type}示例`, 'info');
     }
     
-    async function pasteFromClipboard() {
+    // 粘贴剪贴板
+    async function pasteClipboard() {
         try {
             const text = await navigator.clipboard.readText();
-            if (text) {
-                document.getElementById('input').value = text;
-                showToast('📋 剪贴板内容已粘贴');
-                addLog('从剪贴板粘贴内容', 'success');
-            } else {
-                showToast('❌ 剪贴板为空');
-            }
-        } catch (error) {
-            addLog('剪贴板访问失败: ' + error.message, 'error');
-            showToast('❌ 无法访问剪贴板，请手动粘贴');
+            document.getElementById('input').value = text;
+            addLog('粘贴成功', 'success');
+        } catch (e) {
+            alert('无法访问剪贴板');
         }
     }
     
+    // 清空输入
     function clearInput() {
         document.getElementById('input').value = '';
-        showToast('🗑 输入已清空');
-        addLog('清空输入内容', 'info');
+        addLog('清空输入', 'info');
     }
     
+    // 清空所有
     function clearAll() {
         document.getElementById('input').value = '';
-        displayResult('');
-        setProgress(0);
-        showToast('🗑 已清除所有内容');
-        addLog('清除所有内容', 'info');
-    }
-    
-    function autoDetectAndDecrypt() {
-        const input = document.getElementById('input').value.trim();
-        if (!input) {
-            showToast('请先输入需要解密的代码');
-            return;
-        }
-        
-        addLog('🤖 开始智能检测...', 'info');
-        
-        // 检测AAEncode
-        if (input.includes('ﾟДﾟ') || input.includes('ﾟωﾟﾉ') || input.includes('ﾟΘﾟ')) {
-            addLog('🎯 检测到AAEncode格式', 'success');
-            const result = window.professionalAADecode(input);
-            if (result && result !== input) {
-                displayResult(result);
-                showToast('🎉 AAEncode解密成功！');
-                addLog('AAEncode解密完成', 'success');
-                return;
-            }
-        }
-        
-        // 检测Eval
-        if (input.includes('eval(')) {
-            addLog('🎯 检测到Eval包装', 'success');
-            const result = window.professionalEvalDecode(input);
-            if (result && result !== input) {
-                displayResult(result);
-                showToast('🎉 Eval解包成功！');
-                addLog('Eval解包完成', 'success');
-                return;
-            }
-        }
-        
-        showToast('❌ 未能识别编码格式');
-        addLog('智能检测未找到支持的编码格式', 'warning');
-    }
-    
-    function startDecrypt() {
-        autoDetectAndDecrypt();
-    }
-    
-    function getResult() {
-        addLog('📥 获取结果功能需要GitHub配置', 'info');
-        showToast('GitHub Actions功能需要配置Token和仓库');
-    }
-    
-    function copyResult() {
-        const output = document.getElementById('output');
-        const content = output.textContent;
-        
-        if (!content || content.includes('解密结果将显示在这里')) {
-            showToast('❌ 没有可复制的内容');
-            return;
-        }
-        
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(content).then(() => {
-                showToast('📋 结果已复制到剪贴板');
-                addLog('复制成功', 'success');
-            });
-        } else {
-            showToast('❌ 浏览器不支持剪贴板API');
-        }
-    }
-    
-    function downloadResult() {
-        const output = document.getElementById('output');
-        const content = output.textContent;
-        
-        if (!content || content.includes('解密结果将显示在这里')) {
-            showToast('❌ 没有可下载的内容');
-            return;
-        }
-        
-        try {
-            const blob = new Blob([content], { type: 'text/javascript;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-            
-            a.href = url;
-            a.download = `decrypted_${timestamp}.js`;
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showToast('💾 文件下载已开始');
-            addLog('下载成功', 'success');
-        } catch (error) {
-            addLog('下载失败: ' + error.message, 'error');
-            showToast('❌ 下载失败');
-        }
-    }
-    
-    // 文件处理
-    function handleFileSelect(event) {
-        const file = event.target.files[0];
-        if (file) {
-            readFile(file);
-        }
-    }
-    
-    function handleDragOver(event) {
-        event.preventDefault();
-        event.currentTarget.classList.add('dragover');
-    }
-    
-    function handleDragLeave(event) {
-        event.currentTarget.classList.remove('dragover');
-    }
-    
-    function handleDrop(event) {
-        event.preventDefault();
-        event.currentTarget.classList.remove('dragover');
-        
-        const files = event.dataTransfer.files;
-        if (files.length > 0) {
-            readFile(files[0]);
-        }
-    }
-    
-    function readFile(file) {
-        addLog(`📁 开始读取文件: ${file.name}`, 'info');
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                let content = e.target.result;
-                document.getElementById('input').value = content;
-                showToast(`📁 文件加载成功: ${file.name}`);
-                addLog(`文件加载成功 (${content.length} 字符)`, 'success');
-            } catch (error) {
-                addLog(`文件处理失败: ${error.message}`, 'error');
-                showToast('❌ 文件处理失败');
-            }
-        };
-        
-        reader.onerror = function() {
-            addLog(`文件读取失败: ${file.name}`, 'error');
-            showToast('❌ 文件读取失败');
-        };
-        
-        reader.readAsText(file, 'UTF-8');
+        document.getElementById('output').textContent = '// 解密结果将显示在这里...';
+        addLog('清空所有', 'info');
     }
     
     // 初始化
     document.addEventListener('DOMContentLoaded', function() {
-        // 确保输入框样式正确
-        const inputElement = document.getElementById('input');
-        if (inputElement) {
-            // 强制设置样式
-            inputElement.style.cssText = `
-                width: 100% !important;
-                height: 200px !important;
-                padding: 12px !important;
-                border: 2px solid rgba(255,255,255,0.3) !important;
-                border-radius: 10px !important;
-                background: rgba(0,0,0,0.4) !important;
-                color: #ffffff !important;
-                font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-                font-size: 13px !important;
-                line-height: 1.6 !important;
-                resize: vertical !important;
-                white-space: pre-wrap !important;
-                word-wrap: break-word !important;
-                box-sizing: border-box !important;
-                display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-            `;
-            
-            console.log('输入框样式已强制设置');
-        }
-        
-        // 恢复配置
-        document.getElementById('token').value = window.appData.token;
-        document.getElementById('repo').value = window.appData.repo;
-        
-        // 配置保存
-        document.getElementById('token').addEventListener('input', function(e) {
-            window.appData.token = e.target.value;
-            localStorage.setItem('github_token', e.target.value);
-        });
-        
-        document.getElementById('repo').addEventListener('input', function(e) {
-            window.appData.repo = e.target.value;
-            localStorage.setItem('repo_name', e.target.value);
-        });
-        
-        // 文件处理事件
-        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-        
-        const fileUpload = document.querySelector('.file-upload');
-        fileUpload.addEventListener('dragover', handleDragOver);
-        fileUpload.addEventListener('dragleave', handleDragLeave);
-        fileUpload.addEventListener('drop', handleDrop);
-        
-        // 快捷键
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault();
-                startDecrypt();
-            } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                downloadResult();
-            } else if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !e.target.matches('input, textarea')) {
-                e.preventDefault();
-                copyResult();
-            } else if (e.key === 'Escape') {
-                e.preventDefault();
-                clearAll();
-            }
-        });
-        
-        // 初始化日志
-        addLog(`🚀 系统初始化完成 v${APP_CONFIG.VERSION}`, 'success');
-        addLog('🎯 本地AADecode插件已加载', 'info');
-        addLog('🔧 本地Eval解包插件已加载', 'info');
-        addLog('🔧 输入框显示问题已修复', 'success');
-        addLog('💡 快捷键: Ctrl+Enter解密, Ctrl+S下载, Ctrl+C复制, Esc清除', 'info');
-    });
-    
-    // 错误处理
-    window.addEventListener('error', function(e) {
-        addLog('❌ 发生错误: ' + e.message, 'error');
-        console.error('Global error:', e);
-    });
-    
-    window.addEventListener('unhandledrejection', function(e) {
-        addLog('❌ Promise错误: ' + e.reason, 'error');
-        console.error('Unhandled promise rejection:', e);
+        addLog('羊毛助手 v5.9 启动完成', 'success');
+        addLog('支持AAEncode和Eval解密', 'info');
     });
 </script>
 ```
