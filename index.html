@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v5.5 - AAEncode专业版</title>
+    <title>羊毛助手 v5.6 - 增强版AADecode解密工具</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #fff;
@@ -16,80 +16,123 @@
         }
         
         .container {
-            max-width: 100%;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 10px;
+            padding: 15px;
         }
         
         h1 {
             text-align: center;
-            margin: 15px 0;
-            font-size: 1.6rem;
-            position: sticky;
-            top: 0;
-            background: rgba(102, 126, 234, 0.9);
+            margin: 20px 0;
+            font-size: 2rem;
+            background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
-            padding: 10px;
-            border-radius: 12px;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            position: sticky;
+            top: 10px;
             z-index: 100;
         }
         
         .version {
-            background: rgba(255,255,255,0.3);
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            margin-left: 8px;
+            background: linear-gradient(45deg, #10b981, #3b82f6);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        
+        .aaencode-indicator {
+            background: linear-gradient(45deg, #ffc107, #ff9800);
+            color: #000;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+        
+        .aaencode-indicator.show {
+            display: inline-block;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .features-banner {
+            background: linear-gradient(45deg, #f59e0b, #ef4444);
+            color: #fff;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
         
         .section {
             background: rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 15px;
-            margin: 10px 0;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .section:hover {
+            transform: translateY(-2px);
         }
         
         .section-title {
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            color: #fbbf24;
         }
         
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
+            gap: 15px;
+            margin-bottom: 15px;
         }
         
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 500;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+            color: #e5e7eb;
         }
         
-        input, textarea {
+        input, textarea, select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 8px;
+            border-radius: 10px;
             background: rgba(255,255,255,0.1);
             color: #fff;
-            font-size: 13px;
+            font-size: 14px;
             transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
         }
         
-        input:focus, textarea:focus {
+        input:focus, textarea:focus, select:focus {
             outline: none;
-            border-color: rgba(255,255,255,0.6);
+            border-color: #3b82f6;
             background: rgba(255,255,255,0.15);
-            box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
         }
         
         input::placeholder, textarea::placeholder {
@@ -97,139 +140,159 @@
         }
         
         textarea {
-            height: 160px;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+            height: 180px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             resize: vertical;
-            line-height: 1.4;
+            line-height: 1.5;
         }
         
-        /* 文件上传区域 */
         .file-upload {
             border: 2px dashed rgba(255,255,255,0.3);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 15px;
+            padding: 30px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-bottom: 12px;
-        }
-        
-        .file-upload:hover, .file-upload.dragover {
-            border-color: rgba(255,255,255,0.6);
+            margin-bottom: 15px;
             background: rgba(255,255,255,0.05);
         }
         
+        .file-upload:hover, .file-upload.dragover {
+            border-color: #3b82f6;
+            background: rgba(59,130,246,0.1);
+            transform: translateY(-2px);
+        }
+        
         .file-upload-icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+        
+        .detection-panel {
+            background: linear-gradient(45deg, #1f2937, #374151);
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .detection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .detection-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .detection-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #10b981;
+        }
+        
+        .detection-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
         }
         
         .file-options {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 8px;
-            margin-bottom: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
         }
         
         .file-option {
-            padding: 8px 12px;
+            padding: 12px;
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 6px;
+            border-radius: 10px;
             cursor: pointer;
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             transition: all 0.3s ease;
         }
         
         .file-option:hover {
             background: rgba(255,255,255,0.2);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
         
         .file-option.aaencode {
-            background: rgba(255,193,7,0.2);
-            border-color: rgba(255,193,7,0.3);
+            background: linear-gradient(45deg, rgba(255,193,7,0.3), rgba(255,152,0,0.3));
+            border-color: rgba(255,193,7,0.5);
         }
         
         .file-option.aaencode:hover {
-            background: rgba(255,193,7,0.3);
-        }
-        
-        .remote-input {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        
-        .remote-input input {
-            flex: 1;
-        }
-        
-        .remote-input button {
-            min-width: 60px;
-            font-size: 0.8rem;
+            background: linear-gradient(45deg, rgba(255,193,7,0.4), rgba(255,152,0,0.4));
         }
         
         .buttons {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            margin: 15px 0;
+            gap: 12px;
+            margin: 20px 0;
             position: sticky;
-            bottom: 10px;
+            bottom: 15px;
             background: rgba(102, 126, 234, 0.9);
             backdrop-filter: blur(10px);
-            padding: 10px;
-            border-radius: 12px;
+            padding: 15px;
+            border-radius: 15px;
             z-index: 100;
         }
         
         button {
-            padding: 10px 8px;
+            padding: 12px;
             border: none;
-            border-radius: 8px;
-            font-weight: 500;
+            border-radius: 10px;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: #fff;
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
+            gap: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         
-        .btn-blue { background: #3b82f6; }
-        .btn-green { background: #10b981; }
-        .btn-yellow { background: #f59e0b; }
-        .btn-purple { background: #8b5cf6; }
-        .btn-red { background: #ef4444; }
+        .btn-blue { background: linear-gradient(45deg, #3b82f6, #1d4ed8); }
+        .btn-green { background: linear-gradient(45deg, #10b981, #059669); }
+        .btn-yellow { background: linear-gradient(45deg, #f59e0b, #d97706); }
+        .btn-purple { background: linear-gradient(45deg, #8b5cf6, #7c3aed); }
+        .btn-red { background: linear-gradient(45deg, #ef4444, #dc2626); }
         
         button:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
         
         button:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
         
         .btn-icon {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
         }
         
         .btn-text {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
         }
         
         .progress-bar {
             width: 100%;
-            height: 4px;
+            height: 6px;
             background: rgba(255,255,255,0.2);
-            border-radius: 2px;
-            margin: 12px 0;
+            border-radius: 3px;
+            margin: 15px 0;
             overflow: hidden;
         }
         
@@ -240,54 +303,31 @@
             transition: width 0.3s ease;
         }
         
-        /* 代码语法高亮输出 */
         .output {
             background: #1e1e1e;
             border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 8px;
-            padding: 12px;
-            min-height: 180px;
-            max-height: 400px;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-            font-size: 12px;
-            line-height: 1.4;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 200px;
+            max-height: 500px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
             overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
             color: #d4d4d4;
         }
         
-        /* 代码语法高亮样式 */
-        .hljs {
-            display: block;
-            overflow-x: auto;
-            padding: 0;
-            background: transparent;
-            color: #d4d4d4;
-        }
-        
-        .hljs-keyword { color: #569cd6; }
-        .hljs-string { color: #ce9178; }
-        .hljs-number { color: #b5cea8; }
-        .hljs-comment { color: #6a9955; font-style: italic; }
-        .hljs-function { color: #dcdcaa; }
-        .hljs-variable { color: #9cdcfe; }
-        .hljs-operator { color: #d4d4d4; }
-        .hljs-punctuation { color: #d4d4d4; }
-        .hljs-property { color: #9cdcfe; }
-        .hljs-literal { color: #569cd6; }
-        .hljs-built_in { color: #4ec9b0; }
-        .hljs-regexp { color: #d16969; }
-        
         .logs {
-            background: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.6);
             border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
-            padding: 12px;
-            height: 120px;
+            border-radius: 10px;
+            padding: 15px;
+            height: 150px;
             overflow-y: auto;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-            font-size: 11px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
             scroll-behavior: smooth;
         }
         
@@ -302,13 +342,13 @@
             right: 20px;
             background: rgba(0,0,0,0.9);
             color: white;
-            padding: 12px 16px;
-            border-radius: 8px;
+            padding: 15px 20px;
+            border-radius: 10px;
             transform: translateX(400px);
             transition: transform 0.3s ease;
             z-index: 1000;
-            max-width: 280px;
-            font-size: 0.85rem;
+            max-width: 300px;
+            font-size: 0.9rem;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.1);
         }
@@ -320,11 +360,11 @@
         .note {
             background: rgba(59,130,246,0.2);
             border: 1px solid rgba(59,130,246,0.3);
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 0.75rem;
-            line-height: 1.4;
-            margin-top: 8px;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            margin-top: 10px;
         }
         
         .note a {
@@ -340,156 +380,50 @@
             display: none !important;
         }
         
-        /* Modal样式 */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+        /* 语法高亮 */
+        .hljs-keyword { color: #569cd6; }
+        .hljs-string { color: #ce9178; }
+        .hljs-number { color: #b5cea8; }
+        .hljs-comment { color: #6a9955; font-style: italic; }
+        .hljs-function { color: #dcdcaa; }
+        .hljs-variable { color: #9cdcfe; }
+        .hljs-operator { color: #d4d4d4; }
+        .hljs-property { color: #9cdcfe; }
+        .hljs-literal { color: #569cd6; }
+        .hljs-built_in { color: #4ec9b0; }
         
-        .modal-content {
-            background: #1e1e1e;
-            border-radius: 12px;
-            padding: 20px;
-            max-width: 90%;
-            max-height: 80%;
-            overflow-y: auto;
-            color: white;
-            font-family: monospace;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .modal-header {
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .modal-header h3 {
-            color: #3b82f6;
-            margin: 0;
-        }
-        
-        .modal-content textarea {
-            width: 100%;
-            height: 200px;
-            margin: 10px 0;
-            padding: 10px;
-            background: #2a2a2a;
-            color: white;
-            border: 1px solid #444;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 12px;
-        }
-        
-        .modal-buttons {
-            text-align: center;
-            margin-top: 15px;
-        }
-        
-        .modal-buttons button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            margin: 0 5px;
-            cursor: pointer;
-        }
-        
-        .modal-buttons button.success {
-            background: #10b981;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .stat-item {
-            background: rgba(255,255,255,0.1);
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-        }
-        
-        .stat-value {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #10b981;
-        }
-        
-        .stat-label {
-            font-size: 0.8rem;
-            opacity: 0.8;
-        }
-        
-        /* AAEncode特殊样式 */
-        .aaencode-indicator {
-            background: linear-gradient(45deg, #ffc107, #ff9800);
-            color: #000;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            margin-left: 8px;
-        }
-        
-        /* 滚动条样式 */
+        /* 滚动条 */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
         
         ::-webkit-scrollbar-track {
             background: rgba(255,255,255,0.1);
-            border-radius: 3px;
+            border-radius: 4px;
         }
         
         ::-webkit-scrollbar-thumb {
             background: rgba(255,255,255,0.3);
-            border-radius: 3px;
+            border-radius: 4px;
         }
         
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255,255,255,0.5);
         }
         
-        /* 移动端优化 */
+        /* 移动端适配 */
         @media (max-width: 768px) {
-            body {
-                padding-bottom: 80px;
-            }
-            
             .container {
-                padding: 8px;
-                max-width: 100vw;
+                padding: 10px;
             }
             
             h1 {
-                font-size: 1.4rem;
-                margin: 10px 0;
-                padding: 8px;
+                font-size: 1.5rem;
+                padding: 12px;
             }
             
             .form-row {
                 grid-template-columns: 1fr;
-                gap: 8px;
-            }
-            
-            .section {
-                padding: 12px;
-                margin: 8px 0;
             }
             
             .buttons {
@@ -500,89 +434,33 @@
                 margin: 0;
                 border-radius: 0;
                 border-top: 1px solid rgba(255,255,255,0.2);
-                grid-template-columns: repeat(5, 1fr);
-                gap: 4px;
-                padding: 8px;
-            }
-            
-            button {
-                padding: 8px 4px;
-                font-size: 0.65rem;
-            }
-            
-            .btn-icon {
-                font-size: 1rem;
-            }
-            
-            .btn-text {
-                font-size: 0.6rem;
             }
             
             .file-options {
                 grid-template-columns: repeat(2, 1fr);
             }
             
-            .output {
-                max-height: 300px;
-                font-size: 11px;
+            body {
+                padding-bottom: 80px;
             }
-            
-            .logs {
-                height: 100px;
-                font-size: 10px;
-            }
-            
-            .textarea {
-                height: 140px;
-                font-size: 12px;
-            }
-            
-            .toast {
-                top: 10px;
-                right: 10px;
-                left: 10px;
-                max-width: none;
-                transform: translateY(-100px);
-                font-size: 0.8rem;
-            }
-            
-            .toast.show {
-                transform: translateY(0);
-            }
-            
-            .modal-content {
-                max-width: 95%;
-                padding: 15px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        /* 加载动画 */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .loading {
-            animation: pulse 2s infinite;
-        }
-        
-        /* 平滑滚动 */
-        html {
-            scroll-behavior: smooth;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>羊毛助手 <span class="version">v5.5</span><span id="aaencodeIndicator" class="aaencode-indicator hidden">AAEncode</span></h1>
+        <h1>
+            羊毛助手 
+            <span class="version">v5.6</span>
+            <span id="aaencodeIndicator" class="aaencode-indicator">AAEncode已检测</span>
+        </h1>
+        
+        <div class="features-banner">
+            🎯 v5.6增强版：集成专业AADecode插件 | 支持头部注释保留 | 智能检测算法 | 一键本地解密
+        </div>
         
         <!-- GitHub 配置 -->
         <div class="section">
-            <div class="section-title">⚙️ GitHub 配置</div>
+            <div class="section-title">⚙️ GitHub 配置（可选）</div>
             <div class="form-row">
                 <div>
                     <label>GitHub Token</label>
@@ -594,13 +472,7 @@
                 </div>
             </div>
             <div class="note">
-                <strong>使用说明：</strong><br>
-                1. 获取 GitHub Token：前往 <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings</a> → Personal access tokens<br>
-                2. Token 权限：勾选 repo 权限<br>
-                3. 仓库地址格式：用户名/仓库名<br>
-                4. 确保仓库已集成 <a href="https://github.com/smallfawn/decode_action" target="_blank">decode_action</a> 解密框架<br>
-                5. <strong>解密流程：</strong>密文 → input.js → GitHub Actions → output.js<br>
-                6. <strong>v5.5专业：</strong>集成专业AADecode插件，支持头部注释保留
+                <strong>💡 说明：</strong>AAEncode代码可直接本地解密，无需GitHub配置。GitHub配置仅用于其他复杂混淆代码的云端解密。
             </div>
         </div>
         
@@ -610,53 +482,81 @@
             <div class="file-upload" onclick="document.getElementById('fileInput').click()">
                 <div class="file-upload-icon">📄</div>
                 <div>点击选择文件或拖拽文件到此处</div>
-                <div style="font-size: 0.7rem; opacity: 0.7; margin-top: 4px;">
-                    支持 .js .txt .json .md 等文本文件
+                <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 5px;">
+                    支持 .js .txt .json 等文本文件
                 </div>
             </div>
-            <input type="file" id="fileInput" class="hidden" accept=".js,.txt,.json,.md,.log,.conf,.ini,.py,.php,.html,.css,.xml,.yaml,.yml">
+            <input type="file" id="fileInput" class="hidden" accept=".js,.txt,.json,.md,.log,.conf,.py,.php,.html,.css">
             
             <div class="file-options">
                 <div class="file-option" onclick="document.getElementById('fileInput').click()">
                     📄<br>选择文件
                 </div>
                 <div class="file-option" onclick="pasteFromClipboard()">
-                    📋<br>剪贴板
+                    📋<br>粘贴剪贴板
                 </div>
                 <div class="file-option aaencode" onclick="testAAEncodeInput()">
-                    🔤<br>AAEncode
+                    🔤<br>AAEncode测试
                 </div>
-                <div class="file-option" onclick="showAdvancedPreprocess()">
-                    🔍<br>高级预处理
-                </div>
-                <div class="file-option" onclick="showQualityAnalysis()">
-                    📊<br>质量分析
+                <div class="file-option" onclick="loadDemoCode()">
+                    🧪<br>加载示例
                 </div>
             </div>
-            
-            <div class="remote-input">
-                <input type="url" id="remoteUrl" placeholder="输入远程文件URL地址...">
-                <button class="btn-purple" onclick="loadRemoteFile()">加载</button>
+        </div>
+        
+        <!-- AAEncode检测面板 -->
+        <div id="detectionPanel" class="detection-panel" style="display: none;">
+            <div class="section-title">🔍 AAEncode检测结果</div>
+            <div class="detection-grid">
+                <div class="detection-item">
+                    <div id="detectionType" class="detection-value">未检测</div>
+                    <div class="detection-label">编码类型</div>
+                </div>
+                <div class="detection-item">
+                    <div id="detectionConfidence" class="detection-value">0%</div>
+                    <div class="detection-label">置信度</div>
+                </div>
+                <div class="detection-item">
+                    <div id="detectionFeatures" class="detection-value">0</div>
+                    <div class="detection-label">特征匹配</div>
+                </div>
+                <div class="detection-item">
+                    <div id="detectionRatio" class="detection-value">0%</div>
+                    <div class="detection-label">特征字符占比</div>
+                </div>
             </div>
         </div>
         
         <!-- 代码输入 -->
         <div class="section">
             <div class="section-title">📝 密文输入</div>
-            <textarea id="input" placeholder="请粘贴需要解密的密文代码...&#10;&#10;✅ v5.5 支持自动处理：&#10;- AAEncode混淆代码（🔤专业插件，保留头部注释！）&#10;- 混合了注释的密文&#10;- eval包装的代码&#10;- Base64/十六进制编码&#10;- Unicode转义序列&#10;- JavaScript混淆代码&#10;- 时间戳和说明文字&#10;&#10;💡 工具会自动识别格式并选择最佳解密方案"></textarea>
+            <textarea id="input" placeholder="请粘贴需要解密的密文代码...
+
+✅ v5.6 专业AADecode支持：
+- 自动检测AAEncode格式
+- 保留脚本头部注释
+- 智能提取编码部分
+- 高精度解码算法
+- 完整错误处理机制
+
+💡 其他支持格式：
+- JavaScript混淆代码
+- Base64/十六进制编码
+- Unicode转义序列
+- eval包装的代码"></textarea>
             
-            <div class="file-options" style="margin-top: 8px;">
-                <div class="file-option" onclick="showPreprocessPreview()">
-                    🔍<br>预处理预览
+            <div class="file-options">
+                <div class="file-option" onclick="autoDetectAndDecrypt()">
+                    🤖<br>智能解密
                 </div>
                 <div class="file-option" onclick="cleanInput()">
-                    🧹<br>智能清理
+                    🧹<br>清理代码
                 </div>
                 <div class="file-option" onclick="validateInput()">
                     ✅<br>质量检查
                 </div>
                 <div class="file-option" onclick="clearInput()">
-                    🗑<br>清空输入
+                    🗑<br>清空
                 </div>
             </div>
         </div>
@@ -671,23 +571,23 @@
             <div class="section-title">✨ 解密结果</div>
             <div id="output" class="output">// 解密结果将显示在这里...</div>
             
-            <div class="file-options" style="margin-top: 8px;">
-                <div class="file-option" onclick="showResultAnalysis()">
-                    📊<br>结果分析
-                </div>
+            <div class="file-options">
                 <div class="file-option" onclick="beautifyCode()">
                     🎨<br>代码美化
                 </div>
-                <div class="file-option" onclick="showCodeStats()">
-                    📈<br>代码统计
+                <div class="file-option" onclick="copyResult()">
+                    📋<br>复制结果
+                </div>
+                <div class="file-option" onclick="downloadResult()">
+                    💾<br>下载文件
                 </div>
                 <div class="file-option" onclick="validateResult()">
-                    ✅<br>代码验证
+                    ✅<br>语法检查
                 </div>
             </div>
         </div>
         
-        <!-- 日志 -->
+        <!-- 执行日志 -->
         <div class="section">
             <div class="section-title">📋 执行日志</div>
             <div id="logs" class="logs"></div>
@@ -697,11 +597,11 @@
         <div class="buttons">
             <button class="btn-blue" onclick="startDecrypt()">
                 <div class="btn-icon">🔓</div>
-                <div class="btn-text">解密</div>
+                <div class="btn-text">开始解密</div>
             </button>
             <button class="btn-green" onclick="getResult()">
                 <div class="btn-icon">📥</div>
-                <div class="btn-text">读取</div>
+                <div class="btn-text">获取结果</div>
             </button>
             <button class="btn-yellow" onclick="copyResult()">
                 <div class="btn-icon">📋</div>
@@ -720,53 +620,54 @@
     
     <!-- Toast -->
     <div id="toast" class="toast"></div>
-    
+
     <script>
-        // 应用配置
-        const APP_CONFIG = {
-            VERSION: '5.5',
-            VERSION_NAME: 'AAEncode专业版',
-            UPDATE_NOTES: '集成专业AADecode插件，支持头部注释保留'
-        };
+        // =============================================
+        // 专业AADecode插件（基于您提供的代码）
+        // =============================================
         
-        // 全局变量
-        window.appData = {
-            token: localStorage.getItem('github_token') || '',
-            repo: localStorage.getItem('repo_name') || '',
-            checkTimer: null,
-            isChecking: false,
-            isAAEncodeMode: false
-        };
-        
-        // ==============================================
-        // 专业AADecode插件（基于你提供的代码）
-        // ==============================================
-        
-        // 初始化AADecode插件
+        /**
+         * AADecode插件包装器 - 将Node.js的AADecode模块转换为浏览器可用版本
+         */
         (function() {
             // 模拟Node.js环境
             const module = { exports: {} };
             
             /**
              * 识别并提取AADecode编码之前的注释和配置信息
+             * @param {string} code - 完整的代码字符串
+             * @returns {object} - 包含头部信息和编码部分的对象
              */
             function extractHeader(code) {
+                // 查找AADecode特征的起始位置
                 const aaStartIndex = code.search(/ﾟωﾟﾉ\s*=|ﾟдﾟ\s*=|ﾟДﾟ\s*=|ﾟΘﾟ\s*=/);
                 
                 if (aaStartIndex > 0) {
+                    // 提取头部内容和AA编码部分
                     const header = code.substring(0, aaStartIndex).trim();
                     const encodedPart = code.substring(aaStartIndex);
-                    return { header, encodedPart };
+                    
+                    return {
+                        header,
+                        encodedPart
+                    };
                 }
                 
-                return { header: '', encodedPart: code };
+                // 如果没有找到AADecode特征，则返回完整代码作为编码部分
+                return {
+                    header: '',
+                    encodedPart: code
+                };
             }
-            
+
             /**
-             * 专业AADecode解码函数
+             * 解码AA编码的JavaScript代码，同时保留原始脚本的头部注释
+             * @param {string} code - 包含可能的头部注释和AA编码的完整代码
+             * @returns {string|null} - 解码后的脚本（保留头部注释）或null（如果解码失败）
              */
             function plugin(code) {
                 try {
+                    // 提取头部注释和编码部分
                     const { header, encodedPart } = extractHeader(code);
                     
                     // 检查是否为AA编码内容
@@ -795,19 +696,25 @@
                     return null;
                 }
             }
-            
+
+            // 直接导出plugin函数
             module.exports = plugin;
             
-            // 注册全局AADecode插件
+            // 将插件注册到全局解密插件库
             window.DecodePlugins = window.DecodePlugins || {};
             window.DecodePlugins.aadecode = {
                 detect: function(code) {
+                    // 检测是否包含AADecode的特征标记
                     return code.includes('ﾟωﾟﾉ') || code.includes('ﾟДﾟ') || 
                            code.includes('ﾟдﾟ') || code.includes('ﾟΘﾟ');
                 },
                 plugin: function(code) {
+                    // 调用原始插件函数
                     try {
+                        console.log("尝试解密AADecode编码...");
                         const result = module.exports(code);
+                        
+                        // 如果解码失败，返回原始代码；否则返回解码后的结果
                         return result !== null ? result : code;
                     } catch (e) {
                         console.error("AADecode插件错误:", e);
@@ -818,135 +725,124 @@
             
             // 保存插件函数到全局
             window.professionalAADecode = module.exports;
+            
+            console.log("专业AADecode插件已加载");
         })();
         
-        // 专业AAEncode解密函数
-        function decodeAAEncode(code) {
-            try {
-                addLog('使用专业AADecode插件解密...', 'info');
-                
-                // 使用专业插件
-                const result = window.professionalAADecode(code);
-                
-                if (result !== null && result !== undefined) {
-                    const resultStr = String(result);
-                    addLog('专业AADecode插件解密成功！', 'success');
-                    return {
-                        success: true,
-                        method: '专业AADecode插件',
-                        result: resultStr,
-                        warning: null
-                    };
-                } else {
-                    throw new Error('专业插件返回空结果');
-                }
-                
-            } catch (error) {
-                addLog('专业AADecode插件解密失败: ' + error.message, 'error');
-                
-                // 备用：尝试简单的jamtg算法
-                try {
-                    addLog('尝试备用jamtg算法...', 'info');
-                    let t = code;
-                    t = t.replace(/\)\s*\('_'\)/g, "");
-                    t = t.replace(/\(ﾟДﾟ\)\s*\['_'\]\s*\(/g, "return ");
-                    const x = new Function(t);
-                    const r = x();
-                    
-                    if (r !== null && r !== undefined) {
-                        addLog('备用jamtg算法解密成功！', 'success');
-                        return {
-                            success: true,
-                            method: '备用jamtg算法',
-                            result: String(r),
-                            warning: '使用备用算法解密'
-                        };
-                    }
-                } catch (e2) {
-                    addLog('备用算法也失败: ' + e2.message, 'error');
-                }
-                
-                return {
-                    success: false,
-                    method: '解密失败',
-                    result: null,
-                    error: 'AAEncode解密失败: ' + error.message
-                };
-            }
-        }
+        // =============================================
+        // 应用配置和全局变量
+        // =============================================
         
-        // AAEncode特征检测
+        const APP_CONFIG = {
+            VERSION: '5.6',
+            VERSION_NAME: '增强版AADecode解密工具',
+            UPDATE_NOTES: '集成专业AADecode插件，支持头部注释保留和智能检测'
+        };
+        
+        window.appData = {
+            token: localStorage.getItem('github_token') || '',
+            repo: localStorage.getItem('repo_name') || '',
+            isAAEncodeMode: false,
+            lastDetection: null
+        };
+        
+        // =============================================
+        // AAEncode检测和解密函数
+        // =============================================
+        
+        /**
+         * 智能检测AAEncode格式
+         */
         function detectAAEncode(input) {
-            // AAEncode特征字符
+            // AAEncode特征字符检测
             const aaencodeChars = /[ﾟωノΘΔДεｰｍ'∇｀~┻━_=3o\^c\/\*\\\"()[\]!+]/g;
             const matches = input.match(aaencodeChars) || [];
             const ratio = matches.length / input.length;
             
-            // 检测AAEncode特有的模式
+            // AAEncode特有模式检测
             const aaencodePatterns = [
                 /ﾟωﾟﾉ/,
                 /ﾟｰﾟ/,
                 /ﾟΘﾟ/,
                 /ﾟДﾟ/,
+                /ﾟдﾟ/,
                 /o\^_\^o/,
-                /c\^_\^o/
+                /c\^_\^o/,
+                /\(ﾟΘﾟ\)/,
+                /\['_'\]/
             ];
             
             const patternMatches = aaencodePatterns.filter(pattern => pattern.test(input)).length;
             
-            // 综合判断
-            const isAAEncode = (ratio > 0.6 && input.length > 50) || patternMatches >= 3;
-            const confidence = Math.min(Math.round((ratio * 70) + (patternMatches * 10)), 100);
+            // 长度和复杂度检查
+            const hasMinLength = input.length >= 100;
+            const hasAASignature = input.includes('ﾟДﾟ') && input.includes('ﾟωﾟﾉ');
+            
+            // 综合判断AAEncode概率
+            let confidence = 0;
+            if (hasAASignature) confidence += 40;
+            if (patternMatches >= 3) confidence += 30;
+            if (ratio > 0.3) confidence += Math.min(ratio * 50, 25);
+            if (hasMinLength) confidence += 5;
+            
+            const isAAEncode = confidence >= 70 || (hasAASignature && patternMatches >= 2);
             
             return {
                 isAAEncode,
-                confidence,
-                ratio,
+                confidence: Math.min(confidence, 100),
+                ratio: Math.round(ratio * 100),
                 patternMatches,
-                length: input.length
+                hasAASignature,
+                length: input.length,
+                features: aaencodePatterns.filter(pattern => pattern.test(input)).map(p => p.source)
             };
         }
         
-        // 简单高效的AAEncode解密（基于aadecode.js）
+        /**
+         * 使用专业AADecode插件解密
+         */
         function decodeAAEncode(code) {
             try {
-                addLog('开始AAEncode解密...', 'info');
+                addLog('🔤 使用专业AADecode插件解密...', 'info');
                 
-                // 使用简化的aadecode方法
-                const result = aadecode(code.trim());
+                // 使用专业插件
+                const result = window.professionalAADecode(code);
                 
-                if (result && result.length > 0) {
-                    addLog('AAEncode解密成功！', 'success');
+                if (result !== null && result !== undefined && result !== code) {
+                    const resultStr = String(result);
+                    addLog('✅ 专业AADecode解密成功！', 'success');
                     return {
                         success: true,
-                        method: 'aadecode简化解密',
-                        result: result,
-                        warning: null
+                        method: '专业AADecode插件',
+                        result: resultStr,
+                        preservedHeader: result.includes('\n\n') && code.search(/ﾟωﾟﾉ|ﾟДﾟ/) > 0
                     };
                 } else {
-                    throw new Error('解密结果为空');
+                    throw new Error('专业插件返回空结果或未改变');
                 }
                 
             } catch (error) {
-                addLog('AAEncode简化解密失败，尝试备用方案...', 'warning');
+                addLog('❌ 专业AADecode解密失败: ' + error.message, 'error');
                 
-                // 备用方案：安全沙箱执行
+                // 备用：尝试通用解密插件
                 try {
-                    const result = executeAAEncodeInSafebox(code);
-                    if (result && result.length > 0) {
-                        addLog('AAEncode备用解密成功！', 'success');
-                        return {
-                            success: true,
-                            method: '安全沙箱执行',
-                            result: result,
-                            warning: '使用备用解密方案'
-                        };
+                    addLog('🔄 尝试通用AADecode插件...', 'info');
+                    if (window.DecodePlugins && window.DecodePlugins.aadecode) {
+                        const backupResult = window.DecodePlugins.aadecode.plugin(code);
+                        if (backupResult && backupResult !== code) {
+                            addLog('✅ 通用AADecode解密成功！', 'success');
+                            return {
+                                success: true,
+                                method: '通用AADecode插件',
+                                result: String(backupResult),
+                                warning: '使用备用解密方案'
+                            };
+                        }
                     }
                 } catch (e2) {
-                    // 忽略备用方案错误
+                    addLog('❌ 备用插件也失败: ' + e2.message, 'error');
                 }
                 
-                addLog('AAEncode解密失败: ' + error.message, 'error');
                 return {
                     success: false,
                     method: '解密失败',
@@ -956,89 +852,52 @@
             }
         }
         
-        // AAEncode解码核心函数（简化版aadecode）
-        function aadecode(text) {
-            try {
-                // 清理代码，移除可能的干扰字符
-                let cleanText = text.trim();
-                
-                // 移除常见的AAEncode包装模式
-                cleanText = cleanText.replace(/^\)\s*\('_'\)/, "");
-                cleanText = cleanText.replace(/\(ﾟДﾟ\)\s*\['_'\]\s*\(/, "return ");
-                
-                // 如果代码以特定模式开始，添加return
-                if (!cleanText.includes('return ') && cleanText.includes('ﾟДﾟ')) {
-                    cleanText = 'return ' + cleanText;
-                }
-                
-                // 执行解密
-                const decodeFunction = new Function(cleanText);
-                const result = decodeFunction();
-                
-                return result;
-                
-            } catch (error) {
-                // 如果简化方法失败，尝试直接执行
-                try {
-                    const directResult = new Function(text)();
-                    return directResult;
-                } catch (e) {
-                    throw new Error(`解密失败: ${error.message}`);
-                }
-            }
-        }
-        
-        // 备用：在安全沙箱中执行AAEncode
-        function executeAAEncodeInSafebox(code) {
-            // 创建隔离的iframe
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = 'about:blank';
-            document.body.appendChild(iframe);
+        /**
+         * 更新检测面板显示
+         */
+        function updateDetectionPanel(detection) {
+            const panel = document.getElementById('detectionPanel');
+            const indicator = document.getElementById('aaencodeIndicator');
             
-            try {
-                const win = iframe.contentWindow;
+            if (detection.isAAEncode) {
+                // 显示检测面板
+                panel.style.display = 'block';
+                indicator.classList.add('show');
                 
-                // 禁用危险函数
-                win.alert = () => {};
-                win.confirm = () => false;
-                win.prompt = () => null;
-                win.open = () => null;
+                // 更新检测数据
+                document.getElementById('detectionType').textContent = 'AAEncode';
+                document.getElementById('detectionConfidence').textContent = detection.confidence + '%';
+                document.getElementById('detectionFeatures').textContent = detection.patternMatches + '/9';
+                document.getElementById('detectionRatio').textContent = detection.ratio + '%';
                 
-                // 捕获控制台输出
-                let capturedOutput = '';
-                const originalLog = win.console.log;
-                win.console.log = function(...args) {
-                    capturedOutput += args.join(' ') + '\n';
-                };
-                
-                // 重写document.write
-                let documentOutput = '';
-                win.document.write = function(content) {
-                    documentOutput += content;
-                };
-                
-                // 执行AAEncode代码
-                const result = win.eval(code);
-                
-                // 返回结果（优先级：返回值 > document.write > console.log）
-                if (typeof result === 'string' && result.length > 0) {
-                    return result;
-                } else if (documentOutput.length > 0) {
-                    return documentOutput;
-                } else if (capturedOutput.length > 0) {
-                    return capturedOutput.trim();
+                // 设置置信度颜色
+                const confidenceEl = document.getElementById('detectionConfidence');
+                if (detection.confidence >= 90) {
+                    confidenceEl.style.color = '#10b981';
+                } else if (detection.confidence >= 70) {
+                    confidenceEl.style.color = '#f59e0b';
                 } else {
-                    return 'AAEncode代码执行完成，但未产生明确输出';
+                    confidenceEl.style.color = '#ef4444';
                 }
                 
-            } finally {
-                // 清理iframe
-                document.body.removeChild(iframe);
+                window.appData.isAAEncodeMode = true;
+                window.appData.lastDetection = detection;
+            } else {
+                // 隐藏检测面板
+                panel.style.display = 'none';
+                indicator.classList.remove('show');
+                window.appData.isAAEncodeMode = false;
+                window.appData.lastDetection = null;
             }
         }
         
-        // 测试AAEncode输入
+        // =============================================
+        // 用户界面交互函数
+        // =============================================
+        
+        /**
+         * 测试AAEncode输入
+         */
         function testAAEncodeInput() {
             const input = document.getElementById('input').value.trim();
             if (!input) {
@@ -1047,267 +906,414 @@
             }
             
             const detection = detectAAEncode(input);
+            updateDetectionPanel(detection);
             
             if (detection.isAAEncode) {
-                showToast(`检测到AAEncode格式 (${detection.confidence}% 置信度)`);
-                addLog(`AAEncode检测成功: 置信度 ${detection.confidence}%, 特征字符占比 ${Math.round(detection.ratio * 100)}%`, 'success');
-                
-                // 显示AAEncode指示器
-                showAAEncodeIndicator(true);
+                showToast(`🎯 检测到AAEncode格式！置信度: ${detection.confidence}%`);
+                addLog(`AAEncode检测成功: 置信度 ${detection.confidence}%, 特征匹配 ${detection.patternMatches}/9`, 'success');
                 
                 // 自动解密
+                setTimeout(() => {
+                    const decodeResult = decodeAAEncode(input);
+                    if (decodeResult.success) {
+                        displayResult(decodeResult.result);
+                        showToast('🎉 AAEncode解密成功！');
+                        addLog(`解密完成，使用方法: ${decodeResult.method}`, 'success');
+                        if (decodeResult.preservedHeader) {
+                            addLog('✨ 已保留脚本头部注释', 'info');
+                        }
+                        if (decodeResult.warning) {
+                            addLog(`⚠️ ${decodeResult.warning}`, 'warning');
+                        }
+                    } else {
+                        showToast('❌ AAEncode解密失败');
+                        addLog(decodeResult.error, 'error');
+                    }
+                }, 500);
+            } else {
+                showToast(`❌ 未检测到AAEncode格式 (置信度: ${detection.confidence}%)`);
+                addLog(`AAEncode检测失败: 置信度不足 ${detection.confidence}%`, 'warning');
+            }
+        }
+        
+        /**
+         * 智能检测并自动解密
+         */
+        function autoDetectAndDecrypt() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入需要解密的代码');
+                return;
+            }
+            
+            addLog('🤖 开始智能检测...', 'info');
+            
+            // 首先检测AAEncode
+            const detection = detectAAEncode(input);
+            updateDetectionPanel(detection);
+            
+            if (detection.isAAEncode) {
+                addLog(`🎯 检测到AAEncode格式 (置信度: ${detection.confidence}%)`, 'success');
+                
                 const decodeResult = decodeAAEncode(input);
                 if (decodeResult.success) {
                     displayResult(decodeResult.result);
-                    showToast('AAEncode解密成功！');
-                    addLog(`AAEncode解密完成 (${decodeResult.method})`, 'success');
-                    if (decodeResult.warning) {
-                        addLog(decodeResult.warning, 'warning');
+                    showToast('🎉 AAEncode自动解密成功！');
+                    addLog(`自动解密完成: ${decodeResult.method}`, 'success');
+                    if (decodeResult.preservedHeader) {
+                        addLog('✨ 头部注释已保留', 'info');
                     }
+                    return;
                 } else {
-                    showToast('AAEncode解密失败');
-                    addLog(decodeResult.error, 'error');
+                    addLog('AAEncode解密失败，尝试其他方法...', 'warning');
                 }
-            } else {
-                showToast(`未检测到AAEncode格式 (置信度仅 ${detection.confidence}%)`);
-                addLog(`AAEncode检测失败: 置信度 ${detection.confidence}%, 特征不足`, 'warning');
-                showAAEncodeIndicator(false);
+            }
+            
+            // 如果不是AAEncode，尝试其他格式
+            addLog('🔍 检测其他编码格式...', 'info');
+            
+            // Base64检测
+            if (/^[A-Za-z0-9+/]+=*$/.test(input.replace(/\s/g, ''))) {
+                try {
+                    const decoded = atob(input.replace(/\s/g, ''));
+                    if (decoded.length > 10) {
+                        displayResult(decoded);
+                        showToast('🎉 Base64解密成功！');
+                        addLog('Base64自动解密完成', 'success');
+                        return;
+                    }
+                } catch (e) {
+                    addLog('Base64解密失败', 'warning');
+                }
+            }
+            
+            // Unicode转义检测
+            if (/\\u[0-9a-fA-F]{4}/.test(input)) {
+                try {
+                    const decoded = input.replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => 
+                        String.fromCharCode(parseInt(code, 16))
+                    );
+                    displayResult(decoded);
+                    showToast('🎉 Unicode转义解密成功！');
+                    addLog('Unicode转义自动解密完成', 'success');
+                    return;
+                } catch (e) {
+                    addLog('Unicode转义解密失败', 'warning');
+                }
+            }
+            
+            // eval包装检测
+            const evalMatch = input.match(/eval\s*\(\s*['"`](.*?)['"`]\s*\)/s);
+            if (evalMatch) {
+                displayResult(evalMatch[1]);
+                showToast('🎉 eval包装解密成功！');
+                addLog('eval包装自动解密完成', 'success');
+                return;
+            }
+            
+            showToast('❌ 未能自动识别编码格式');
+            addLog('智能检测未找到支持的编码格式', 'warning');
+        }
+        
+        /**
+         * 加载演示代码
+         */
+        function loadDemoCode() {
+            const demoAAEncode = `// 这是一个AAEncode演示代码
+// 作者: 演示用户
+// 时间: 2024-01-01
+// 说明: 这段注释将被保留
+
+ﾟωﾟﾉ= /｀ｍ'）ﾉ ~┻━┻   //*'∇｀*/ ['_']; o=(ﾟｰﾟ)  =_=3; c=(ﾟΘﾟ) =(ﾟｰﾟ)-(ﾟｰﾟ); (ﾟДﾟ) =(ﾟΘﾟ)= (o^_^o)/ (o^_^o);(ﾟДﾟ)={ﾟΘﾟ: '_' ,ﾟωﾟﾉ : ((ﾟωﾟﾉ==3) +'_') [ﾟΘﾟ] ,ﾟｰﾟﾉ :(ﾟωﾟﾉ+ '_')[o^_^o -(ﾟΘﾟ)] ,ﾟДﾟﾉ:((ﾟｰﾟ==3) +'_')[ﾟｰﾟ] }; (ﾟДﾟ) [ﾟΘﾟ] =((ﾟωﾟﾉ==3) +'_') [c^_^o];(ﾟДﾟ) ['c'] = ((ﾟДﾟ)+'_') [ (ﾟｰﾟ)+(ﾟｰﾟ)-(ﾟΘﾟ) ];(ﾟДﾟ) ['o'] = ((ﾟДﾟ)+'_') [ﾟΘﾟ];(ﾟoﾟ)=(ﾟДﾟ) ['c']+(ﾟДﾟ) ['o']+(ﾟωﾟﾉ +'_')[ﾟΘﾟ]+ ((ﾟωﾟﾉ==3) +'_') [ﾟｰﾟ] + ((ﾟДﾟ) +'_') [(ﾟｰﾟ)+(ﾟｰﾟ)]+ ((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+((ﾟｰﾟ==3) +'_') [(ﾟｰﾟ) - (ﾟΘﾟ)]+(ﾟДﾟ) ['c']+((ﾟДﾟ)+'_') [(ﾟｰﾟ)+(ﾟｰﾟ)]+ (ﾟДﾟ) ['o']+((ﾟｰﾟ==3) +'_') [ﾟΘﾟ];(ﾟДﾟ) ['_'] = (o^_^o) [ﾟoﾟ] [ﾟoﾟ];(ﾟεﾟ)=((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+ (ﾟДﾟ) .ﾟДﾟﾉ+((ﾟДﾟ)+'_') [(ﾟｰﾟ) + (ﾟｰﾟ)]+((ﾟｰﾟ==3) +'_') [o^_^o -ﾟΘﾟ]+((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+ (ﾟωﾟﾉ +'_') [ﾟΘﾟ]; (ﾟｰﾟ)+=(ﾟΘﾟ); (ﾟДﾟ)[ﾟεﾟ]='\\\\'; (ﾟДﾟ).ﾟΘﾟﾉ=(ﾟДﾟ+ ﾟｰﾟ)[o^_^o -(ﾟΘﾟ)];(oﾟｰﾟo)=(ﾟωﾟﾉ +'_')[c^_^o];(ﾟДﾟ) [ﾟoﾟ]='\"';(ﾟДﾟ) ['_'] ( (ﾟДﾟ) ['_'] (ﾟεﾟ+(ﾟДﾟ)[ﾟoﾟ]+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ (ﾟΘﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((o^_^o) +(o^_^o))+ ((o^_^o) - (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((o^_^o) +(o^_^o))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+((ﾟｰﾟ) + (ﾟΘﾟ))+ (c^_^o)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟｰﾟ)+ ((o^_^o) - (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟΘﾟ)+ (c^_^o)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ ((ﾟｰﾟ) + (o^_^o))+ (ﾟДﾟ)[ﾟεﾟ]+((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟｰﾟ)+ (c^_^o)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟｰﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟoﾟ]) (ﾟΘﾟ)) ('_');`;
+            
+            document.getElementById('input').value = demoAAEncode;
+            showToast('📝 已加载AAEncode演示代码');
+            addLog('加载演示代码，包含头部注释', 'info');
+            
+            // 自动检测
+            setTimeout(() => {
+                const detection = detectAAEncode(demoAAEncode);
+                updateDetectionPanel(detection);
+                if (detection.isAAEncode) {
+                    showToast(`🎯 自动检测: AAEncode格式 (${detection.confidence}%置信度)`);
+                }
+            }, 500);
+        }
+        
+        /**
+         * 从剪贴板粘贴
+         */
+        async function pasteFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                    document.getElementById('input').value = text;
+                    showToast('📋 剪贴板内容已粘贴');
+                    addLog('从剪贴板粘贴内容', 'success');
+                    
+                    // 自动检测
+                    setTimeout(() => {
+                        const detection = detectAAEncode(text);
+                        updateDetectionPanel(detection);
+                        if (detection.isAAEncode) {
+                            showToast(`🎯 检测到AAEncode！置信度: ${detection.confidence}%`);
+                        }
+                    }, 300);
+                } else {
+                    showToast('❌ 剪贴板为空');
+                }
+            } catch (error) {
+                addLog('剪贴板访问失败: ' + error.message, 'error');
+                showToast('❌ 无法访问剪贴板，请手动粘贴');
             }
         }
         
-        // 显示/隐藏AAEncode指示器
-        function showAAEncodeIndicator(show) {
-            const indicator = document.getElementById('aaencodeIndicator');
-            window.appData.isAAEncodeMode = show;
-            
-            if (show) {
-                indicator.classList.remove('hidden');
-            } else {
-                indicator.classList.add('hidden');
-            }
-        }
+        // =============================================
+        // 代码处理和分析函数
+        // =============================================
         
-        // ==============================================
-        // 增强的预处理功能（集成AAEncode）
-        // ==============================================
-        
-        // 智能预处理密文（包含AAEncode支持）
-        function preprocessCiphertext(input) {
-            addLog('开始智能预处理密文...', 'info');
-            
-            // 首先检测AAEncode
-            const aaDetection = detectAAEncode(input);
-            if (aaDetection.isAAEncode) {
-                addLog(`检测到AAEncode格式 (置信度: ${aaDetection.confidence}%)`, 'info');
-                showAAEncodeIndicator(true);
-                
-                const decodeResult = decodeAAEncode(input);
-                if (decodeResult.success) {
-                    return decodeResult.result;
-                } else {
-                    addLog('AAEncode解密失败，尝试其他方法', 'warning');
-                }
+        /**
+         * 清理输入代码
+         */
+        function cleanInput() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入代码');
+                return;
             }
             
-            // 原有的预处理逻辑
-            let processed = input
-                .replace(/\/\/.*$/gm, '')
-                .replace(/\/\*[\s\S]*?\*\//g, '')
-                .replace(/<!--[\s\S]*?-->/g, '')
-                .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
-                .replace(/^\s*\/\/解密脚本.*$/gm, '')
-                .replace(/^\s*\/\/.*?(解密|脚本|说明|注释).*$/gm, '');
-            
-            // 检测并提取不同类型的密文
-            const patterns = [
-                {
-                    name: 'eval包装',
-                    pattern: /eval\s*\(\s*['"`](.*?)['"`]\s*\)/s,
-                    extract: (match) => match[1]
-                },
-                {
-                    name: 'Function构造器',
-                    pattern: /(?:new\s+)?Function\s*\(\s*['"`](.*?)['"`]\s*\)/s,
-                    extract: (match) => match[1]
-                },
-                {
-                    name: 'Base64编码',
-                    pattern: /^[A-Za-z0-9+/]+=*$/m,
-                    extract: (match) => match[0]
-                },
-                {
-                    name: '十六进制编码',
-                    pattern: /^[0-9a-fA-F\s]+$/m,
-                    extract: (match) => match[0].replace(/\s/g, '')
-                },
-                {
-                    name: 'JS混淆代码',
-                    pattern: /\(function\s*\([^)]*\)\s*\{[\s\S]*?\}\s*\([^)]*\)\)/g,
-                    extract: (match) => match[0]
-                }
-            ];
-            
-            for (const pattern of patterns) {
-                const matches = processed.match(pattern.pattern);
-                if (matches) {
-                    const extracted = pattern.extract(matches);
-                    if (extracted && extracted.length > 50) {
-                        addLog(`检测到${pattern.name}格式，已提取密文`, 'success');
-                        return extracted;
-                    }
-                }
+            // 如果是AAEncode，不进行常规清理
+            const detection = detectAAEncode(input);
+            if (detection.isAAEncode) {
+                showToast('⚠️ 检测到AAEncode，跳过清理以保持完整性');
+                return;
             }
             
-            processed = processed
-                .replace(/^\s*[\r\n]/gm, '')
-                .replace(/^\s+/gm, '')
-                .replace(/\s+/g, ' ')
+            // 常规代码清理
+            let cleaned = input
+                .replace(/\/\/.*$/gm, '') // 移除行注释
+                .replace(/\/\*[\s\S]*?\*\//g, '') // 移除块注释
+                .replace(/^\s*[\r\n]/gm, '') // 移除空行
+                .replace(/^\s+/gm, '') // 移除行首空格
                 .trim();
             
-            return processed;
+            document.getElementById('input').value = cleaned;
+            showToast('🧹 代码清理完成');
+            addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
         }
         
-        // 增强的高级预处理（包含AAEncode）
-        function advancedPreprocess(input) {
-            const analysis = {
-                originalLength: input.length,
-                detectedType: '未知',
-                confidence: 0,
-                features: [],
-                warnings: [],
-                processed: input
-            };
+        /**
+         * 验证输入质量
+         */
+        function validateInput() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入代码');
+                return;
+            }
             
-            // 优先检查AAEncode
-            const aaDetection = detectAAEncode(input);
-            if (aaDetection.isAAEncode) {
-                analysis.detectedType = 'AAEncode';
-                analysis.confidence = aaDetection.confidence;
-                analysis.features = [
-                    'AAEncode混淆',
-                    '符号编码',
-                    '表情符号',
-                    `特征字符占比: ${Math.round(aaDetection.ratio * 100)}%`,
-                    `模式匹配: ${aaDetection.patternMatches}/6`
-                ];
+            const issues = [];
+            
+            // 检查长度
+            if (input.length < 50) {
+                issues.push('代码长度过短');
+            }
+            
+            // AAEncode特殊检查
+            const detection = detectAAEncode(input);
+            if (detection.isAAEncode) {
+                if (detection.confidence < 80) {
+                    issues.push(`AAEncode置信度较低 (${detection.confidence}%)`);
+                }
+                if (detection.patternMatches < 3) {
+                    issues.push('AAEncode特征模式不足');
+                }
+            } else {
+                // 常规代码检查
+                if (/[\u4e00-\u9fff]/.test(input)) {
+                    issues.push('包含中文字符');
+                }
+                if (/\/\/|\/\*|\*\//.test(input)) {
+                    issues.push('包含注释符号');
+                }
+            }
+            
+            if (issues.length === 0) {
+                showToast('✅ 代码质量良好');
+                addLog('代码质量检查通过', 'success');
+            } else {
+                showToast(`⚠️ 发现 ${issues.length} 个问题`);
+                addLog('质量问题: ' + issues.join(', '), 'warning');
+            }
+        }
+        
+        /**
+         * 清空输入
+         */
+        function clearInput() {
+            document.getElementById('input').value = '';
+            updateDetectionPanel({ isAAEncode: false });
+            showToast('🗑 输入已清空');
+            addLog('清空输入内容', 'info');
+        }
+        
+        // =============================================
+        // 解密和结果处理函数
+        // =============================================
+        
+        /**
+         * 开始解密流程
+         */
+        async function startDecrypt() {
+            const input = document.getElementById('input').value.trim();
+            
+            if (!input) {
+                showToast('请先输入需要解密的代码');
+                return;
+            }
+            
+            try {
+                addLog('🚀 开始解密流程...', 'info');
+                displayResult('');
+                setProgress(0);
                 
-                const decodeResult = decodeAAEncode(input);
-                if (decodeResult.success) {
-                    analysis.processed = decodeResult.result;
-                    analysis.features.push(`解密方法: ${decodeResult.method}`);
-                    if (decodeResult.warning) {
-                        analysis.warnings.push(decodeResult.warning);
+                // 优先检测AAEncode
+                const detection = detectAAEncode(input);
+                if (detection.isAAEncode) {
+                    addLog(`🎯 检测到AAEncode (置信度: ${detection.confidence}%)`, 'info');
+                    updateDetectionPanel(detection);
+                    
+                    setProgress(30);
+                    const decodeResult = decodeAAEncode(input);
+                    setProgress(80);
+                    
+                    if (decodeResult.success) {
+                        displayResult(decodeResult.result);
+                        showToast('🎉 AAEncode解密成功！');
+                        addLog(`解密完成: ${decodeResult.method}`, 'success');
+                        if (decodeResult.preservedHeader) {
+                            addLog('✨ 头部注释已保留', 'info');
+                        }
+                        setProgress(100);
+                        
+                        // 滚动到结果
+                        document.getElementById('output').scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                        return;
+                    } else {
+                        addLog('AAEncode解密失败，尝试其他方法', 'warning');
                     }
+                }
+                
+                // 如果不是AAEncode或解密失败，尝试其他方法
+                addLog('🔍 尝试其他解密方法...', 'info');
+                setProgress(50);
+                
+                // 尝试通用解密方法
+                const result = await tryOtherDecryptMethods(input);
+                if (result.success) {
+                    displayResult(result.content);
+                    showToast(`🎉 ${result.method}解密成功！`);
+                    addLog(`解密完成: ${result.method}`, 'success');
+                    setProgress(100);
                 } else {
-                    analysis.warnings.push(decodeResult.error);
+                    // 如果配置了GitHub，尝试GitHub Actions
+                    if (window.appData.token && window.appData.repo) {
+                        addLog('🌐 使用GitHub Actions解密...', 'info');
+                        await submitToGitHub(input);
+                        await waitForResult();
+                    } else {
+                        showToast('❌ 解密失败，请检查输入格式');
+                        addLog('所有解密方法都失败了', 'error');
+                        setProgress(0);
+                    }
                 }
                 
-                analysis.processedLength = analysis.processed.length;
-                return analysis;
+            } catch (error) {
+                addLog('解密失败: ' + error.message, 'error');
+                showToast('解密失败: ' + error.message);
+                setProgress(0);
             }
-            
-            // 原有的检测规则
-            const detectionRules = [
-                {
-                    name: 'eval包装',
-                    pattern: /eval\s*\(\s*['"`](.*?)['"`]\s*\)/s,
-                    confidence: 95,
-                    extract: (match) => match[1],
-                    features: ['动态执行', 'eval调用']
-                },
-                {
-                    name: 'Function构造器',
-                    pattern: /(?:new\s+)?Function\s*\(\s*['"`](.*?)['"`]\s*\)/s,
-                    confidence: 90,
-                    extract: (match) => match[1],
-                    features: ['Function构造器', '动态代码生成']
-                },
-                {
-                    name: 'Base64编码',
-                    pattern: /^[A-Za-z0-9+/]+=*$/m,
-                    confidence: 85,
-                    extract: (match) => {
-                        try {
-                            return atob(match[0]);
-                        } catch (e) {
-                            return match[0];
-                        }
-                    },
-                    features: ['Base64编码']
-                },
-                {
-                    name: '十六进制编码',
-                    pattern: /^[0-9a-fA-F\s]+$/m,
-                    confidence: 80,
-                    extract: (match) => {
-                        try {
-                            const hex = match[0].replace(/\s/g, '');
-                            return hex.replace(/../g, (h) => String.fromCharCode(parseInt(h, 16)));
-                        } catch (e) {
-                            return match[0];
-                        }
-                    },
-                    features: ['十六进制编码']
-                },
-                {
-                    name: 'Unicode转义',
-                    pattern: /\\u[0-9a-fA-F]{4}/g,
-                    confidence: 75,
-                    extract: (match) => input.replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(parseInt(code, 16))),
-                    features: ['Unicode转义序列']
-                },
-                {
-                    name: 'JavaScript混淆',
-                    pattern: /\(function\s*\([^)]*\)\s*\{[\s\S]*?\}\s*\([^)]*\)\)/,
-                    confidence: 70,
-                    extract: (match) => match[0],
-                    features: ['自执行函数', '代码混淆']
-                }
-            ];
-            
-            // 应用检测规则
-            for (const rule of detectionRules) {
-                const matches = input.match(rule.pattern);
-                if (matches) {
-                    analysis.detectedType = rule.name;
-                    analysis.confidence = rule.confidence;
-                    analysis.features = rule.features;
-                    try {
-                        analysis.processed = rule.extract(matches);
-                    } catch (e) {
-                        analysis.warnings.push(`${rule.name}解码失败: ${e.message}`);
-                    }
-                    break;
-                }
-            }
-            
-            // 通用清理
-            if (analysis.processed === input) {
-                analysis.processed = analysis.processed
-                    .replace(/\/\/.*$/gm, '')
-                    .replace(/\/\*[\s\S]*?\*\//g, '')
-                    .replace(/^\s*[\r\n]/gm, '')
-                    .trim();
-            }
-            
-            analysis.processedLength = analysis.processed.length;
-            
-            // 质量检查
-            if (analysis.processed.length < 50) {
-                analysis.warnings.push('处理后内容过短');
-            }
-            if (/[\u4e00-\u9fff]/.test(analysis.processed)) {
-                analysis.warnings.push('包含中文字符');
-            }
-            
-            return analysis;
         }
         
-        // ==============================================
-        // 原有功能保持不变
-        // ==============================================
+        /**
+         * 尝试其他解密方法
+         */
+        async function tryOtherDecryptMethods(input) {
+            // Base64解密
+            if (/^[A-Za-z0-9+/]+=*$/.test(input.replace(/\s/g, ''))) {
+                try {
+                    const decoded = atob(input.replace(/\s/g, ''));
+                    if (decoded.length > 10) {
+                        return { success: true, method: 'Base64', content: decoded };
+                    }
+                } catch (e) {
+                    // 继续尝试其他方法
+                }
+            }
+            
+            // Unicode转义解密
+            if (/\\u[0-9a-fA-F]{4}/.test(input)) {
+                try {
+                    const decoded = input.replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => 
+                        String.fromCharCode(parseInt(code, 16))
+                    );
+                    return { success: true, method: 'Unicode转义', content: decoded };
+                } catch (e) {
+                    // 继续尝试其他方法
+                }
+            }
+            
+            // eval包装解密
+            const evalMatch = input.match(/eval\s*\(\s*['"`](.*?)['"`]\s*\)/s);
+            if (evalMatch) {
+                return { success: true, method: 'eval包装', content: evalMatch[1] };
+            }
+            
+            // 十六进制解密
+            if (/^[0-9a-fA-F\s]+$/.test(input)) {
+                try {
+                    const hex = input.replace(/\s/g, '');
+                    const decoded = hex.replace(/../g, (h) => String.fromCharCode(parseInt(h, 16)));
+                    if (decoded.length > 10) {
+                        return { success: true, method: '十六进制', content: decoded };
+                    }
+                } catch (e) {
+                    // 继续尝试其他方法
+                }
+            }
+            
+            return { success: false, method: null, content: null };
+        }
         
-        // 简单的语法高亮
+        /**
+         * 显示结果（带语法高亮）
+         */
+        function displayResult(content) {
+            const output = document.getElementById('output');
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                output.innerHTML = '<span style="color: #6b7280;">// 解密结果将显示在这里...</span>';
+                return;
+            }
+            
+            // 移除已有的HTML标签
+            content = content.replace(/<[^>]*>/g, '');
+            
+            // 简单的JavaScript语法高亮
+            if (content.includes('function') || content.includes('var ') || content.includes('let ') || 
+                content.includes('const ') || content.includes('{') || content.includes('}')) {
+                output.innerHTML = highlightJS(content);
+            } else {
+                output.textContent = content;
+            }
+        }
+        
+        /**
+         * 简单的JavaScript语法高亮
+         */
         function highlightJS(code) {
             return code
                 .replace(/&/g, '&amp;')
@@ -1324,673 +1330,26 @@
                 .replace(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/g, '.<span class="hljs-property">$1</span>');
         }
         
-        // 移除HTML标签
-        function stripHTMLTags(html) {
-            const div = document.createElement('div');
-            div.innerHTML = html;
-            return div.textContent || div.innerText || '';
+        /**
+         * 设置进度条
+         */
+        function setProgress(percent) {
+            document.getElementById('progress').style.width = percent + '%';
         }
         
-        // 创建模态框
-        function createModal(title, content, buttons) {
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            
-            const modalContent = document.createElement('div');
-            modalContent.className = 'modal-content';
-            
-            modalContent.innerHTML = `
-                <div class="modal-header">
-                    <h3>${title}</h3>
-                </div>
-                <div class="modal-body">
-                    ${content}
-                </div>
-                <div class="modal-buttons">
-                    ${buttons}
-                </div>
-            `;
-            
-            modal.appendChild(modalContent);
-            document.body.appendChild(modal);
-            
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            });
-            
-            return modal;
-        }
+        // =============================================
+        // GitHub Actions 相关函数（可选）
+        // =============================================
         
-        // 高级预处理预览
-        function showAdvancedPreprocess() {
-            const input = document.getElementById('input').value.trim();
-            if (!input) {
-                showToast('请先输入密文');
-                return;
+        /**
+         * 提交代码到GitHub
+         */
+        async function submitToGitHub(code) {
+            if (!window.appData.token || !window.appData.repo) {
+                throw new Error('GitHub配置不完整');
             }
             
-            const analysis = advancedPreprocess(input);
-            
-            const content = `
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value">${analysis.originalLength}</div>
-                        <div class="stat-label">原始长度</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">${analysis.processedLength}</div>
-                        <div class="stat-label">处理后长度</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">${analysis.detectedType}</div>
-                        <div class="stat-label">检测类型</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">${analysis.confidence}%</div>
-                        <div class="stat-label">置信度</div>
-                    </div>
-                </div>
-                
-                <div style="margin: 15px 0;">
-                    <strong>检测到的特征:</strong><br>
-                    ${analysis.features.map(f => `• ${f}`).join('<br>')}
-                </div>
-                
-                ${analysis.warnings.length > 0 ? `
-                    <div style="background: rgba(239,68,68,0.2); padding: 10px; border-radius: 6px; margin: 15px 0;">
-                        <strong style="color: #ef4444;">⚠️ 警告:</strong><br>
-                        ${analysis.warnings.map(w => `• ${w}`).join('<br>')}
-                    </div>
-                ` : ''}
-                
-                <textarea readonly>${analysis.processed}</textarea>
-            `;
-            
-            const buttons = `
-                <button onclick="this.closest('.modal').remove()">关闭</button>
-                <button class="success" onclick="
-                    document.getElementById('input').value = \`${analysis.processed.replace(/`/g, '\\`')}\`;
-                    this.closest('.modal').remove();
-                    showToast('已应用高级预处理结果');
-                ">应用处理结果</button>
-            `;
-            
-            createModal('🔍 高级预处理', content, buttons);
-        }
-        
-        // 质量分析
-        function showQualityAnalysis() {
-            const input = document.getElementById('input').value.trim();
-            if (!input) {
-                showToast('请先输入密文');
-                return;
-            }
-            
-            const quality = analyzeQuality(input);
-            
-            const content = `
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value" style="color: ${quality.score >= 80 ? '#10b981' : quality.score >= 60 ? '#f59e0b' : '#ef4444'}">${quality.score}</div>
-                        <div class="stat-label">质量评分</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">${quality.complexity}</div>
-                        <div class="stat-label">复杂度</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">${quality.entropy.toFixed(2)}</div>
-                        <div class="stat-label">信息熵</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">${quality.obfuscationLevel}</div>
-                        <div class="stat-label">混淆等级</div>
-                    </div>
-                </div>
-                
-                <div style="margin: 15px 0;">
-                    <strong>检测结果:</strong><br>
-                    ${quality.checks.map(check => `• ${check.name}: ${check.passed ? '✅' : '❌'} ${check.message}`).join('<br>')}
-                </div>
-                
-                <div style="margin: 15px 0;">
-                    <strong>改进建议:</strong><br>
-                    ${quality.suggestions.map(s => `• ${s}`).join('<br>')}
-                </div>
-            `;
-            
-            createModal('📊 质量分析报告', content, '<button onclick="this.closest(\'.modal\').remove()">关闭</button>');
-        }
-        
-        // 质量分析算法
-        function analyzeQuality(input) {
-            const quality = {
-                score: 0,
-                complexity: '低',
-                entropy: 0,
-                obfuscationLevel: '无',
-                checks: [],
-                suggestions: []
-            };
-            
-            // 首先检查是否是AAEncode
-            const aaDetection = detectAAEncode(input);
-            if (aaDetection.isAAEncode) {
-                quality.score = Math.max(aaDetection.confidence, 70);
-                quality.complexity = '高';
-                quality.obfuscationLevel = 'AAEncode混淆';
-                
-                quality.checks.push({
-                    name: 'AAEncode检测',
-                    passed: true,
-                    message: `置信度 ${aaDetection.confidence}%`
-                });
-                
-                if (aaDetection.confidence >= 90) {
-                    quality.suggestions.push('高质量AAEncode代码，建议直接解密');
-                } else {
-                    quality.suggestions.push('AAEncode特征不够明显，建议检查输入完整性');
-                }
-                
-                return quality;
-            }
-            
-            // 原有的质量分析逻辑
-            const lengthCheck = {
-                name: '长度检查',
-                passed: input.length >= 50,
-                message: input.length >= 50 ? '长度合适' : '长度过短'
-            };
-            quality.checks.push(lengthCheck);
-            
-            const uniqueChars = new Set(input).size;
-            const diversityCheck = {
-                name: '字符多样性',
-                passed: uniqueChars >= 20,
-                message: `包含${uniqueChars}种不同字符`
-            };
-            quality.checks.push(diversityCheck);
-            
-            const obfuscationPatterns = [
-                { pattern: /\b_0x[a-f0-9]+/i, name: '十六进制变量' },
-                { pattern: /\\x[0-9a-f]{2}/i, name: '十六进制转义' },
-                { pattern: /\\u[0-9a-f]{4}/i, name: 'Unicode转义' },
-                { pattern: /eval\s*\(/i, name: 'eval调用' },
-                { pattern: /String\.fromCharCode/i, name: '字符编码' }
-            ];
-            
-            let obfuscationScore = 0;
-            const detectedFeatures = [];
-            
-            for (const pattern of obfuscationPatterns) {
-                if (pattern.pattern.test(input)) {
-                    obfuscationScore += 20;
-                    detectedFeatures.push(pattern.name);
-                }
-            }
-            
-            quality.checks.push({
-                name: '混淆特征',
-                passed: obfuscationScore > 0,
-                message: detectedFeatures.length > 0 ? `检测到: ${detectedFeatures.join(', ')}` : '未检测到混淆特征'
-            });
-            
-            // 计算信息熵
-            const charFreq = {};
-            for (const char of input) {
-                charFreq[char] = (charFreq[char] || 0) + 1;
-            }
-            
-            quality.entropy = Object.values(charFreq).reduce((entropy, freq) => {
-                const p = freq / input.length;
-                return entropy - p * Math.log2(p);
-            }, 0);
-            
-            // 计算复杂度
-            const complexityFactors = [
-                input.length > 1000 ? 25 : input.length / 40,
-                uniqueChars > 50 ? 25 : uniqueChars / 2,
-                quality.entropy > 4 ? 25 : quality.entropy * 6.25,
-                obfuscationScore > 60 ? 25 : obfuscationScore / 2.4
-            ];
-            
-            quality.score = Math.round(complexityFactors.reduce((sum, factor) => sum + factor, 0));
-            
-            if (quality.score >= 80) quality.complexity = '高';
-            else if (quality.score >= 60) quality.complexity = '中';
-            else quality.complexity = '低';
-            
-            if (obfuscationScore >= 80) quality.obfuscationLevel = '高度混淆';
-            else if (obfuscationScore >= 40) quality.obfuscationLevel = '中度混淆';
-            else if (obfuscationScore > 0) quality.obfuscationLevel = '轻度混淆';
-            else quality.obfuscationLevel = '无混淆';
-            
-            // 生成建议
-            if (quality.score < 60) {
-                quality.suggestions.push('密文质量较低，建议检查输入内容');
-            }
-            if (lengthCheck.passed === false) {
-                quality.suggestions.push('增加密文长度以提高解密成功率');
-            }
-            if (uniqueChars < 20) {
-                quality.suggestions.push('密文字符多样性不足');
-            }
-            if (quality.entropy < 3) {
-                quality.suggestions.push('信息熵较低，可能包含大量重复内容');
-            }
-            
-            return quality;
-        }
-        
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('token').value = window.appData.token;
-            document.getElementById('repo').value = window.appData.repo;
-            
-            // 保存配置
-            document.getElementById('token').addEventListener('input', function(e) {
-                window.appData.token = e.target.value;
-                localStorage.setItem('github_token', e.target.value);
-            });
-            
-            document.getElementById('repo').addEventListener('input', function(e) {
-                window.appData.repo = e.target.value;
-                localStorage.setItem('repo_name', e.target.value);
-            });
-            
-            // 文件上传事件
-            document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-            
-            // 拖拽上传
-            const fileUpload = document.querySelector('.file-upload');
-            fileUpload.addEventListener('dragover', handleDragOver);
-            fileUpload.addEventListener('dragleave', handleDragLeave);
-            fileUpload.addEventListener('drop', handleDrop);
-            
-            // 输入框变化时自动检测AAEncode
-            document.getElementById('input').addEventListener('input', function() {
-                const input = this.value.trim();
-                if (input.length > 50) {
-                    const detection = detectAAEncode(input);
-                    showAAEncodeIndicator(detection.isAAEncode);
-                } else {
-                    showAAEncodeIndicator(false);
-                }
-            });
-            
-            addLog(`系统初始化完成 v${APP_CONFIG.VERSION} - ${APP_CONFIG.VERSION_NAME}`, 'success');
-            addLog('🎯 v5.5专业：集成专业AADecode插件，支持头部注释保留', 'info');
-        });
-        
-        // 日志
-        function addLog(message, type) {
-            const logs = document.getElementById('logs');
-            const time = new Date().toLocaleTimeString();
-            const div = document.createElement('div');
-            div.className = 'log-' + (type || 'info');
-            div.textContent = time + ' ' + message;
-            logs.appendChild(div);
-            logs.scrollTop = logs.scrollHeight;
-            
-            if (logs.children.length > 50) {
-                logs.removeChild(logs.firstChild);
-            }
-        }
-        
-        // Toast提示
-        function showToast(message, duration = 3000) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), duration);
-        }
-        
-        // 显示结果（带语法高亮）
-        function displayResult(content) {
-            const output = document.getElementById('output');
-            
-            if (!content || content.includes('解密结果将显示在这里')) {
-                output.innerHTML = '<span class="hljs-comment">// 解密结果将显示在这里...</span>';
-                return;
-            }
-            
-            content = content.replace(/<span class="hljs-[^"]*">/g, '').replace(/<\/span>/g, '');
-            
-            if (content.includes('function') || content.includes('var ') || content.includes('let ') || content.includes('const ') || content.includes('{') || content.includes('}')) {
-                output.innerHTML = highlightJS(content);
-            } else {
-                output.textContent = content;
-            }
-        }
-        
-        // 文件选择处理
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                readFile(file);
-            }
-        }
-        
-        // 拖拽处理
-        function handleDragOver(event) {
-            event.preventDefault();
-            event.currentTarget.classList.add('dragover');
-        }
-        
-        function handleDragLeave(event) {
-            event.currentTarget.classList.remove('dragover');
-        }
-        
-        function handleDrop(event) {
-            event.preventDefault();
-            event.currentTarget.classList.remove('dragover');
-            
-            const files = event.dataTransfer.files;
-            if (files.length > 0) {
-                readFile(files[0]);
-            }
-        }
-        
-        // 读取文件
-        function readFile(file) {
-            addLog(`开始读取文件: ${file.name}`, 'info');
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    let content;
-                    
-                    if (e.target.result instanceof ArrayBuffer) {
-                        content = new TextDecoder('utf-8').decode(e.target.result);
-                    } else {
-                        content = e.target.result;
-                    }
-                    
-                    document.getElementById('input').value = content;
-                    showToast(`文件加载成功: ${file.name}`);
-                    addLog(`文件加载成功 (${content.length} 字符)`, 'success');
-                    
-                    // 自动检测AAEncode
-                    setTimeout(() => {
-                        const detection = detectAAEncode(content);
-                        if (detection.isAAEncode) {
-                            showToast(`检测到AAEncode文件！置信度: ${detection.confidence}%`);
-                            showAAEncodeIndicator(true);
-                        }
-                    }, 500);
-                    
-                } catch (error) {
-                    addLog(`文件处理失败: ${error.message}`, 'error');
-                    showToast('文件处理失败');
-                }
-            };
-            
-            reader.onerror = function() {
-                addLog(`文件读取失败: ${file.name}`, 'error');
-                showToast('文件读取失败');
-            };
-            
-            reader.readAsArrayBuffer(file);
-        }
-        
-        // 从剪贴板粘贴
-        async function pasteFromClipboard() {
-            try {
-                const text = await navigator.clipboard.readText();
-                if (text) {
-                    document.getElementById('input').value = text;
-                    showToast('剪贴板内容已粘贴');
-                    addLog('从剪贴板粘贴内容', 'success');
-                    
-                    // 自动检测AAEncode
-                    setTimeout(() => {
-                        const detection = detectAAEncode(text);
-                        if (detection.isAAEncode) {
-                            showToast(`检测到AAEncode代码！置信度: ${detection.confidence}%`);
-                            showAAEncodeIndicator(true);
-                        }
-                    }, 500);
-                } else {
-                    showToast('剪贴板为空');
-                }
-            } catch (error) {
-                addLog('剪贴板访问失败: ' + error.message, 'error');
-                showToast('无法访问剪贴板，请手动粘贴');
-            }
-        }
-        
-        // 加载远程文件
-        async function loadRemoteFile() {
-            const url = document.getElementById('remoteUrl').value.trim();
-            if (!url) {
-                showToast('请输入URL地址');
-                return;
-            }
-            
-            try {
-                addLog(`加载远程文件: ${url}`, 'info');
-                
-                const button = event.target;
-                button.textContent = '加载中...';
-                button.disabled = true;
-                button.classList.add('loading');
-                
-                let content;
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error('Direct fetch failed');
-                    content = await response.text();
-                } catch (e) {
-                    addLog('尝试使用代理服务...', 'info');
-                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-                    const response = await fetch(proxyUrl);
-                    if (!response.ok) throw new Error('Proxy fetch failed');
-                    content = await response.text();
-                }
-                
-                document.getElementById('input').value = content;
-                document.getElementById('remoteUrl').value = '';
-                
-                showToast('远程文件加载成功');
-                addLog(`远程文件加载成功 (${content.length} 字符)`, 'success');
-                
-                // 自动检测AAEncode
-                setTimeout(() => {
-                    const detection = detectAAEncode(content);
-                    if (detection.isAAEncode) {
-                        showToast(`检测到AAEncode文件！置信度: ${detection.confidence}%`);
-                        showAAEncodeIndicator(true);
-                    }
-                }, 500);
-                
-            } catch (error) {
-                addLog('远程文件加载失败: ' + error.message, 'error');
-                showToast('远程文件加载失败: ' + error.message);
-            } finally {
-                const button = document.querySelector('.remote-input button');
-                button.textContent = '加载';
-                button.disabled = false;
-                button.classList.remove('loading');
-            }
-        }
-        
-        // 预处理预览
-        function showPreprocessPreview() {
-            const input = document.getElementById('input').value.trim();
-            if (!input) {
-                showToast('请先输入密文');
-                return;
-            }
-            
-            const processed = preprocessCiphertext(input);
-            const issues = validateCiphertext(processed);
-            
-            const content = `
-                <div style="margin-bottom: 15px;">
-                    <strong>原始长度:</strong> ${input.length} 字符<br>
-                    <strong>处理后长度:</strong> ${processed.length} 字符<br>
-                    <strong>变化:</strong> ${input.length - processed.length > 0 ? '减少' : '增加'} ${Math.abs(input.length - processed.length)} 字符
-                </div>
-                ${issues.length > 0 ? `
-                    <div style="background: rgba(239,68,68,0.2); padding: 10px; border-radius: 6px; margin-bottom: 15px;">
-                        <strong style="color: #ef4444;">⚠️ 发现问题:</strong><br>
-                        ${issues.map(issue => `• ${issue}`).join('<br>')}
-                    </div>
-                ` : '<div style="background: rgba(16,185,129,0.2); padding: 10px; border-radius: 6px; margin-bottom: 15px; color: #10b981;"><strong>✅ 密文质量良好</strong></div>'}
-                <div style="margin-bottom: 15px;">
-                    <strong>处理后的密文:</strong>
-                    <textarea readonly>${processed}</textarea>
-                </div>
-            `;
-            
-            const buttons = `
-                <button onclick="this.closest('.modal').remove()">关闭</button>
-                <button class="success" onclick="
-                    document.getElementById('input').value = \`${processed.replace(/`/g, '\\`')}\`;
-                    this.closest('.modal').remove();
-                    showToast('已应用预处理结果');
-                ">应用处理结果</button>
-            `;
-            
-            createModal('🔍 预处理预览', content, buttons);
-        }
-        
-        // 智能清理输入
-        function cleanInput() {
-            const input = document.getElementById('input').value.trim();
-            if (!input) {
-                showToast('请先输入密文');
-                return;
-            }
-            
-            const processed = preprocessCiphertext(input);
-            document.getElementById('input').value = processed;
-            
-            showToast('智能清理完成');
-            addLog(`清理前: ${input.length} 字符，清理后: ${processed.length} 字符`, 'success');
-        }
-        
-        // 验证输入质量
-        function validateInput() {
-            const input = document.getElementById('input').value.trim();
-            if (!input) {
-                showToast('请先输入密文');
-                return;
-            }
-            
-            const issues = validateCiphertext(input);
-            
-            if (issues.length === 0) {
-                showToast('✅ 密文质量良好');
-                addLog('密文质量检查通过', 'success');
-            } else {
-                showToast('⚠️ 发现 ' + issues.length + ' 个问题');
-                addLog('密文质量问题: ' + issues.join(', '), 'warning');
-            }
-        }
-        
-        function clearInput() {
-            document.getElementById('input').value = '';
-            document.getElementById('remoteUrl').value = '';
-            showAAEncodeIndicator(false);
-            showToast('密文输入已清空');
-            addLog('清空密文输入内容', 'info');
-        }
-        
-        // 验证密文质量
-        function validateCiphertext(text) {
-            const issues = [];
-            
-            // 检查长度
-            if (text.length < 50) {
-                issues.push('密文长度过短');
-            }
-            
-            // 检查AAEncode
-            const aaDetection = detectAAEncode(text);
-            if (aaDetection.isAAEncode) {
-                if (aaDetection.confidence < 70) {
-                    issues.push(`AAEncode特征不够明显 (置信度: ${aaDetection.confidence}%)`);
-                }
-                return issues; // AAEncode有特殊的验证逻辑
-            }
-            
-            // 检查是否包含中文注释
-            if (/[\u4e00-\u9fff]/.test(text)) {
-                issues.push('包含中文字符，可能有注释未清理');
-            }
-            
-            // 检查是否包含明显的注释
-            if (/\/\/|\/\*|\*\//.test(text)) {
-                issues.push('包含注释符号，可能有注释未清理');
-            }
-            
-            // 检查是否包含HTML标签
-            if (/<[^>]+>/.test(text)) {
-                issues.push('包含HTML标签');
-            }
-            
-            // 检查是否包含时间戳
-            if (/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(text)) {
-                issues.push('包含时间戳');
-            }
-            
-            return issues;
-        }
-        
-        // 开始解密（v5.4极简版）
-        async function startDecrypt() {
-            const input = document.getElementById('input').value.trim();
-            
-            if (!input) {
-                showToast('请先输入需要解密的密文');
-                return;
-            }
-            
-            try {
-                addLog('开始解密流程...', 'info');
-                displayResult('');
-                setProgress(0);
-                
-                // 首先检测是否为AAEncode（简单检测）
-                if (input.includes('ﾟ') || input.includes('ω') || input.includes('Д')) {
-                    addLog('检测到AAEncode特征，使用jamtg算法本地解密', 'info');
-                    showAAEncodeIndicator(true);
-                    
-                    const decodeResult = decodeAAEncode(input);
-                    if (decodeResult.success) {
-                        displayResult(decodeResult.result);
-                        showToast('AAEncode解密成功！');
-                        addLog(`AAEncode本地解密完成`, 'success');
-                        setProgress(100);
-                        
-                        document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        return;
-                    } else {
-                        addLog('AAEncode本地解密失败，尝试GitHub Actions', 'warning');
-                    }
-                }
-                
-                // 如果不是AAEncode或AAEncode解密失败，使用GitHub Actions
-                if (!window.appData.token || !window.appData.repo) {
-                    showToast('请先配置 GitHub Token 和仓库地址');
-                    return;
-                }
-                
-                await submitCode(input);
-                await waitForResult();
-                
-            } catch (error) {
-                addLog('解密失败: ' + error.message, 'error');
-                showToast('解密失败: ' + error.message);
-            }
-        }
-        
-        // 提交密文到GitHub input.js
-        async function submitCode(code) {
-            addLog('提交密文到 GitHub input.js...', 'info');
+            addLog('📤 提交代码到GitHub...', 'info');
             
             const url = `https://api.github.com/repos/${window.appData.repo}/contents/input.js`;
             
@@ -2006,10 +1365,9 @@
                 if (checkResp.ok) {
                     const data = await checkResp.json();
                     sha = data.sha;
-                    addLog('检测到已存在的 input.js，将更新', 'info');
                 }
             } catch (e) {
-                addLog('将创建新的 input.js 文件', 'info');
+                // 文件不存在，创建新文件
             }
             
             const payload = {
@@ -2032,96 +1390,57 @@
             
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(`GitHub API 错误: ${error.message}`);
+                throw new Error(`GitHub API错误: ${error.message}`);
             }
             
-            addLog('密文已提交到 input.js，Actions 即将自动触发解密...', 'success');
+            addLog('✅ 代码已提交，等待Actions处理...', 'success');
         }
         
-        // 等待结果
+        /**
+         * 等待GitHub Actions结果
+         */
         async function waitForResult() {
             const startTime = Date.now();
-            const timeout = 60000;
-            
-            window.appData.isChecking = true;
+            const timeout = 60000; // 60秒超时
             
             return new Promise((resolve) => {
                 const checkLoop = async () => {
-                    if (!window.appData.isChecking) {
-                        resolve();
-                        return;
-                    }
-                    
                     const elapsed = Date.now() - startTime;
                     const progress = Math.min((elapsed / timeout) * 100, 100);
                     setProgress(progress);
                     
-                    if (Math.floor(elapsed / 1000) % 6 === 0) {
-                        addLog(`Actions 执行中... (${Math.floor(elapsed / 1000)}秒)`, 'info');
-                    }
-                    
                     if (elapsed >= timeout) {
-                        window.appData.isChecking = false;
-                        addLog('等待60秒超时，尝试获取结果...', 'warning');
-                        
-                        setTimeout(async () => {
-                            const success = await getResult();
-                            if (!success) {
-                                showTimeoutHelp();
-                            }
-                        }, 1000);
-                        
+                        addLog('⏰ 等待超时，尝试获取结果...', 'warning');
+                        const success = await getResult();
+                        if (!success) {
+                            showToast('⏰ GitHub Actions处理中，请稍后点击"获取结果"');
+                        }
                         resolve();
                         return;
                     }
                     
-                    setTimeout(checkLoop, 2000);
+                    setTimeout(checkLoop, 3000);
                 };
                 
                 checkLoop();
             });
         }
         
-        // 设置进度
-        function setProgress(percent) {
-            document.getElementById('progress').style.width = percent + '%';
-        }
-        
-        // 显示超时帮助
-        function showTimeoutHelp() {
-            const helpText = `// ⏰ 等待60秒超时
-//
-// 🔄 GitHub Actions 可能仍在执行解密中，请尝试:
-//
-// 1️⃣ 点击 "📥 读取" 按钮手动获取解密结果
-// 2️⃣ 访问GitHub查看: https://github.com/${window.appData.repo}/blob/main/output.js
-// 3️⃣ 检查Actions状态: https://github.com/${window.appData.repo}/actions
-// 4️⃣ 查看密文输入: https://github.com/${window.appData.repo}/blob/main/input.js
-//
-// 💡 提示: 
-// - 解密流程：密文 → input.js → Actions解密 → output.js
-// - Actions 可能需要1-3分钟才能完成解密
-// - AAEncode代码可直接本地解密，无需等待`;
-            
-            displayResult(helpText);
-            addLog('显示超时帮助信息', 'warning');
-            showToast('超时了！请点击"📥 读取"按钮手动获取结果', 5000);
-        }
-        
-        // 获取结果
+        /**
+         * 获取GitHub解密结果
+         */
         async function getResult() {
-            addLog('正在获取解密结果...', 'info');
+            addLog('📥 获取解密结果...', 'info');
             
             if (!window.appData.token || !window.appData.repo) {
-                showToast('请先配置 GitHub Token 和仓库地址');
+                showToast('请先配置GitHub Token和仓库地址');
                 return false;
             }
             
             const timestamp = Date.now();
             
-            // 方法1: GitHub API
             try {
-                addLog('尝试GitHub API...', 'info');
+                // 尝试GitHub API
                 const apiUrl = `https://api.github.com/repos/${window.appData.repo}/contents/output.js`;
                 const response = await fetch(`${apiUrl}?ref=main&_=${timestamp}`, {
                     headers: {
@@ -2136,23 +1455,25 @@
                     
                     if (content && content.trim().length > 10) {
                         displayResult(content);
-                        addLog('GitHub API获取成功！', 'success');
-                        showToast('解密成功！');
+                        addLog('✅ GitHub API获取成功！', 'success');
+                        showToast('🎉 解密成功！');
                         setProgress(0);
                         
-                        document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        document.getElementById('output').scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
                         return true;
                     }
                 } else if (response.status === 404) {
-                    addLog('output.js 文件不存在', 'warning');
+                    addLog('❌ output.js文件不存在', 'warning');
                 }
             } catch (error) {
                 addLog('GitHub API失败: ' + error.message, 'warning');
             }
             
-            // 方法2: Raw URL
+            // 尝试Raw URL
             try {
-                addLog('尝试Raw URL...', 'info');
                 const rawUrl = `https://raw.githubusercontent.com/${window.appData.repo}/main/output.js?_=${timestamp}`;
                 const response = await fetch(rawUrl);
                 
@@ -2160,49 +1481,24 @@
                     const content = await response.text();
                     if (content && content.trim().length > 10) {
                         displayResult(content);
-                        addLog('Raw URL获取成功！', 'success');
-                        showToast('解密成功！');
+                        addLog('✅ Raw URL获取成功！', 'success');
+                        showToast('🎉 解密成功！');
                         setProgress(0);
-                        
-                        document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
                         return true;
                     }
-                } else if (response.status === 404) {
-                    addLog('Raw URL 404，文件可能还未生成', 'warning');
                 }
             } catch (error) {
                 addLog('Raw URL失败: ' + error.message, 'warning');
             }
             
-            // 方法3: 代理获取
-            try {
-                addLog('尝试代理获取...', 'info');
-                const rawUrl = `https://raw.githubusercontent.com/${window.appData.repo}/main/output.js?_=${timestamp}`;
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rawUrl)}`;
-                const response = await fetch(proxyUrl);
-                
-                if (response.ok) {
-                    const content = await response.text();
-                    if (content && content.trim().length > 10) {
-                        displayResult(content);
-                        addLog('代理获取成功！', 'success');
-                        showToast('解密成功！');
-                        setProgress(0);
-                        
-                        document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        return true;
-                    }
-                }
-            } catch (error) {
-                addLog('代理获取失败: ' + error.message, 'warning');
-            }
-            
-            addLog('获取失败，请稍后重试', 'error');
-            showToast('获取失败，请稍后重试');
+            addLog('❌ 获取失败，请稍后重试', 'error');
+            showToast('❌ 获取失败，请稍后重试');
             return false;
         }
         
-        // Base64解码
+        /**
+         * Base64解码
+         */
         function decodeBase64(base64) {
             try {
                 const binaryString = atob(base64.replace(/\n/g, ''));
@@ -2216,106 +1512,18 @@
             }
         }
         
-        // 复制结果
-        function copyResult() {
-            const output = document.getElementById('output');
-            let content;
-            
-            if (output.innerHTML.includes('<span')) {
-                content = stripHTMLTags(output.innerHTML);
-            } else {
-                content = output.textContent || output.innerText;
-            }
-            
-            if (!content || content.includes('解密结果将显示在这里')) {
-                showToast('没有可复制的内容');
-                return;
-            }
-            
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(content).then(() => {
-                    showToast('结果已复制到剪贴板');
-                    addLog('复制成功', 'success');
-                }).catch(() => {
-                    fallbackCopy(content);
-                });
-            } else {
-                fallbackCopy(content);
-            }
-        }
+        // =============================================
+        // 结果操作函数
+        // =============================================
         
-        // 备用复制方案
-        function fallbackCopy(content) {
-            const textarea = document.createElement('textarea');
-            textarea.value = content;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            showToast('结果已复制到剪贴板');
-            addLog('复制成功（备用方案）', 'success');
-        }
-        
-        // 下载结果
-        function downloadResult() {
-            const output = document.getElementById('output');
-            let content;
-            
-            if (output.innerHTML.includes('<span')) {
-                content = stripHTMLTags(output.innerHTML);
-            } else {
-                content = output.textContent || output.innerText;
-            }
-            
-            if (!content || content.includes('解密结果将显示在这里')) {
-                showToast('没有可下载的内容');
-                return;
-            }
-            
-            try {
-                const blob = new Blob([content], { type: 'text/javascript;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `decrypted_${window.appData.isAAEncodeMode ? 'aaencode_' : ''}${Date.now()}.js`;
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                showToast('文件下载已开始');
-                addLog('下载成功', 'success');
-            } catch (error) {
-                addLog('下载失败: ' + error.message, 'error');
-                showToast('下载失败');
-            }
-        }
-        
-        // 清除所有
-        function clearAll() {
-            window.appData.isChecking = false;
-            
-            document.getElementById('input').value = '';
-            document.getElementById('remoteUrl').value = '';
-            displayResult('');
-            setProgress(0);
-            showAAEncodeIndicator(false);
-            
-            document.getElementById('fileInput').value = '';
-            
-            showToast('已清除所有内容');
-            addLog('清除所有内容', 'info');
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        
-        // 代码美化、统计、验证等功能保持原样...
+        /**
+         * 代码美化
+         */
         function beautifyCode() {
             const output = document.getElementById('output');
-            let content = output.innerHTML.includes('<span') ? stripHTMLTags(output.innerHTML) : output.textContent;
+            let content = output.innerHTML.includes('<span') ? 
+                          stripHTMLTags(output.innerHTML) : 
+                          output.textContent;
             
             if (!content || content.includes('解密结果将显示在这里')) {
                 showToast('请先获取解密结果');
@@ -2325,19 +1533,23 @@
             try {
                 const beautified = beautifyJavaScript(content);
                 displayResult(beautified);
-                showToast('代码美化完成');
+                showToast('🎨 代码美化完成');
                 addLog('代码美化成功', 'success');
             } catch (error) {
-                showToast('代码美化失败: ' + error.message);
+                showToast('❌ 代码美化失败: ' + error.message);
                 addLog('代码美化失败: ' + error.message, 'error');
             }
         }
         
+        /**
+         * JavaScript代码美化
+         */
         function beautifyJavaScript(code) {
             let beautified = code;
             let indentLevel = 0;
             const indent = '    ';
             
+            // 格式化代码
             beautified = beautified.replace(/\s+/g, ' ').trim();
             beautified = beautified.replace(/([{;}])/g, '$1\n');
             beautified = beautified.replace(/([}])/g, '\n$1\n');
@@ -2363,76 +1575,317 @@
             return result.join('\n');
         }
         
-        // 其他功能函数保持不变（showResultAnalysis、showCodeStats、validateResult等）
-        function showResultAnalysis() {
-            showToast('结果分析功能开发中...');
+        /**
+         * 移除HTML标签
+         */
+        function stripHTMLTags(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            return div.textContent || div.innerText || '';
         }
         
-        function showCodeStats() {
-            showToast('代码统计功能开发中...');
-        }
-        
-        function validateResult() {
-            showToast('代码验证功能开发中...');
-        }
-        
-        // 版本检查
-        function checkVersion() {
-            const currentVersion = APP_CONFIG.VERSION;
-            const storedVersion = localStorage.getItem('app_version');
+        /**
+         * 复制结果
+         */
+        function copyResult() {
+            const output = document.getElementById('output');
+            let content;
             
-            if (!storedVersion || storedVersion !== currentVersion) {
-                localStorage.setItem('app_version', currentVersion);
-                
-                if (storedVersion) {
-                    showToast(`已更新到 v${currentVersion}，${APP_CONFIG.UPDATE_NOTES}！`, 5000);
-                    addLog(`版本更新: v${storedVersion} → v${currentVersion}`, 'success');
-                } else {
-                    addLog(`首次使用 v${currentVersion}，欢迎！`, 'success');
-                }
+            if (output.innerHTML.includes('<span')) {
+                content = stripHTMLTags(output.innerHTML);
+            } else {
+                content = output.textContent || output.innerText;
+            }
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                showToast('❌ 没有可复制的内容');
+                return;
+            }
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(content).then(() => {
+                    showToast('📋 结果已复制到剪贴板');
+                    addLog('复制成功', 'success');
+                }).catch(() => {
+                    fallbackCopy(content);
+                });
+            } else {
+                fallbackCopy(content);
             }
         }
         
-        // 键盘快捷键
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault();
-                startDecrypt();
-            } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                downloadResult();
-            } else if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !e.target.matches('input, textarea')) {
-                e.preventDefault();
-                copyResult();
-            } else if (e.key === 'Escape') {
-                e.preventDefault();
-                clearAll();
+        /**
+         * 备用复制方案
+         */
+        function fallbackCopy(content) {
+            const textarea = document.createElement('textarea');
+            textarea.value = content;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('📋 结果已复制到剪贴板');
+            addLog('复制成功（备用方案）', 'success');
+        }
+        
+        /**
+         * 下载结果
+         */
+        function downloadResult() {
+            const output = document.getElementById('output');
+            let content;
+            
+            if (output.innerHTML.includes('<span')) {
+                content = stripHTMLTags(output.innerHTML);
+            } else {
+                content = output.textContent || output.innerText;
             }
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                showToast('❌ 没有可下载的内容');
+                return;
+            }
+            
+            try {
+                const blob = new Blob([content], { type: 'text/javascript;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+                a.href = url;
+                a.download = `decrypted_${window.appData.isAAEncodeMode ? 'aaencode_' : ''}${timestamp}.js`;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showToast('💾 文件下载已开始');
+                addLog('下载成功', 'success');
+            } catch (error) {
+                addLog('下载失败: ' + error.message, 'error');
+                showToast('❌ 下载失败');
+            }
+        }
+        
+        /**
+         * 验证结果
+         */
+        function validateResult() {
+            const output = document.getElementById('output');
+            let content = output.innerHTML.includes('<span') ? 
+                          stripHTMLTags(output.innerHTML) : 
+                          output.textContent;
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                showToast('请先获取解密结果');
+                return;
+            }
+            
+            try {
+                // 简单的JavaScript语法检查
+                new Function(content);
+                showToast('✅ JavaScript语法检查通过');
+                addLog('代码语法验证成功', 'success');
+            } catch (error) {
+                showToast('⚠️ JavaScript语法检查失败: ' + error.message);
+                addLog('代码语法验证失败: ' + error.message, 'warning');
+            }
+        }
+        
+        /**
+         * 清除所有内容
+         */
+        function clearAll() {
+            document.getElementById('input').value = '';
+            displayResult('');
+            setProgress(0);
+            updateDetectionPanel({ isAAEncode: false });
+            
+            showToast('🗑 已清除所有内容');
+            addLog('清除所有内容', 'info');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // =============================================
+        // 文件处理函数
+        // =============================================
+        
+        /**
+         * 处理文件选择
+         */
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                readFile(file);
+            }
+        }
+        
+        /**
+         * 处理拖拽
+         */
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+        
+        function handleDragLeave(event) {
+            event.currentTarget.classList.remove('dragover');
+        }
+        
+        function handleDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                readFile(files[0]);
+            }
+        }
+        
+        /**
+         * 读取文件
+         */
+        function readFile(file) {
+            addLog(`📁 开始读取文件: ${file.name}`, 'info');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let content = e.target.result;
+                    
+                    document.getElementById('input').value = content;
+                    showToast(`📁 文件加载成功: ${file.name}`);
+                    addLog(`文件加载成功 (${content.length} 字符)`, 'success');
+                    
+                    // 自动检测
+                    setTimeout(() => {
+                        const detection = detectAAEncode(content);
+                        updateDetectionPanel(detection);
+                        if (detection.isAAEncode) {
+                            showToast(`🎯 检测到AAEncode文件！置信度: ${detection.confidence}%`);
+                        }
+                    }, 500);
+                    
+                } catch (error) {
+                    addLog(`文件处理失败: ${error.message}`, 'error');
+                    showToast('❌ 文件处理失败');
+                }
+            };
+            
+            reader.onerror = function() {
+                addLog(`文件读取失败: ${file.name}`, 'error');
+                showToast('❌ 文件读取失败');
+            };
+            
+            reader.readAsText(file, 'UTF-8');
+        }
+        
+        // =============================================
+        // 工具函数
+        // =============================================
+        
+        /**
+         * 添加日志
+         */
+        function addLog(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = 'log-' + type;
+            div.textContent = `${time} ${message}`;
+            logs.appendChild(div);
+            logs.scrollTop = logs.scrollHeight;
+            
+            // 限制日志数量
+            if (logs.children.length > 50) {
+                logs.removeChild(logs.firstChild);
+            }
+        }
+        
+        /**
+         * 显示Toast提示
+         */
+        function showToast(message, duration = 3000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), duration);
+        }
+        
+        // =============================================
+        // 初始化和事件绑定
+        // =============================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 恢复保存的配置
+            document.getElementById('token').value = window.appData.token;
+            document.getElementById('repo').value = window.appData.repo;
+            
+            // 保存配置到localStorage
+            document.getElementById('token').addEventListener('input', function(e) {
+                window.appData.token = e.target.value;
+                localStorage.setItem('github_token', e.target.value);
+            });
+            
+            document.getElementById('repo').addEventListener('input', function(e) {
+                window.appData.repo = e.target.value;
+                localStorage.setItem('repo_name', e.target.value);
+            });
+            
+            // 文件上传事件
+            document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+            
+            // 拖拽上传
+            const fileUpload = document.querySelector('.file-upload');
+            fileUpload.addEventListener('dragover', handleDragOver);
+            fileUpload.addEventListener('dragleave', handleDragLeave);
+            fileUpload.addEventListener('drop', handleDrop);
+            
+            // 输入框变化时自动检测
+            document.getElementById('input').addEventListener('input', function() {
+                const input = this.value.trim();
+                if (input.length > 50) {
+                    const detection = detectAAEncode(input);
+                    updateDetectionPanel(detection);
+                } else {
+                    updateDetectionPanel({ isAAEncode: false });
+                }
+            });
+            
+            // 键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    startDecrypt();
+                } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    downloadResult();
+                } else if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !e.target.matches('input, textarea')) {
+                    e.preventDefault();
+                    copyResult();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    clearAll();
+                }
+            });
+            
+            addLog(`🚀 系统初始化完成 v${APP_CONFIG.VERSION}`, 'success');
+            addLog('🎯 专业AADecode插件已加载，支持头部注释保留', 'info');
+            addLog('💡 快捷键: Ctrl+Enter解密, Ctrl+S下载, Ctrl+C复制, Esc清除', 'info');
         });
         
-        // 页面加载完成后检查版本
-        window.addEventListener('load', checkVersion);
-        
-        // 性能监控和错误处理
+        // 错误处理
         window.addEventListener('error', function(e) {
-            addLog('发生错误: ' + e.message, 'error');
+            addLog('❌ 发生错误: ' + e.message, 'error');
             console.error('Global error:', e);
         });
         
         window.addEventListener('unhandledrejection', function(e) {
-            addLog('Promise 错误: ' + e.reason, 'error');
+            addLog('❌ Promise错误: ' + e.reason, 'error');
             console.error('Unhandled promise rejection:', e);
-        });
-        
-        // 网络状态检测
-        window.addEventListener('online', function() {
-            addLog('网络连接已恢复', 'success');
-            showToast('网络连接已恢复');
-        });
-        
-        window.addEventListener('offline', function() {
-            addLog('网络连接已断开', 'warning');
-            showToast('网络连接已断开，AAEncode可离线解密');
         });
     </script>
 </body>
