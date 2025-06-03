@@ -107,6 +107,12 @@
             height: 200px;
             resize: vertical;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+        textarea.drag-over {
+            border-color: #667eea;
+            background-color: #f0f4ff;
+            transform: scale(1.02);
         }
         .btn {
             background: linear-gradient(45deg, #667eea, #764ba2);
@@ -259,7 +265,7 @@
             <div class="section">
                 <h2 class="section-title">📤 密文输入</h2>
                 <div class="input-group">
-                    <textarea id="input" placeholder="请粘贴需要解密的密文代码...&#10;&#10;✅ v5.7 支持自动处理：&#10;- AAEncode混淆代码（🔤完全修复！）&#10;- 混合了注释的密文&#10;- eval包装的代码&#10;- Base64/十六进制编码&#10;- Unicode转义序列&#10;- JavaScript混淆代码&#10;- 时间戳和说明文字&#10;&#10;💡 工具会自动识别格式并选择最佳解密方案"></textarea>
+                    <textarea id="input" placeholder="请粘贴需要解密的密文代码...&#10;&#10;✅ v5.7 支持自动处理：&#10;- AAEncode混淆代码（🔤完全修复！）&#10;- 混合了注释的密文&#10;- eval包装的代码&#10;- Base64/十六进制编码&#10;- Unicode转义序列&#10;- JavaScript混淆代码&#10;- 时间戳和说明文字&#10;&#10;💡 工具会自动识别格式并选择最佳解密方案&#10;🎯 也可以直接拖拽文件到此处"></textarea>
                 </div>
                 
                 <div class="file-options">
@@ -835,7 +841,7 @@ ${input.substring(0, 500)}${input.length > 500 ? '\n// ...(代码过长，已截
         // 文件操作
         // ==============================================
 
-        // 加载文件
+        // 加载文件（增强版）
         function loadFile() {
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
@@ -845,29 +851,80 @@ ${input.substring(0, 500)}${input.length > 500 ? '\n// ...(代码过长，已截
                 return;
             }
             
+            addLog(`开始加载文件: ${file.name}`, 'info');
+            
             const reader = new FileReader();
+            
             reader.onload = function(e) {
-                const content = e.target.result;
-                document.getElementById('input').value = content;
-                showToast(`文件加载成功 (${content.length} 字符)`);
-                addLog(`文件加载成功: ${file.name} (${content.length} 字符)`, 'success');
-                
-                // 自动检测AAEncode
-                const detection = detectAAEncode(content);
-                if (detection.isAAEncode) {
-                    addLog(`检测到AAEncode格式: 置信度 ${detection.confidence}%, 特征字符占比 ${Math.round(detection.density * 100)}%`, 'success');
-                    showAAEncodeIndicator(true);
-                } else {
-                    showAAEncodeIndicator(false);
+                try {
+                    const content = e.target.result;
+                    
+                    if (!content) {
+                        showToast('文件内容为空');
+                        addLog('文件内容为空', 'warning');
+                        return;
+                    }
+                    
+                    // 设置到输入框
+                    const inputElement = document.getElementById('input');
+                    inputElement.value = content;
+                    
+                    showToast(`文件加载成功 (${content.length} 字符)`);
+                    addLog(`文件加载成功: ${file.name} (${content.length} 字符)`, 'success');
+                    addLog(`文件类型: ${file.type || '未知'}`, 'info');
+                    addLog(`文件大小: ${file.size} bytes`, 'info');
+                    
+                    // 显示文件内容预览
+                    const preview = content.substring(0, 100);
+                    addLog(`内容预览: ${preview}${content.length > 100 ? '...' : ''}`, 'info');
+                    
+                    // 自动检测AAEncode
+                    const detection = detectAAEncode(content);
+                    if (detection.isAAEncode) {
+                        addLog(`✅ 检测到AAEncode格式: 置信度 ${detection.confidence}%, 特征字符占比 ${Math.round(detection.density * 100)}%`, 'success');
+                        showAAEncodeIndicator(true);
+                        showToast('检测到AAEncode格式！');
+                    } else {
+                        addLog(`❌ 未检测到AAEncode格式: 置信度 ${detection.confidence}%`, 'info');
+                        showAAEncodeIndicator(false);
+                    }
+                    
+                    // 聚焦到输入框
+                    inputElement.focus();
+                    
+                } catch (error) {
+                    showToast('文件处理失败');
+                    addLog('文件处理失败: ' + error.message, 'error');
                 }
             };
             
-            reader.onerror = function() {
+            reader.onerror = function(error) {
                 showToast('文件读取失败');
-                addLog('文件读取失败', 'error');
+                addLog('文件读取失败: ' + error, 'error');
             };
             
-            reader.readAsText(file);
+            reader.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percent = (e.loaded / e.total) * 100;
+                    if (percent < 100) {
+                        addLog(`文件读取进度: ${Math.round(percent)}%`, 'info');
+                    }
+                }
+            };
+            
+            // 尝试不同的编码方式读取
+            try {
+                // 首先尝试UTF-8
+                reader.readAsText(file, 'UTF-8');
+            } catch (error) {
+                addLog('UTF-8读取失败，尝试默认编码', 'warning');
+                try {
+                    reader.readAsText(file);
+                } catch (error2) {
+                    addLog('文件读取完全失败: ' + error2.message, 'error');
+                    showToast('文件读取失败，请检查文件格式');
+                }
+            }
         }
 
         // 复制结果
@@ -1005,6 +1062,94 @@ ${input.substring(0, 500)}${input.length > 500 ? '\n// ...(代码过长，已截
                     }
                 }
             });
+            
+            // 添加拖拽上传功能
+            setupDragAndDrop();
+        });
+        
+        // 设置拖拽上传
+        function setupDragAndDrop() {
+            const inputElement = document.getElementById('input');
+            
+            // 防止浏览器默认行为
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                inputElement.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            // 高亮拖拽区域
+            ['dragenter', 'dragover'].forEach(eventName => {
+                inputElement.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                inputElement.addEventListener(eventName, unhighlight, false);
+            });
+            
+            // 处理文件拖拽
+            inputElement.addEventListener('drop', handleDrop, false);
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            function highlight(e) {
+                inputElement.classList.add('drag-over');
+            }
+            
+            function unhighlight(e) {
+                inputElement.classList.remove('drag-over');
+            }
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    const file = files[0];
+                    addLog(`拖拽文件: ${file.name}`, 'info');
+                    
+                    // 直接处理拖拽的文件
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const content = e.target.result;
+                            
+                            if (!content) {
+                                showToast('文件内容为空');
+                                return;
+                            }
+                            
+                            inputElement.value = content;
+                            showToast(`文件加载成功 (${content.length} 字符)`);
+                            addLog(`拖拽文件加载成功: ${file.name} (${content.length} 字符)`, 'success');
+                            
+                            // 自动检测AAEncode
+                            const detection = detectAAEncode(content);
+                            if (detection.isAAEncode) {
+                                addLog(`✅ 检测到AAEncode格式: 置信度 ${detection.confidence}%`, 'success');
+                                showAAEncodeIndicator(true);
+                                showToast('检测到AAEncode格式！');
+                            } else {
+                                showAAEncodeIndicator(false);
+                            }
+                            
+                        } catch (error) {
+                            showToast('文件处理失败');
+                            addLog('拖拽文件处理失败: ' + error.message, 'error');
+                        }
+                    };
+                    
+                    reader.onerror = function() {
+                        showToast('拖拽文件读取失败');
+                        addLog('拖拽文件读取失败', 'error');
+                    };
+                    
+                    reader.readAsText(file, 'UTF-8');
+                }
+            }
+        }
         });
 
         // 键盘快捷键支持
