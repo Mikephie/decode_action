@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v5.4 - AAEncode极简版</title>
+    <title>羊毛助手 v5.5 - AAEncode专业版</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -578,7 +578,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>羊毛助手 <span class="version">v5.4</span><span id="aaencodeIndicator" class="aaencode-indicator hidden">AAEncode</span></h1>
+        <h1>羊毛助手 <span class="version">v5.5</span><span id="aaencodeIndicator" class="aaencode-indicator hidden">AAEncode</span></h1>
         
         <!-- GitHub 配置 -->
         <div class="section">
@@ -600,7 +600,7 @@
                 3. 仓库地址格式：用户名/仓库名<br>
                 4. 确保仓库已集成 <a href="https://github.com/smallfawn/decode_action" target="_blank">decode_action</a> 解密框架<br>
                 5. <strong>解密流程：</strong>密文 → input.js → GitHub Actions → output.js<br>
-                6. <strong>v5.4极简：</strong>直接使用jamtg原始算法，极简高效
+                6. <strong>v5.5专业：</strong>集成专业AADecode插件，支持头部注释保留
             </div>
         </div>
         
@@ -643,7 +643,7 @@
         <!-- 代码输入 -->
         <div class="section">
             <div class="section-title">📝 密文输入</div>
-            <textarea id="input" placeholder="请粘贴需要解密的密文代码...&#10;&#10;✅ v5.4 支持自动处理：&#10;- AAEncode混淆代码（🔤jamtg原始算法！）&#10;- 混合了注释的密文&#10;- eval包装的代码&#10;- Base64/十六进制编码&#10;- Unicode转义序列&#10;- JavaScript混淆代码&#10;- 时间戳和说明文字&#10;&#10;💡 工具会自动识别格式并选择最佳解密方案"></textarea>
+            <textarea id="input" placeholder="请粘贴需要解密的密文代码...&#10;&#10;✅ v5.5 支持自动处理：&#10;- AAEncode混淆代码（🔤专业插件，保留头部注释！）&#10;- 混合了注释的密文&#10;- eval包装的代码&#10;- Base64/十六进制编码&#10;- Unicode转义序列&#10;- JavaScript混淆代码&#10;- 时间戳和说明文字&#10;&#10;💡 工具会自动识别格式并选择最佳解密方案"></textarea>
             
             <div class="file-options" style="margin-top: 8px;">
                 <div class="file-option" onclick="showPreprocessPreview()">
@@ -724,9 +724,9 @@
     <script>
         // 应用配置
         const APP_CONFIG = {
-            VERSION: '5.4',
-            VERSION_NAME: 'AAEncode极简版',
-            UPDATE_NOTES: '直接使用jamtg原始算法，极简高效'
+            VERSION: '5.5',
+            VERSION_NAME: 'AAEncode专业版',
+            UPDATE_NOTES: '集成专业AADecode插件，支持头部注释保留'
         };
         
         // 全局变量
@@ -739,46 +739,138 @@
         };
         
         // ==============================================
-        // jamtg原始AAEncode解密算法
+        // 专业AADecode插件（基于你提供的代码）
         // ==============================================
         
-        // jamtg原始算法 - 完全照搬
-        function aadecode(t) {
-            t = t.replace(/\)\s*\('_'\)/g, "");
-            t = t.replace(/\(ﾟДﾟ\)\s*\['_'\]\s*\(/g, "return ");
-            var x = new Function(t);
-            var r = x();
-            return r;
-        }
+        // 初始化AADecode插件
+        (function() {
+            // 模拟Node.js环境
+            const module = { exports: {} };
+            
+            /**
+             * 识别并提取AADecode编码之前的注释和配置信息
+             */
+            function extractHeader(code) {
+                const aaStartIndex = code.search(/ﾟωﾟﾉ\s*=|ﾟдﾟ\s*=|ﾟДﾟ\s*=|ﾟΘﾟ\s*=/);
+                
+                if (aaStartIndex > 0) {
+                    const header = code.substring(0, aaStartIndex).trim();
+                    const encodedPart = code.substring(aaStartIndex);
+                    return { header, encodedPart };
+                }
+                
+                return { header: '', encodedPart: code };
+            }
+            
+            /**
+             * 专业AADecode解码函数
+             */
+            function plugin(code) {
+                try {
+                    const { header, encodedPart } = extractHeader(code);
+                    
+                    // 检查是否为AA编码内容
+                    if (!(encodedPart.includes('ﾟДﾟ') || encodedPart.includes('(ﾟΘﾟ)') || 
+                          encodedPart.includes('ﾟωﾟﾉ') || encodedPart.includes('ﾟдﾟ'))) {
+                        return null;
+                    }
+                    
+                    // 应用AADecode解码逻辑
+                    let decodePart = encodedPart;
+                    decodePart = decodePart.replace(") ('_')", "");
+                    decodePart = decodePart.replace("(ﾟДﾟ) ['_'] (", "return ");
+                    
+                    // 创建函数并执行解码
+                    const x = new Function(decodePart);
+                    const decodedContent = x();
+                    
+                    // 如果存在头部，则保留并拼接
+                    if (header) {
+                        return `${header}\n\n${decodedContent}`;
+                    }
+                    
+                    return decodedContent;
+                } catch (error) {
+                    console.error('AADecode解码错误:', error);
+                    return null;
+                }
+            }
+            
+            module.exports = plugin;
+            
+            // 注册全局AADecode插件
+            window.DecodePlugins = window.DecodePlugins || {};
+            window.DecodePlugins.aadecode = {
+                detect: function(code) {
+                    return code.includes('ﾟωﾟﾉ') || code.includes('ﾟДﾟ') || 
+                           code.includes('ﾟдﾟ') || code.includes('ﾟΘﾟ');
+                },
+                plugin: function(code) {
+                    try {
+                        const result = module.exports(code);
+                        return result !== null ? result : code;
+                    } catch (e) {
+                        console.error("AADecode插件错误:", e);
+                        return code;
+                    }
+                }
+            };
+            
+            // 保存插件函数到全局
+            window.professionalAADecode = module.exports;
+        })();
         
-        // 极简AAEncode解密
+        // 专业AAEncode解密函数
         function decodeAAEncode(code) {
             try {
-                addLog('使用jamtg原始算法解密...', 'info');
+                addLog('使用专业AADecode插件解密...', 'info');
                 
-                // 直接调用jamtg的aadecode
-                const result = aadecode(code);
+                // 使用专业插件
+                const result = window.professionalAADecode(code);
                 
-                if (result !== undefined && result !== null) {
+                if (result !== null && result !== undefined) {
                     const resultStr = String(result);
-                    addLog('jamtg算法解密成功！', 'success');
+                    addLog('专业AADecode插件解密成功！', 'success');
                     return {
                         success: true,
-                        method: 'jamtg原始算法',
+                        method: '专业AADecode插件',
                         result: resultStr,
                         warning: null
                     };
                 } else {
-                    throw new Error('jamtg算法返回空结果');
+                    throw new Error('专业插件返回空结果');
                 }
                 
             } catch (error) {
-                addLog('jamtg算法解密失败: ' + error.message, 'error');
+                addLog('专业AADecode插件解密失败: ' + error.message, 'error');
+                
+                // 备用：尝试简单的jamtg算法
+                try {
+                    addLog('尝试备用jamtg算法...', 'info');
+                    let t = code;
+                    t = t.replace(/\)\s*\('_'\)/g, "");
+                    t = t.replace(/\(ﾟДﾟ\)\s*\['_'\]\s*\(/g, "return ");
+                    const x = new Function(t);
+                    const r = x();
+                    
+                    if (r !== null && r !== undefined) {
+                        addLog('备用jamtg算法解密成功！', 'success');
+                        return {
+                            success: true,
+                            method: '备用jamtg算法',
+                            result: String(r),
+                            warning: '使用备用算法解密'
+                        };
+                    }
+                } catch (e2) {
+                    addLog('备用算法也失败: ' + e2.message, 'error');
+                }
+                
                 return {
                     success: false,
-                    method: 'jamtg算法失败',
+                    method: '解密失败',
                     result: null,
-                    error: 'jamtg算法解密失败: ' + error.message
+                    error: 'AAEncode解密失败: ' + error.message
                 };
             }
         }
@@ -1529,7 +1621,7 @@
             });
             
             addLog(`系统初始化完成 v${APP_CONFIG.VERSION} - ${APP_CONFIG.VERSION_NAME}`, 'success');
-            addLog('⚡ v5.4极简：直接使用jamtg原始算法，简单粗暴有效', 'info');
+            addLog('🎯 v5.5专业：集成专业AADecode插件，支持头部注释保留', 'info');
         });
         
         // 日志
@@ -1848,7 +1940,7 @@
             return issues;
         }
         
-        // 开始解密（增强版）
+        // 开始解密（v5.4极简版）
         async function startDecrypt() {
             const input = document.getElementById('input').value.trim();
             
@@ -1862,10 +1954,9 @@
                 displayResult('');
                 setProgress(0);
                 
-                // 首先检测是否为AAEncode
-                const aaDetection = detectAAEncode(input);
-                if (aaDetection.isAAEncode) {
-                    addLog(`检测到AAEncode格式，使用本地解密 (置信度: ${aaDetection.confidence}%)`, 'info');
+                // 首先检测是否为AAEncode（简单检测）
+                if (input.includes('ﾟ') || input.includes('ω') || input.includes('Д')) {
+                    addLog('检测到AAEncode特征，使用jamtg算法本地解密', 'info');
                     showAAEncodeIndicator(true);
                     
                     const decodeResult = decodeAAEncode(input);
@@ -1875,7 +1966,6 @@
                         addLog(`AAEncode本地解密完成`, 'success');
                         setProgress(100);
                         
-                        // 滚动到结果区域
                         document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
                         return;
                     } else {
@@ -1889,10 +1979,7 @@
                     return;
                 }
                 
-                // 提交密文到 input.js
                 await submitCode(input);
-                
-                // 等待 Actions 执行并获取 output.js 结果
                 await waitForResult();
                 
             } catch (error) {
