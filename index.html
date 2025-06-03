@@ -608,6 +608,12 @@
                 <div class="file-option" onclick="showQualityAnalysis()">
                     📊<br>质量分析
                 </div>
+                <div class="file-option" onclick="showBatchProcessor()">
+                    📦<br>批量处理
+                </div>
+                <div class="file-option" onclick="showTemplateLibrary()">
+                    📚<br>模板库
+                </div>
             </div>
             <input type="file" id="cameraInput" class="hidden" accept="image/*" capture="environment">
             
@@ -626,11 +632,11 @@
                 <div class="file-option" onclick="showPreprocessPreview()">
                     🔍<br>预处理预览
                 </div>
-                <div class="file-option" onclick="cleanInput()">
-                    🧹<br>智能清理
+                <div class="file-option" onclick="autoCleanMixed()">
+                    🧹<br>混合清理
                 </div>
-                <div class="file-option" onclick="validateInput()">
-                    ✅<br>质量检查
+                <div class="file-option" onclick="extractCipherOnly()">
+                    ✂️<br>提取密文
                 </div>
                 <div class="file-option" onclick="clearInput()">
                     🗑<br>清空输入
@@ -658,8 +664,8 @@
                 <div class="file-option" onclick="showCodeStats()">
                     📈<br>代码统计
                 </div>
-                <div class="file-option" onclick="validateResult()">
-                    ✅<br>代码验证
+                <div class="file-option" onclick="exportResults()">
+                    📤<br>导出结果
                 </div>
             </div>
         </div>
@@ -693,6 +699,11 @@
                 <div class="btn-text">清除</div>
             </button>
         </div>
+    </div>
+    
+    <!-- AI 助手浮动按钮 -->
+    <div class="ai-assistant" onclick="showSmartSuggestions()" title="AI 智能助手">
+        🤖
     </div>
     
     <!-- Toast -->
@@ -1537,6 +1548,10 @@
             document.getElementById('token').value = window.appData.token;
             document.getElementById('repo').value = window.appData.repo;
             
+            // 应用保存的主题
+            const savedTheme = localStorage.getItem('advanced_theme') || 'default';
+            applyTheme(savedTheme);
+            
             // 保存配置
             document.getElementById('token').addEventListener('input', function(e) {
                 window.appData.token = e.target.value;
@@ -1558,8 +1573,210 @@
             fileUpload.addEventListener('dragleave', handleDragLeave);
             fileUpload.addEventListener('drop', handleDrop);
             
-            addLog('系统初始化完成 v4.3 - 修复版，已添加高级分析功能', 'success');
+            // 智能提示
+            setupSmartHints();
+            
+            addLog('系统初始化完成 v4.3 - 增强版，已添加AI智能助手', 'success');
+            
+            // 检查是否有密文输入，显示AI建议
+            setTimeout(() => {
+                const aiButton = document.querySelector('.ai-assistant');
+                if (aiButton) {
+                    aiButton.classList.add('pulse');
+                    setTimeout(() => aiButton.classList.remove('pulse'), 3000);
+                }
+            }, 2000);
         });
+        
+        // 设置智能提示
+        function setupSmartHints() {
+            const inputArea = document.getElementById('input');
+            
+            inputArea.addEventListener('paste', function() {
+                setTimeout(() => {
+                    const content = this.value.trim();
+                    if (content.length > 100) {
+                        // 如果粘贴了内容，2秒后显示AI建议
+                        setTimeout(() => {
+                            if (document.getElementById('input').value.trim() === content) {
+                                showToast('💡 检测到新内容，点击AI助手获取智能建议', 4000);
+                                const aiButton = document.querySelector('.ai-assistant');
+                                aiButton.classList.add('pulse');
+                                setTimeout(() => aiButton.classList.remove('pulse'), 4000);
+                            }
+                        }, 2000);
+                    }
+                }, 100);
+            });
+            
+            // 输入时的智能提示
+            let inputTimer;
+            inputArea.addEventListener('input', function() {
+                clearTimeout(inputTimer);
+                inputTimer = setTimeout(() => {
+                    const content = this.value.trim();
+                    if (content.length > 500) {
+                        // 检查是否需要清理
+                        if (/\/\/|\/\*/.test(content) || /(?:var|let|const)\s+\w+\s*=/.test(content)) {
+                            showToast('💡 检测到可能需要清理的内容', 3000);
+                        }
+                    }
+                }, 2000);
+            });
+        }
+        
+        // 智能监控解密状态
+        function monitorDecryptionStatus() {
+            if (window.appData.isChecking) {
+                // 每30秒显示一次进度提示
+                const statusTimer = setInterval(() => {
+                    if (!window.appData.isChecking) {
+                        clearInterval(statusTimer);
+                        return;
+                    }
+                    
+                    showToast('解密进行中...您可以继续其他操作', 2000);
+                }, 30000);
+            }
+        }
+        
+        // 增强的 getResult 函数，添加智能重试
+        const originalGetResult = getResult;
+        window.getResult = async function() {
+            const settings = getAdvancedSettings();
+            let success = false;
+            
+            for (let i = 0; i < settings.retries; i++) {
+                if (i > 0) {
+                    addLog(`第 ${i + 1} 次重试获取结果...`, 'info');
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // 等待2秒
+                }
+                
+                success = await originalGetResult();
+                if (success) break;
+            }
+            
+            if (!success && settings.retries > 1) {
+                addLog(`重试 ${settings.retries} 次后仍然失败`, 'error');
+                showToast('多次重试失败，请检查网络连接或稍后再试');
+            }
+            
+            return success;
+        };
+        
+        // 智能错误恢复
+        function handleSmartErrorRecovery(error) {
+            addLog(`智能错误恢复: ${error.message}`, 'warning');
+            
+            // 根据错误类型提供建议
+            if (error.message.includes('GitHub')) {
+                showToast('GitHub连接失败，请检查Token和仓库配置', 5000);
+            } else if (error.message.includes('timeout')) {
+                showToast('请求超时，建议在高级设置中增加超时时间', 5000);
+            } else if (error.message.includes('404')) {
+                showToast('文件未找到，可能Actions还在执行中', 5000);
+            } else {
+                showToast('遇到未知错误，请查看日志详情', 3000);
+            }
+        }
+        
+        // 性能优化：防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // 优化版的复制功能
+        const debouncedCopy = debounce(copyResult, 300);
+        
+        // 自动保存草稿功能
+        function setupAutoSave() {
+            const inputArea = document.getElementById('input');
+            const autoSave = debounce(() => {
+                const content = inputArea.value.trim();
+                if (content.length > 50) {
+                    localStorage.setItem('draft_content', content);
+                    localStorage.setItem('draft_timestamp', Date.now().toString());
+                }
+            }, 5000);
+            
+            inputArea.addEventListener('input', autoSave);
+            
+            // 启动时检查是否有草稿
+            const draftContent = localStorage.getItem('draft_content');
+            const draftTimestamp = localStorage.getItem('draft_timestamp');
+            
+            if (draftContent && draftTimestamp) {
+                const age = Date.now() - parseInt(draftTimestamp);
+                const ageHours = age / (1000 * 60 * 60);
+                
+                if (ageHours < 24 && !inputArea.value.trim()) {
+                    if (confirm(`发现 ${Math.round(ageHours * 10) / 10} 小时前的草稿内容，是否恢复？\n\n预览: ${draftContent.substring(0, 100)}...`)) {
+                        inputArea.value = draftContent;
+                        showToast('草稿已恢复');
+                        addLog('恢复草稿内容', 'success');
+                    }
+                }
+            }
+        }
+        
+        // 启动自动保存
+        setTimeout(setupAutoSave, 1000);
+        
+        // 提升用户体验的细节功能
+        function enhanceUserExperience() {
+            // 添加加载状态指示
+            const originalStartDecrypt = startDecrypt;
+            window.startDecrypt = async function() {
+                const button = event?.target || document.querySelector('.btn-blue');
+                const originalText = button?.innerHTML;
+                
+                if (button) {
+                    button.innerHTML = '<div class="btn-icon loading">⏳</div><div class="btn-text">解密中...</div>';
+                    button.disabled = true;
+                }
+                
+                try {
+                    await originalStartDecrypt();
+                } finally {
+                    if (button) {
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    }
+                }
+            };
+            
+            // 添加结果获取状态指示
+            const originalGetResultFunc = window.getResult;
+            window.getResult = async function() {
+                const button = document.querySelector('.btn-green');
+                const originalText = button?.innerHTML;
+                
+                if (button) {
+                    button.innerHTML = '<div class="btn-icon loading">📥</div><div class="btn-text">读取中...</div>';
+                    button.disabled = true;
+                }
+                
+                try {
+                    return await originalGetResultFunc();
+                } finally {
+                    if (button) {
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    }
+                }
+            };
+        }
+        
+        // 启动体验增强
+        setTimeout(enhanceUserExperience, 500);
         
         // 日志
         function addLog(message, type) {
@@ -1788,7 +2005,199 @@
             createModal('🔍 预处理预览', content, buttons);
         }
         
-        // 智能清理输入
+        // 自动清理混合内容
+        function autoCleanMixed() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入内容');
+                return;
+            }
+            
+            const cleaned = cleanMixedContent(input);
+            document.getElementById('input').value = cleaned;
+            
+            showToast('混合内容清理完成');
+            addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
+        }
+        
+        // 混合内容清理算法
+        function cleanMixedContent(input) {
+            addLog('开始清理混合内容...', 'info');
+            
+            let lines = input.split('\n');
+            let cleanedLines = [];
+            let foundCipher = false;
+            
+            // 第一遍：找到明显的密文行
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                // 跳过空行
+                if (!line) continue;
+                
+                // 跳过明显的注释行
+                if (line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) {
+                    continue;
+                }
+                
+                // 跳过明显的明文变量声明
+                if (/^(?:var|let|const)\s+\w+\s*=\s*['"`][^'"`]{1,100}['"`]\s*;?\s*$/.test(line)) {
+                    addLog(`跳过明文变量: ${line.substring(0, 50)}...`, 'info');
+                    continue;
+                }
+                
+                // 跳过简单的赋值语句
+                if (/^\w+\s*=\s*['"`][^'"`]{1,100}['"`]\s*;?\s*$/.test(line)) {
+                    addLog(`跳过简单赋值: ${line.substring(0, 50)}...`, 'info');
+                    continue;
+                }
+                
+                // 跳过调试语句
+                if (/^(?:console\.|alert\(|document\.)/.test(line)) {
+                    addLog(`跳过调试语句: ${line.substring(0, 50)}...`, 'info');
+                    continue;
+                }
+                
+                // 检查是否是密文行
+                let cipherScore = 0;
+                
+                // 密文特征评分
+                if (line.includes('eval(')) cipherScore += 50;
+                if (line.includes('function(')) cipherScore += 30;
+                if (line.includes('return ')) cipherScore += 20;
+                if (/[a-zA-Z0-9]{50,}/.test(line)) cipherScore += 30;
+                if (line.includes('String.fromCharCode')) cipherScore += 40;
+                if (/\b_0x[a-f0-9]+/i.test(line)) cipherScore += 35;
+                if (line.length > 200) cipherScore += 25;
+                if (/\(function\s*\(/.test(line)) cipherScore += 35;
+                
+                // 如果评分高，认为是密文
+                if (cipherScore >= 50 || (line.length > 500 && cipherScore >= 20)) {
+                    cleanedLines.push(line);
+                    foundCipher = true;
+                    addLog(`发现密文行 (评分: ${cipherScore}, 长度: ${line.length})`, 'success');
+                } else if (cipherScore > 0) {
+                    addLog(`可疑行 (评分: ${cipherScore}): ${line.substring(0, 100)}...`, 'warning');
+                }
+            }
+            
+            // 如果没找到明显的密文，尝试更宽松的条件
+            if (!foundCipher) {
+                addLog('未找到明显密文，使用宽松条件重新分析...', 'warning');
+                
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed.length > 100 && !trimmed.startsWith('//')) {
+                        cleanedLines.push(trimmed);
+                    }
+                }
+            }
+            
+            const result = cleanedLines.join('\n').trim();
+            addLog(`清理完成，保留 ${cleanedLines.length} 行内容`, 'success');
+            
+            return result;
+        }
+        
+        // 仅提取密文
+        function extractCipherOnly() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入内容');
+                return;
+            }
+            
+            const extracted = extractPureCipher(input);
+            
+            if (extracted !== input) {
+                document.getElementById('input').value = extracted;
+                showToast('密文提取完成');
+                addLog(`提取前: ${input.length} 字符，提取后: ${extracted.length} 字符`, 'success');
+            } else {
+                showToast('未检测到需要提取的密文');
+                addLog('内容已经是纯密文或无法识别密文模式', 'info');
+            }
+        }
+        
+        // 纯密文提取算法
+        function extractPureCipher(input) {
+            // 优先级顺序的密文模式
+            const extractors = [
+                // 1. eval包装（最高优先级）
+                {
+                    name: 'eval包装',
+                    pattern: /eval\s*\(\s*(['"`])((?:\\.|(?!\1)[^\\])*?)\1\s*\)/s,
+                    extract: (match) => match[2]
+                },
+                // 2. eval + 函数
+                {
+                    name: 'eval函数',
+                    pattern: /eval\s*\(\s*(function\s*\([^)]*\)[\s\S]*?\([^)]*\))\s*\)/s,
+                    extract: (match) => match[1]
+                },
+                // 3. Function构造器
+                {
+                    name: 'Function构造器',
+                    pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\.|(?!\1)[^\\])*?)\1\s*\)/s,
+                    extract: (match) => match[2]
+                },
+                // 4. 自执行函数
+                {
+                    name: 'IIFE',
+                    pattern: /(\(function\s*\([^)]*\)\s*\{[\s\S]*?\}\s*\([^)]*\))/s,
+                    extract: (match) => match[1]
+                },
+                // 5. 完整函数定义
+                {
+                    name: '函数定义',
+                    pattern: /(function\s*\([^)]*\)\s*\{[\s\S]*?\}[\s\S]*?\([^)]*\))/s,
+                    extract: (match) => match[1]
+                }
+            ];
+            
+            // 按优先级尝试提取
+            for (const extractor of extractors) {
+                const match = input.match(extractor.pattern);
+                if (match) {
+                    const extracted = extractor.extract(match);
+                    if (extracted && extracted.length > 50) {
+                        addLog(`使用${extractor.name}模式提取密文 (${extracted.length}字符)`, 'success');
+                        return extracted;
+                    }
+                }
+            }
+            
+            // 如果没有匹配到模式，查找最长的疑似密文行
+            const lines = input.split('\n');
+            let longestCipherLine = '';
+            
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (trimmed.length > longestCipherLine.length && 
+                    trimmed.length > 200 && 
+                    !trimmed.startsWith('//') &&
+                    !trimmed.startsWith('/*')) {
+                    
+                    // 简单验证是否像密文
+                    const cipherLike = /[a-zA-Z0-9]{20,}/.test(trimmed) || 
+                                      trimmed.includes('function') || 
+                                      trimmed.includes('eval');
+                    
+                    if (cipherLike) {
+                        longestCipherLine = trimmed;
+                    }
+                }
+            }
+            
+            if (longestCipherLine) {
+                addLog(`提取最长疑似密文行 (${longestCipherLine.length}字符)`, 'success');
+                return longestCipherLine;
+            }
+            
+            return input; // 如果都失败，返回原始输入
+        }
+        
+        // 智能清理输入（保留原有功能）
         function cleanInput() {
             const input = document.getElementById('input').value.trim();
             if (!input) {
@@ -1803,7 +2212,7 @@
             addLog(`清理前: ${input.length} 字符，清理后: ${processed.length} 字符`, 'success');
         }
         
-        // 验证输入质量
+        // 验证输入质量 - 增强版
         function validateInput() {
             const input = document.getElementById('input').value.trim();
             if (!input) {
@@ -1811,15 +2220,737 @@
                 return;
             }
             
-            const issues = validateCiphertext(input);
+            const validation = validateCiphertextAdvanced(input);
             
-            if (issues.length === 0) {
-                showToast('✅ 密文质量良好');
-                addLog('密文质量检查通过', 'success');
+            const content = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">
+                        ${validation.overall >= 80 ? '🟢' : validation.overall >= 60 ? '🟡' : '🔴'}
+                    </div>
+                    <div style="font-size: 1.2rem; font-weight: bold;">
+                        密文质量评分: ${validation.overall}/100
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: ${validation.length.score >= 80 ? '#10b981' : validation.length.score >= 60 ? '#f59e0b' : '#ef4444'}">${validation.length.score}</div>
+                        <div class="stat-label">长度评分</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: ${validation.pattern.score >= 80 ? '#10b981' : validation.pattern.score >= 60 ? '#f59e0b' : '#ef4444'}">${validation.pattern.score}</div>
+                        <div class="stat-label">模式评分</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: ${validation.entropy.score >= 80 ? '#10b981' : validation.entropy.score >= 60 ? '#f59e0b' : '#ef4444'}">${validation.entropy.score}</div>
+                        <div class="stat-label">复杂度评分</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: ${validation.clean.score >= 80 ? '#10b981' : validation.clean.score >= 60 ? '#f59e0b' : '#ef4444'}">${validation.clean.score}</div>
+                        <div class="stat-label">纯净度评分</div>
+                    </div>
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>检测结果:</strong><br>
+                    ${validation.detectedType ? `• 检测类型: ${validation.detectedType}<br>` : ''}
+                    ${validation.features.length > 0 ? `• 检测特征: ${validation.features.join(', ')}<br>` : ''}
+                    ${validation.warnings.length > 0 ? `• ⚠️ 警告: ${validation.warnings.join(', ')}<br>` : ''}
+                </div>
+                
+                ${validation.recommendations.length > 0 ? `
+                    <div style="background: rgba(59,130,246,0.2); padding: 10px; border-radius: 6px; margin: 15px 0;">
+                        <strong style="color: #3b82f6;">💡 建议:</strong><br>
+                        ${validation.recommendations.map(r => `• ${r}`).join('<br>')}
+                    </div>
+                ` : ''}
+                
+                <div style="background: rgba(16,185,129,0.2); padding: 10px; border-radius: 6px; margin: 15px 0;">
+                    <strong style="color: #10b981;">✅ 解密成功率预估: ${validation.successRate}%</strong>
+                </div>
+            `;
+            
+            const buttons = `
+                <button onclick="this.closest('.modal').remove()">关闭</button>
+                ${validation.overall < 70 ? `
+                    <button class="success" onclick="this.closest('.modal').remove(); autoOptimizeInput();">
+                        自动优化
+                    </button>
+                ` : ''}
+            `;
+            
+            createModal('✅ 密文质量检查', content, buttons);
+        }
+        
+        // 高级密文验证算法
+        function validateCiphertextAdvanced(input) {
+            const validation = {
+                overall: 0,
+                length: { score: 0, message: '' },
+                pattern: { score: 0, message: '' },
+                entropy: { score: 0, message: '' },
+                clean: { score: 0, message: '' },
+                detectedType: '',
+                features: [],
+                warnings: [],
+                recommendations: [],
+                successRate: 0
+            };
+            
+            // 1. 长度检查
+            if (input.length < 100) {
+                validation.length.score = 20;
+                validation.length.message = '长度过短';
+                validation.warnings.push('密文长度可能不足');
+            } else if (input.length < 500) {
+                validation.length.score = 60;
+                validation.length.message = '长度较短';
+            } else if (input.length < 2000) {
+                validation.length.score = 85;
+                validation.length.message = '长度适中';
             } else {
-                showToast('⚠️ 发现 ' + issues.length + ' 个问题');
-                addLog('密文质量问题: ' + issues.join(', '), 'warning');
+                validation.length.score = 95;
+                validation.length.message = '长度充足';
             }
+            
+            // 2. 模式匹配检查
+            const patterns = [
+                { name: 'eval包装', pattern: /eval\s*\(/, score: 95 },
+                { name: 'Function构造器', pattern: /Function\s*\(/, score: 90 },
+                { name: '自执行函数', pattern: /\(function\s*\(/, score: 85 },
+                { name: '混淆变量', pattern: /\b_0x[a-f0-9]+/i, score: 80 },
+                { name: 'String.fromCharCode', pattern: /String\.fromCharCode/, score: 85 },
+                { name: 'unescape', pattern: /unescape\s*\(/, score: 80 },
+                { name: 'atob', pattern: /atob\s*\(/, score: 75 },
+                { name: 'Unicode转义', pattern: /\\u[0-9a-f]{4}/i, score: 70 },
+                { name: '十六进制转义', pattern: /\\x[0-9a-f]{2}/i, score: 70 }
+            ];
+            
+            let maxPatternScore = 0;
+            for (const pattern of patterns) {
+                if (pattern.pattern.test(input)) {
+                    validation.features.push(pattern.name);
+                    maxPatternScore = Math.max(maxPatternScore, pattern.score);
+                    if (!validation.detectedType && pattern.score > 80) {
+                        validation.detectedType = pattern.name;
+                    }
+                }
+            }
+            validation.pattern.score = maxPatternScore;
+            
+            // 3. 信息熵计算
+            const charFreq = {};
+            for (const char of input) {
+                charFreq[char] = (charFreq[char] || 0) + 1;
+            }
+            
+            let entropy = 0;
+            for (const freq of Object.values(charFreq)) {
+                const p = freq / input.length;
+                entropy -= p * Math.log2(p);
+            }
+            
+            if (entropy < 3) {
+                validation.entropy.score = 40;
+                validation.warnings.push('信息熵较低，可能包含大量重复内容');
+            } else if (entropy < 4) {
+                validation.entropy.score = 70;
+            } else if (entropy < 5) {
+                validation.entropy.score = 85;
+            } else {
+                validation.entropy.score = 95;
+            }
+            
+            // 4. 纯净度检查
+            let cleanScore = 100;
+            
+            if (/[\u4e00-\u9fff]/.test(input)) {
+                cleanScore -= 20;
+                validation.warnings.push('包含中文字符');
+            }
+            
+            if (/\/\/|\/\*|\*\//.test(input)) {
+                cleanScore -= 15;
+                validation.warnings.push('包含注释符号');
+            }
+            
+            if (/<[^>]+>/.test(input)) {
+                cleanScore -= 15;
+                validation.warnings.push('包含HTML标签');
+            }
+            
+            if (/console\.|alert\(|document\./.test(input)) {
+                cleanScore -= 10;
+                validation.warnings.push('包含调试代码');
+            }
+            
+            if (/^\s*(?:var|let|const)\s+\w+\s*=\s*['"`][^'"`]{1,100}['"`]/m.test(input)) {
+                cleanScore -= 25;
+                validation.warnings.push('包含明文变量声明');
+            }
+            
+            validation.clean.score = Math.max(0, cleanScore);
+            
+            // 5. 计算总分
+            validation.overall = Math.round((
+                validation.length.score * 0.2 +
+                validation.pattern.score * 0.4 +
+                validation.entropy.score * 0.2 +
+                validation.clean.score * 0.2
+            ));
+            
+            // 6. 生成建议
+            if (validation.length.score < 60) {
+                validation.recommendations.push('增加密文长度');
+            }
+            if (validation.pattern.score < 70) {
+                validation.recommendations.push('检查密文格式是否正确');
+            }
+            if (validation.clean.score < 80) {
+                validation.recommendations.push('使用"混合清理"功能清理非密文内容');
+            }
+            if (validation.features.length === 0) {
+                validation.recommendations.push('输入内容可能不是有效的混淆密文');
+            }
+            
+            // 7. 计算成功率
+            validation.successRate = Math.max(10, Math.min(95, validation.overall));
+            
+            return validation;
+        }
+        
+        // 自动优化输入
+        function autoOptimizeInput() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入密文');
+                return;
+            }
+            
+            addLog('开始自动优化密文...', 'info');
+            
+            // 步骤1：提取纯密文
+            let optimized = extractPureCipher(input);
+            
+            // 步骤2：如果没有改善，尝试混合清理
+            if (optimized === input) {
+                optimized = cleanMixedContent(input);
+            }
+            
+            // 步骤3：最后的清理
+            optimized = optimized
+                .replace(/\/\/.*$/gm, '')
+                .replace(/\/\*[\s\S]*?\*\//g, '')
+                .replace(/^\s*[\r\n]/gm, '')
+                .trim();
+            
+            if (optimized !== input) {
+                document.getElementById('input').value = optimized;
+                showToast('自动优化完成');
+                addLog(`优化前: ${input.length} 字符，优化后: ${optimized.length} 字符`, 'success');
+                
+                // 重新验证
+                setTimeout(() => {
+                    const newValidation = validateCiphertextAdvanced(optimized);
+                    if (newValidation.overall > 70) {
+                        showToast(`优化成功！质量评分提升到 ${newValidation.overall}/100`, 3000);
+                    }
+                }, 500);
+            } else {
+                showToast('密文已经是最优状态');
+                addLog('密文质量已经很好，无需优化', 'info');
+            }
+        }
+        
+        // 批量处理功能
+        function showBatchProcessor() {
+            const content = `
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">批量密文输入（每行一个）:</label>
+                    <textarea id="batchInput" placeholder="请输入多个密文，每行一个..." style="width: 100%; height: 200px; padding: 10px; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 6px; font-family: monospace; font-size: 12px;"></textarea>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">处理选项:</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="batchClean" checked> 自动清理
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="batchValidate" checked> 质量验证
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="batchExtract"> 提取密文
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="batchOptimize"> 自动优化
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="batchProgress" style="display: none; margin: 15px 0;">
+                    <div style="background: rgba(255,255,255,0.2); height: 4px; border-radius: 2px; overflow: hidden;">
+                        <div id="batchProgressBar" style="height: 100%; background: linear-gradient(90deg, #3b82f6, #10b981); width: 0%; transition: width 0.3s;"></div>
+                    </div>
+                    <div id="batchStatus" style="margin-top: 5px; font-size: 0.9rem;"></div>
+                </div>
+                
+                <div id="batchResults" style="display: none; margin-top: 15px;">
+                    <strong>处理结果:</strong>
+                    <div id="batchResultsList" style="max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; margin-top: 8px; font-family: monospace; font-size: 12px;"></div>
+                </div>
+            `;
+            
+            const buttons = `
+                <button onclick="this.closest('.modal').remove()">关闭</button>
+                <button class="success" onclick="processBatch()">开始处理</button>
+            `;
+            
+            createModal('📦 批量处理', content, buttons);
+        }
+        
+        // 模板库功能
+        function showTemplateLibrary() {
+            const templates = getTemplateLibrary();
+            
+            const content = `
+                <div style="margin-bottom: 15px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                        ${templates.map(template => `
+                            <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s;" 
+                                 onclick="applyTemplate('${template.id}')" 
+                                 onmouseover="this.style.background='rgba(255,255,255,0.2)'" 
+                                 onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                                <div style="font-size: 1.5rem; margin-bottom: 8px;">${template.icon}</div>
+                                <div style="font-weight: bold; margin-bottom: 5px;">${template.name}</div>
+                                <div style="font-size: 0.8rem; opacity: 0.8;">${template.description}</div>
+                                <div style="margin-top: 8px; font-size: 0.7rem; color: #3b82f6;">
+                                    点击应用 • ${template.example.length} 字符
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: rgba(59,130,246,0.2); border-radius: 8px;">
+                    <strong style="color: #3b82f6;">💡 使用说明:</strong><br>
+                    • 点击任意模板快速应用到输入框<br>
+                    • 模板包含常见的混淆密文格式<br>
+                    • 可用于测试解密功能是否正常<br>
+                    • 支持自定义添加常用密文模板
+                </div>
+            `;
+            
+            const buttons = `
+                <button onclick="this.closest('.modal').remove()">关闭</button>
+                <button class="success" onclick="showCustomTemplateEditor()">自定义模板</button>
+            `;
+            
+            createModal('📚 密文模板库', content, buttons);
+        }
+        
+        // 获取模板库
+        function getTemplateLibrary() {
+            return [
+                {
+                    id: 'eval_basic',
+                    name: 'eval 基础包装',
+                    icon: '🔤',
+                    description: '最常见的 eval 包装密文格式',
+                    example: 'eval(function(p,a,c,k,e,d){e=function(c){return c};if(!\'\'.replace(/^/,String)){while(c--){d[c]=k[c]||c}k=[function(e){return d[e]}];e=function(){return\'\\\\w+\'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp(\'\\\\b\'+e(c)+\'\\\\b\',\'g\'),k[c])}}return p}(\'0 1=2.3("4");1.5("6 7!");\',[],8,\'var|msg|document|getElementById|test|innerHTML|Hello|World\'.split(\'|\'),0,{}))'
+                },
+                {
+                    id: 'function_constructor',
+                    name: 'Function 构造器',
+                    icon: '⚙️',
+                    description: 'Function 构造器包装的密文',
+                    example: 'new Function("var _0x1234=[\'hello\',\'world\'];console.log(_0x1234[0]+_0x1234[1]);")()'
+                },
+                {
+                    id: 'iife_obfuscated',
+                    name: 'IIFE 混淆',
+                    icon: '🔄',
+                    description: '自执行函数包装的混淆代码',
+                    example: '(function(_0x4f3e,_0x2d8c){var _0x5a1b=function(_0x1c9d){while(--_0x1c9d){_0x4f3e.push(_0x4f3e.shift())}};_0x5a1b(++_0x2d8c)}([\'test\',\'demo\'],0x1a3));console.log(\'Hello World\');'
+                },
+                {
+                    id: 'unicode_escape',
+                    name: 'Unicode 转义',
+                    icon: '🌐',
+                    description: 'Unicode 转义序列密文',
+                    example: 'eval("\\u0076\\u0061\\u0072\\u0020\\u006d\\u0073\\u0067\\u003d\\u0022\\u0048\\u0065\\u006c\\u006c\\u006f\\u0020\\u0057\\u006f\\u0072\\u006c\\u0064\\u0022\\u003b\\u0063\\u006f\\u006e\\u0073\\u006f\\u006c\\u0065\\u002e\\u006c\\u006f\\u0067\\u0028\\u006d\\u0073\\u0067\\u0029\\u003b")'
+                },
+                {
+                    id: 'hex_escape',
+                    name: '十六进制转义',
+                    icon: '🔢',
+                    description: '十六进制转义字符密文',
+                    example: 'eval("\\x76\\x61\\x72\\x20\\x6d\\x73\\x67\\x3d\\x22\\x48\\x65\\x6c\\x6c\\x6f\\x20\\x57\\x6f\\x72\\x6c\\x64\\x22\\x3b\\x63\\x6f\\x6e\\x73\\x6f\\x6c\\x65\\x2e\\x6c\\x6f\\x67\\x28\\x6d\\x73\\x67\\x29\\x3b")'
+                },
+                {
+                    id: 'base64_wrapped',
+                    name: 'Base64 包装',
+                    icon: '📦',
+                    description: 'Base64 编码的密文',
+                    example: 'eval(atob("dmFyIG1zZz0iSGVsbG8gV29ybGQiO2NvbnNvbGUubG9nKG1zZyk7"))'
+                },
+                {
+                    id: 'array_obfuscated',
+                    name: '数组混淆',
+                    icon: '📝',
+                    description: '使用数组索引的混淆代码',
+                    example: 'var _0x1a2b=[\'log\',\'Hello\',\'World\',\'console\'];console[_0x1a2b[0]](_0x1a2b[1]+\' \'+_0x1a2b[2]);'
+                },
+                {
+                    id: 'string_fromcharcode',
+                    name: 'fromCharCode',
+                    icon: '🔤',
+                    description: 'String.fromCharCode 编码',
+                    example: 'eval(String.fromCharCode(118,97,114,32,109,115,103,61,34,72,101,108,108,111,32,87,111,114,108,100,34,59,99,111,110,115,111,108,101,46,108,111,103,40,109,115,103,41,59))'
+                }
+            ];
+        }
+        
+        // 应用模板
+        function applyTemplate(templateId) {
+            const templates = getTemplateLibrary();
+            const template = templates.find(t => t.id === templateId);
+            
+            if (template) {
+                document.getElementById('input').value = template.example;
+                showToast(`已应用模板: ${template.name}`);
+                addLog(`应用模板: ${template.name} (${template.example.length} 字符)`, 'success');
+                
+                // 关闭模态框
+                document.querySelector('.modal')?.remove();
+                
+                // 滚动到输入区域
+                document.getElementById('input').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
+        // 自定义模板编辑器
+        function showCustomTemplateEditor() {
+            const customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+            
+            const content = `
+                <div style="margin-bottom: 15px;">
+                    <strong>创建新模板:</strong>
+                    <div style="margin: 10px 0;">
+                        <label style="display: block; margin-bottom: 5px;">模板名称:</label>
+                        <input type="text" id="templateName" placeholder="输入模板名称..." style="width: 100%; padding: 8px; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 4px;">
+                    </div>
+                    <div style="margin: 10px 0;">
+                        <label style="display: block; margin-bottom: 5px;">模板描述:</label>
+                        <input type="text" id="templateDesc" placeholder="输入模板描述..." style="width: 100%; padding: 8px; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 4px;">
+                    </div>
+                    <div style="margin: 10px 0;">
+                        <label style="display: block; margin-bottom: 5px;">密文内容:</label>
+                        <textarea id="templateContent" placeholder="粘贴密文内容..." style="width: 100%; height: 100px; padding: 8px; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 4px; font-family: monospace;"></textarea>
+                    </div>
+                    <button onclick="saveCustomTemplate()" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">保存模板</button>
+                </div>
+                
+                ${customTemplates.length > 0 ? `
+                    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px;">
+                        <strong>自定义模板:</strong>
+                        <div style="margin-top: 10px;">
+                            ${customTemplates.map((template, idx) => `
+                                <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; margin: 5px 0; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <strong>${template.name}</strong>
+                                        <div style="font-size: 0.8rem; opacity: 0.8;">${template.description}</div>
+                                        <div style="font-size: 0.7rem; color: #3b82f6;">${template.content.length} 字符</div>
+                                    </div>
+                                    <div>
+                                        <button onclick="applyCustomTemplate(${idx})" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 5px;">应用</button>
+                                        <button onclick="deleteCustomTemplate(${idx})" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">删除</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+            
+            createModal('📝 自定义模板编辑器', content, '<button onclick="this.closest(\'.modal\').remove()">关闭</button>');
+        }
+        
+        // 保存自定义模板
+        function saveCustomTemplate() {
+            const name = document.getElementById('templateName').value.trim();
+            const description = document.getElementById('templateDesc').value.trim();
+            const content = document.getElementById('templateContent').value.trim();
+            
+            if (!name || !content) {
+                showToast('请填写模板名称和内容');
+                return;
+            }
+            
+            const customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+            customTemplates.push({
+                name,
+                description: description || '自定义模板',
+                content,
+                created: Date.now()
+            });
+            
+            localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
+            
+            showToast('模板保存成功');
+            addLog(`保存自定义模板: ${name}`, 'success');
+            
+            // 刷新显示
+            showCustomTemplateEditor();
+        }
+        
+        // 应用自定义模板
+        function applyCustomTemplate(index) {
+            const customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+            const template = customTemplates[index];
+            
+            if (template) {
+                document.getElementById('input').value = template.content;
+                showToast(`已应用自定义模板: ${template.name}`);
+                addLog(`应用自定义模板: ${template.name}`, 'success');
+                
+                // 关闭模态框
+                document.querySelector('.modal')?.remove();
+            }
+        }
+        
+        // 删除自定义模板
+        function deleteCustomTemplate(index) {
+            const customTemplates = JSON.parse(localStorage.getItem('custom_templates') || '[]');
+            const template = customTemplates[index];
+            
+            if (confirm(`确定要删除模板 "${template.name}" 吗？`)) {
+                customTemplates.splice(index, 1);
+                localStorage.setItem('custom_templates', JSON.stringify(customTemplates));
+                
+                showToast('模板删除成功');
+                addLog(`删除自定义模板: ${template.name}`, 'success');
+                
+                // 刷新显示
+                showCustomTemplateEditor();
+            }
+        }
+        
+        // 导出结果功能
+        function exportResults() {
+            const output = document.getElementById('output');
+            let content = output.innerHTML.includes('<span') ? stripHTMLTags(output.innerHTML) : output.textContent;
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                showToast('请先获取解密结果');
+                return;
+            }
+            
+            const exportContent = `
+                <div style="margin-bottom: 15px;">
+                    <strong>选择导出格式:</strong>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
+                        <button onclick="exportAs('js')" style="background: #f59e0b; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer;">
+                            📄 JavaScript (.js)
+                        </button>
+                        <button onclick="exportAs('txt')" style="background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer;">
+                            📝 文本文件 (.txt)
+                        </button>
+                        <button onclick="exportAs('html')" style="background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer;">
+                            🌐 HTML 预览
+                        </button>
+                        <button onclick="exportAs('json')" style="background: #10b981; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer;">
+                            🔧 JSON 报告
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <strong>导出选项:</strong>
+                    <div style="margin-top: 8px;">
+                        <label style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                            <input type="checkbox" id="includeMetadata" checked> 包含元数据
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                            <input type="checkbox" id="includeTimestamp" checked> 包含时间戳
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                            <input type="checkbox" id="beautifyOutput"> 美化代码
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" id="compressOutput"> 压缩输出
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="background: rgba(59,130,246,0.2); padding: 10px; border-radius: 6px;">
+                    <strong style="color: #3b82f6;">💡 导出说明:</strong><br>
+                    • JavaScript 格式：适合直接执行的 .js 文件<br>
+                    • 文本格式：纯文本，适合查看和编辑<br>
+                    • HTML 预览：包含语法高亮的网页<br>
+                    • JSON 报告：包含完整分析数据的报告
+                </div>
+            `;
+            
+            createModal('📤 导出解密结果', exportContent, '<button onclick="this.closest(\'.modal\').remove()">关闭</button>');
+        }
+        
+        // 导出为指定格式
+        function exportAs(format) {
+            const output = document.getElementById('output');
+            let content = output.innerHTML.includes('<span') ? stripHTMLTags(output.innerHTML) : output.textContent;
+            
+            const options = {
+                metadata: document.getElementById('includeMetadata').checked,
+                timestamp: document.getElementById('includeTimestamp').checked,
+                beautify: document.getElementById('beautifyOutput').checked,
+                compress: document.getElementById('compressOutput').checked
+            };
+            
+            let exportData = '';
+            let filename = '';
+            let mimeType = 'text/plain';
+            
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            
+            switch (format) {
+                case 'js':
+                    exportData = generateJSExport(content, options);
+                    filename = `decrypted_${timestamp}.js`;
+                    mimeType = 'text/javascript';
+                    break;
+                    
+                case 'txt':
+                    exportData = generateTxtExport(content, options);
+                    filename = `decrypted_${timestamp}.txt`;
+                    mimeType = 'text/plain';
+                    break;
+                    
+                case 'html':
+                    exportData = generateHTMLExport(content, options);
+                    filename = `decrypted_${timestamp}.html`;
+                    mimeType = 'text/html';
+                    break;
+                    
+                case 'json':
+                    exportData = generateJSONExport(content, options);
+                    filename = `decrypted_report_${timestamp}.json`;
+                    mimeType = 'application/json';
+                    break;
+            }
+            
+            // 下载文件
+            const blob = new Blob([exportData], { type: mimeType + ';charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast(`导出成功: ${filename}`);
+            addLog(`导出${format.toUpperCase()}格式: ${filename}`, 'success');
+            
+            // 关闭模态框
+            document.querySelector('.modal')?.remove();
+        }
+        
+        // 生成不同格式的导出内容
+        function generateJSExport(content, options) {
+            let result = '';
+            
+            if (options.metadata) {
+                result += `/*\n * 羊毛助手解密结果\n * 生成时间: ${new Date().toLocaleString()}\n * 工具版本: v4.3\n */\n\n`;
+            }
+            
+            if (options.beautify) {
+                result += beautifyJavaScript(content);
+            } else if (options.compress) {
+                result += content.replace(/\s+/g, ' ').trim();
+            } else {
+                result += content;
+            }
+            
+            return result;
+        }
+        
+        function generateTxtExport(content, options) {
+            let result = '';
+            
+            if (options.metadata) {
+                result += `羊毛助手解密结果\n`;
+                result += `==================\n`;
+                result += `生成时间: ${new Date().toLocaleString()}\n`;
+                result += `工具版本: v4.3\n`;
+                result += `内容长度: ${content.length} 字符\n\n`;
+            }
+            
+            result += content;
+            
+            if (options.timestamp) {
+                result += `\n\n--- 导出于 ${new Date().toLocaleString()} ---`;
+            }
+            
+            return result;
+        }
+        
+        function generateHTMLExport(content, options) {
+            return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羊毛助手解密结果</title>
+    <style>
+        body { font-family: 'Monaco', 'Menlo', monospace; background: #1e1e1e; color: #d4d4d4; padding: 20px; }
+        .header { background: #2a2a2a; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .content { background: #2a2a2a; padding: 20px; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word; }
+        .hljs-keyword { color: #569cd6; }
+        .hljs-string { color: #ce9178; }
+        .hljs-number { color: #b5cea8; }
+        .hljs-comment { color: #6a9955; font-style: italic; }
+        .hljs-function { color: #dcdcaa; }
+    </style>
+</head>
+<body>
+    ${options.metadata ? `
+    <div class="header">
+        <h2>🔓 羊毛助手解密结果</h2>
+        <p>生成时间: ${new Date().toLocaleString()}</p>
+        <p>工具版本: v4.3</p>
+        <p>内容长度: ${content.length} 字符</p>
+    </div>
+    ` : ''}
+    <div class="content">${options.beautify ? highlightJS(content) : content}</div>
+</body>
+</html>`;
+        }
+        
+        function generateJSONExport(content, options) {
+            const stats = calculateCodeStats(content);
+            const validation = validateJavaScript(content);
+            
+            const report = {
+                metadata: {
+                    tool: '羊毛助手',
+                    version: 'v4.3',
+                    generated: new Date().toISOString(),
+                    contentLength: content.length
+                },
+                content: content,
+                statistics: stats,
+                validation: validation,
+                analysis: {
+                    isValid: validation.isValid,
+                    complexity: stats.cyclomaticComplexity,
+                    quality: validation.isValid ? 'good' : 'poor'
+                }
+            };
+            
+            return JSON.stringify(report, null, options.compress ? 0 : 2);
         }
         
         function clearInput() {
@@ -1829,11 +2960,11 @@
             addLog('清空密文输入内容', 'info');
         }
         
-        // 智能预处理密文
+        // 智能预处理密文 - 增强版
         function preprocessCiphertext(input) {
             addLog('开始智能预处理密文...', 'info');
             
-            // 去除注释和多余内容
+            // 第一步：移除明显的非密文内容
             let processed = input
                 // 移除单行注释
                 .replace(/\/\/.*$/gm, '')
@@ -1848,66 +2979,131 @@
                 // 移除其他说明性文字
                 .replace(/^\s*\/\/.*?(解密|脚本|说明|注释).*$/gm, '');
             
-            // 检测并提取不同类型的密文
+            // 第二步：检测并提取密文模式
             const patterns = [
-                // 1. eval包装的密文
+                // 1. eval包装的密文（最常见）
                 {
                     name: 'eval包装',
-                    pattern: /eval\s*\(\s*['"`](.*?)['"`]\s*\)/s,
-                    extract: (match) => match[1]
+                    pattern: /eval\s*\(\s*(['"`])((?:\\.|(?!\1)[^\\])*?)\1\s*\)/s,
+                    extract: (match) => match[2],
+                    priority: 10
                 },
-                // 2. Function构造器包装
+                // 2. eval with function
+                {
+                    name: 'eval函数调用',
+                    pattern: /eval\s*\(\s*(function\s*\([^)]*\)\s*\{[\s\S]*?\}\s*\([^)]*\))\s*\)/s,
+                    extract: (match) => match[1],
+                    priority: 9
+                },
+                // 3. Function构造器包装
                 {
                     name: 'Function构造器',
-                    pattern: /(?:new\s+)?Function\s*\(\s*['"`](.*?)['"`]\s*\)/s,
-                    extract: (match) => match[1]
+                    pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\.|(?!\1)[^\\])*?)\1\s*\)/s,
+                    extract: (match) => match[2],
+                    priority: 8
                 },
-                // 3. 纯Base64编码
+                // 4. 自执行函数（IIFE）- 混淆代码常用
+                {
+                    name: 'IIFE混淆代码',
+                    pattern: /\(function\s*\([^)]*\)\s*\{[\s\S]*?\}\s*\([^)]*\)\)/g,
+                    extract: (match) => match[0],
+                    priority: 7
+                },
+                // 5. 完整的混淆函数（包含长参数列表）
+                {
+                    name: '复杂混淆函数',
+                    pattern: /function\s*\([^)]*\)\s*\{[\s\S]*?return\s+[^}]*\}[\s\S]*?\([^)]*\)/s,
+                    extract: (match) => match[0],
+                    priority: 6
+                },
+                // 6. 数组解构混淆
+                {
+                    name: '数组混淆',
+                    pattern: /\[\s*['"`][^'"`]*['"`](?:\s*,\s*['"`][^'"`]*['"`]){10,}\s*\]/g,
+                    extract: (match) => match[0],
+                    priority: 5
+                },
+                // 7. 纯Base64编码
                 {
                     name: 'Base64编码',
                     pattern: /^[A-Za-z0-9+/]+=*$/m,
-                    extract: (match) => match[0]
+                    extract: (match) => match[0],
+                    priority: 4
                 },
-                // 4. 十六进制编码
+                // 8. 十六进制编码
                 {
                     name: '十六进制编码',
-                    pattern: /^[0-9a-fA-F\s]+$/m,
-                    extract: (match) => match[0].replace(/\s/g, '')
+                    pattern: /^[0-9a-fA-F\s]{100,}$/m,
+                    extract: (match) => match[0].replace(/\s/g, ''),
+                    priority: 3
                 },
-                // 5. Unicode转义序列
+                // 9. Unicode转义序列
                 {
                     name: 'Unicode转义',
                     pattern: /\\u[0-9a-fA-F]{4}/g,
-                    extract: (match) => processed
-                },
-                // 6. 混淆的JavaScript代码块
-                {
-                    name: 'JS混淆代码',
-                    pattern: /\(function\s*\([^)]*\)\s*\{[\s\S]*?\}\s*\([^)]*\)\)/g,
-                    extract: (match) => match[0]
-                },
-                // 7. 数组形式的密文
-                {
-                    name: '数组密文',
-                    pattern: /\[\s*['"`][^'"`]*['"`](?:\s*,\s*['"`][^'"`]*['"`])*\s*\]/g,
-                    extract: (match) => match[0]
+                    extract: (match) => processed,
+                    priority: 2
                 }
             ];
             
-            // 尝试匹配各种模式
+            // 第三步：按优先级尝试提取密文
+            patterns.sort((a, b) => b.priority - a.priority);
+            
             for (const pattern of patterns) {
                 const matches = processed.match(pattern.pattern);
                 if (matches) {
                     const extracted = pattern.extract(matches);
-                    if (extracted && extracted.length > 50) { // 确保提取的内容足够长
-                        addLog(`检测到${pattern.name}格式，已提取密文`, 'success');
+                    if (extracted && extracted.length > 50) {
+                        addLog(`检测到${pattern.name}格式，已提取密文 (${extracted.length}字符)`, 'success');
                         return extracted;
                     }
                 }
             }
             
-            // 如果没有匹配到特定模式，尝试清理后返回
+            // 第四步：智能行分析 - 找到最可能的密文行
+            const lines = processed.split('\n');
+            let longestCodeLine = '';
+            let maxScore = 0;
+            
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (trimmed.length < 100) continue; // 密文通常很长
+                
+                let score = 0;
+                
+                // 评分标准
+                if (trimmed.includes('eval(')) score += 50;
+                if (trimmed.includes('function(')) score += 40;
+                if (trimmed.includes('return ')) score += 30;
+                if (/[a-zA-Z0-9]{20,}/.test(trimmed)) score += 20; // 长字符串
+                if (trimmed.includes('String.fromCharCode')) score += 30;
+                if (trimmed.includes('unescape')) score += 25;
+                if (trimmed.includes('atob')) score += 25;
+                if (/\b_0x[a-f0-9]+/i.test(trimmed)) score += 35; // 十六进制变量
+                
+                // 减分项
+                if (/console\.log|alert|document\./.test(trimmed)) score -= 20;
+                if (/^var\s+\w+\s*=\s*['"`][^'"`]{1,50}['"`]/.test(trimmed)) score -= 30;
+                
+                if (score > maxScore && trimmed.length > 100) {
+                    maxScore = score;
+                    longestCodeLine = trimmed;
+                }
+            }
+            
+            if (longestCodeLine && maxScore > 30) {
+                addLog(`通过行分析提取密文 (评分: ${maxScore}, 长度: ${longestCodeLine.length})`, 'success');
+                return longestCodeLine;
+            }
+            
+            // 第五步：最后的清理尝试
             processed = processed
+                // 移除明显的变量声明行
+                .replace(/^\s*(?:var|let|const)\s+\w+\s*=\s*['"`][^'"`]{1,100}['"`]\s*;?\s*$/gm, '')
+                // 移除简单的赋值语句
+                .replace(/^\s*\w+\s*=\s*['"`][^'"`]{1,100}['"`]\s*;?\s*$/gm, '')
+                // 移除 console.log 等调试语句
+                .replace(/^\s*console\.\w+\([^)]*\)\s*;?\s*$/gm, '')
                 // 移除空行
                 .replace(/^\s*[\r\n]/gm, '')
                 // 移除行首空白
@@ -1916,7 +3112,21 @@
                 .replace(/\s+/g, ' ')
                 .trim();
             
-            return processed;
+            // 如果清理后的内容仍然很长，可能是密文
+            if (processed.length > 200) {
+                addLog('使用清理后的内容作为密文', 'info');
+                return processed;
+            }
+            
+            // 实在找不到，返回原始输入的第一个长行
+            const firstLongLine = input.split('\n').find(line => line.trim().length > 200);
+            if (firstLongLine) {
+                addLog('使用第一个长行作为密文', 'warning');
+                return firstLongLine.trim();
+            }
+            
+            addLog('未能识别有效的密文格式', 'warning');
+            return processed || input;
         }
         
         // 验证密文质量

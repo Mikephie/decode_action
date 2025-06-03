@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v4.3</title>
+    <title>羊毛助手 v4.3 - 修复版</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -331,6 +331,101 @@
             display: none !important;
         }
         
+        /* Modal样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+            color: white;
+            font-family: monospace;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .modal-header {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .modal-header h3 {
+            color: #3b82f6;
+            margin: 0;
+        }
+        
+        .modal-content textarea {
+            width: 100%;
+            height: 200px;
+            margin: 10px 0;
+            padding: 10px;
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .modal-buttons {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .modal-buttons button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        
+        .modal-buttons button.success {
+            background: #10b981;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .stat-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #10b981;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
         /* 滚动条样式 */
         ::-webkit-scrollbar {
             width: 6px;
@@ -353,7 +448,7 @@
         /* 移动端优化 */
         @media (max-width: 768px) {
             body {
-                padding-bottom: 80px; /* 为底部固定按钮预留空间 */
+                padding-bottom: 80px;
             }
             
             .container {
@@ -417,7 +512,7 @@
                 font-size: 10px;
             }
             
-            textarea {
+            .textarea {
                 height: 140px;
                 font-size: 12px;
             }
@@ -435,38 +530,13 @@
                 transform: translateY(0);
             }
             
-            /* 移动端滚动优化 */
-            .section {
-                scroll-margin-top: 80px;
-            }
-        }
-        
-        /* 超小屏幕优化 */
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.2rem;
-            }
-            
-            .version {
-                font-size: 0.6rem;
-                padding: 1px 6px;
-            }
-            
-            .section-title {
-                font-size: 0.9rem;
-            }
-            
-            input, textarea {
-                font-size: 12px;
-                padding: 8px;
-            }
-            
-            .file-upload {
+            .modal-content {
+                max-width: 95%;
                 padding: 15px;
             }
             
-            .file-upload-icon {
-                font-size: 1.5rem;
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
         
@@ -532,11 +602,11 @@
                 <div class="file-option" onclick="pasteFromClipboard()">
                     📋<br>剪贴板
                 </div>
-                <div class="file-option" onclick="document.getElementById('cameraInput').click()">
-                    📷<br>拍照识别
+                <div class="file-option" onclick="showAdvancedPreprocess()">
+                    🔍<br>高级预处理
                 </div>
-                <div class="file-option" onclick="clearInput()">
-                    🗑<br>清空输入
+                <div class="file-option" onclick="showQualityAnalysis()">
+                    📊<br>质量分析
                 </div>
             </div>
             <input type="file" id="cameraInput" class="hidden" accept="image/*" capture="environment">
@@ -577,6 +647,21 @@
         <div class="section">
             <div class="section-title">✨ 解密结果</div>
             <div id="output" class="output">// 解密结果将显示在这里...</div>
+            
+            <div class="file-options" style="margin-top: 8px;">
+                <div class="file-option" onclick="showResultAnalysis()">
+                    📊<br>结果分析
+                </div>
+                <div class="file-option" onclick="beautifyCode()">
+                    🎨<br>代码美化
+                </div>
+                <div class="file-option" onclick="showCodeStats()">
+                    📈<br>代码统计
+                </div>
+                <div class="file-option" onclick="validateResult()">
+                    ✅<br>代码验证
+                </div>
+            </div>
         </div>
         
         <!-- 日志 -->
@@ -625,33 +710,826 @@
         // 简单的语法高亮
         function highlightJS(code) {
             return code
-                // 先转义HTML字符，避免XSS
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;')
-                // 然后应用语法高亮
                 .replace(/\b(function|var|let|const|if|else|for|while|do|switch|case|break|continue|return|try|catch|finally|throw|new|this|typeof|instanceof|in|of|class|extends|import|export|default|async|await|yield|true|false|null|undefined)\b/g, '<span class="hljs-keyword">$1</span>')
-                // 字符串 - 修正正则表达式
                 .replace(/(&#39;|&quot;)(.*?)\1/g, '<span class="hljs-string">$1$2$1</span>')
-                // 数字
                 .replace(/\b(\d+\.?\d*)\b/g, '<span class="hljs-number">$1</span>')
-                // 注释 - 单行注释
                 .replace(/\/\/.*$/gm, '<span class="hljs-comment">$&</span>')
-                // 注释 - 多行注释
                 .replace(/\/\*[\s\S]*?\*\//g, '<span class="hljs-comment">$&</span>')
-                // 函数名
                 .replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g, '<span class="hljs-function">$1</span>')
-                // 属性
                 .replace(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/g, '.<span class="hljs-property">$1</span>');
         }
         
-        // 移除HTML标签（用于复制和下载）
+        // 移除HTML标签
         function stripHTMLTags(html) {
             const div = document.createElement('div');
             div.innerHTML = html;
             return div.textContent || div.innerText || '';
+        }
+        
+        // 创建模态框
+        function createModal(title, content, buttons) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            
+            const modalContent = document.createElement('div');
+            modalContent.className = 'modal-content';
+            
+            modalContent.innerHTML = `
+                <div class="modal-header">
+                    <h3>${title}</h3>
+                </div>
+                <div class="modal-body">
+                    ${content}
+                </div>
+                <div class="modal-buttons">
+                    ${buttons}
+                </div>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // 点击背景关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+            
+            return modal;
+        }
+        
+        // 高级预处理
+        function showAdvancedPreprocess() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入密文');
+                return;
+            }
+            
+            const analysis = advancedPreprocess(input);
+            
+            const content = `
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">${analysis.originalLength}</div>
+                        <div class="stat-label">原始长度</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${analysis.processedLength}</div>
+                        <div class="stat-label">处理后长度</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${analysis.detectedType}</div>
+                        <div class="stat-label">检测类型</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${analysis.confidence}%</div>
+                        <div class="stat-label">置信度</div>
+                    </div>
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>检测到的特征:</strong><br>
+                    ${analysis.features.map(f => `• ${f}`).join('<br>')}
+                </div>
+                
+                ${analysis.warnings.length > 0 ? `
+                    <div style="background: rgba(239,68,68,0.2); padding: 10px; border-radius: 6px; margin: 15px 0;">
+                        <strong style="color: #ef4444;">⚠️ 警告:</strong><br>
+                        ${analysis.warnings.map(w => `• ${w}`).join('<br>')}
+                    </div>
+                ` : ''}
+                
+                <textarea readonly>${analysis.processed}</textarea>
+            `;
+            
+            const buttons = `
+                <button onclick="this.closest('.modal').remove()">关闭</button>
+                <button class="success" onclick="
+                    document.getElementById('input').value = \`${analysis.processed.replace(/`/g, '\\`')}\`;
+                    this.closest('.modal').remove();
+                    showToast('已应用高级预处理结果');
+                ">应用处理结果</button>
+            `;
+            
+            createModal('🔍 高级预处理', content, buttons);
+        }
+        
+        // 高级预处理算法
+        function advancedPreprocess(input) {
+            const analysis = {
+                originalLength: input.length,
+                detectedType: '未知',
+                confidence: 0,
+                features: [],
+                warnings: [],
+                processed: input
+            };
+            
+            // 检测各种编码和混淆类型
+            const detectionRules = [
+                {
+                    name: 'eval包装',
+                    pattern: /eval\s*\(\s*['"`](.*?)['"`]\s*\)/s,
+                    confidence: 95,
+                    extract: (match) => match[1],
+                    features: ['动态执行', 'eval调用']
+                },
+                {
+                    name: 'Function构造器',
+                    pattern: /(?:new\s+)?Function\s*\(\s*['"`](.*?)['"`]\s*\)/s,
+                    confidence: 90,
+                    extract: (match) => match[1],
+                    features: ['Function构造器', '动态代码生成']
+                },
+                {
+                    name: 'Base64编码',
+                    pattern: /^[A-Za-z0-9+/]+=*$/m,
+                    confidence: 85,
+                    extract: (match) => {
+                        try {
+                            return atob(match[0]);
+                        } catch (e) {
+                            return match[0];
+                        }
+                    },
+                    features: ['Base64编码']
+                },
+                {
+                    name: '十六进制编码',
+                    pattern: /^[0-9a-fA-F\s]+$/m,
+                    confidence: 80,
+                    extract: (match) => {
+                        try {
+                            const hex = match[0].replace(/\s/g, '');
+                            return hex.replace(/../g, (h) => String.fromCharCode(parseInt(h, 16)));
+                        } catch (e) {
+                            return match[0];
+                        }
+                    },
+                    features: ['十六进制编码']
+                },
+                {
+                    name: 'Unicode转义',
+                    pattern: /\\u[0-9a-fA-F]{4}/g,
+                    confidence: 75,
+                    extract: (match) => input.replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(parseInt(code, 16))),
+                    features: ['Unicode转义序列']
+                },
+                {
+                    name: 'JavaScript混淆',
+                    pattern: /\(function\s*\([^)]*\)\s*\{[\s\S]*?\}\s*\([^)]*\)\)/,
+                    confidence: 70,
+                    extract: (match) => match[0],
+                    features: ['自执行函数', '代码混淆']
+                }
+            ];
+            
+            // 应用检测规则
+            for (const rule of detectionRules) {
+                const matches = input.match(rule.pattern);
+                if (matches) {
+                    analysis.detectedType = rule.name;
+                    analysis.confidence = rule.confidence;
+                    analysis.features = rule.features;
+                    try {
+                        analysis.processed = rule.extract(matches);
+                    } catch (e) {
+                        analysis.warnings.push(`${rule.name}解码失败: ${e.message}`);
+                    }
+                    break;
+                }
+            }
+            
+            // 通用清理
+            analysis.processed = analysis.processed
+                .replace(/\/\/.*$/gm, '')
+                .replace(/\/\*[\s\S]*?\*\//g, '')
+                .replace(/^\s*[\r\n]/gm, '')
+                .trim();
+            
+            analysis.processedLength = analysis.processed.length;
+            
+            // 质量检查
+            if (analysis.processed.length < 50) {
+                analysis.warnings.push('处理后内容过短');
+            }
+            if (/[\u4e00-\u9fff]/.test(analysis.processed)) {
+                analysis.warnings.push('包含中文字符');
+            }
+            
+            return analysis;
+        }
+        
+        // 质量分析
+        function showQualityAnalysis() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入密文');
+                return;
+            }
+            
+            const quality = analyzeQuality(input);
+            
+            const content = `
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" style="color: ${quality.score >= 80 ? '#10b981' : quality.score >= 60 ? '#f59e0b' : '#ef4444'}">${quality.score}</div>
+                        <div class="stat-label">质量评分</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${quality.complexity}</div>
+                        <div class="stat-label">复杂度</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${quality.entropy.toFixed(2)}</div>
+                        <div class="stat-label">信息熵</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${quality.obfuscationLevel}</div>
+                        <div class="stat-label">混淆等级</div>
+                    </div>
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>检测结果:</strong><br>
+                    ${quality.checks.map(check => `• ${check.name}: ${check.passed ? '✅' : '❌'} ${check.message}`).join('<br>')}
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>改进建议:</strong><br>
+                    ${quality.suggestions.map(s => `• ${s}`).join('<br>')}
+                </div>
+            `;
+            
+            createModal('📊 质量分析报告', content, '<button onclick="this.closest(\'.modal\').remove()">关闭</button>');
+        }
+        
+        // 质量分析算法
+        function analyzeQuality(input) {
+            const quality = {
+                score: 0,
+                complexity: '低',
+                entropy: 0,
+                obfuscationLevel: '无',
+                checks: [],
+                suggestions: []
+            };
+            
+            // 长度检查
+            const lengthCheck = {
+                name: '长度检查',
+                passed: input.length >= 50,
+                message: input.length >= 50 ? '长度合适' : '长度过短'
+            };
+            quality.checks.push(lengthCheck);
+            
+            // 字符多样性检查
+            const uniqueChars = new Set(input).size;
+            const diversityCheck = {
+                name: '字符多样性',
+                passed: uniqueChars >= 20,
+                message: `包含${uniqueChars}种不同字符`
+            };
+            quality.checks.push(diversityCheck);
+            
+            // 混淆特征检查
+            const obfuscationPatterns = [
+                { pattern: /\b_0x[a-f0-9]+/i, name: '十六进制变量' },
+                { pattern: /\\x[0-9a-f]{2}/i, name: '十六进制转义' },
+                { pattern: /\\u[0-9a-f]{4}/i, name: 'Unicode转义' },
+                { pattern: /eval\s*\(/i, name: 'eval调用' },
+                { pattern: /String\.fromCharCode/i, name: '字符编码' }
+            ];
+            
+            let obfuscationScore = 0;
+            const detectedFeatures = [];
+            
+            for (const pattern of obfuscationPatterns) {
+                if (pattern.pattern.test(input)) {
+                    obfuscationScore += 20;
+                    detectedFeatures.push(pattern.name);
+                }
+            }
+            
+            quality.checks.push({
+                name: '混淆特征',
+                passed: obfuscationScore > 0,
+                message: detectedFeatures.length > 0 ? `检测到: ${detectedFeatures.join(', ')}` : '未检测到混淆特征'
+            });
+            
+            // 计算信息熵
+            const charFreq = {};
+            for (const char of input) {
+                charFreq[char] = (charFreq[char] || 0) + 1;
+            }
+            
+            quality.entropy = Object.values(charFreq).reduce((entropy, freq) => {
+                const p = freq / input.length;
+                return entropy - p * Math.log2(p);
+            }, 0);
+            
+            // 计算复杂度
+            const complexityFactors = [
+                input.length > 1000 ? 25 : input.length / 40,
+                uniqueChars > 50 ? 25 : uniqueChars / 2,
+                quality.entropy > 4 ? 25 : quality.entropy * 6.25,
+                obfuscationScore > 60 ? 25 : obfuscationScore / 2.4
+            ];
+            
+            quality.score = Math.round(complexityFactors.reduce((sum, factor) => sum + factor, 0));
+            
+            // 设置复杂度等级
+            if (quality.score >= 80) quality.complexity = '高';
+            else if (quality.score >= 60) quality.complexity = '中';
+            else quality.complexity = '低';
+            
+            // 设置混淆等级
+            if (obfuscationScore >= 80) quality.obfuscationLevel = '高度混淆';
+            else if (obfuscationScore >= 40) quality.obfuscationLevel = '中度混淆';
+            else if (obfuscationScore > 0) quality.obfuscationLevel = '轻度混淆';
+            else quality.obfuscationLevel = '无混淆';
+            
+            // 生成建议
+            if (quality.score < 60) {
+                quality.suggestions.push('密文质量较低，建议检查输入内容');
+            }
+            if (lengthCheck.passed === false) {
+                quality.suggestions.push('增加密文长度以提高解密成功率');
+            }
+            if (uniqueChars < 20) {
+                quality.suggestions.push('密文字符多样性不足');
+            }
+            if (quality.entropy < 3) {
+                quality.suggestions.push('信息熵较低，可能包含大量重复内容');
+            }
+            
+            return quality;
+        }
+        
+        // 结果分析
+        function showResultAnalysis() {
+            const output = document.getElementById('output');
+            let content = output.innerHTML.includes('<span') ? stripHTMLTags(output.innerHTML) : output.textContent;
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                showToast('请先获取解密结果');
+                return;
+            }
+            
+            const analysis = analyzeResult(content);
+            
+            const modalContent = `
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">${analysis.isValid ? '✅' : '❌'}</div>
+                        <div class="stat-label">代码有效性</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${analysis.codeType}</div>
+                        <div class="stat-label">代码类型</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${analysis.functions.length}</div>
+                        <div class="stat-label">函数数量</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${analysis.variables.length}</div>
+                        <div class="stat-label">变量数量</div>
+                    </div>
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>检测到的函数:</strong><br>
+                    ${analysis.functions.length > 0 ? analysis.functions.map(f => `• ${f}`).join('<br>') : '未检测到函数'}
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>使用的API:</strong><br>
+                    ${analysis.apis.length > 0 ? analysis.apis.map(api => `• ${api}`).join('<br>') : '未检测到特殊API'}
+                </div>
+                
+                ${analysis.securityIssues.length > 0 ? `
+                    <div style="background: rgba(239,68,68,0.2); padding: 10px; border-radius: 6px; margin: 15px 0;">
+                        <strong style="color: #ef4444;">🔒 安全警告:</strong><br>
+                        ${analysis.securityIssues.map(issue => `• ${issue}`).join('<br>')}
+                    </div>
+                ` : ''}
+            `;
+            
+            createModal('📊 结果分析', modalContent, '<button onclick="this.closest(\'.modal\').remove()">关闭</button>');
+        }
+        
+        // 结果分析算法
+        function analyzeResult(code) {
+            const analysis = {
+                isValid: false,
+                codeType: '未知',
+                functions: [],
+                variables: [],
+                apis: [],
+                securityIssues: []
+            };
+            
+            try {
+                // 语法检查
+                new Function(code);
+                analysis.isValid = true;
+            } catch (e) {
+                analysis.isValid = false;
+            }
+            
+            // 检测代码类型
+            if (code.includes('document.') || code.includes('window.')) {
+                analysis.codeType = '浏览器脚本';
+            } else if (code.includes('require(') || code.includes('module.exports')) {
+                analysis.codeType = 'Node.js模块';
+            } else if (code.includes('function') || code.includes('=>')) {
+                analysis.codeType = 'JavaScript函数';
+            } else {
+                analysis.codeType = '代码片段';
+            }
+            
+            // 提取函数名
+            const functionMatches = code.match(/function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g);
+            if (functionMatches) {
+                analysis.functions = functionMatches.map(m => m.replace('function ', ''));
+            }
+            
+            const arrowFunctions = code.match(/(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=.*?=>/g);
+            if (arrowFunctions) {
+                analysis.functions.push(...arrowFunctions.map(m => m.split('=')[0].trim().split(' ').pop()));
+            }
+            
+            // 提取变量名
+            const variableMatches = code.match(/(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/g);
+            if (variableMatches) {
+                analysis.variables = variableMatches.map(m => m.split(' ').pop());
+            }
+            
+            // 检测API调用
+            const apiPatterns = [
+                { pattern: /document\./g, name: 'DOM操作' },
+                { pattern: /window\./g, name: 'Window对象' },
+                { pattern: /console\./g, name: '控制台输出' },
+                { pattern: /fetch\(/g, name: '网络请求' },
+                { pattern: /XMLHttpRequest/g, name: 'AJAX请求' },
+                { pattern: /localStorage/g, name: '本地存储' },
+                { pattern: /sessionStorage/g, name: '会话存储' },
+                { pattern: /setTimeout|setInterval/g, name: '定时器' }
+            ];
+            
+            for (const api of apiPatterns) {
+                if (api.pattern.test(code)) {
+                    analysis.apis.push(api.name);
+                }
+            }
+            
+            // 安全检查
+            const securityPatterns = [
+                { pattern: /eval\(/g, warning: '使用eval()可能存在安全风险' },
+                { pattern: /innerHTML\s*=/g, warning: '使用innerHTML可能导致XSS攻击' },
+                { pattern: /document\.write/g, warning: '使用document.write可能存在安全风险' },
+                { pattern: /setTimeout\s*\(\s*['"`]/g, warning: '在setTimeout中使用字符串可能存在安全风险' },
+                { pattern: /new\s+Function\s*\(/g, warning: '使用Function构造器可能存在安全风险' }
+            ];
+            
+            for (const security of securityPatterns) {
+                if (security.pattern.test(code)) {
+                    analysis.securityIssues.push(security.warning);
+                }
+            }
+            
+            return analysis;
+        }
+        
+        // 代码美化
+        function beautifyCode() {
+            const output = document.getElementById('output');
+            let content = output.innerHTML.includes('<span') ? stripHTMLTags(output.innerHTML) : output.textContent;
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                showToast('请先获取解密结果');
+                return;
+            }
+            
+            try {
+                const beautified = beautifyJavaScript(content);
+                displayResult(beautified);
+                showToast('代码美化完成');
+                addLog('代码美化成功', 'success');
+            } catch (error) {
+                showToast('代码美化失败: ' + error.message);
+                addLog('代码美化失败: ' + error.message, 'error');
+            }
+        }
+        
+        // JavaScript美化算法
+        function beautifyJavaScript(code) {
+            let beautified = code;
+            let indentLevel = 0;
+            const indent = '    '; // 4个空格缩进
+            
+            // 移除多余空白
+            beautified = beautified.replace(/\s+/g, ' ').trim();
+            
+            // 在特定字符后添加换行
+            beautified = beautified.replace(/([{;}])/g, '$1\n');
+            beautified = beautified.replace(/([}])/g, '\n$1\n');
+            
+            // 分割成行并处理缩进
+            const lines = beautified.split('\n');
+            const result = [];
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                // 减少缩进
+                if (line.includes('}')) {
+                    indentLevel = Math.max(0, indentLevel - 1);
+                }
+                
+                // 添加缩进
+                result.push(indent.repeat(indentLevel) + line);
+                
+                // 增加缩进
+                if (line.includes('{')) {
+                    indentLevel++;
+                }
+            }
+            
+            return result.join('\n');
+        }
+        
+        // 代码统计
+        function showCodeStats() {
+            const output = document.getElementById('output');
+            let content = output.innerHTML.includes('<span') ? stripHTMLTags(output.innerHTML) : output.textContent;
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                showToast('请先获取解密结果');
+                return;
+            }
+            
+            const stats = calculateCodeStats(content);
+            
+            const modalContent = `
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.totalLines}</div>
+                        <div class="stat-label">总行数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.codeLines}</div>
+                        <div class="stat-label">代码行数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.commentLines}</div>
+                        <div class="stat-label">注释行数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.emptyLines}</div>
+                        <div class="stat-label">空行数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.characters}</div>
+                        <div class="stat-label">字符数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.words}</div>
+                        <div class="stat-label">单词数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.functions}</div>
+                        <div class="stat-label">函数数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.variables}</div>
+                        <div class="stat-label">变量数</div>
+                    </div>
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>关键字统计:</strong><br>
+                    ${Object.entries(stats.keywords).map(([keyword, count]) => `• ${keyword}: ${count}次`).join('<br>')}
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <strong>复杂度分析:</strong><br>
+                    • 循环复杂度: ${stats.cyclomaticComplexity}<br>
+                    • 嵌套深度: ${stats.nestingDepth}<br>
+                    • 代码密度: ${((stats.codeLines / stats.totalLines) * 100).toFixed(1)}%
+                </div>
+            `;
+            
+            createModal('📈 代码统计', modalContent, '<button onclick="this.closest(\'.modal\').remove()">关闭</button>');
+        }
+        
+        // 代码统计算法
+        function calculateCodeStats(code) {
+            const lines = code.split('\n');
+            const stats = {
+                totalLines: lines.length,
+                codeLines: 0,
+                commentLines: 0,
+                emptyLines: 0,
+                characters: code.length,
+                words: 0,
+                functions: 0,
+                variables: 0,
+                keywords: {},
+                cyclomaticComplexity: 1,
+                nestingDepth: 0
+            };
+            
+            let currentDepth = 0;
+            let maxDepth = 0;
+            
+            // 分析每一行
+            for (const line of lines) {
+                const trimmed = line.trim();
+                
+                if (!trimmed) {
+                    stats.emptyLines++;
+                } else if (trimmed.startsWith('//') || trimmed.startsWith('/*')) {
+                    stats.commentLines++;
+                } else {
+                    stats.codeLines++;
+                    
+                    // 计算嵌套深度
+                    const openBraces = (trimmed.match(/{/g) || []).length;
+                    const closeBraces = (trimmed.match(/}/g) || []).length;
+                    currentDepth += openBraces - closeBraces;
+                    maxDepth = Math.max(maxDepth, currentDepth);
+                }
+            }
+            
+            stats.nestingDepth = maxDepth;
+            
+            // 统计单词
+            stats.words = code.split(/\s+/).filter(word => word.length > 0).length;
+            
+            // 统计函数
+            const functionMatches = code.match(/function\s+[a-zA-Z_$][a-zA-Z0-9_$]*/g);
+            const arrowFunctions = code.match(/[a-zA-Z_$][a-zA-Z0-9_$]*\s*=.*?=>/g);
+            stats.functions = (functionMatches ? functionMatches.length : 0) + (arrowFunctions ? arrowFunctions.length : 0);
+            
+            // 统计变量声明
+            const variableMatches = code.match(/(?:const|let|var)\s+[a-zA-Z_$][a-zA-Z0-9_$]*/g);
+            stats.variables = variableMatches ? variableMatches.length : 0;
+            
+            // 统计关键字
+            const keywords = ['if', 'else', 'for', 'while', 'switch', 'case', 'function', 'return', 'var', 'let', 'const'];
+            for (const keyword of keywords) {
+                const matches = code.match(new RegExp('\\b' + keyword + '\\b', 'g'));
+                if (matches) {
+                    stats.keywords[keyword] = matches.length;
+                }
+            }
+            
+            // 计算循环复杂度
+            const complexityKeywords = ['if', 'else if', 'for', 'while', 'switch', 'case', 'catch'];
+            for (const keyword of complexityKeywords) {
+                const matches = code.match(new RegExp('\\b' + keyword + '\\b', 'g'));
+                if (matches) {
+                    stats.cyclomaticComplexity += matches.length;
+                }
+            }
+            
+            return stats;
+        }
+        
+        // 代码验证
+        function validateResult() {
+            const output = document.getElementById('output');
+            let content = output.innerHTML.includes('<span') ? stripHTMLTags(output.innerHTML) : output.textContent;
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                showToast('请先获取解密结果');
+                return;
+            }
+            
+            const validation = validateJavaScript(content);
+            
+            const modalContent = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">
+                        ${validation.isValid ? '✅' : '❌'}
+                    </div>
+                    <div style="font-size: 1.2rem; font-weight: bold;">
+                        ${validation.isValid ? '代码语法正确' : '代码存在语法错误'}
+                    </div>
+                </div>
+                
+                ${!validation.isValid ? `
+                    <div style="background: rgba(239,68,68,0.2); padding: 15px; border-radius: 6px; margin: 15px 0;">
+                        <strong style="color: #ef4444;">语法错误:</strong><br>
+                        <code style="color: #fff;">${validation.error}</code>
+                    </div>
+                ` : ''}
+                
+                <div style="margin: 15px 0;">
+                    <strong>代码检查结果:</strong><br>
+                    ${validation.checks.map(check => `• ${check.name}: ${check.passed ? '✅' : '❌'} ${check.message}`).join('<br>')}
+                </div>
+                
+                ${validation.warnings.length > 0 ? `
+                    <div style="background: rgba(245,158,11,0.2); padding: 10px; border-radius: 6px; margin: 15px 0;">
+                        <strong style="color: #f59e0b;">⚠️ 警告:</strong><br>
+                        ${validation.warnings.map(w => `• ${w}`).join('<br>')}
+                    </div>
+                ` : ''}
+                
+                <div style="margin: 15px 0;">
+                    <strong>建议:</strong><br>
+                    ${validation.suggestions.map(s => `• ${s}`).join('<br>')}
+                </div>
+            `;
+            
+            createModal('✅ 代码验证', modalContent, '<button onclick="this.closest(\'.modal\').remove()">关闭</button>');
+        }
+        
+        // JavaScript验证算法
+        function validateJavaScript(code) {
+            const validation = {
+                isValid: false,
+                error: null,
+                checks: [],
+                warnings: [],
+                suggestions: []
+            };
+            
+            // 语法检查
+            try {
+                new Function(code);
+                validation.isValid = true;
+            } catch (error) {
+                validation.isValid = false;
+                validation.error = error.message;
+            }
+            
+            // 基本检查
+            validation.checks.push({
+                name: '语法检查',
+                passed: validation.isValid,
+                message: validation.isValid ? '语法正确' : '存在语法错误'
+            });
+            
+            // 括号匹配检查
+            const openBraces = (code.match(/{/g) || []).length;
+            const closeBraces = (code.match(/}/g) || []).length;
+            const braceMatch = openBraces === closeBraces;
+            
+            validation.checks.push({
+                name: '括号匹配',
+                passed: braceMatch,
+                message: braceMatch ? '括号匹配正确' : `不匹配 (${openBraces}个{, ${closeBraces}个})`
+            });
+            
+            // 引号匹配检查
+            const singleQuotes = (code.match(/'/g) || []).length;
+            const doubleQuotes = (code.match(/"/g) || []).length;
+            const quotesOK = singleQuotes % 2 === 0 && doubleQuotes % 2 === 0;
+            
+            validation.checks.push({
+                name: '引号匹配',
+                passed: quotesOK,
+                message: quotesOK ? '引号匹配正确' : '引号可能不匹配'
+            });
+            
+            // 检查潜在问题
+            if (code.includes('eval(')) {
+                validation.warnings.push('使用了eval()函数，可能存在安全风险');
+            }
+            if (code.includes('innerHTML')) {
+                validation.warnings.push('使用innerHTML可能导致XSS攻击');
+            }
+            if (code.includes('document.write')) {
+                validation.warnings.push('document.write已过时，建议使用现代DOM方法');
+            }
+            
+            // 生成建议
+            if (!validation.isValid) {
+                validation.suggestions.push('修复语法错误后重新验证');
+            }
+            if (!braceMatch) {
+                validation.suggestions.push('检查并修复括号匹配问题');
+            }
+            if (!quotesOK) {
+                validation.suggestions.push('检查引号是否正确配对');
+            }
+            if (validation.warnings.length === 0 && validation.isValid) {
+                validation.suggestions.push('代码质量良好，建议进行功能测试');
+            }
+            
+            return validation;
         }
         
         // 初始化
@@ -680,7 +1558,7 @@
             fileUpload.addEventListener('dragleave', handleDragLeave);
             fileUpload.addEventListener('drop', handleDrop);
             
-            addLog('系统初始化完成 v4.3 - 已支持语法高亮和文件上传', 'success');
+            addLog('系统初始化完成 v4.3 - 修复版，已添加高级分析功能', 'success');
         });
         
         // 日志
@@ -725,13 +1603,6 @@
             } else {
                 output.textContent = content;
             }
-        }
-        
-        // HTML转义（不再需要，已整合到highlightJS函数中）
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
         }
         
         // 文件选择处理
@@ -792,9 +1663,6 @@
                     document.getElementById('input').value = content;
                     showToast(`文件加载成功: ${file.name}`);
                     addLog(`文件加载成功 (${content.length} 字符)`, 'success');
-                    
-                    // 滚动到代码输入区域
-                    document.querySelector('[data-section="input"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     
                 } catch (error) {
                     addLog(`文件处理失败: ${error.message}`, 'error');
@@ -890,23 +1758,7 @@
             const processed = preprocessCiphertext(input);
             const issues = validateCiphertext(processed);
             
-            // 创建预览弹窗
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.8); z-index: 10000; display: flex;
-                align-items: center; justify-content: center; padding: 20px;
-            `;
-            
-            const content = document.createElement('div');
-            content.style.cssText = `
-                background: #1e1e1e; border-radius: 12px; padding: 20px;
-                max-width: 90%; max-height: 80%; overflow-y: auto;
-                color: white; font-family: monospace;
-            `;
-            
-            content.innerHTML = `
-                <h3 style="margin-bottom: 15px; color: #3b82f6;">🔍 预处理预览</h3>
+            const content = `
                 <div style="margin-bottom: 15px;">
                     <strong>原始长度:</strong> ${input.length} 字符<br>
                     <strong>处理后长度:</strong> ${processed.length} 字符<br>
@@ -920,23 +1772,20 @@
                 ` : '<div style="background: rgba(16,185,129,0.2); padding: 10px; border-radius: 6px; margin-bottom: 15px; color: #10b981;"><strong>✅ 密文质量良好</strong></div>'}
                 <div style="margin-bottom: 15px;">
                     <strong>处理后的密文:</strong>
-                    <textarea readonly style="width: 100%; height: 200px; margin-top: 8px; padding: 10px; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 6px; font-family: monospace; font-size: 12px;">${processed}</textarea>
-                </div>
-                <div style="text-align: center;">
-                    <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin-right: 10px; cursor: pointer;">关闭</button>
-                    <button onclick="document.getElementById('input').value = '${processed.replace(/'/g, "\\'")}'; this.parentElement.parentElement.parentElement.remove(); showToast('已应用预处理结果');" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">应用处理结果</button>
+                    <textarea readonly>${processed}</textarea>
                 </div>
             `;
             
-            modal.appendChild(content);
-            document.body.appendChild(modal);
+            const buttons = `
+                <button onclick="this.closest('.modal').remove()">关闭</button>
+                <button class="success" onclick="
+                    document.getElementById('input').value = \`${processed.replace(/`/g, '\\`')}\`;
+                    this.closest('.modal').remove();
+                    showToast('已应用预处理结果');
+                ">应用处理结果</button>
+            `;
             
-            // 点击背景关闭
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            });
+            createModal('🔍 预处理预览', content, buttons);
         }
         
         // 智能清理输入
@@ -972,6 +1821,7 @@
                 addLog('密文质量问题: ' + issues.join(', '), 'warning');
             }
         }
+        
         function clearInput() {
             document.getElementById('input').value = '';
             document.getElementById('remoteUrl').value = '';
@@ -1066,31 +1916,7 @@
                 .replace(/\s+/g, ' ')
                 .trim();
             
-            // 检查是否包含明显的密文特征
-            const hasObfuscation = [
-                /\b_0x[a-f0-9]+/i,           // 十六进制变量名
-                /\b0x[a-f0-9]+/i,            // 十六进制数值
-                /\\x[0-9a-f]{2}/i,           // 十六进制转义
-                /\\u[0-9a-f]{4}/i,           // Unicode转义
-                /\b[a-zA-Z_$][a-zA-Z0-9_$]{20,}/,  // 长变量名
-                /[(){}\[\]]{10,}/,           // 密集的括号
-                /['"`]{3,}/,                 // 连续引号
-                /eval\s*\(/i,                // eval调用
-                /Function\s*\(/i,            // Function构造器
-                /atob\s*\(/i,                // base64解码
-                /unescape\s*\(/i,            // URL解码
-                /String\.fromCharCode/i       // 字符编码
-            ];
-            
-            const isObfuscated = hasObfuscation.some(pattern => pattern.test(processed));
-            
-            if (isObfuscated) {
-                addLog('检测到混淆代码特征，保持原始内容', 'info');
-                return processed;
-            } else {
-                addLog('未检测到明显的密文特征，可能是普通代码', 'warning');
-                return processed;
-            }
+            return processed;
         }
         
         // 验证密文质量
@@ -1124,6 +1950,7 @@
             
             return issues;
         }
+        
         async function startDecrypt() {
             const input = document.getElementById('input').value.trim();
             
@@ -1513,7 +2340,57 @@
                 e.preventDefault();
                 clearAll();
             }
+            // F1: 显示帮助
+            else if (e.key === 'F1') {
+                e.preventDefault();
+                showHelp();
+            }
         });
+        
+        // 显示帮助信息
+        function showHelp() {
+            const helpContent = `
+                <div style="line-height: 1.6;">
+                    <h4 style="color: #3b82f6; margin-bottom: 10px;">🚀 快速开始</h4>
+                    <p>1. 配置 GitHub Token 和仓库地址<br>
+                    2. 输入或上传需要解密的密文<br>
+                    3. 点击"解密"按钮开始处理<br>
+                    4. 等待 GitHub Actions 完成解密<br>
+                    5. 点击"读取"获取解密结果</p>
+                    
+                    <h4 style="color: #10b981; margin: 15px 0 10px 0;">⌨️ 快捷键</h4>
+                    <p>• <code>Ctrl/Cmd + Enter</code> - 开始解密<br>
+                    • <code>Ctrl/Cmd + S</code> - 下载结果<br>
+                    • <code>Ctrl/Cmd + C</code> - 复制结果<br>
+                    • <code>Escape</code> - 清除所有<br>
+                    • <code>F1</code> - 显示此帮助</p>
+                    
+                    <h4 style="color: #f59e0b; margin: 15px 0 10px 0;">🛠️ 高级功能</h4>
+                    <p>• <strong>高级预处理</strong> - 智能识别各种编码格式<br>
+                    • <strong>质量分析</strong> - 评估密文质量和复杂度<br>
+                    • <strong>结果分析</strong> - 分析解密后的代码结构<br>
+                    • <strong>代码美化</strong> - 格式化和美化代码<br>
+                    • <strong>代码统计</strong> - 详细的代码统计信息<br>
+                    • <strong>代码验证</strong> - 检查语法和潜在问题</p>
+                    
+                    <h4 style="color: #8b5cf6; margin: 15px 0 10px 0;">📝 支持的格式</h4>
+                    <p>• eval() 包装的密文<br>
+                    • Function 构造器密文<br>
+                    • Base64 编码<br>
+                    • 十六进制编码<br>
+                    • Unicode 转义序列<br>
+                    • JavaScript 混淆代码</p>
+                    
+                    <h4 style="color: #ef4444; margin: 15px 0 10px 0;">⚠️ 注意事项</h4>
+                    <p>• 确保 GitHub 仓库已配置 decode_action<br>
+                    • Token 需要 repo 权限<br>
+                    • Actions 执行可能需要1-3分钟<br>
+                    • 请勿在密文中包含敏感信息</p>
+                </div>
+            `;
+            
+            createModal('📖 使用帮助', helpContent, '<button onclick="this.closest(\'.modal\').remove()">关闭</button>');
+        }
         
         // 添加触摸反馈（移动端）
         if ('ontouchstart' in window) {
@@ -1544,6 +2421,161 @@
                 }
             }
         });
+        
+        // 添加全局错误处理
+        window.addEventListener('error', function(e) {
+            addLog('发生错误: ' + e.message, 'error');
+            console.error('Global error:', e);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            addLog('Promise 错误: ' + e.reason, 'error');
+            console.error('Unhandled promise rejection:', e);
+        });
+        
+        // 性能监控
+        if ('performance' in window) {
+            window.addEventListener('load', function() {
+                setTimeout(() => {
+                    const perfData = performance.getEntriesByType('navigation')[0];
+                    if (perfData) {
+                        const loadTime = Math.round(perfData.loadEventEnd - perfData.loadEventStart);
+                        addLog(`页面加载完成，耗时: ${loadTime}ms`, 'info');
+                    }
+                }, 100);
+            });
+        }
+        
+        // 离线状态检测
+        window.addEventListener('online', function() {
+            addLog('网络连接已恢复', 'success');
+            showToast('网络连接已恢复');
+        });
+        
+        window.addEventListener('offline', function() {
+            addLog('网络连接已断开', 'warning');
+            showToast('网络连接已断开，请检查网络设置');
+        });
+        
+        // 添加版本检查（模拟）
+        function checkVersion() {
+            const currentVersion = '4.3';
+            const storedVersion = localStorage.getItem('app_version');
+            
+            if (!storedVersion || storedVersion !== currentVersion) {
+                localStorage.setItem('app_version', currentVersion);
+                
+                if (storedVersion) {
+                    showToast(`已更新到 v${currentVersion}，新增高级分析功能！`, 5000);
+                    addLog(`版本更新: v${storedVersion} → v${currentVersion}`, 'success');
+                } else {
+                    addLog(`首次使用 v${currentVersion}，欢迎！`, 'success');
+                }
+            }
+        }
+        
+        // 在页面加载完成后检查版本
+        window.addEventListener('load', checkVersion);
+        
+        // 添加数据统计（隐私保护）
+        function trackUsage(action) {
+            const stats = JSON.parse(localStorage.getItem('usage_stats') || '{}');
+            stats[action] = (stats[action] || 0) + 1;
+            stats.lastUsed = Date.now();
+            localStorage.setItem('usage_stats', JSON.stringify(stats));
+        }
+        
+        // 在关键操作时记录统计
+        const originalStartDecrypt = startDecrypt;
+        window.startDecrypt = function() {
+            trackUsage('decrypt');
+            return originalStartDecrypt.apply(this, arguments);
+        };
+        
+        const originalGetResult = getResult;
+        window.getResult = function() {
+            trackUsage('getResult');
+            return originalGetResult.apply(this, arguments);
+        };
+        
+        // 显示使用统计（仅本地）
+        function showUsageStats() {
+            const stats = JSON.parse(localStorage.getItem('usage_stats') || '{}');
+            const totalOps = Object.values(stats).reduce((sum, val) => typeof val === 'number' ? sum + val : sum, 0);
+            
+            const content = `
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.decrypt || 0}</div>
+                        <div class="stat-label">解密次数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.getResult || 0}</div>
+                        <div class="stat-label">读取次数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${totalOps}</div>
+                        <div class="stat-label">总操作数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${stats.lastUsed ? new Date(stats.lastUsed).toLocaleDateString() : '无'}</div>
+                        <div class="stat-label">最后使用</div>
+                    </div>
+                </div>
+                
+                <div style="margin: 15px 0; font-size: 0.9rem; opacity: 0.8;">
+                    💡 所有统计数据仅保存在本地，不会上传到任何服务器
+                </div>
+            `;
+            
+            createModal('📊 使用统计', content, '<button onclick="this.closest(\'.modal\').remove()">关闭</button>');
+        }
+        
+        // 添加彩蛋功能
+        let konamiCode = [];
+        const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+        
+        document.addEventListener('keydown', function(e) {
+            konamiCode.push(e.code);
+            if (konamiCode.length > konamiSequence.length) {
+                konamiCode.shift();
+            }
+            
+            if (konamiCode.join(',') === konamiSequence.join(',')) {
+                showEasterEgg();
+                konamiCode = [];
+            }
+        });
+        
+        function showEasterEgg() {
+            const eggContent = `
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 20px;">🎉</div>
+                    <h3 style="color: #10b981; margin-bottom: 15px;">恭喜发现彩蛋！</h3>
+                    <p style="margin-bottom: 15px;">你找到了隐藏的开发者模式！</p>
+                    
+                    <div style="background: rgba(16,185,129,0.2); padding: 15px; border-radius: 6px; margin: 15px 0;">
+                        <strong>🛠️ 开发者功能已解锁:</strong><br>
+                        • 详细性能监控<br>
+                        • 高级调试信息<br>
+                        • 使用统计查看<br>
+                        • 实验性功能访问
+                    </div>
+                </div>
+            `;
+            
+            const buttons = `
+                <button onclick="this.closest('.modal').remove()">关闭</button>
+                <button class="success" onclick="showUsageStats(); this.closest('.modal').remove();">查看统计</button>
+            `;
+            
+            createModal('🎊 彩蛋发现', eggContent, buttons);
+            
+            // 启用开发者模式
+            localStorage.setItem('developer_mode', 'true');
+            addLog('🎉 开发者模式已启用！', 'success');
+            showToast('🎉 开发者模式已启用！');
+        }
     </script>
 </body>
 </html>
