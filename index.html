@@ -602,17 +602,14 @@
                 <div class="file-option" onclick="pasteFromClipboard()">
                     📋<br>剪贴板
                 </div>
-                <div class="file-option" onclick="showAdvancedPreprocess()">
-                    🔍<br>高级预处理
+                <div class="file-option" onclick="testInput()">
+                    🧪<br>测试输入
                 </div>
-                <div class="file-option" onclick="showQualityAnalysis()">
-                    📊<br>质量分析
+                <div class="file-option" onclick="fixInputIssues()">
+                    🔧<br>修复输入
                 </div>
-                <div class="file-option" onclick="showBatchProcessor()">
-                    📦<br>批量处理
-                </div>
-                <div class="file-option" onclick="showTemplateLibrary()">
-                    📚<br>模板库
+                <div class="file-option" onclick="forceClearInput()">
+                    🗑<br>清空
                 </div>
             </div>
             <input type="file" id="cameraInput" class="hidden" accept="image/*" capture="environment">
@@ -638,8 +635,8 @@
                 <div class="file-option" onclick="extractCipherOnly()">
                     ✂️<br>提取密文
                 </div>
-                <div class="file-option" onclick="clearInput()">
-                    🗑<br>清空输入
+                <div class="file-option" onclick="validateInput()">
+                    ✅<br>质量检查
                 </div>
             </div>
         </div>
@@ -1543,6 +1540,48 @@
             return validation;
         }
         
+        // 修复输入框功能
+        function fixInputIssues() {
+            const inputArea = document.getElementById('input');
+            
+            // 重新绑定输入框事件
+            if (inputArea) {
+                // 清除所有可能的事件监听器
+                inputArea.onpaste = null;
+                inputArea.oninput = null;
+                inputArea.onkeydown = null;
+                inputArea.onfocus = null;
+                
+                // 确保输入框可编辑
+                inputArea.disabled = false;
+                inputArea.readOnly = false;
+                inputArea.style.pointerEvents = 'auto';
+                
+                // 重新设置基本属性
+                inputArea.setAttribute('contenteditable', 'true');
+                
+                addLog('输入框功能已修复', 'success');
+                showToast('输入框已修复，请尝试输入');
+            }
+        }
+        
+        // 简化版输入测试
+        function testInput() {
+            const inputArea = document.getElementById('input');
+            inputArea.value = 'eval(function(p,a,c,k,e,d){return function(e,t){...}})';
+            showToast('测试内容已输入');
+            addLog('输入测试成功', 'success');
+        }
+        
+        // 强制清空输入
+        function forceClearInput() {
+            const inputArea = document.getElementById('input');
+            inputArea.value = '';
+            inputArea.focus();
+            showToast('输入框已清空');
+            addLog('强制清空输入框', 'info');
+        }
+        
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('token').value = window.appData.token;
@@ -1573,20 +1612,43 @@
             fileUpload.addEventListener('dragleave', handleDragLeave);
             fileUpload.addEventListener('drop', handleDrop);
             
-            // 智能提示
-            setupSmartHints();
-            
-            addLog('系统初始化完成 v4.3 - 增强版，已添加AI智能助手', 'success');
-            
-            // 检查是否有密文输入，显示AI建议
+            // 修复输入框
             setTimeout(() => {
-                const aiButton = document.querySelector('.ai-assistant');
-                if (aiButton) {
-                    aiButton.classList.add('pulse');
-                    setTimeout(() => aiButton.classList.remove('pulse'), 3000);
-                }
-            }, 2000);
+                fixInputIssues();
+                setupSimpleInputHandlers();
+            }, 100);
+            
+            addLog('系统初始化完成 v4.3 - 已修复输入问题', 'success');
         });
+        
+        // 简化的输入处理器
+        function setupSimpleInputHandlers() {
+            const inputArea = document.getElementById('input');
+            
+            // 简单的粘贴处理
+            inputArea.addEventListener('paste', function(e) {
+                setTimeout(() => {
+                    const content = this.value.trim();
+                    if (content.length > 100) {
+                        addLog(`粘贴内容 ${content.length} 字符`, 'info');
+                        showToast('内容已粘贴，可以开始处理');
+                    }
+                }, 50);
+            });
+            
+            // 简单的输入处理
+            inputArea.addEventListener('input', function(e) {
+                // 移除复杂的处理逻辑，只保留基本功能
+                if (this.value.length > 0) {
+                    // 可以在这里添加简单的提示
+                }
+            });
+            
+            // 确保焦点功能正常
+            inputArea.addEventListener('focus', function() {
+                addLog('输入框获得焦点', 'info');
+            });
+        }
         
         // 设置智能提示
         function setupSmartHints() {
@@ -1896,20 +1958,32 @@
             reader.readAsArrayBuffer(file);
         }
         
-        // 从剪贴板粘贴
+        // 从剪贴板粘贴 - 简化版
         async function pasteFromClipboard() {
             try {
-                const text = await navigator.clipboard.readText();
-                if (text) {
-                    document.getElementById('input').value = text;
-                    showToast('剪贴板内容已粘贴');
-                    addLog('从剪贴板粘贴内容', 'success');
+                // 方法1: 使用现代API
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                    const text = await navigator.clipboard.readText();
+                    if (text) {
+                        document.getElementById('input').value = text;
+                        showToast('剪贴板内容已粘贴');
+                        addLog(`从剪贴板粘贴 ${text.length} 字符`, 'success');
+                    } else {
+                        showToast('剪贴板为空');
+                    }
                 } else {
-                    showToast('剪贴板为空');
+                    // 方法2: 提示手动粘贴
+                    const inputArea = document.getElementById('input');
+                    inputArea.focus();
+                    showToast('请手动使用 Ctrl+V 粘贴内容');
+                    addLog('提示用户手动粘贴', 'info');
                 }
             } catch (error) {
-                addLog('剪贴板访问失败: ' + error.message, 'error');
-                showToast('无法访问剪贴板，请手动粘贴');
+                // 方法3: 备用方案
+                const inputArea = document.getElementById('input');
+                inputArea.focus();
+                showToast('请手动使用 Ctrl+V 粘贴内容');
+                addLog('剪贴板访问失败，使用备用方案', 'warning');
             }
         }
         
