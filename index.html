@@ -617,7 +617,7 @@
         <div class="header-content">
             <div style="display: flex; align-items: center;">
                 <h1 class="logo">羊毛助手</h1>
-                <span class="version">v4.2</span>
+                <span class="version">v4.3</span>
             </div>
             <div style="color: #6b7280; font-size: 0.875rem;">
                 自动解密脚本工具
@@ -952,7 +952,12 @@
                     
                     // 3. 获取解密结果（无论是否超时都尝试）
                     this.addLog('尝试获取解密结果...', 'info');
-                    await this.getResult();
+                    const success = await this.getResult();
+                    
+                    // 如果获取失败，显示手动提示
+                    if (!success) {
+                        this.showTimeoutHelper();
+                    }
                     
                 } catch (error) {
                     this.addLog('解密流程出错: ' + error.message, 'error');
@@ -961,12 +966,31 @@
                     // 即使出错也尝试获取结果
                     this.addLog('尝试获取可能存在的解密结果...', 'info');
                     try {
-                        await this.getResult();
+                        const success = await this.getResult();
+                        if (!success) {
+                            this.showTimeoutHelper();
+                        }
                     } catch (e) {
-                        // 最终失败，显示错误信息
-                        this.displayResult(`// ❌ 解密失败\n// 错误: ${error.message}\n// \n// 请检查配置并重试，或手动访问:\n// https://github.com/${this.repoName}/blob/main/output.js\n// \n// 如果Actions正在执行中，请稍后手动刷新页面获取结果`);
+                        this.showTimeoutHelper();
                     }
                 }
+            },
+            
+            showTimeoutHelper() {
+                this.displayResult(`// ⏰ 等待超时，但Actions可能仍在执行中
+//
+// 🔄 请尝试以下操作:
+// 1. 点击 "📥 读取结果" 按钮手动获取
+// 2. 或访问 GitHub 手动查看:
+//    https://github.com/${this.repoName}/blob/main/output.js
+// 3. 检查 Actions 执行状态:
+//    https://github.com/${this.repoName}/actions
+//
+// 💡 提示: Actions 可能需要更长时间才能完成
+// 请稍后再次点击 "📥 读取结果" 按钮`);
+                
+                this.addLog('显示超时帮助信息', 'info');
+                this.showToast('超时了，但可以点击"读取结果"按钮手动获取', 'warning');
             },
             
             async checkGitHubToken() {
@@ -1181,6 +1205,12 @@
             async getResult() {
                 this.addLog('正在获取解密结果...', 'info');
                 
+                // 检查是否配置了GitHub
+                if (!this.githubToken || !this.repoName) {
+                    this.showToast('请先配置 GitHub Token 和仓库地址', 'error');
+                    return false;
+                }
+                
                 // 简单的时间戳，不要过度复杂化
                 const timestamp = Date.now();
                 
@@ -1213,8 +1243,10 @@
                             this.addLog('GitHub API获取成功！', 'success');
                             this.showToast('解密成功！');
                             document.getElementById('progress-bar').style.width = '0%';
-                            return;
+                            return true;
                         }
+                    } else if (response.status === 404) {
+                        this.addLog('output.js 文件不存在，Actions可能还未完成', 'warning');
                     }
                 } catch (error) {
                     this.addLog('GitHub API失败: ' + error.message, 'warning');
@@ -1236,8 +1268,10 @@
                             this.addLog('Raw URL获取成功！', 'success');
                             this.showToast('解密成功！');
                             document.getElementById('progress-bar').style.width = '0%';
-                            return;
+                            return true;
                         }
+                    } else if (response.status === 404) {
+                        this.addLog('Raw URL 404，文件可能还未生成', 'warning');
                     }
                 } catch (error) {
                     this.addLog('Raw URL失败: ' + error.message, 'warning');
@@ -1260,15 +1294,17 @@
                             this.addLog('代理获取成功！', 'success');
                             this.showToast('解密成功！');
                             document.getElementById('progress-bar').style.width = '0%';
-                            return;
+                            return true;
                         }
                     }
                 } catch (error) {
                     this.addLog('代理获取失败: ' + error.message, 'warning');
                 }
                 
-                // 所有方法都失败，提供手动方案
-                this.showSimpleManualHelp();
+                // 所有方法都失败，显示帮助信息
+                this.addLog('所有获取方法都失败', 'error');
+                this.showToast('获取失败，请检查Actions状态或稍后重试', 'error');
+                return false;
             },
             
             showSimpleManualHelp() {
