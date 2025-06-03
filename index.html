@@ -774,27 +774,45 @@
             };
         }
         
-        // 安全的AAEncode解密
+        // 简单高效的AAEncode解密（基于aadecode.js）
         function decodeAAEncode(code) {
             try {
                 addLog('开始AAEncode解密...', 'info');
                 
-                // 创建安全的执行环境
-                const result = executeAAEncodeInSafebox(code);
+                // 使用简化的aadecode方法
+                const result = aadecode(code.trim());
                 
                 if (result && result.length > 0) {
                     addLog('AAEncode解密成功！', 'success');
                     return {
                         success: true,
-                        method: '安全沙箱执行',
+                        method: 'aadecode简化解密',
                         result: result,
-                        warning: '已在隔离环境中安全执行'
+                        warning: null
                     };
                 } else {
                     throw new Error('解密结果为空');
                 }
                 
             } catch (error) {
+                addLog('AAEncode简化解密失败，尝试备用方案...', 'warning');
+                
+                // 备用方案：安全沙箱执行
+                try {
+                    const result = executeAAEncodeInSafebox(code);
+                    if (result && result.length > 0) {
+                        addLog('AAEncode备用解密成功！', 'success');
+                        return {
+                            success: true,
+                            method: '安全沙箱执行',
+                            result: result,
+                            warning: '使用备用解密方案'
+                        };
+                    }
+                } catch (e2) {
+                    // 忽略备用方案错误
+                }
+                
                 addLog('AAEncode解密失败: ' + error.message, 'error');
                 return {
                     success: false,
@@ -805,7 +823,39 @@
             }
         }
         
-        // 在安全沙箱中执行AAEncode
+        // AAEncode解码核心函数（简化版aadecode）
+        function aadecode(text) {
+            try {
+                // 清理代码，移除可能的干扰字符
+                let cleanText = text.trim();
+                
+                // 移除常见的AAEncode包装模式
+                cleanText = cleanText.replace(/^\)\s*\('_'\)/, "");
+                cleanText = cleanText.replace(/\(ﾟДﾟ\)\s*\['_'\]\s*\(/, "return ");
+                
+                // 如果代码以特定模式开始，添加return
+                if (!cleanText.includes('return ') && cleanText.includes('ﾟДﾟ')) {
+                    cleanText = 'return ' + cleanText;
+                }
+                
+                // 执行解密
+                const decodeFunction = new Function(cleanText);
+                const result = decodeFunction();
+                
+                return result;
+                
+            } catch (error) {
+                // 如果简化方法失败，尝试直接执行
+                try {
+                    const directResult = new Function(text)();
+                    return directResult;
+                } catch (e) {
+                    throw new Error(`解密失败: ${error.message}`);
+                }
+            }
+        }
+        
+        // 备用：在安全沙箱中执行AAEncode
         function executeAAEncodeInSafebox(code) {
             // 创建隔离的iframe
             const iframe = document.createElement('iframe');
