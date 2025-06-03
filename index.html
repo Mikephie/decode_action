@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v4.3</title>
+    <title>羊毛助手 v5.0</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -556,8 +556,8 @@
                 <div class="file-option" onclick="showPreprocessPreview()">
                     🔍<br>预处理预览
                 </div>
-                <div class="file-option" onclick="cleanInput()">
-                    🧹<br>智能清理
+                <div class="file-option" onclick="showAdvancedPreprocess()">
+                    ⚙️<br>高级预处理
                 </div>
                 <div class="file-option" onclick="validateInput()">
                     ✅<br>质量检查
@@ -577,6 +577,21 @@
         <div class="section">
             <div class="section-title">✨ 解密结果</div>
             <div id="output" class="output">// 解密结果将显示在这里...</div>
+            
+            <div class="file-options" style="margin-top: 8px;">
+                <div class="file-option" onclick="analyzeResult()">
+                    📊<br>结果分析
+                </div>
+                <div class="file-option" onclick="beautifyCode()">
+                    🎨<br>代码美化
+                </div>
+                <div class="file-option" onclick="showCodeStats()">
+                    📈<br>代码统计
+                </div>
+                <div class="file-option" onclick="clearAll()">
+                    🗑<br>清除所有
+                </div>
+            </div>
         </div>
         
         <!-- 日志 -->
@@ -603,9 +618,9 @@
                 <div class="btn-icon">💾</div>
                 <div class="btn-text">下载</div>
             </button>
-            <button class="btn-red" onclick="clearAll()">
-                <div class="btn-icon">🗑</div>
-                <div class="btn-text">清除</div>
+            <button class="btn-red" onclick="showHistory()">
+                <div class="btn-icon">📚</div>
+                <div class="btn-text">历史</div>
             </button>
         </div>
     </div>
@@ -879,7 +894,408 @@
             }
         }
         
-        // 预处理预览
+        // 解密结果分析功能
+        function analyzeDecryptedCode(code) {
+            if (!code || code.includes('解密结果将显示在这里')) {
+                return null;
+            }
+            
+            const analysis = {
+                codeType: detectCodeType(code),
+                security: analyzeCodeSecurity(code),
+                complexity: analyzeCodeComplexity(code),
+                frameworks: detectFrameworks(code),
+                apis: detectAPIs(code),
+                statistics: getCodeStatistics(code),
+                suggestions: getOptimizationSuggestions(code)
+            };
+            
+            return analysis;
+        }
+        
+        // 检测代码类型
+        function detectCodeType(code) {
+            const patterns = {
+                'QuantumultX脚本': [/\$notify/, /\$done/, /\$request/, /\$response/],
+                'Surge脚本': [/\$httpClient/, /\$persistentStore/, /\$notification/],
+                'Loon脚本': [/\$loon/, /\$config/],
+                'Shadowrocket脚本': [/\$rocket/],
+                '小火箭脚本': [/\$task/, /\$prefs/],
+                'Node.js模块': [/module\.exports/, /require\s*\(/, /process\./],
+                'React组件': [/React/, /jsx/, /useState/, /useEffect/],
+                'Vue组件': [/Vue/, /\$refs/, /\$emit/, /mounted/],
+                'jQuery插件': [/\$\(/, /jQuery/, /\.ready/],
+                '原生JavaScript': [/document\./, /window\./, /console\./],
+                'TypeScript': [/interface\s+/, /type\s+/, /enum\s+/],
+                'API接口': [/fetch\s*\(/, /XMLHttpRequest/, /axios/],
+                '加密工具': [/CryptoJS/, /forge/, /crypto-js/],
+                '数据处理': [/JSON\.parse/, /JSON\.stringify/, /Array\./],
+                '破解脚本': [/crack/, /bypass/, /unlock/, /premium/]
+            };
+            
+            const detected = [];
+            for (const [type, regexes] of Object.entries(patterns)) {
+                if (regexes.some(regex => regex.test(code))) {
+                    detected.push(type);
+                }
+            }
+            
+            return detected.length > 0 ? detected : ['通用JavaScript'];
+        }
+        
+        // 安全性分析
+        function analyzeCodeSecurity(code) {
+            const risks = [];
+            const warnings = [];
+            const safe = [];
+            
+            // 高危模式
+            const highRiskPatterns = [
+                { pattern: /eval\s*\(/g, desc: 'eval函数调用 - 可能执行恶意代码' },
+                { pattern: /Function\s*\(/g, desc: 'Function构造器 - 动态代码执行风险' },
+                { pattern: /document\.write/g, desc: 'document.write - XSS风险' },
+                { pattern: /innerHTML\s*=/g, desc: 'innerHTML赋值 - XSS风险' },
+                { pattern: /location\.href\s*=/g, desc: '页面重定向 - 钓鱼风险' },
+                { pattern: /XMLHttpRequest|fetch/g, desc: '网络请求 - 数据泄露风险' }
+            ];
+            
+            // 中危模式
+            const mediumRiskPatterns = [
+                { pattern: /localStorage|sessionStorage/g, desc: '本地存储操作' },
+                { pattern: /cookie/gi, desc: 'Cookie操作' },
+                { pattern: /btoa|atob/g, desc: 'Base64编解码' },
+                { pattern: /setTimeout|setInterval/g, desc: '定时器函数' },
+                { pattern: /window\.|document\./g, desc: 'DOM操作' }
+            ];
+            
+            // 安全特征
+            const safePatterns = [
+                { pattern: /console\.log/g, desc: '调试输出' },
+                { pattern: /JSON\.parse|JSON\.stringify/g, desc: 'JSON数据处理' },
+                { pattern: /Math\./g, desc: '数学计算' },
+                { pattern: /Array\.|String\./g, desc: '数据类型操作' }
+            ];
+            
+            // 检测高危模式
+            highRiskPatterns.forEach(({ pattern, desc }) => {
+                const matches = code.match(pattern);
+                if (matches) {
+                    risks.push(`${desc} (${matches.length}处)`);
+                }
+            });
+            
+            // 检测中危模式
+            mediumRiskPatterns.forEach(({ pattern, desc }) => {
+                const matches = code.match(pattern);
+                if (matches) {
+                    warnings.push(`${desc} (${matches.length}处)`);
+                }
+            });
+            
+            // 检测安全特征
+            safePatterns.forEach(({ pattern, desc }) => {
+                const matches = code.match(pattern);
+                if (matches) {
+                    safe.push(`${desc} (${matches.length}处)`);
+                }
+            });
+            
+            return {
+                level: risks.length > 0 ? '高风险' : warnings.length > 3 ? '中风险' : '低风险',
+                risks,
+                warnings,
+                safe
+            };
+        }
+        
+        // 代码复杂度分析
+        function analyzeCodeComplexity(code) {
+            const lines = code.split('\n').filter(line => line.trim());
+            const functions = (code.match(/function\s+\w+\s*\(/g) || []).length;
+            const loops = (code.match(/\b(for|while|do)\s*\(/g) || []).length;
+            const conditionals = (code.match(/\b(if|else|switch)\s*\(/g) || []).length;
+            const variables = (code.match(/\b(var|let|const)\s+\w+/g) || []).length;
+            const objects = (code.match(/\{[^}]*\}/g) || []).length;
+            
+            let complexity = 'Simple';
+            let score = 0;
+            
+            if (lines.length > 100) score += 2;
+            if (functions > 5) score += 2;
+            if (loops > 3) score += 1;
+            if (conditionals > 5) score += 1;
+            if (variables > 20) score += 1;
+            
+            if (score >= 5) complexity = 'Complex';
+            else if (score >= 3) complexity = 'Moderate';
+            
+            return {
+                level: complexity,
+                score,
+                metrics: {
+                    lines: lines.length,
+                    functions,
+                    loops,
+                    conditionals,
+                    variables,
+                    objects
+                }
+            };
+        }
+        
+        // 检测框架和库
+        function detectFrameworks(code) {
+            const frameworks = [];
+            const patterns = {
+                'jQuery': /\$\(|jQuery/,
+                'React': /React|jsx|useState|useEffect/,
+                'Vue.js': /Vue|v-if|v-for|\$refs/,
+                'Angular': /angular|ng-/,
+                'Lodash': /lodash|_\./,
+                'Axios': /axios/,
+                'Moment.js': /moment\(/,
+                'D3.js': /d3\./,
+                'Three.js': /THREE\./,
+                'Chart.js': /Chart\./,
+                'Express.js': /express\(/,
+                'Socket.io': /socket\.io/
+            };
+            
+            for (const [name, pattern] of Object.entries(patterns)) {
+                if (pattern.test(code)) {
+                    frameworks.push(name);
+                }
+            }
+            
+            return frameworks;
+        }
+        
+        // 检测API使用
+        function detectAPIs(code) {
+            const apis = [];
+            const patterns = {
+                'Fetch API': /fetch\s*\(/,
+                'XMLHttpRequest': /XMLHttpRequest|XHR/,
+                'WebSocket': /WebSocket/,
+                'LocalStorage': /localStorage/,
+                'SessionStorage': /sessionStorage/,
+                'Geolocation': /navigator\.geolocation/,
+                'Notification': /Notification/,
+                'FileReader': /FileReader/,
+                'Canvas': /getContext\s*\(\s*['"`]2d['"`]/,
+                'WebGL': /getContext\s*\(\s*['"`]webgl['"`]/,
+                'Web Workers': /Worker\s*\(/,
+                'Service Worker': /serviceWorker/
+            };
+            
+            for (const [name, pattern] of Object.entries(patterns)) {
+                if (pattern.test(code)) {
+                    apis.push(name);
+                }
+            }
+            
+            return apis;
+        }
+        
+        // 代码统计
+        function getCodeStatistics(code) {
+            const lines = code.split('\n');
+            const nonEmptyLines = lines.filter(line => line.trim()).length;
+            const comments = (code.match(/\/\/.*|\/\*[\s\S]*?\*\//g) || []).length;
+            const strings = (code.match(/["'`][^"'`]*["'`]/g) || []).length;
+            const numbers = (code.match(/\b\d+\.?\d*\b/g) || []).length;
+            
+            return {
+                totalLines: lines.length,
+                codeLines: nonEmptyLines,
+                emptyLines: lines.length - nonEmptyLines,
+                comments,
+                strings,
+                numbers,
+                characters: code.length,
+                words: code.split(/\s+/).length
+            };
+        }
+        
+        // 优化建议
+        function getOptimizationSuggestions(code) {
+            const suggestions = [];
+            
+            // 代码质量建议
+            if ((code.match(/var\s+/g) || []).length > 5) {
+                suggestions.push('建议使用 let/const 替代 var');
+            }
+            
+            if (code.includes('eval(')) {
+                suggestions.push('避免使用 eval() 函数，存在安全风险');
+            }
+            
+            if ((code.match(/function\s+\w+/g) || []).length > 10) {
+                suggestions.push('考虑将大函数拆分为更小的模块');
+            }
+            
+            if (code.length > 10000) {
+                suggestions.push('代码较长，建议分割为多个文件');
+            }
+            
+            if (!(code.includes('use strict'))) {
+                suggestions.push('建议添加 "use strict" 严格模式');
+            }
+            
+            if ((code.match(/console\.log/g) || []).length > 3) {
+                suggestions.push('生产环境中移除 console.log 调试语句');
+            }
+            
+            return suggestions;
+        }
+        
+        // 显示分析结果
+        function showAnalysisResults(analysis) {
+            if (!analysis) return;
+            
+            // 创建分析结果面板
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); z-index: 10000; display: flex;
+                align-items: center; justify-content: center; padding: 20px;
+                overflow-y: auto;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: linear-gradient(135deg, #1e1e1e 0%, #2a2a3a 100%);
+                border-radius: 12px; padding: 25px; max-width: 90%; max-height: 90%;
+                overflow-y: auto; color: white; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+                border: 1px solid rgba(255,255,255,0.1);
+            `;
+            
+            const { codeType, security, complexity, frameworks, apis, statistics, suggestions } = analysis;
+            
+            content.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #3b82f6; margin: 0;">📊 解密结果分析报告</h2>
+                    <button onclick="this.closest('.modal').remove()" style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">✕ 关闭</button>
+                </div>
+                
+                <!-- 代码类型 -->
+                <div style="background: rgba(59,130,246,0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #3b82f6;">
+                    <h3 style="color: #3b82f6; margin-bottom: 10px;">🏷️ 代码类型</h3>
+                    <div>${codeType.map(type => `<span style="background: rgba(59,130,246,0.3); padding: 4px 8px; border-radius: 4px; margin: 2px; display: inline-block;">${type}</span>`).join('')}</div>
+                </div>
+                
+                <!-- 安全性分析 -->
+                <div style="background: rgba(${security.level === '高风险' ? '239,68,68' : security.level === '中风险' ? '245,158,11' : '16,185,129'},0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid ${security.level === '高风险' ? '#ef4444' : security.level === '中风险' ? '#f59e0b' : '#10b981'};">
+                    <h3 style="color: ${security.level === '高风险' ? '#ef4444' : security.level === '中风险' ? '#f59e0b' : '#10b981'}; margin-bottom: 10px;">🔒 安全性分析 - ${security.level}</h3>
+                    ${security.risks.length > 0 ? `<div style="margin-bottom: 8px;"><strong style="color: #ef4444;">高风险项:</strong><ul style="margin: 5px 0 0 20px;">${security.risks.map(risk => `<li style="color: #ef4444;">${risk}</li>`).join('')}</ul></div>` : ''}
+                    ${security.warnings.length > 0 ? `<div style="margin-bottom: 8px;"><strong style="color: #f59e0b;">警告项:</strong><ul style="margin: 5px 0 0 20px;">${security.warnings.map(warning => `<li style="color: #f59e0b;">${warning}</li>`).join('')}</ul></div>` : ''}
+                    ${security.safe.length > 0 ? `<div><strong style="color: #10b981;">安全特征:</strong><ul style="margin: 5px 0 0 20px;">${security.safe.map(safe => `<li style="color: #10b981;">${safe}</li>`).join('')}</ul></div>` : ''}
+                </div>
+                
+                <!-- 复杂度分析 -->
+                <div style="background: rgba(139,92,246,0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #8b5cf6;">
+                    <h3 style="color: #8b5cf6; margin-bottom: 10px;">📈 复杂度分析 - ${complexity.level}</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">
+                        <div>代码行数: <strong>${complexity.metrics.lines}</strong></div>
+                        <div>函数数量: <strong>${complexity.metrics.functions}</strong></div>
+                        <div>循环数量: <strong>${complexity.metrics.loops}</strong></div>
+                        <div>条件语句: <strong>${complexity.metrics.conditionals}</strong></div>
+                        <div>变量数量: <strong>${complexity.metrics.variables}</strong></div>
+                        <div>对象数量: <strong>${complexity.metrics.objects}</strong></div>
+                    </div>
+                    <div style="margin-top: 10px;">复杂度得分: <strong style="color: ${complexity.score >= 5 ? '#ef4444' : complexity.score >= 3 ? '#f59e0b' : '#10b981'};">${complexity.score}/10</strong></div>
+                </div>
+                
+                <!-- 框架检测 -->
+                ${frameworks.length > 0 ? `
+                <div style="background: rgba(16,185,129,0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #10b981;">
+                    <h3 style="color: #10b981; margin-bottom: 10px;">🛠️ 检测到的框架/库</h3>
+                    <div>${frameworks.map(fw => `<span style="background: rgba(16,185,129,0.3); padding: 4px 8px; border-radius: 4px; margin: 2px; display: inline-block;">${fw}</span>`).join('')}</div>
+                </div>
+                ` : ''}
+                
+                <!-- API检测 -->
+                ${apis.length > 0 ? `
+                <div style="background: rgba(245,158,11,0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #f59e0b;">
+                    <h3 style="color: #f59e0b; margin-bottom: 10px;">🌐 使用的API</h3>
+                    <div>${apis.map(api => `<span style="background: rgba(245,158,11,0.3); padding: 4px 8px; border-radius: 4px; margin: 2px; display: inline-block;">${api}</span>`).join('')}</div>
+                </div>
+                ` : ''}
+                
+                <!-- 代码统计 -->
+                <div style="background: rgba(99,102,241,0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #6366f1;">
+                    <h3 style="color: #6366f1; margin-bottom: 10px;">📊 代码统计</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; font-size: 0.9em;">
+                        <div>总行数: <strong>${statistics.totalLines}</strong></div>
+                        <div>代码行: <strong>${statistics.codeLines}</strong></div>
+                        <div>空行: <strong>${statistics.emptyLines}</strong></div>
+                        <div>注释: <strong>${statistics.comments}</strong></div>
+                        <div>字符串: <strong>${statistics.strings}</strong></div>
+                        <div>数字: <strong>${statistics.numbers}</strong></div>
+                        <div>字符数: <strong>${statistics.characters.toLocaleString()}</strong></div>
+                        <div>单词数: <strong>${statistics.words.toLocaleString()}</strong></div>
+                    </div>
+                </div>
+                
+                <!-- 优化建议 -->
+                ${suggestions.length > 0 ? `
+                <div style="background: rgba(236,72,153,0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ec4899;">
+                    <h3 style="color: #ec4899; margin-bottom: 10px;">💡 优化建议</h3>
+                    <ul style="margin: 0 0 0 20px; line-height: 1.6;">
+                        ${suggestions.map(suggestion => `<li style="margin-bottom: 5px;">${suggestion}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="exportAnalysisReport(${JSON.stringify(analysis).replace(/"/g, '&quot;')})" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; margin-right: 10px; cursor: pointer;">📄 导出报告</button>
+                    <button onclick="this.closest('.modal').remove()" style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">关闭</button>
+                </div>
+            `;
+            
+            modal.appendChild(content);
+            modal.className = 'modal'; // 添加类名方便删除
+            document.body.appendChild(modal);
+            
+            // 点击背景关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // 导出分析报告
+        function exportAnalysisReport(analysis) {
+            const report = `
+解密结果分析报告
+生成时间: ${new Date().toLocaleString()}
+
+代码类型: ${analysis.codeType.join(', ')}
+安全等级: ${analysis.security.level}
+复杂度: ${analysis.complexity.level}
+
+详细信息:
+- 代码行数: ${analysis.statistics.codeLines}
+- 函数数量: ${analysis.complexity.metrics.functions}
+- 安全风险: ${analysis.security.risks.length}个
+- 检测框架: ${analysis.frameworks.join(', ') || '无'}
+- 使用API: ${analysis.apis.join(', ') || '无'}
+
+优化建议:
+${analysis.suggestions.map(s => `- ${s}`).join('\n')}
+            `.trim();
+            
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analysis_report_${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('分析报告已导出');
+        }
         function showPreprocessPreview() {
             const input = document.getElementById('input').value.trim();
             if (!input) {
@@ -1310,6 +1726,13 @@
                         showToast('解密成功！');
                         setProgress(0);
                         
+                        // 保存到历史记录
+                        const input = document.getElementById('input').value;
+                        if (input) {
+                            const analysis = analyzeDecryptedCode(content);
+                            HistoryManager.saveRecord(input, content, analysis);
+                        }
+                        
                         // 滚动到结果区域
                         document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
                         return true;
@@ -1334,6 +1757,13 @@
                         addLog('Raw URL获取成功！', 'success');
                         showToast('解密成功！');
                         setProgress(0);
+                        
+                        // 保存到历史记录
+                        const input = document.getElementById('input').value;
+                        if (input) {
+                            const analysis = analyzeDecryptedCode(content);
+                            HistoryManager.saveRecord(input, content, analysis);
+                        }
                         
                         // 滚动到结果区域
                         document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1360,6 +1790,13 @@
                         addLog('代理获取成功！', 'success');
                         showToast('解密成功！');
                         setProgress(0);
+                        
+                        // 保存到历史记录
+                        const input = document.getElementById('input').value;
+                        if (input) {
+                            const analysis = analyzeDecryptedCode(content);
+                            HistoryManager.saveRecord(input, content, analysis);
+                        }
                         
                         // 滚动到结果区域
                         document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
