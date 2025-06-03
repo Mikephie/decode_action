@@ -12,57 +12,84 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #fff;
-            padding: 10px;
+            overflow-x: hidden;
         }
         
         .container {
-            max-width: 800px;
+            max-width: 100%;
             margin: 0 auto;
+            padding: 10px;
         }
         
         h1 {
             text-align: center;
-            margin: 20px 0;
-            font-size: 1.8rem;
+            margin: 15px 0;
+            font-size: 1.6rem;
+            position: sticky;
+            top: 0;
+            background: rgba(102, 126, 234, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 10px;
+            border-radius: 12px;
+            z-index: 100;
         }
         
         .version {
             background: rgba(255,255,255,0.3);
             padding: 2px 8px;
             border-radius: 12px;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             margin-left: 8px;
         }
         
         .section {
             background: rgba(255,255,255,0.1);
             border-radius: 12px;
-            padding: 20px;
-            margin: 15px 0;
+            padding: 15px;
+            margin: 10px 0;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 12px;
+            margin-bottom: 12px;
         }
         
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
+            font-size: 0.85rem;
         }
         
         input, textarea {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 1px solid rgba(255,255,255,0.3);
             border-radius: 8px;
             background: rgba(255,255,255,0.1);
             color: #fff;
-            font-size: 14px;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: rgba(255,255,255,0.6);
+            background: rgba(255,255,255,0.15);
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.1);
         }
         
         input::placeholder, textarea::placeholder {
@@ -70,28 +97,98 @@
         }
         
         textarea {
-            height: 200px;
-            font-family: monospace;
+            height: 160px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
             resize: vertical;
+            line-height: 1.4;
+        }
+        
+        /* 文件上传区域 */
+        .file-upload {
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+        }
+        
+        .file-upload:hover, .file-upload.dragover {
+            border-color: rgba(255,255,255,0.6);
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .file-upload-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        
+        .file-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .file-option {
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        
+        .file-option:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+        }
+        
+        .remote-input {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .remote-input input {
+            flex: 1;
+        }
+        
+        .remote-input button {
+            min-width: 60px;
+            font-size: 0.8rem;
         }
         
         .buttons {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+            position: sticky;
+            bottom: 10px;
+            background: rgba(102, 126, 234, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 10px;
+            border-radius: 12px;
+            z-index: 100;
         }
         
         button {
-            padding: 12px 20px;
+            padding: 10px 8px;
             border: none;
             border-radius: 8px;
             font-weight: 500;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 0.75rem;
             color: #fff;
-            min-width: 100px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
         }
         
         .btn-blue { background: #3b82f6; }
@@ -102,7 +199,20 @@
         
         button:hover {
             opacity: 0.9;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .btn-icon {
+            font-size: 1.2rem;
+        }
+        
+        .btn-text {
+            font-size: 0.7rem;
         }
         
         .progress-bar {
@@ -110,39 +220,66 @@
             height: 4px;
             background: rgba(255,255,255,0.2);
             border-radius: 2px;
-            margin: 15px 0;
+            margin: 12px 0;
             overflow: hidden;
         }
         
         .progress-fill {
             height: 100%;
-            background: #3b82f6;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
             width: 0%;
-            transition: width 0.3s;
+            transition: width 0.3s ease;
         }
         
+        /* 代码语法高亮输出 */
         .output {
-            background: rgba(0,0,0,0.4);
+            background: #1e1e1e;
             border: 1px solid rgba(255,255,255,0.3);
             border-radius: 8px;
-            padding: 15px;
-            min-height: 200px;
-            font-family: monospace;
-            font-size: 13px;
+            padding: 12px;
+            min-height: 180px;
+            max-height: 400px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
-            overflow-y: auto;
+            color: #d4d4d4;
         }
+        
+        /* 代码语法高亮样式 */
+        .hljs {
+            display: block;
+            overflow-x: auto;
+            padding: 0;
+            background: transparent;
+            color: #d4d4d4;
+        }
+        
+        .hljs-keyword { color: #569cd6; }
+        .hljs-string { color: #ce9178; }
+        .hljs-number { color: #b5cea8; }
+        .hljs-comment { color: #6a9955; font-style: italic; }
+        .hljs-function { color: #dcdcaa; }
+        .hljs-variable { color: #9cdcfe; }
+        .hljs-operator { color: #d4d4d4; }
+        .hljs-punctuation { color: #d4d4d4; }
+        .hljs-property { color: #9cdcfe; }
+        .hljs-literal { color: #569cd6; }
+        .hljs-built_in { color: #4ec9b0; }
+        .hljs-regexp { color: #d16969; }
         
         .logs {
             background: rgba(0,0,0,0.4);
             border: 1px solid rgba(255,255,255,0.2);
             border-radius: 8px;
-            padding: 15px;
-            height: 150px;
+            padding: 12px;
+            height: 120px;
             overflow-y: auto;
-            font-family: monospace;
-            font-size: 12px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+            font-size: 11px;
+            scroll-behavior: smooth;
         }
         
         .log-success { color: #10b981; }
@@ -156,12 +293,15 @@
             right: 20px;
             background: rgba(0,0,0,0.9);
             color: white;
-            padding: 15px 20px;
+            padding: 12px 16px;
             border-radius: 8px;
             transform: translateX(400px);
-            transition: transform 0.3s;
+            transition: transform 0.3s ease;
             z-index: 1000;
-            max-width: 300px;
+            max-width: 280px;
+            font-size: 0.85rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
         .toast.show {
@@ -172,10 +312,10 @@
             background: rgba(59,130,246,0.2);
             border: 1px solid rgba(59,130,246,0.3);
             border-radius: 8px;
-            padding: 12px;
-            font-size: 13px;
+            padding: 10px;
+            font-size: 0.75rem;
             line-height: 1.4;
-            margin-top: 10px;
+            margin-top: 8px;
         }
         
         .note a {
@@ -183,20 +323,103 @@
             text-decoration: none;
         }
         
+        .note a:hover {
+            text-decoration: underline;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
+        }
+        
+        /* 移动端优化 */
         @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
+            body {
+                padding-bottom: 80px; /* 为底部固定按钮预留空间 */
             }
             
-            .buttons {
+            .container {
+                padding: 8px;
+                max-width: 100vw;
+            }
+            
+            h1 {
+                font-size: 1.4rem;
+                margin: 10px 0;
+                padding: 8px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
                 gap: 8px;
             }
             
+            .section {
+                padding: 12px;
+                margin: 8px 0;
+            }
+            
+            .buttons {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin: 0;
+                border-radius: 0;
+                border-top: 1px solid rgba(255,255,255,0.2);
+                grid-template-columns: repeat(5, 1fr);
+                gap: 4px;
+                padding: 8px;
+            }
+            
             button {
-                padding: 10px 16px;
-                font-size: 13px;
-                min-width: 80px;
-                flex: 1;
+                padding: 8px 4px;
+                font-size: 0.65rem;
+            }
+            
+            .btn-icon {
+                font-size: 1rem;
+            }
+            
+            .btn-text {
+                font-size: 0.6rem;
+            }
+            
+            .file-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .output {
+                max-height: 300px;
+                font-size: 11px;
+            }
+            
+            .logs {
+                height: 100px;
+                font-size: 10px;
+            }
+            
+            textarea {
+                height: 140px;
+                font-size: 12px;
             }
             
             .toast {
@@ -205,22 +428,71 @@
                 left: 10px;
                 max-width: none;
                 transform: translateY(-100px);
+                font-size: 0.8rem;
             }
             
             .toast.show {
                 transform: translateY(0);
             }
+            
+            /* 移动端滚动优化 */
+            .section {
+                scroll-margin-top: 80px;
+            }
+        }
+        
+        /* 超小屏幕优化 */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.2rem;
+            }
+            
+            .version {
+                font-size: 0.6rem;
+                padding: 1px 6px;
+            }
+            
+            .section-title {
+                font-size: 0.9rem;
+            }
+            
+            input, textarea {
+                font-size: 12px;
+                padding: 8px;
+            }
+            
+            .file-upload {
+                padding: 15px;
+            }
+            
+            .file-upload-icon {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* 加载动画 */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .loading {
+            animation: pulse 2s infinite;
+        }
+        
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>羊毛助手 <span class="version">v4.3</span></h1>
-        <p style="text-align: center; margin-bottom: 30px; opacity: 0.9;">自动解密脚本工具</p>
         
         <!-- GitHub 配置 -->
         <div class="section">
-            <h3 style="margin-bottom: 15px;">GitHub 配置</h3>
+            <div class="section-title">⚙️ GitHub 配置</div>
             <div class="form-row">
                 <div>
                     <label>GitHub Token</label>
@@ -240,19 +512,44 @@
             </div>
         </div>
         
-        <!-- 代码输入 -->
+        <!-- 文件上传 -->
         <div class="section">
-            <h3 style="margin-bottom: 15px;">代码输入</h3>
-            <textarea id="input" placeholder="请粘贴需要解密的代码..."></textarea>
+            <div class="section-title">📁 文件输入</div>
+            <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                <div class="file-upload-icon">📄</div>
+                <div>点击选择文件或拖拽文件到此处</div>
+                <div style="font-size: 0.7rem; opacity: 0.7; margin-top: 4px;">
+                    支持 .js .txt .json .md 等文本文件
+                </div>
+            </div>
+            <input type="file" id="fileInput" class="hidden" accept=".js,.txt,.json,.md,.log,.conf,.ini,.py,.php,.html,.css,.xml,.yaml,.yml">
+            
+            <div class="file-options">
+                <div class="file-option" onclick="document.getElementById('fileInput').click()">
+                    📄<br>选择文件
+                </div>
+                <div class="file-option" onclick="pasteFromClipboard()">
+                    📋<br>剪贴板
+                </div>
+                <div class="file-option" onclick="document.getElementById('cameraInput').click()">
+                    📷<br>拍照识别
+                </div>
+                <div class="file-option" onclick="clearInput()">
+                    🗑<br>清空输入
+                </div>
+            </div>
+            <input type="file" id="cameraInput" class="hidden" accept="image/*" capture="environment">
+            
+            <div class="remote-input">
+                <input type="url" id="remoteUrl" placeholder="输入远程文件URL地址...">
+                <button class="btn-purple" onclick="loadRemoteFile()">加载</button>
+            </div>
         </div>
         
-        <!-- 控制按钮 -->
-        <div class="buttons">
-            <button class="btn-blue" onclick="startDecrypt()">🔓 解密</button>
-            <button class="btn-green" onclick="getResult()">📥 读取</button>
-            <button class="btn-yellow" onclick="copyResult()">📋 复制</button>
-            <button class="btn-purple" onclick="downloadResult()">💾 下载</button>
-            <button class="btn-red" onclick="clearAll()">🗑 清除</button>
+        <!-- 代码输入 -->
+        <div class="section">
+            <div class="section-title">📝 代码输入</div>
+            <textarea id="input" placeholder="请粘贴需要解密的代码..."></textarea>
         </div>
         
         <!-- 进度条 -->
@@ -262,12 +559,39 @@
         
         <!-- 输出结果 -->
         <div class="section">
-            <h3 style="margin-bottom: 15px;">解密结果</h3>
+            <div class="section-title">✨ 解密结果</div>
             <div id="output" class="output">// 解密结果将显示在这里...</div>
         </div>
         
         <!-- 日志 -->
-        <div id="logs" class="logs"></div>
+        <div class="section">
+            <div class="section-title">📋 执行日志</div>
+            <div id="logs" class="logs"></div>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="buttons">
+            <button class="btn-blue" onclick="startDecrypt()">
+                <div class="btn-icon">🔓</div>
+                <div class="btn-text">解密</div>
+            </button>
+            <button class="btn-green" onclick="getResult()">
+                <div class="btn-icon">📥</div>
+                <div class="btn-text">读取</div>
+            </button>
+            <button class="btn-yellow" onclick="copyResult()">
+                <div class="btn-icon">📋</div>
+                <div class="btn-text">复制</div>
+            </button>
+            <button class="btn-purple" onclick="downloadResult()">
+                <div class="btn-icon">💾</div>
+                <div class="btn-text">下载</div>
+            </button>
+            <button class="btn-red" onclick="clearAll()">
+                <div class="btn-icon">🗑</div>
+                <div class="btn-text">清除</div>
+            </button>
+        </div>
     </div>
     
     <!-- Toast -->
@@ -281,6 +605,24 @@
             checkTimer: null,
             isChecking: false
         };
+        
+        // 简单的语法高亮
+        function highlightJS(code) {
+            return code
+                // 关键字
+                .replace(/\b(function|var|let|const|if|else|for|while|do|switch|case|break|continue|return|try|catch|finally|throw|new|this|typeof|instanceof|in|of|class|extends|import|export|default|async|await|yield|true|false|null|undefined)\b/g, '<span class="hljs-keyword">$1</span>')
+                // 字符串
+                .replace(/(["'`])((?:\\.|(?!\1)[^\\])*?)\1/g, '<span class="hljs-string">$1$2$1</span>')
+                // 数字
+                .replace(/\b(\d+\.?\d*)\b/g, '<span class="hljs-number">$1</span>')
+                // 注释
+                .replace(/\/\*[\s\S]*?\*\//g, '<span class="hljs-comment">$&</span>')
+                .replace(/\/\/.*$/gm, '<span class="hljs-comment">$&</span>')
+                // 函数名
+                .replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g, '<span class="hljs-function">$1</span>')
+                // 属性
+                .replace(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/g, '.<span class="hljs-property">$1</span>');
+        }
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -298,7 +640,17 @@
                 localStorage.setItem('repo_name', e.target.value);
             });
             
-            addLog('系统初始化完成 v4.3', 'success');
+            // 文件上传事件
+            document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+            document.getElementById('cameraInput').addEventListener('change', handleImageSelect);
+            
+            // 拖拽上传
+            const fileUpload = document.querySelector('.file-upload');
+            fileUpload.addEventListener('dragover', handleDragOver);
+            fileUpload.addEventListener('dragleave', handleDragLeave);
+            fileUpload.addEventListener('drop', handleDrop);
+            
+            addLog('系统初始化完成 v4.3 - 已支持语法高亮和文件上传', 'success');
         });
         
         // 日志
@@ -318,16 +670,188 @@
         }
         
         // Toast提示
-        function showToast(message) {
+        function showToast(message, duration = 3000) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+            setTimeout(() => toast.classList.remove('show'), duration);
         }
         
-        // 显示结果
+        // 显示结果（带语法高亮）
         function displayResult(content) {
-            document.getElementById('output').textContent = content || '// 解密结果将显示在这里...';
+            const output = document.getElementById('output');
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                output.innerHTML = '<span class="hljs-comment">// 解密结果将显示在这里...</span>';
+                return;
+            }
+            
+            // 判断是否为代码
+            if (content.includes('function') || content.includes('var ') || content.includes('let ') || content.includes('const ') || content.includes('{') || content.includes('}')) {
+                output.innerHTML = highlightJS(escapeHtml(content));
+            } else {
+                output.textContent = content;
+            }
+        }
+        
+        // HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 文件选择处理
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                readFile(file);
+            }
+        }
+        
+        // 图片选择处理（OCR功能预留）
+        function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                addLog('图片文字识别功能开发中...', 'warning');
+                showToast('图片文字识别功能开发中');
+                // 这里可以集成OCR API，如Google Vision API或百度OCR
+            }
+        }
+        
+        // 拖拽处理
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+        
+        function handleDragLeave(event) {
+            event.currentTarget.classList.remove('dragover');
+        }
+        
+        function handleDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                readFile(files[0]);
+            }
+        }
+        
+        // 读取文件
+        function readFile(file) {
+            addLog(`开始读取文件: ${file.name}`, 'info');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let content;
+                    
+                    // 处理不同编码
+                    if (e.target.result instanceof ArrayBuffer) {
+                        // 尝试UTF-8解码
+                        content = new TextDecoder('utf-8').decode(e.target.result);
+                    } else {
+                        content = e.target.result;
+                    }
+                    
+                    document.getElementById('input').value = content;
+                    showToast(`文件加载成功: ${file.name}`);
+                    addLog(`文件加载成功 (${content.length} 字符)`, 'success');
+                    
+                    // 滚动到代码输入区域
+                    document.querySelector('[data-section="input"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                } catch (error) {
+                    addLog(`文件处理失败: ${error.message}`, 'error');
+                    showToast('文件处理失败');
+                }
+            };
+            
+            reader.onerror = function() {
+                addLog(`文件读取失败: ${file.name}`, 'error');
+                showToast('文件读取失败');
+            };
+            
+            // 使用ArrayBuffer读取以支持不同编码
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // 从剪贴板粘贴
+        async function pasteFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                    document.getElementById('input').value = text;
+                    showToast('剪贴板内容已粘贴');
+                    addLog('从剪贴板粘贴内容', 'success');
+                } else {
+                    showToast('剪贴板为空');
+                }
+            } catch (error) {
+                addLog('剪贴板访问失败: ' + error.message, 'error');
+                showToast('无法访问剪贴板，请手动粘贴');
+            }
+        }
+        
+        // 加载远程文件
+        async function loadRemoteFile() {
+            const url = document.getElementById('remoteUrl').value.trim();
+            if (!url) {
+                showToast('请输入URL地址');
+                return;
+            }
+            
+            try {
+                addLog(`加载远程文件: ${url}`, 'info');
+                
+                // 显示加载状态
+                const button = event.target;
+                button.textContent = '加载中...';
+                button.disabled = true;
+                button.classList.add('loading');
+                
+                // 使用代理服务避免CORS问题
+                let content;
+                try {
+                    // 方法1: 直接获取
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Direct fetch failed');
+                    content = await response.text();
+                } catch (e) {
+                    // 方法2: 使用CORS代理
+                    addLog('尝试使用代理服务...', 'info');
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                    const response = await fetch(proxyUrl);
+                    if (!response.ok) throw new Error('Proxy fetch failed');
+                    content = await response.text();
+                }
+                
+                document.getElementById('input').value = content;
+                document.getElementById('remoteUrl').value = '';
+                
+                showToast('远程文件加载成功');
+                addLog(`远程文件加载成功 (${content.length} 字符)`, 'success');
+                
+            } catch (error) {
+                addLog('远程文件加载失败: ' + error.message, 'error');
+                showToast('远程文件加载失败: ' + error.message);
+            } finally {
+                // 恢复按钮状态
+                const button = document.querySelector('.remote-input button');
+                button.textContent = '加载';
+                button.disabled = false;
+                button.classList.remove('loading');
+            }
+        }
+        
+        // 清空输入
+        function clearInput() {
+            document.getElementById('input').value = '';
+            document.getElementById('remoteUrl').value = '';
+            showToast('输入已清空');
+            addLog('清空输入内容', 'info');
         }
         
         // 开始解密
@@ -380,9 +904,10 @@
                 if (checkResp.ok) {
                     const data = await checkResp.json();
                     sha = data.sha;
+                    addLog('检测到已存在的文件，将更新', 'info');
                 }
             } catch (e) {
-                // 文件不存在，将创建新文件
+                addLog('将创建新文件', 'info');
             }
             
             // 提交文件
@@ -478,7 +1003,7 @@
             
             displayResult(helpText);
             addLog('显示超时帮助信息', 'warning');
-            showToast('超时了！请点击"📥 读取"按钮手动获取结果');
+            showToast('超时了！请点击"📥 读取"按钮手动获取结果', 5000);
         }
         
         // 获取结果
@@ -512,6 +1037,9 @@
                         addLog('GitHub API获取成功！', 'success');
                         showToast('解密成功！');
                         setProgress(0);
+                        
+                        // 滚动到结果区域
+                        document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
                         return true;
                     }
                 } else if (response.status === 404) {
@@ -534,11 +1062,40 @@
                         addLog('Raw URL获取成功！', 'success');
                         showToast('解密成功！');
                         setProgress(0);
+                        
+                        // 滚动到结果区域
+                        document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return true;
+                    }
+                } else if (response.status === 404) {
+                    addLog('Raw URL 404，文件可能还未生成', 'warning');
+                }
+            } catch (error) {
+                addLog('Raw URL失败: ' + error.message, 'warning');
+            }
+            
+            // 方法3: 代理获取
+            try {
+                addLog('尝试代理获取...', 'info');
+                const rawUrl = `https://raw.githubusercontent.com/${window.appData.repo}/main/output.js?_=${timestamp}`;
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rawUrl)}`;
+                const response = await fetch(proxyUrl);
+                
+                if (response.ok) {
+                    const content = await response.text();
+                    if (content && content.trim().length > 10) {
+                        displayResult(content);
+                        addLog('代理获取成功！', 'success');
+                        showToast('解密成功！');
+                        setProgress(0);
+                        
+                        // 滚动到结果区域
+                        document.getElementById('output').scrollIntoView({ behavior: 'smooth', block: 'center' });
                         return true;
                     }
                 }
             } catch (error) {
-                addLog('Raw URL失败: ' + error.message, 'warning');
+                addLog('代理获取失败: ' + error.message, 'warning');
             }
             
             addLog('获取失败，请稍后重试', 'error');
@@ -562,7 +1119,8 @@
         
         // 复制结果
         function copyResult() {
-            const content = document.getElementById('output').textContent;
+            const output = document.getElementById('output');
+            let content = output.textContent || output.innerText;
             
             if (!content || content.includes('解密结果将显示在这里')) {
                 showToast('没有可复制的内容');
@@ -573,53 +1131,133 @@
                 navigator.clipboard.writeText(content).then(() => {
                     showToast('结果已复制到剪贴板');
                     addLog('复制成功', 'success');
+                }).catch(() => {
+                    fallbackCopy(content);
                 });
             } else {
-                // 备用方案
-                const textarea = document.createElement('textarea');
-                textarea.value = content;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                showToast('结果已复制到剪贴板');
-                addLog('复制成功（备用方案）', 'success');
+                fallbackCopy(content);
             }
+        }
+        
+        // 备用复制方案
+        function fallbackCopy(content) {
+            const textarea = document.createElement('textarea');
+            textarea.value = content;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('结果已复制到剪贴板');
+            addLog('复制成功（备用方案）', 'success');
         }
         
         // 下载结果
         function downloadResult() {
-            const content = document.getElementById('output').textContent;
+            const output = document.getElementById('output');
+            let content = output.textContent || output.innerText;
             
             if (!content || content.includes('解密结果将显示在这里')) {
                 showToast('没有可下载的内容');
                 return;
             }
             
-            const blob = new Blob([content], { type: 'text/javascript;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `decrypted_${Date.now()}.js`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showToast('文件下载已开始');
-            addLog('下载成功', 'success');
+            try {
+                const blob = new Blob([content], { type: 'text/javascript;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `decrypted_${Date.now()}.js`;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showToast('文件下载已开始');
+                addLog('下载成功', 'success');
+            } catch (error) {
+                addLog('下载失败: ' + error.message, 'error');
+                showToast('下载失败');
+            }
         }
         
         // 清除所有
         function clearAll() {
+            // 停止检查
+            window.appData.isChecking = false;
+            
+            // 清空内容
             document.getElementById('input').value = '';
+            document.getElementById('remoteUrl').value = '';
             displayResult('');
             setProgress(0);
-            window.appData.isChecking = false;
+            
+            // 清空文件输入
+            document.getElementById('fileInput').value = '';
+            document.getElementById('cameraInput').value = '';
             
             showToast('已清除所有内容');
             addLog('清除所有内容', 'info');
+            
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+        
+        // 添加键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter: 开始解密
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                startDecrypt();
+            }
+            // Ctrl/Cmd + S: 下载结果
+            else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                downloadResult();
+            }
+            // Ctrl/Cmd + C: 复制结果（当焦点不在输入框时）
+            else if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !e.target.matches('input, textarea')) {
+                e.preventDefault();
+                copyResult();
+            }
+            // Escape: 清除所有
+            else if (e.key === 'Escape') {
+                e.preventDefault();
+                clearAll();
+            }
+        });
+        
+        // 添加触摸反馈（移动端）
+        if ('ontouchstart' in window) {
+            document.addEventListener('touchstart', function(e) {
+                if (e.target.matches('button, .file-option')) {
+                    e.target.style.transform = 'scale(0.95)';
+                }
+            });
+            
+            document.addEventListener('touchend', function(e) {
+                if (e.target.matches('button, .file-option')) {
+                    setTimeout(() => {
+                        e.target.style.transform = '';
+                    }, 150);
+                }
+            });
+        }
+        
+        // 页面可见性检测（优化后台性能）
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                addLog('页面进入后台', 'info');
+            } else {
+                addLog('页面回到前台', 'info');
+                // 回到前台时，如果正在检查，立即执行一次检查
+                if (window.appData.isChecking) {
+                    addLog('检测到进行中的任务，立即检查状态', 'info');
+                }
+            }
+        });
     </script>
 </body>
 </html>
