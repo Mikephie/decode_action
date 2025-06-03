@@ -597,64 +597,88 @@
     
     <!-- Toast -->
     <div id="toast" class="toast"></div>
-    
+
     <script>
-        // 全局变量
+        // ==== 1. 新增：净化工具函数 ====
+        function cleanCodeInput(content) {
+            // 去掉所有<span>、<pre>、<code>等高亮污染
+            content = content.replace(/<span[^>]*>/g, '')
+                             .replace(/<\/span>/g, '')
+                             .replace(/<pre[^>]*>/g, '')
+                             .replace(/<\/pre>/g, '')
+                             .replace(/<code[^>]*>/g, '')
+                             .replace(/<\/code>/g, '');
+            // html实体转义还原
+            content = content.replace(/&lt;/g, '<')
+                             .replace(/&gt;/g, '>')
+                             .replace(/&amp;/g, '&')
+                             .replace(/&quot;/g, '"')
+                             .replace(/&#39;/g, "'");
+            // 去掉类似 hljs-keyword"> 这类残留
+            content = content.replace(/hljs-[a-zA-Z0-9_-]+">/g, '');
+            // 去除多余空行
+            content = content.replace(/\r?\n[\s\t]*\r?\n/g, '\n');
+            return content;
+        }
+
+        // ==== 2. 全局变量 ====
         window.appData = {
             token: localStorage.getItem('github_token') || '',
             repo: localStorage.getItem('repo_name') || '',
             checkTimer: null,
             isChecking: false
         };
-        
-        // 简单的语法高亮
+
+        // ==== 3. 简单JS高亮函数（保留） ====
         function highlightJS(code) {
             return code
-                // 关键字
                 .replace(/\b(function|var|let|const|if|else|for|while|do|switch|case|break|continue|return|try|catch|finally|throw|new|this|typeof|instanceof|in|of|class|extends|import|export|default|async|await|yield|true|false|null|undefined)\b/g, '<span class="hljs-keyword">$1</span>')
-                // 字符串
                 .replace(/(["'`])((?:\\.|(?!\1)[^\\])*?)\1/g, '<span class="hljs-string">$1$2$1</span>')
-                // 数字
                 .replace(/\b(\d+\.?\d*)\b/g, '<span class="hljs-number">$1</span>')
-                // 注释
                 .replace(/\/\*[\s\S]*?\*\//g, '<span class="hljs-comment">$&</span>')
                 .replace(/\/\/.*$/gm, '<span class="hljs-comment">$&</span>')
-                // 函数名
                 .replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g, '<span class="hljs-function">$1</span>')
-                // 属性
                 .replace(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/g, '.<span class="hljs-property">$1</span>');
         }
-        
-        // 初始化
+
+        // ==== 4. 初始化 ====
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('token').value = window.appData.token;
             document.getElementById('repo').value = window.appData.repo;
-            
+
             // 保存配置
             document.getElementById('token').addEventListener('input', function(e) {
                 window.appData.token = e.target.value;
                 localStorage.setItem('github_token', e.target.value);
             });
-            
             document.getElementById('repo').addEventListener('input', function(e) {
                 window.appData.repo = e.target.value;
                 localStorage.setItem('repo_name', e.target.value);
             });
-            
-            // 文件上传事件
+
+            // 文件上传
             document.getElementById('fileInput').addEventListener('change', handleFileSelect);
             document.getElementById('cameraInput').addEventListener('change', handleImageSelect);
-            
+
             // 拖拽上传
             const fileUpload = document.querySelector('.file-upload');
             fileUpload.addEventListener('dragover', handleDragOver);
             fileUpload.addEventListener('dragleave', handleDragLeave);
             fileUpload.addEventListener('drop', handleDrop);
-            
+
+            // ==== 5. 新增：输入框粘贴自动净化 ====
+            document.getElementById('input').addEventListener('paste', function(e) {
+                setTimeout(() => {
+                    const el = e.target;
+                    el.value = cleanCodeInput(el.value);
+                }, 20);
+            });
+
             addLog('系统初始化完成 v4.3 - 已支持语法高亮和文件上传', 'success');
         });
-        
-        // 日志
+
+        // ==== 6. 日志、Toast等函数...原样保留 ====
+
         function addLog(message, type) {
             const logs = document.getElementById('logs');
             const time = new Date().toLocaleTimeString();
@@ -663,128 +687,101 @@
             div.textContent = time + ' ' + message;
             logs.appendChild(div);
             logs.scrollTop = logs.scrollHeight;
-            
-            // 限制日志数量
-            if (logs.children.length > 50) {
-                logs.removeChild(logs.firstChild);
-            }
+            if (logs.children.length > 50) logs.removeChild(logs.firstChild);
         }
-        
-        // Toast提示
+
         function showToast(message, duration = 3000) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), duration);
         }
-        
-        // 显示结果（带语法高亮）
+
         function displayResult(content) {
             const output = document.getElementById('output');
-            
             if (!content || content.includes('解密结果将显示在这里')) {
                 output.innerHTML = '<span class="hljs-comment">// 解密结果将显示在这里...</span>';
                 return;
             }
-            
-            // 判断是否为代码
             if (content.includes('function') || content.includes('var ') || content.includes('let ') || content.includes('const ') || content.includes('{') || content.includes('}')) {
                 output.innerHTML = highlightJS(escapeHtml(content));
             } else {
                 output.textContent = content;
             }
         }
-        
-        // HTML转义
+
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
-        
-        // 文件选择处理
+
+        // ==== 7. 文件处理、剪贴板、远程输入等全都套上 cleanCodeInput ====
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
                 readFile(file);
             }
         }
-        
-        // 图片选择处理（OCR功能预留）
+
         function handleImageSelect(event) {
             const file = event.target.files[0];
             if (file) {
                 addLog('图片文字识别功能开发中...', 'warning');
                 showToast('图片文字识别功能开发中');
-                // 这里可以集成OCR API，如Google Vision API或百度OCR
             }
         }
-        
-        // 拖拽处理
+
         function handleDragOver(event) {
             event.preventDefault();
             event.currentTarget.classList.add('dragover');
         }
-        
         function handleDragLeave(event) {
             event.currentTarget.classList.remove('dragover');
         }
-        
         function handleDrop(event) {
             event.preventDefault();
             event.currentTarget.classList.remove('dragover');
-            
             const files = event.dataTransfer.files;
             if (files.length > 0) {
                 readFile(files[0]);
             }
         }
-        
-        // 读取文件
+
+        // 文件读取时净化内容
         function readFile(file) {
             addLog(`开始读取文件: ${file.name}`, 'info');
-            
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     let content;
-                    
-                    // 处理不同编码
                     if (e.target.result instanceof ArrayBuffer) {
-                        // 尝试UTF-8解码
                         content = new TextDecoder('utf-8').decode(e.target.result);
                     } else {
                         content = e.target.result;
                     }
-                    
-                    document.getElementById('input').value = content;
+                    document.getElementById('input').value = cleanCodeInput(content);
                     showToast(`文件加载成功: ${file.name}`);
                     addLog(`文件加载成功 (${content.length} 字符)`, 'success');
-                    
-                    // 滚动到代码输入区域
                     document.querySelector('[data-section="input"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
                 } catch (error) {
                     addLog(`文件处理失败: ${error.message}`, 'error');
                     showToast('文件处理失败');
                 }
             };
-            
             reader.onerror = function() {
                 addLog(`文件读取失败: ${file.name}`, 'error');
                 showToast('文件读取失败');
             };
-            
-            // 使用ArrayBuffer读取以支持不同编码
             reader.readAsArrayBuffer(file);
         }
-        
-        // 从剪贴板粘贴
+
+        // 剪贴板按钮净化
         async function pasteFromClipboard() {
             try {
                 const text = await navigator.clipboard.readText();
                 if (text) {
-                    document.getElementById('input').value = text;
+                    document.getElementById('input').value = cleanCodeInput(text);
                     showToast('剪贴板内容已粘贴');
                     addLog('从剪贴板粘贴内容', 'success');
                 } else {
@@ -795,66 +792,47 @@
                 showToast('无法访问剪贴板，请手动粘贴');
             }
         }
-        
-        // 加载远程文件
+
+        // 远程文件输入净化
         async function loadRemoteFile() {
             const url = document.getElementById('remoteUrl').value.trim();
             if (!url) {
                 showToast('请输入URL地址');
                 return;
             }
-            
             try {
                 addLog(`加载远程文件: ${url}`, 'info');
-                
-                // 显示加载状态
                 const button = event.target;
                 button.textContent = '加载中...';
                 button.disabled = true;
                 button.classList.add('loading');
-                
-                // 使用代理服务避免CORS问题
                 let content;
                 try {
-                    // 方法1: 直接获取
                     const response = await fetch(url);
                     if (!response.ok) throw new Error('Direct fetch failed');
                     content = await response.text();
                 } catch (e) {
-                    // 方法2: 使用CORS代理
                     addLog('尝试使用代理服务...', 'info');
                     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
                     const response = await fetch(proxyUrl);
                     if (!response.ok) throw new Error('Proxy fetch failed');
                     content = await response.text();
                 }
-                
-                document.getElementById('input').value = content;
+                document.getElementById('input').value = cleanCodeInput(content);
                 document.getElementById('remoteUrl').value = '';
-                
                 showToast('远程文件加载成功');
                 addLog(`远程文件加载成功 (${content.length} 字符)`, 'success');
-                
             } catch (error) {
                 addLog('远程文件加载失败: ' + error.message, 'error');
                 showToast('远程文件加载失败: ' + error.message);
             } finally {
-                // 恢复按钮状态
                 const button = document.querySelector('.remote-input button');
                 button.textContent = '加载';
                 button.disabled = false;
                 button.classList.remove('loading');
             }
         }
-        
-        // 清空输入
-        function clearInput() {
-            document.getElementById('input').value = '';
-            document.getElementById('remoteUrl').value = '';
-            showToast('密文输入已清空');
-            addLog('清空密文输入内容', 'info');
-        }
-        
+
         // 开始解密
         async function startDecrypt() {
             const input = document.getElementById('input').value.trim();
