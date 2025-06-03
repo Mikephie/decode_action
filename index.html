@@ -550,7 +550,22 @@
         <!-- 代码输入 -->
         <div class="section">
             <div class="section-title">📝 密文输入</div>
-            <textarea id="input" placeholder="请粘贴需要解密的密文代码...&#10;&#10;支持的加密类型：&#10;- JavaScript 混淆代码&#10;- Base64 编码&#10;- URL 编码&#10;- 其他常见加密格式"></textarea>
+            <textarea id="input" placeholder="请粘贴需要解密的密文代码...&#10;&#10;✅ 支持自动处理：&#10;- 混合了注释的密文&#10;- eval包装的代码&#10;- Base64/十六进制编码&#10;- Unicode转义序列&#10;- JavaScript混淆代码&#10;- 时间戳和说明文字&#10;&#10;💡 工具会自动清理多余内容，提取纯密文"></textarea>
+            
+            <div class="file-options" style="margin-top: 8px;">
+                <div class="file-option" onclick="showPreprocessPreview()">
+                    🔍<br>预处理预览
+                </div>
+                <div class="file-option" onclick="cleanInput()">
+                    🧹<br>智能清理
+                </div>
+                <div class="file-option" onclick="validateInput()">
+                    ✅<br>质量检查
+                </div>
+                <div class="file-option" onclick="clearInput()">
+                    🗑<br>清空输入
+                </div>
+            </div>
         </div>
         
         <!-- 进度条 -->
@@ -864,7 +879,99 @@
             }
         }
         
-        // 清空输入
+        // 预处理预览
+        function showPreprocessPreview() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入密文');
+                return;
+            }
+            
+            const processed = preprocessCiphertext(input);
+            const issues = validateCiphertext(processed);
+            
+            // 创建预览弹窗
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); z-index: 10000; display: flex;
+                align-items: center; justify-content: center; padding: 20px;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: #1e1e1e; border-radius: 12px; padding: 20px;
+                max-width: 90%; max-height: 80%; overflow-y: auto;
+                color: white; font-family: monospace;
+            `;
+            
+            content.innerHTML = `
+                <h3 style="margin-bottom: 15px; color: #3b82f6;">🔍 预处理预览</h3>
+                <div style="margin-bottom: 15px;">
+                    <strong>原始长度:</strong> ${input.length} 字符<br>
+                    <strong>处理后长度:</strong> ${processed.length} 字符<br>
+                    <strong>减少:</strong> ${input.length - processed.length} 字符
+                </div>
+                ${issues.length > 0 ? `
+                    <div style="background: rgba(239,68,68,0.2); padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+                        <strong style="color: #ef4444;">⚠️ 发现问题:</strong><br>
+                        ${issues.map(issue => `• ${issue}`).join('<br>')}
+                    </div>
+                ` : '<div style="background: rgba(16,185,129,0.2); padding: 10px; border-radius: 6px; margin-bottom: 15px; color: #10b981;"><strong>✅ 密文质量良好</strong></div>'}
+                <div style="margin-bottom: 15px;">
+                    <strong>处理后的密文:</strong>
+                    <textarea readonly style="width: 100%; height: 200px; margin-top: 8px; padding: 10px; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 6px; font-family: monospace; font-size: 12px;">${processed}</textarea>
+                </div>
+                <div style="text-align: center;">
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin-right: 10px; cursor: pointer;">关闭</button>
+                    <button onclick="document.getElementById('input').value = '${processed.replace(/'/g, "\\'")}'; this.parentElement.parentElement.parentElement.remove(); showToast('已应用预处理结果');" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">应用处理结果</button>
+                </div>
+            `;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // 点击背景关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+        
+        // 智能清理输入
+        function cleanInput() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入密文');
+                return;
+            }
+            
+            const processed = preprocessCiphertext(input);
+            document.getElementById('input').value = processed;
+            
+            showToast('智能清理完成');
+            addLog(`清理前: ${input.length} 字符，清理后: ${processed.length} 字符`, 'success');
+        }
+        
+        // 验证输入质量
+        function validateInput() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入密文');
+                return;
+            }
+            
+            const issues = validateCiphertext(input);
+            
+            if (issues.length === 0) {
+                showToast('✅ 密文质量良好');
+                addLog('密文质量检查通过', 'success');
+            } else {
+                showToast('⚠️ 发现 ' + issues.length + ' 个问题');
+                addLog('密文质量问题: ' + issues.join(', '), 'warning');
+            }
+        }
         function clearInput() {
             document.getElementById('input').value = '';
             document.getElementById('remoteUrl').value = '';
@@ -872,7 +979,151 @@
             addLog('清空密文输入内容', 'info');
         }
         
-        // 开始解密
+        // 智能预处理密文
+        function preprocessCiphertext(input) {
+            addLog('开始智能预处理密文...', 'info');
+            
+            // 去除注释和多余内容
+            let processed = input
+                // 移除单行注释
+                .replace(/\/\/.*$/gm, '')
+                // 移除多行注释
+                .replace(/\/\*[\s\S]*?\*\//g, '')
+                // 移除HTML注释
+                .replace(/<!--[\s\S]*?-->/g, '')
+                // 移除时间戳行
+                .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+                // 移除解密脚本说明行
+                .replace(/^\s*\/\/解密脚本.*$/gm, '')
+                // 移除其他说明性文字
+                .replace(/^\s*\/\/.*?(解密|脚本|说明|注释).*$/gm, '');
+            
+            // 检测并提取不同类型的密文
+            const patterns = [
+                // 1. eval包装的密文
+                {
+                    name: 'eval包装',
+                    pattern: /eval\s*\(\s*['"`](.*?)['"`]\s*\)/s,
+                    extract: (match) => match[1]
+                },
+                // 2. Function构造器包装
+                {
+                    name: 'Function构造器',
+                    pattern: /(?:new\s+)?Function\s*\(\s*['"`](.*?)['"`]\s*\)/s,
+                    extract: (match) => match[1]
+                },
+                // 3. 纯Base64编码
+                {
+                    name: 'Base64编码',
+                    pattern: /^[A-Za-z0-9+/]+=*$/m,
+                    extract: (match) => match[0]
+                },
+                // 4. 十六进制编码
+                {
+                    name: '十六进制编码',
+                    pattern: /^[0-9a-fA-F\s]+$/m,
+                    extract: (match) => match[0].replace(/\s/g, '')
+                },
+                // 5. Unicode转义序列
+                {
+                    name: 'Unicode转义',
+                    pattern: /\\u[0-9a-fA-F]{4}/g,
+                    extract: (match) => processed
+                },
+                // 6. 混淆的JavaScript代码块
+                {
+                    name: 'JS混淆代码',
+                    pattern: /\(function\s*\([^)]*\)\s*\{[\s\S]*?\}\s*\([^)]*\)\)/g,
+                    extract: (match) => match[0]
+                },
+                // 7. 数组形式的密文
+                {
+                    name: '数组密文',
+                    pattern: /\[\s*['"`][^'"`]*['"`](?:\s*,\s*['"`][^'"`]*['"`])*\s*\]/g,
+                    extract: (match) => match[0]
+                }
+            ];
+            
+            // 尝试匹配各种模式
+            for (const pattern of patterns) {
+                const matches = processed.match(pattern.pattern);
+                if (matches) {
+                    const extracted = pattern.extract(matches);
+                    if (extracted && extracted.length > 50) { // 确保提取的内容足够长
+                        addLog(`检测到${pattern.name}格式，已提取密文`, 'success');
+                        return extracted;
+                    }
+                }
+            }
+            
+            // 如果没有匹配到特定模式，尝试清理后返回
+            processed = processed
+                // 移除空行
+                .replace(/^\s*[\r\n]/gm, '')
+                // 移除行首空白
+                .replace(/^\s+/gm, '')
+                // 合并连续的空白字符
+                .replace(/\s+/g, ' ')
+                .trim();
+            
+            // 检查是否包含明显的密文特征
+            const hasObfuscation = [
+                /\b_0x[a-f0-9]+/i,           // 十六进制变量名
+                /\b0x[a-f0-9]+/i,            // 十六进制数值
+                /\\x[0-9a-f]{2}/i,           // 十六进制转义
+                /\\u[0-9a-f]{4}/i,           // Unicode转义
+                /\b[a-zA-Z_$][a-zA-Z0-9_$]{20,}/,  // 长变量名
+                /[(){}\[\]]{10,}/,           // 密集的括号
+                /['"`]{3,}/,                 // 连续引号
+                /eval\s*\(/i,                // eval调用
+                /Function\s*\(/i,            // Function构造器
+                /atob\s*\(/i,                // base64解码
+                /unescape\s*\(/i,            // URL解码
+                /String\.fromCharCode/i       // 字符编码
+            ];
+            
+            const isObfuscated = hasObfuscation.some(pattern => pattern.test(processed));
+            
+            if (isObfuscated) {
+                addLog('检测到混淆代码特征，保持原始内容', 'info');
+                return processed;
+            } else {
+                addLog('未检测到明显的密文特征，可能是普通代码', 'warning');
+                return processed;
+            }
+        }
+        
+        // 验证密文质量
+        function validateCiphertext(text) {
+            const issues = [];
+            
+            // 检查长度
+            if (text.length < 50) {
+                issues.push('密文长度过短');
+            }
+            
+            // 检查是否包含中文注释
+            if (/[\u4e00-\u9fff]/.test(text)) {
+                issues.push('包含中文字符，可能有注释未清理');
+            }
+            
+            // 检查是否包含明显的注释
+            if (/\/\/|\/\*|\*\//.test(text)) {
+                issues.push('包含注释符号，可能有注释未清理');
+            }
+            
+            // 检查是否包含HTML标签
+            if (/<[^>]+>/.test(text)) {
+                issues.push('包含HTML标签');
+            }
+            
+            // 检查是否包含时间戳
+            if (/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(text)) {
+                issues.push('包含时间戳');
+            }
+            
+            return issues;
+        }
         async function startDecrypt() {
             const input = document.getElementById('input').value.trim();
             
