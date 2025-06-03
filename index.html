@@ -508,7 +508,8 @@
                 1. 获取 GitHub Token：前往 <a href="https://github.com/settings/tokens" target="_blank">GitHub Settings</a> → Personal access tokens<br>
                 2. Token 权限：勾选 repo 权限<br>
                 3. 仓库地址格式：用户名/仓库名<br>
-                4. 确保仓库已集成 <a href="https://github.com/smallfawn/decode_action" target="_blank">decode_action</a> 解密框架
+                4. 确保仓库已集成 <a href="https://github.com/smallfawn/decode_action" target="_blank">decode_action</a> 解密框架<br>
+                5. <strong>解密流程：</strong>密文 → input.js → GitHub Actions → output.js
             </div>
         </div>
         
@@ -548,8 +549,8 @@
         
         <!-- 代码输入 -->
         <div class="section">
-            <div class="section-title">📝 代码输入</div>
-            <textarea id="input" placeholder="请粘贴需要解密的代码..."></textarea>
+            <div class="section-title">📝 密文输入</div>
+            <textarea id="input" placeholder="请粘贴需要解密的密文代码...&#10;&#10;支持的加密类型：&#10;- JavaScript 混淆代码&#10;- Base64 编码&#10;- URL 编码&#10;- 其他常见加密格式"></textarea>
         </div>
         
         <!-- 进度条 -->
@@ -850,8 +851,8 @@
         function clearInput() {
             document.getElementById('input').value = '';
             document.getElementById('remoteUrl').value = '';
-            showToast('输入已清空');
-            addLog('清空输入内容', 'info');
+            showToast('密文输入已清空');
+            addLog('清空密文输入内容', 'info');
         }
         
         // 开始解密
@@ -859,7 +860,7 @@
             const input = document.getElementById('input').value.trim();
             
             if (!input) {
-                showToast('请先输入代码');
+                showToast('请先输入需要解密的密文');
                 return;
             }
             
@@ -873,10 +874,10 @@
                 displayResult('');
                 setProgress(0);
                 
-                // 提交代码
+                // 提交密文到 input.js
                 await submitCode(input);
                 
-                // 等待结果
+                // 等待 Actions 执行并获取 output.js 结果
                 await waitForResult();
                 
             } catch (error) {
@@ -885,11 +886,11 @@
             }
         }
         
-        // 提交代码到GitHub
+        // 提交密文到GitHub input.js
         async function submitCode(code) {
-            addLog('提交代码到 GitHub...', 'info');
+            addLog('提交密文到 GitHub input.js...', 'info');
             
-            const url = `https://api.github.com/repos/${window.appData.repo}/contents/encoded.js`;
+            const url = `https://api.github.com/repos/${window.appData.repo}/contents/input.js`;
             
             // 检查文件是否存在
             let sha = null;
@@ -904,15 +905,15 @@
                 if (checkResp.ok) {
                     const data = await checkResp.json();
                     sha = data.sha;
-                    addLog('检测到已存在的文件，将更新', 'info');
+                    addLog('检测到已存在的 input.js，将更新', 'info');
                 }
             } catch (e) {
-                addLog('将创建新文件', 'info');
+                addLog('将创建新的 input.js 文件', 'info');
             }
             
             // 提交文件
             const payload = {
-                message: `Update encoded.js - ${new Date().toISOString()}`,
+                message: `Update input.js - ${new Date().toISOString()}`,
                 content: btoa(unescape(encodeURIComponent(code))),
                 branch: 'main'
             };
@@ -934,7 +935,7 @@
                 throw new Error(`GitHub API 错误: ${error.message}`);
             }
             
-            addLog('代码提交成功，等待 Actions 执行...', 'success');
+            addLog('密文已提交到 input.js，Actions 即将自动触发解密...', 'success');
         }
         
         // 等待结果
@@ -993,13 +994,16 @@
         function showTimeoutHelp() {
             const helpText = `// ⏰ 等待60秒超时
 //
-// 🔄 Actions可能仍在执行中，请尝试:
+// 🔄 GitHub Actions 可能仍在执行解密中，请尝试:
 //
-// 1️⃣ 点击 "📥 读取" 按钮手动获取
+// 1️⃣ 点击 "📥 读取" 按钮手动获取解密结果
 // 2️⃣ 访问GitHub查看: https://github.com/${window.appData.repo}/blob/main/output.js
 // 3️⃣ 检查Actions状态: https://github.com/${window.appData.repo}/actions
+// 4️⃣ 查看密文输入: https://github.com/${window.appData.repo}/blob/main/input.js
 //
-// 💡 提示: Actions可能需要1-3分钟才能完成`;
+// 💡 提示: 
+// - 解密流程：密文 → input.js → Actions解密 → output.js
+// - Actions 可能需要1-3分钟才能完成解密`;
             
             displayResult(helpText);
             addLog('显示超时帮助信息', 'warning');
