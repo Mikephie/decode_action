@@ -1,32 +1,24 @@
-//2025-06-04T00:31:30.713Z
+//2025-06-04T00:51:55.317Z
 //解密脚本在此
-const opName = $request?.["headers"]?.["X-APOLLO-OPERATION-NAME"] || "";
-let body;
-if (/Ads/i.test(opName)) $done({
-  "body": "{}"
-});else try {
-  body = JSON.parse($response.body.replace(/"isObfuscated":true/g, "\"isObfuscated\":false").replace(/"obfuscatedPath":"[^"]*"/g, "\"obfuscatedPath\":null").replace(/"isNsfw":true/g, "\"isNsfw\":false").replace(/"isAdPersonalizationAllowed":true/g, "\"isAdPersonalizationAllowed\":false").replace(/"isThirdPartyInfoAdPersonalizationAllowed":true/g, "\"isThirdPartyInfoAdPersonalizationAllowed\":false").replace(/"isNsfwMediaBlocked":true/g, "\"isNsfwMediaBlocked\":false").replace(/"isNsfwContentShown":true/g, "\"isNsfwContentShown\":false").replace(/"isPremiumMember":false/g, "\"isPremiumMember\":true").replace(/"isEmployee":false/g, "\"isEmployee\":true"));
-  const data = body.data ?? {};
-  Object.keys(data).forEach(_0x264ed5 => {
-    const _0xe804f6 = data[_0x264ed5]?.["elements"]?.["edges"];
-    if (!Array.isArray(_0xe804f6)) return;
-    data[_0x264ed5].elements.edges = _0xe804f6.filter(({
-      node: _0x2d14e2
-    }) => {
-      {
-        if (!_0x2d14e2) return true;
-        if (_0x2d14e2.__typename === "AdPost") return false;
-        if (_0x2d14e2.adPayload) return false;
-        if (Array.isArray(_0x2d14e2.cells)) return !_0x2d14e2.cells.some(_0x3835ab => _0x3835ab?.["__typename"] === "AdMetadataCell");
-        return true;
-      }
-    });
-  });
-  body = JSON.stringify(body);
-} catch (_0x2d423f) {
-  console.log("Parse error:", _0x2d423f);
-} finally {
-  $done(body ? {
-    "body": body
-  } : {});
-}
+ﾟωﾟﾉ = /｀ｍ´）ﾉ ~┻━┻   /['_'];
+o = ﾟｰﾟ = _ = 3;
+c = ﾟΘﾟ = ﾟｰﾟ - ﾟｰﾟ;
+ﾟДﾟ = ﾟΘﾟ = (o ^ _ ^ o) / (o ^ _ ^ o);
+ﾟДﾟ = {
+  ﾟΘﾟ: '_',
+  ﾟωﾟﾉ: ((ﾟωﾟﾉ == 3) + '_')[ﾟΘﾟ],
+  ﾟｰﾟﾉ: (ﾟωﾟﾉ + '_')[o ^ _ ^ o - ﾟΘﾟ],
+  ﾟДﾟﾉ: ((ﾟｰﾟ == 3) + '_')[ﾟｰﾟ]
+};
+ﾟДﾟ[ﾟΘﾟ] = ((ﾟωﾟﾉ == 3) + '_')[c ^ _ ^ o];
+ﾟДﾟ['c'] = (ﾟДﾟ + '_')[ﾟｰﾟ + ﾟｰﾟ - ﾟΘﾟ];
+ﾟДﾟ['o'] = (ﾟДﾟ + '_')[ﾟΘﾟ];
+ﾟoﾟ = ﾟДﾟ['c'] + ﾟДﾟ['o'] + (ﾟωﾟﾉ + '_')[ﾟΘﾟ] + ((ﾟωﾟﾉ == 3) + '_')[ﾟｰﾟ] + (ﾟДﾟ + '_')[ﾟｰﾟ + ﾟｰﾟ] + ((ﾟｰﾟ == 3) + '_')[ﾟΘﾟ] + ((ﾟｰﾟ == 3) + '_')[ﾟｰﾟ - ﾟΘﾟ] + ﾟДﾟ['c'] + (ﾟДﾟ + '_')[ﾟｰﾟ + ﾟｰﾟ] + ﾟДﾟ['o'] + ((ﾟｰﾟ == 3) + '_')[ﾟΘﾟ];
+ﾟДﾟ['_'] = (o ^ _ ^ o)[ﾟoﾟ][ﾟoﾟ];
+ﾟεﾟ = ((ﾟｰﾟ == 3) + '_')[ﾟΘﾟ] + ﾟДﾟ.ﾟДﾟﾉ + (ﾟДﾟ + '_')[ﾟｰﾟ + ﾟｰﾟ] + ((ﾟｰﾟ == 3) + '_')[o ^ _ ^ o - ﾟΘﾟ] + ((ﾟｰﾟ == 3) + '_')[ﾟΘﾟ] + (ﾟωﾟﾉ + '_')[ﾟΘﾟ];
+ﾟｰﾟ += ﾟΘﾟ;
+ﾟДﾟ[ﾟεﾟ] = '\\';
+ﾟДﾟ.ﾟΘﾟﾉ = (ﾟДﾟ + ﾟｰﾟ)[o ^ _ ^ o - ﾟΘﾟ];
+oﾟｰﾟo = (ﾟωﾟﾉ + '_')[c ^ _ ^ o];
+ﾟДﾟ[ﾟoﾟ] = '\"';
+ﾟДﾟ['_'](ﾟДﾟ['_'](ﾟεﾟ + ﾟДﾟ[ﾟoﾟ] + ﾟДﾟ[ﾟεﾟ] + ﾟΘﾟ + (ﾟｰﾟ + ﾟΘﾟ) + (ﾟｰﾟ + ﾟΘﾟ) + ﾟДﾟ[ﾟεﾟ] + ﾟΘﾟ + (ﾟｰﾟ + ﾟΘﾟ) + ﾟΘﾟ + ﾟДﾟ[ﾟεﾟ] + ﾟΘﾟ + (ﾟｰﾟ + ﾟΘﾟ) + (o ^ _ ^ o) + ﾟДﾟ[ﾟεﾟ] + ﾟΘﾟ + ﾟｰﾟ + (ﾟｰﾟ + ﾟΘﾟ) + ﾟДﾟ[ﾟεﾟ] + ﾟΘﾟ + ((o ^ _ ^ o) + (o ^ _ ^ o)) + (c ^ _ ^ o) + ﾟДﾟ[ﾟεﾟ] + ﾟΘﾟ + (ﾟｰﾟ + ﾟΘﾟ) + (c ^ _ ^ o) + ﾟДﾟ[ﾟεﾟ] + ﾟΘﾟ + (ﾟｰﾟ + ﾟΘﾟ) + ﾟΘﾟ + ﾟДﾟ[ﾟεﾟ] + ﾟΘﾟ + ﾟｰﾟ + (ﾟｰﾟ + ﾟΘﾟ) + ﾟДﾟ[ﾟoﾟ])(ﾟΘﾟ))('_');
