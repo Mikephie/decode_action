@@ -66,13 +66,18 @@
         color: #000;
     }
     
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
+    .eval-indicator {
+        background: linear-gradient(45deg, #e91e63, #9c27b0);
+        color: #fff;
     }
     
     .encoding-indicator.show {
         display: inline-block;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
     }
     
     .features-banner {
@@ -255,6 +260,11 @@
     .file-option.aaencode {
         background: linear-gradient(45deg, rgba(255,193,7,0.3), rgba(255,152,0,0.3));
         border-color: rgba(255,193,7,0.5);
+    }
+    
+    .file-option.eval {
+        background: linear-gradient(45deg, rgba(233,30,99,0.3), rgba(156,39,176,0.3));
+        border-color: rgba(233,30,99,0.5);
     }
     
     .buttons {
@@ -453,12 +463,15 @@
             <span class="version">v5.7</span>
             <div class="encoding-indicators">
                 <span id="aaencodeIndicator" class="encoding-indicator aaencode-indicator">AAEncode已检测</span>
+                <span id="evalIndicator" class="encoding-indicator eval-indicator">Eval已检测</span>
+            </div>
+        </h1></span>
             </div>
         </h1>
 
 ```
     <div class="features-banner">
-        🎯 v5.7增强版：专业AADecode解包插件 | 支持头部注释保留 | 智能多重检测 | 一键本地解密
+        🎯 v5.7增强版：专业AADecode+Eval解包插件 | 支持头部注释保留 | 智能多重检测 | 一键本地解密
     </div>
     
     <!-- GitHub 配置 -->
@@ -475,7 +488,7 @@
             </div>
         </div>
         <div class="note">
-            <strong>💡 说明：</strong>AAEncode代码可直接本地解密，无需GitHub配置。GitHub配置仅用于其他复杂混淆代码的云端解密。
+            <strong>💡 说明：</strong>AAEncode和Eval代码可直接本地解密，无需GitHub配置。GitHub配置仅用于其他复杂混淆代码的云端解密。
         </div>
     </div>
     
@@ -500,6 +513,9 @@
             </div>
             <div class="file-option aaencode" onclick="testAAEncodeInput()">
                 🔤<br>AAEncode测试
+            </div>
+            <div class="file-option eval" onclick="testEvalInput()">
+                🔧<br>Eval测试
             </div>
             <div class="file-option" onclick="loadDemoCode()">
                 🧪<br>加载示例
@@ -539,6 +555,7 @@
 ✅ v5.7 专业解密支持：
 
 - AAEncode格式：自动检测和解码
+- Eval包装：智能解包和递归处理
 - 保留脚本头部注释
 - 智能提取编码部分
 - 高精度解码算法
@@ -699,17 +716,44 @@
             console.log("专业AADecode插件已加载");
         })();
         
-        // 应用配置
+        // Eval解包插件 (已禁用)
+        (function() {
+          const module = { exports: {} };
+          const exports = module.exports;
+          
+          function plugin(code) {
+            // 已禁用，返回原始代码
+            return code;
+          }
+          
+          exports.plugin = function(code) {
+            return plugin(code);
+          };
+          
+          window.DecodePlugins = window.DecodePlugins || {};
+          window.DecodePlugins.eval = {
+            detect: function(code) {
+              return false; // 禁用检测
+            },
+            plugin: function(code) {
+              return code; // 不做任何更改
+            }
+          };
+          
+          window.professionalEvalDecode = module.exports.plugin;
+          console.log("Eval解包插件已禁用");
+        })();
         const APP_CONFIG = {
             VERSION: '5.7',
-            VERSION_NAME: '增强版AADecode解密工具',
-            UPDATE_NOTES: '集成专业AADecode插件，支持头部注释保留和智能检测'
+            VERSION_NAME: '增强版AADecode+Eval解密工具',
+            UPDATE_NOTES: '集成专业AADecode和Eval解包插件，支持头部注释保留和智能检测'
         };
         
         window.appData = {
             token: localStorage.getItem('github_token') || '',
             repo: localStorage.getItem('repo_name') || '',
             isAAEncodeMode: false,
+            isEvalMode: false,
             lastDetection: null
         };
         
@@ -751,12 +795,13 @@
         
         function comprehensiveDetection(input) {
             const aaResult = detectAAEncode(input);
+            const evalResult = { isDetected: false, confidence: 0 };  // 禁用Eval检测
             
             let primaryType = 'Unknown';
             let primaryConfidence = 0;
             let primaryResult = null;
             
-            if (aaResult.isDetected) {
+            if (aaResult.isDetected && aaResult.confidence > evalResult.confidence) {
                 primaryType = 'AAEncode';
                 primaryConfidence = aaResult.confidence;
                 primaryResult = aaResult;
@@ -766,7 +811,9 @@
                 primaryType,
                 primaryConfidence,
                 primaryResult,
-                aaResult
+                aaResult,
+                evalResult,
+                hasMultipleEncodings: false
             };
         }
         
@@ -832,9 +879,12 @@
         function updateDetectionPanel(detection) {
             const panel = document.getElementById('detectionPanel');
             const aaIndicator = document.getElementById('aaencodeIndicator');
+            const evalIndicator = document.getElementById('evalIndicator');
             
             aaIndicator.classList.remove('show');
+            evalIndicator.classList.remove('show');
             window.appData.isAAEncodeMode = false;
+            window.appData.isEvalMode = false;
             
             if (detection.primaryType !== 'Unknown') {
                 panel.style.display = 'block';
@@ -905,6 +955,12 @@
                 showToast(`❌ 未检测到AAEncode格式 (置信度: ${detection.confidence}%)`);
                 addLog(`AAEncode检测失败: 置信度不足 ${detection.confidence}%`, 'warning');
             }
+        }
+        
+        function testEvalInput() {
+            // 保留函数以避免点击按钮时出错
+            showToast('Eval解包功能已移除');
+            addLog('Eval解包功能已被移除，请使用AAEncode模式', 'warning');
         }
         
         function autoDetectAndDecrypt() {
@@ -1512,8 +1568,12 @@
             const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
             
             let filename = `decrypted_${timestamp}.js`;
-            if (window.appData.isAAEncodeMode) {
+            if (window.appData.isAAEncodeMode && window.appData.isEvalMode) {
+                filename = `decrypted_mixed_${timestamp}.js`;
+            } else if (window.appData.isAAEncodeMode) {
                 filename = `decrypted_aaencode_${timestamp}.js`;
+            } else if (window.appData.isEvalMode) {
+                filename = `decrypted_eval_${timestamp}.js`;
             }
             
             a.href = url;
@@ -1523,6 +1583,22 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            
+            showToast('💾 文件下载已开始');
+            addLog('下载成功', 'success');
+        } catch (error) {
+            addLog('下载失败: ' + error.message, 'error');
+            showToast('❌ 下载失败');
+        }
+    }ObjectURL(url);
+            
+            showToast('💾 文件下载已开始');
+            addLog('下载成功', 'success');
+        } catch (error) {
+            addLog('下载失败: ' + error.message, 'error');
+            showToast('❌ 下载失败');
+        }
+    }ObjectURL(url);
             
             showToast('💾 文件下载已开始');
             addLog('下载成功', 'success');
