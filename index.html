@@ -1582,60 +1582,139 @@ eval(function(){
             setTimeout(() => toast.classList.remove('show'), duration);
         }
         
-        // 初始化
+        // 修复版初始化 - 解决输入框无反应问题
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('token').value = window.appData.token;
-            document.getElementById('repo').value = window.appData.repo;
-            
-            document.getElementById('token').addEventListener('input', function(e) {
-                window.appData.token = e.target.value;
-                localStorage.setItem('github_token', e.target.value);
-            });
-            
-            document.getElementById('repo').addEventListener('input', function(e) {
-                window.appData.repo = e.target.value;
-                localStorage.setItem('repo_name', e.target.value);
-            });
-            
-            document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-            
+            // 基础配置加载
+            const tokenInput = document.getElementById('token');
+            const repoInput = document.getElementById('repo');
+            const inputTextarea = document.getElementById('input');
+            const fileInput = document.getElementById('fileInput');
             const fileUpload = document.querySelector('.file-upload');
-            fileUpload.addEventListener('dragover', handleDragOver);
-            fileUpload.addEventListener('dragleave', handleDragLeave);
-            fileUpload.addEventListener('drop', handleDrop);
             
-            document.getElementById('input').addEventListener('input', function() {
-                const input = this.value.trim();
-                if (input.length > 50) {
-                    const detection = comprehensiveDetection(input);
-                    updateDetectionDisplay(detection);
-                } else {
-                    updateDetectionDisplay({ primaryType: 'Unknown' });
-                }
-            });
+            // 检查元素是否存在
+            if (tokenInput) {
+                tokenInput.value = window.appData.token;
+                tokenInput.addEventListener('input', function(e) {
+                    window.appData.token = e.target.value;
+                    localStorage.setItem('github_token', e.target.value);
+                });
+            }
             
+            if (repoInput) {
+                repoInput.value = window.appData.repo;
+                repoInput.addEventListener('input', function(e) {
+                    window.appData.repo = e.target.value;
+                    localStorage.setItem('repo_name', e.target.value);
+                });
+            }
+            
+            // 文件输入事件
+            if (fileInput) {
+                fileInput.addEventListener('change', handleFileSelect);
+            }
+            
+            // 拖拽上传事件
+            if (fileUpload) {
+                fileUpload.addEventListener('dragover', handleDragOver);
+                fileUpload.addEventListener('dragleave', handleDragLeave);
+                fileUpload.addEventListener('drop', handleDrop);
+            }
+            
+            // 输入框实时检测 - 修复版
+            if (inputTextarea) {
+                inputTextarea.addEventListener('input', function(e) {
+                    const input = e.target.value.trim();
+                    console.log('输入检测:', input.length); // 调试日志
+                    
+                    if (input.length > 20) { // 降低检测阈值
+                        try {
+                            const detection = comprehensiveDetection(input);
+                            updateDetectionDisplay(detection);
+                            console.log('检测结果:', detection); // 调试日志
+                        } catch (error) {
+                            console.error('检测错误:', error);
+                            addLog('检测错误: ' + error.message, 'error');
+                        }
+                    } else {
+                        updateDetectionDisplay({ primaryType: 'Unknown' });
+                    }
+                });
+                
+                // 添加焦点事件测试
+                inputTextarea.addEventListener('focus', function() {
+                    console.log('输入框获得焦点');
+                    addLog('输入框已激活', 'info');
+                });
+                
+                inputTextarea.addEventListener('blur', function() {
+                    console.log('输入框失去焦点');
+                });
+            }
+            
+            // 键盘快捷键
             document.addEventListener('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                     e.preventDefault();
+                    console.log('快捷键: Ctrl+Enter');
                     startDecrypt();
                 } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                     e.preventDefault();
+                    console.log('快捷键: Ctrl+S');
                     downloadResult();
                 } else if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !e.target.matches('input, textarea')) {
                     e.preventDefault();
+                    console.log('快捷键: Ctrl+C');
                     copyResult();
                 } else if (e.key === 'Escape') {
                     e.preventDefault();
+                    console.log('快捷键: Esc');
                     clearAll();
                 }
             });
             
+            // 初始化日志
             addLog(`🚀 系统初始化完成 v${APP_CONFIG.VERSION} - ${APP_CONFIG.VERSION_NAME}`, 'success');
             addLog('🎯 专业AADecode插件已加载，支持头部注释保留', 'info');
             addLog('🔧 专业Eval解包插件已加载，支持递归解密', 'info');
             addLog('💡 快捷键: Ctrl+Enter解密, Ctrl+S下载, Ctrl+C复制, Esc清除', 'info');
+            
+            // 测试功能 - 点击演示按钮测试
+            console.log('所有事件监听器已添加');
+            showToast('✅ 系统初始化完成，可以开始使用了！');
         });
         
+        // 测试函数 - 你可以在浏览器控制台调用这个函数测试
+        function testSystem() {
+            console.log('=== 系统测试 ===');
+            console.log('APP_CONFIG:', APP_CONFIG);
+            console.log('window.appData:', window.appData);
+            
+            const elements = {
+                input: document.getElementById('input'),
+                output: document.getElementById('output'),
+                logs: document.getElementById('logs'),
+                detectionType: document.getElementById('detectionType'),
+                fileInput: document.getElementById('fileInput')
+            };
+            
+            console.log('关键元素检查:', elements);
+            
+            // 测试检测功能
+            const testCode = "console.log('Hello World');";
+            console.log('测试检测功能...');
+            try {
+                const detection = comprehensiveDetection(testCode);
+                console.log('检测结果:', detection);
+                updateDetectionDisplay(detection);
+            } catch (error) {
+                console.error('检测功能错误:', error);
+            }
+            
+            addLog('🧪 系统测试完成', 'info');
+            showToast('🧪 系统测试完成，请查看控制台');
+        }
+        
+        // 错误处理
         window.addEventListener('error', function(e) {
             addLog('❌ 发生错误: ' + e.message, 'error');
             console.error('Global error:', e);
@@ -1645,6 +1724,18 @@ eval(function(){
             addLog('❌ Promise错误: ' + e.reason, 'error');
             console.error('Unhandled promise rejection:', e);
         });
+        
+        // 添加调试工具
+        window.debugWool = {
+            testSystem: testSystem,
+            showLogs: () => console.log('当前日志:', document.getElementById('logs').innerHTML),
+            testDetection: (code) => {
+                const result = comprehensiveDetection(code || "console.log('test');");
+                console.log('检测结果:', result);
+                return result;
+            },
+            clearLogs: () => document.getElementById('logs').innerHTML = ''
+        };
     </script>
 </body>
 </html>
