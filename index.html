@@ -759,16 +759,13 @@
         };
         
         // =============================================
-        // 编码检测和解密函数
+        // AAEncode检测和解密函数
         // =============================================
         
         /**
-         * 智能检测各种编码格式
+         * 智能检测AAEncode格式
          */
-        function detectEncodingType(input) {
-            const results = {
-                aaencode: detectAAEncode(input),
-                eval
+        function detectAAEncode(input) {
             // AAEncode特征字符检测
             const aaencodeChars = /[ﾟωノΘΔДεｰｍ'∇｀~┻━_=3o\^c\/\*\\\"()[\]!+]/g;
             const matches = input.match(aaencodeChars) || [];
