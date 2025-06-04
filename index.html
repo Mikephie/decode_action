@@ -739,7 +739,7 @@
         };
         
         // ==============================================
-        // 专业AADecode插件（基于你提供的代码）
+        // 专业AADecode插件（基于可靠插件修复）
         // ==============================================
         
         // 初始化AADecode插件
@@ -763,10 +763,13 @@
             }
             
             /**
-             * 专业AADecode解码函数
+             * 解码AA编码的JavaScript代码，同时保留原始脚本的头部注释
+             * @param {string} code - 包含可能的头部注释和AA编码的完整代码
+             * @returns {string|null} - 解码后的脚本（保留头部注释）或null（如果解码失败）
              */
             function plugin(code) {
                 try {
+                    // 提取头部注释和编码部分
                     const { header, encodedPart } = extractHeader(code);
                     
                     // 检查是否为AA编码内容
@@ -807,6 +810,7 @@
                 },
                 plugin: function(code) {
                     try {
+                        console.log("尝试解密AADecode编码...");
                         const result = module.exports(code);
                         return result !== null ? result : code;
                     } catch (e) {
@@ -818,8 +822,9 @@
             
             // 保存插件函数到全局
             window.professionalAADecode = module.exports;
+            console.log("AADecode插件已加载");
         })();
-        
+
         // 专业AAEncode解密函数
         function decodeAAEncode(code) {
             try {
