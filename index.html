@@ -1520,8 +1520,11 @@ function cleanInput() {
         .replace(/\s+/g, ' ')
         .trim();
 
-    // ✅ 修复 encode_version 被清除掉的分号
-    cleaned = cleaned.replace(/([^;\n])(\s*var\s+encode_version\s*=)/g, '$1;$2');
+    // ✅ 修复 ;var encode_version 丢失
+cleaned = cleaned.replace(
+  /(^|\n)([^;\n]*)(?=\s*var\s+encode_version\s*=)/g,
+  (match, p1, p2) => `${p1}${p2.trim().endsWith(';') ? p2 : p2 + ';'}`
+);
     
     // 检查清理效果
     if (cleaned.length === input.length) {
