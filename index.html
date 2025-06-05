@@ -1479,23 +1479,33 @@ function cleanInput() {
         return;
     }
     
-    // 先检测类型
-    const detection = comprehensiveDetection(input);
+    // 🔒 jsjiami特殊保护
+    const hasJsjiami = /jsjiami\.com\.v\d+/.test(input);
     
-    // 检查是否为混合内容
-    const isMixedContent = checkIfMixedContent(input);
-    
-    if (detection.primaryType !== 'Unknown' && !isMixedContent) {
-        // 纯密文格式，跳过清理
-        showToast(`⚠️ 检测到纯${detection.primaryType}格式，跳过清理以保持完整性`);
-        addLog(`${detection.primaryType}格式对完整性要求较高，建议直接解密`, 'info');
+    if (hasJsjiami) {
+        // 按行处理，保护分号
+        const lines = input.split('\n');
+        const cleanedLines = lines.filter(line => {
+            const trimmed = line.trim();
+            return trimmed && 
+                   !trimmed.startsWith('// 原始代码') &&
+                   !trimmed.startsWith('// 解密完成') &&
+                   !trimmed.startsWith('// 解密结果');
+        });
+        
+        const cleaned = cleanedLines.join('\n').trim();
+        document.getElementById('input').value = cleaned;
+        showToast('🧹 jsjiami清理完成，分号已保护');
+        addLog(`jsjiami清理: ${lines.length} → ${cleanedLines.length} 行`, 'success');
         return;
     }
     
-    if (detection.primaryType !== 'Unknown' && isMixedContent) {
-        // 混合内容中包含已知格式，允许清理
-        showToast(`🔍 检测到混合内容中的${detection.primaryType}，开始智能提取...`);
-        addLog(`混合内容中检测到${detection.primaryType}，进行智能分离`, 'info');
+    // 原来的其他逻辑
+    const detection = comprehensiveDetection(input);
+    if (detection.primaryType !== 'Unknown') {
+        showToast(`⚠️ 检测到${detection.primaryType}，跳过清理以保持完整性`);
+        addLog(`检测到${detection.primaryType}格式，置信度${detection.primaryConfidence}%`, 'info');
+        return;
     }
     
     addLog('开始智能清理代码...', 'info');
@@ -1516,6 +1526,68 @@ function cleanInput() {
         }
         return;
     }
+    
+    // 否则进行基础清理
+    let cleaned = input
+        .replace(/\/\/.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '')
+        .replace(/^\s*\/\/\s*(原始代码|原文|明文).*$/gm, '')
+        .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
+        .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
+        .replace(/^\s*[\r\n]/gm, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    
+    // 检查清理效果
+    if (cleaned.length === input.length) {
+        showToast('🔍 未发现需要清理的内容');
+        addLog('代码已经是纯净格式', 'info');
+    } else {
+        document.getElementById('input').value = cleaned;
+        showToast('🧹 代码清理完成');
+        addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
+        
+        // 清理后重新检测
+        const newDetection = comprehensiveDetection(cleaned);
+        if (newDetection.primaryType !== 'Unknown') {
+            addLog(`清理后检测到: ${newDetection.primaryType} (置信度: ${newDetection.primaryConfidence}%)`, 'success');
+        }
+    }
+}
+    
+    // 否则进行基础清理
+    let cleaned = input
+        .replace(/\/\/.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '')
+        .replace(/^\s*\/\/\s*(原始代码|原文|明文).*$/gm, '')
+        .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
+        .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
+        .replace(/^\s*[\r\n]/gm, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    
+    // 检查清理效果
+    if (cleaned.length === input.length) {
+        showToast('🔍 未发现需要清理的内容');
+        addLog('代码已经是纯净格式', 'info');
+    } else {
+        document.getElementById('input').value = cleaned;
+        showToast('🧹 代码清理完成');
+        addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
+        
+        // 清理后重新检测
+        const newDetection = comprehensiveDetection(cleaned);
+        if (newDetection.primaryType !== 'Unknown') {
+            addLog(`清理后检测到: ${newDetection.primaryType} (置信度: ${newDetection.primaryConfidence}%)`, 'success');
+        }
+    }
+}
     
     // 否则进行基础清理
     let cleaned = input
