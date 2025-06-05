@@ -1553,37 +1553,42 @@ function cleanInput() {
     }
 }
 
-// 修改混合内容检查，对jsjiami更宽松
+// 检查是否为混合内容
 function checkIfMixedContent(input) {
-    // 如果包含jsjiami，检查是否有明显的非代码内容
-    if (/jsjiami\.com\.v\d+/.test(input)) {
-        // 对jsjiami使用更严格的混合内容检查
-        const jsjiamiMixedIndicators = [
-            /\/\/\s*(原始代码|解密完成|解密结果|原文|明文)/,  // 明显的说明文字
-            /<[^>]+>/,  // HTML标签
-            /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,  // 时间戳
-            /(console\.log|alert)\s*\([^)]*\)\s*;/  // 调试代码
-        ];
-        
-        return jsjiamiMixedIndicators.some(indicator => indicator.test(input));
-    }
-    
-    // 非jsjiami的正常检查
     const mixedContentIndicators = [
+        // 包含注释
         /\/\/.*$/m,
         /\/\*[\s\S]*?\*\//,
         /<!--[\s\S]*?-->/,
+        
+        // 包含中文说明
         /[\u4e00-\u9fff]/,
+        
+        // 包含原文标识
         /(原始代码|原文|明文|解密结果|解密完成)/,
+        
+        // 包含HTML标签
         /<[^>]+>/,
+        
+        // 包含时间戳
         /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+        
+        // 包含调试代码
         /(console\.log|alert|document\.write)\s*\(/,
+        
+        // 包含多个代码块（原文+密文）
         /eval\s*\(.*?\).*eval\s*\(/s,
+        
+        // 包含说明性文字
         /(解密脚本|混淆工具|加密工具)/
     ];
     
-    return mixedContentIndicators.some(indicator => indicator.test(input));
-}
+    // 如果匹配任何一个指标，说明是混合内容
+    for (const indicator of mixedContentIndicators) {
+        if (indicator.test(input)) {
+            return true;
+        }
+    }
     
     // 检查长度比例 - 如果代码很长但密文特征不明显，可能是混合内容
     const lines = input.split('\n');
@@ -1605,20 +1610,11 @@ function checkIfMixedContent(input) {
     return false;
 }
 
-// 修复版：更精确的jsjiami提取和保护
+// 增强版预处理 - 专门处理混合内容
 function preprocessCiphertext(input) {
     addLog('执行智能预处理...', 'info');
     
-    // 先检测是否包含jsjiami
-    const jsjiamiPattern = /(?:;?\s*)?var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]/;
-    const hasJsjiami = jsjiamiPattern.test(input);
-    
-    if (hasJsjiami) {
-        addLog('检测到jsjiami格式，使用精确提取模式', 'info');
-        return extractJsjiamiCode(input);
-    }
-    
-    // 非jsjiami的正常清理流程
+    // 先进行基础清理
     let processed = input
         .replace(/\/\/.*$/gm, '')
         .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -1627,35 +1623,44 @@ function preprocessCiphertext(input) {
         .replace(/^\s*\/\/解密脚本.*$/gm, '')
         .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
     
-    // 其他格式的提取模式...
+    // 密文提取模式 - 按优先级排序
     const patterns = [
-        // AAEncode混淆  
+        // 1. jsjiami混淆 (最高优先级)
+        {
+            name: 'jsjiami混淆',
+            pattern: /var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*,.*?['"`]((?:\\u[0-9a-fA-F]{4})+)['"`]/s,
+            extract: (match) => match[0] // 保留完整的jsjiami代码块
+        },
+        
+        // 2. eval包装的jsjiami
+        {
+            name: 'eval包装的jsjiami',
+            pattern: /eval\s*\(\s*(['"`])(.*?jsjiami\.com\.v\d+.*?)\1\s*\)/s,
+            extract: (match) => match[2]
+        },
+        
+        // 3. AAEncode混淆  
         {
             name: 'AAEncode混淆',
             pattern: /(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s,
             extract: (match) => match[1]
         },
         
-        // eval包装
+        // 4. 标准eval包装
         {
             name: 'eval包装',
             pattern: /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
             extract: (match) => match[2]
         },
         
-        // Function构造器
+        // 5. Function构造器
         {
             name: 'Function构造器',
             pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
             extract: (match) => match[2]
         },
         
-        // atob包装
-        {
-            name: 'atob包装',
-            pattern: /atob\s*\(\s*(['"`])(.*?)\1\s*\)/s,
-            extract: (match) => match[2]
-        }
+        // 其他模式...
     ];
     
     // 尝试匹配各种模式
@@ -1679,108 +1684,6 @@ function preprocessCiphertext(input) {
         .replace(/^\s+/gm, '')
         .replace(/\s+/g, ' ')
         .trim();
-}
-
-// 专门的jsjiami代码提取函数
-function extractJsjiamiCode(input) {
-    addLog('开始精确提取jsjiami代码...', 'info');
-    
-    // 多种jsjiami模式匹配
-    const jsjiamiPatterns = [
-        // 模式1: 完整的jsjiami代码块（带或不带前导分号）
-        {
-            name: '完整jsjiami代码块',
-            pattern: /(;?\s*var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`][\s\S]*?)(?=\n\s*\/\/|$|\n\s*;?\s*var\s+encode_version|\n\s*<|$)/,
-            extract: (match) => match[1].trim()
-        },
-        
-        // 模式2: eval包装的jsjiami
-        {
-            name: 'eval包装的jsjiami',
-            pattern: /eval\s*\(\s*(['"`])(.*?jsjiami\.com\.v\d+.*?)\1\s*\)/s,
-            extract: (match) => match[2]
-        },
-        
-        // 模式3: 多行jsjiami（更宽松的匹配）
-        {
-            name: '多行jsjiami',
-            pattern: /((?:;?\s*)?var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`].*?)(?:\n\s*\/\/|\n\s*$|\n\s*<)/s,
-            extract: (match) => match[1].trim()
-        }
-    ];
-    
-    // 按优先级尝试提取
-    for (const pattern of jsjiamiPatterns) {
-        const matches = input.match(pattern.pattern);
-        if (matches) {
-            let extracted = pattern.extract(matches);
-            
-            // 确保提取的代码完整
-            if (extracted && extracted.includes('jsjiami.com.v') && extracted.length > 100) {
-                
-                // 保持原始格式，只做最小清理
-                extracted = extracted
-                    // 只移除明显的非代码行
-                    .replace(/^\s*\/\/(?!.*jsjiami).*$/gm, '') // 移除注释，但保留jsjiami相关注释
-                    .replace(/^\s*\/\/\s*(原始代码|解密完成|解密结果).*$/gm, '') // 移除明显的说明行
-                    // 保持所有其他字符，包括分号、空格等
-                    .replace(/\n\s*\n/g, '\n') // 只移除多余的空行
-                    .trim();
-                
-                // 确保代码以正确的格式开始
-                if (extracted && !extracted.startsWith('var encode_version') && !extracted.startsWith(';var encode_version')) {
-                    // 如果代码被截断了，尝试找到正确的开始位置
-                    const varMatch = extracted.match(/(;?\s*var\s+encode_version[\s\S]*)/);
-                    if (varMatch) {
-                        extracted = varMatch[1];
-                    }
-                }
-                
-                addLog(`精确提取${pattern.name}成功`, 'success');
-                addLog(`提取的代码长度: ${extracted.length} 字符`, 'info');
-                
-                // 验证提取的代码
-                if (validateJsjiamiCode(extracted)) {
-                    return extracted;
-                }
-            }
-        }
-    }
-    
-    // 如果所有模式都失败，返回原始输入（可能是纯jsjiami代码）
-    addLog('未能匹配jsjiami模式，可能是纯净代码', 'warning');
-    return input.trim();
-}
-
-// 验证jsjiami代码的完整性
-function validateJsjiamiCode(code) {
-    const checks = [
-        // 必须包含jsjiami标识
-        /jsjiami\.com\.v\d+/,
-        // 必须包含变量声明
-        /var\s+encode_version/,
-        // 必须包含数组或字符串数据
-        /=\s*\[|=\s*['"`]/,
-        // 长度检查
-        code.length > 100
-    ];
-    
-    const passed = checks.filter(check => {
-        if (typeof check === 'object' && check.test) {
-            return check.test(code);
-        }
-        return check;
-    }).length;
-    
-    const isValid = passed >= checks.length - 1; // 允许一个检查失败
-    
-    if (isValid) {
-        addLog('jsjiami代码验证通过', 'success');
-    } else {
-        addLog(`jsjiami代码验证失败，通过 ${passed}/${checks.length} 项检查`, 'warning');
-    }
-    
-    return isValid;
 }
 
 // 验证输入质量
