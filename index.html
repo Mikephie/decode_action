@@ -518,10 +518,10 @@
                 style="flex: 1; min-width: 0; background: linear-gradient(135deg, #9c27b0, #ba68c8); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
             🔧<br><span style="font-size: 10px;">Eval解密</span>
         </button>
-        <button onclick="loadDemoCode()" 
-                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #f44336, #e57373); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-            📝<br><span style="font-size: 10px;">加载示例</span>
-        </button>
+        <button onclick="showRemoteUrlDialog()" 
+        style="flex: 1; min-width: 0; background: linear-gradient(135deg, #f44336, #e57373); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+    🌐<br><span style="font-size: 10px;">远程加载</span>
+</button>
     </div>
 </div>
         
@@ -1360,6 +1360,35 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                }
            }, 500);
        }
+       
+       function showRemoteUrlDialog() {
+    const url = prompt('请输入远程文件URL地址:', 'https://');
+    if (url && url.trim()) {
+        loadRemoteFile(url.trim());
+    }
+}
+
+function loadRemoteFile(url) {
+    addLog('开始加载远程文件: ' + url, 'info');
+    
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('网络响应错误: ' + response.status);
+            }
+            return response.text();
+        })
+        .then(content => {
+            document.getElementById('input').value = content;
+            detectCode();
+            addLog('远程文件加载成功', 'success');
+            showToast('✅ 远程文件加载成功');
+        })
+        .catch(error => {
+            addLog('远程文件加载失败: ' + error.message, 'error');
+            showToast('❌ 远程文件加载失败: ' + error.message);
+        });
+}
        
        async function pasteFromClipboard() {
            try {
