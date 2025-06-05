@@ -1818,63 +1818,107 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
            }
        }
        
-       function beautifyCode() {
-           const output = document.getElementById('output');
-           let content = output.innerHTML.includes('<span') ? 
-                         stripHTMLTags(output.innerHTML) : 
-                         output.textContent;
-           
-           if (!content || content.includes('解密结果将显示在这里')) {
-               showToast('请先获取解密结果');
-               return;
-           }
-           
-           try {
-               const beautified = beautifyJavaScript(content);
-               displayResult(beautified);
-               showToast('🎨 代码美化完成');
-               addLog('代码美化成功', 'success');
-           } catch (error) {
-               showToast('❌ 代码美化失败: ' + error.message);
-               addLog('代码美化失败: ' + error.message, 'error');
-           }
-       }
-       
        function beautifyJavaScript(code) {
-           let beautified = code;
-           let indentLevel = 0;
-           const indent = '    ';
-           
-           beautified = beautified.replace(/\s+/g, ' ').trim();
-           beautified = beautified.replace(/([{;}])/g, '$1\n');
-           beautified = beautified.replace(/([}])/g, '\n$1\n');
-           
-           const lines = beautified.split('\n');
-           const result = [];
-           
-           for (let line of lines) {
-               line = line.trim();
-               if (!line) continue;
-               
-               if (line.includes('}')) {
-                   indentLevel = Math.max(0, indentLevel - 1);
-               }
-               
-               result.push(indent.repeat(indentLevel) + line);
-               
-               if (line.includes('{')) {
-                   indentLevel++;
-               }
-           }
-           
-           return result.join('\n');
-       }
-       
-       function stripHTMLTags(html) {
-           const div = document.createElement('div');
-           div.innerHTML = html;
-           return div.textContent || div.innerText || '';
-       }
+            // 移除多余的空格和换行
+            let beautified = code.replace(/\s+/g, ' ').trim();
+            
+            // 在分号、大括号后添加换行
+            beautified = beautified.replace(/;/g, ';\n');
+            beautified = beautified.replace(/\{/g, '{\n');
+            beautified = beautified.replace(/\}/g, '\n}\n');
+            beautified = beautified.replace(/,\s*(?=[a-zA-Z_$\[])/g, ',\n');
+            
+            // 修复常见的格式问题
+            beautified = beautified.replace(/\n\s*\n/g, '\n'); // 移除空行
+            beautified = beautified.replace(/;\s*\n\s*\}/g, ';\n}'); // 修复分号后的括号
+            
+            const lines = beautified.split('\n');
+            const result = [];
+            let indentLevel = 0;
+            const indent = '  '; // 2个空格缩进
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                // 检查是否需要减少缩进
+                if (line.includes('}') && !line.includes('{')) {
+                    indentLevel = Math.max(0, indentLevel - 1);
+                }
+                
+                // 添加缩进
+                let indentedLine = indent.repeat(indentLevel) + line;
+                
+                // 特殊处理对象属性
+                if (line.match(/^[a-zA-Z_$][a-zA-Z0-9_$]*\s*:/)) {
+                    // 这是对象属性，保持额外缩进
+                    if (indentLevel > 0) {
+                        indentedLine = indent.repeat(indentLevel) + line;
+                    }
+                }
+                
+                result.push(indentedLine);
+                
+                // 检查是否需要增加缩进
+                if (line.includes('{') && !line.includes('}')) {
+                    indentLevel++;
+                } else if (line.includes('=') && line.includes('{') && !line.includes('}')) {
+                    indentLevel++;
+                }
+            }
+            
+            // 最终格式化处理
+            let formatted = result.join('\n');
+            
+            // 添加注释头部
+            const timestamp = new Date().toLocaleString();
+            const header = `//解密时间: ${timestamp}\n//解密工具: 羊毛助手 v5.7\n//解密插件: eval\n\n`;
+            
+            // 特殊格式化处理
+            formatted = formatted
+                .replace(/(\w+)\s*=\s*\{/g, '$1 = {') // 标准化对象赋值
+                .replace(/\{\s*\n\s*\}/g, '{}') // 空对象单行
+                .replace(/\[\s*\n\s*\]/g, '[]') // 空数组单行
+                .replace(/,\s*\]/g, ',\n]') // 数组结尾格式化
+                .replace(/\{\s*([^}]{1,50})\s*\}/g, '{ $1 }') // 短对象单行
+                .replace(/\n{3,}/g, '\n\n'); // 限制连续空行
+            
+            return header + formatted;
+        }
+        
+        function beautifyCode() {
+            const output = document.getElementById('output');
+            let content = output.innerHTML.includes('<span') ? 
+                          stripHTMLTags(output.innerHTML) : 
+                          output.textContent;
+            
+            if (!content || content.includes('解密结果将显示在这里')) {
+                showToast('请先获取解密结果');
+                return;
+            }
+            
+            try {
+                const beautified = beautifyJavaScript(content);
+                displayResult(beautified);
+                showToast('🎨 代码美化完成');
+                addLog('代码美化成功', 'success');
+                
+                // 滚动到结果区域
+                document.getElementById('output').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            } catch (error) {
+                showToast('❌ 代码美化失败: ' + error.message);
+                addLog('代码美化失败: ' + error.message, 'error');
+            }
+        }
+        
+        function stripHTMLTags(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            return div.textContent || div.innerText || '';
+        }
        
        function copyResult() {
            const output = document.getElementById('output');
