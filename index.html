@@ -1616,12 +1616,12 @@ function preprocessCiphertext(input) {
     
     // 先进行基础清理
     let processed = input
-        .replace(/\/\/.*$/gm, '')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/<!--[\s\S]*?-->/g, '')
-        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
-        .replace(/^\s*\/\/解密脚本.*$/gm, '')
-        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
+        //.replace(/\/\/.*$/gm, '')
+        //.replace(/\/\*[\s\S]*?\*\//g, '')
+        //.replace(/<!--[\s\S]*?-->/g, '')
+        //.replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+        //.replace(/^\s*\/\/解密脚本.*$/gm, '')
+        //.replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
     
     // 密文提取模式 - 按优先级排序
     const patterns = [
