@@ -1,32 +1,120 @@
-//2025-06-05T03:06:16.451Z
+//2025-06-05T03:11:41.760Z
 //解密脚本在此
-const opName = $request?.["headers"]?.["X-APOLLO-OPERATION-NAME"] || "";
-let body;
-if (/Ads/i.test(opName)) $done({
-  "body": "{}"
-});else try {
-  body = JSON.parse($response.body.replace(/"isObfuscated":true/g, "\"isObfuscated\":false").replace(/"obfuscatedPath":"[^"]*"/g, "\"obfuscatedPath\":null").replace(/"isNsfw":true/g, "\"isNsfw\":false").replace(/"isAdPersonalizationAllowed":true/g, "\"isAdPersonalizationAllowed\":false").replace(/"isThirdPartyInfoAdPersonalizationAllowed":true/g, "\"isThirdPartyInfoAdPersonalizationAllowed\":false").replace(/"isNsfwMediaBlocked":true/g, "\"isNsfwMediaBlocked\":false").replace(/"isNsfwContentShown":true/g, "\"isNsfwContentShown\":false").replace(/"isPremiumMember":false/g, "\"isPremiumMember\":true").replace(/"isEmployee":false/g, "\"isEmployee\":true"));
-  const data = body.data ?? {};
-  Object.keys(data).forEach(_0x264ed5 => {
-    const _0xe804f6 = data[_0x264ed5]?.["elements"]?.["edges"];
-    if (!Array.isArray(_0xe804f6)) return;
-    data[_0x264ed5].elements.edges = _0xe804f6.filter(({
-      node: _0x2d14e2
-    }) => {
-      {
-        if (!_0x2d14e2) return true;
-        if (_0x2d14e2.__typename === "AdPost") return false;
-        if (_0x2d14e2.adPayload) return false;
-        if (Array.isArray(_0x2d14e2.cells)) return !_0x2d14e2.cells.some(_0x3835ab => _0x3835ab?.["__typename"] === "AdMetadataCell");
-        return true;
+var body = $response.body,
+  obj = JSON.parse(body);
+obj = {
+  "status": "success",
+  "userData": {
+    "oAuthId": null,
+    "idUser": 12345678,
+    "dateExpires": 4102415999,
+    "subscriptionKey": "wNxX9JZxf9BafW5nXRHZQ-BMCAnO5b68Vzl9MxETIgQ",
+    "countryCode": null,
+    "dateLastLogin": "2023-08-13 07:30:00",
+    "oAuthType": null,
+    "isActive": true,
+    "hasConsented": true,
+    "localeCode": "en_GB",
+    "name": "By Anni",
+    "typeSource": "ios",
+    "subscriptions": {
+      "0": {
+        "dateExpires": 4102415999,
+        "sortOrder": 2,
+        "isOnTrial": true,
+        "sku": "subscription.premium.gold.annual",
+        "originalBillingPeriod": 365,
+        "typePlatform": "ios",
+        "typeStatus": "active",
+        "name": "Gold",
+        "typeSubscription": "annual"
       }
-    });
-  });
-  body = JSON.stringify(body);
-} catch (_0x2d423f) {
-  console.log("Parse error:", _0x2d423f);
-} finally {
-  $done(body ? {
-    "body": body
-  } : {});
-}
+    },
+    "tokenLogin": "UuKjQf4SMpVuXaYkUKe1DzxlKCtLv6GOfqAM-EmPGHSwjgLfbQWQKl8eRQlriWnZl5fHAslnOQ7APxqAfLDPMcRuImHsB-27XWGn3dSgOcLyWMgkPCY3BxjHXg1tvNwWMzbqEwsj-aWWO3FRDMj_Zif0ZHMrbhRPsPd2SfGO0n7QZuD1R2YgOOr-IjH8RxF46kFYDkGvJ2pDjNBTia2rSCF_Xbpq-NvLVDTbV41KTu7WnwN8XfAwFfahbk7N-RL0H3BN_0aSOgTtHX7DRSquUnErgJDH2eB3JwefQSwSWF36ASrWgpnxJUWTLWDwjihigWL0CACyiglDtwG9YKYJ_0WBvP3J0O7kQrEplNKS_7Njwkg1fT_Ro1ys-GNs1za5uGpP7nMF833iHGqShq1LPc1OxxJsv8d_sjDiz3ab-RY",
+    "accessToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJmbGlnaHRyYWRhcjI0LmNvbSIsImV4cCI6MTY5NDQ3NjUzMCwiaWF0IjoxNjkxODg0NTMwLCJlbWFpbCI6IjM1MDAwMTY1NzAwNjY3MyIsInVzZXJJZCI6MTI4NTgwNjUsImtleVNlc3Npb24iOiI2ZmVkMzJkYTVlMWU5M2I0MDZlZGM0ODE5Y2UxNGU2OTBmMzQyMjNiOWQ2NjRjYWI2ODU1NDkyYzBhMmIxODZjIiwic2wiOiJTIiwicGsiOiIifQ.39j6D0Y4cbm-NEnJA5_BXkjfspzkG5QlNNjBVJqAKYE",
+    "publicKey": null,
+    "identity": "By Anni",
+    "isLoggedin": true,
+    "accountType": "subscriber",
+    "isAnonymousAccount": true,
+    "hasPassword": false,
+    "features": {
+      "map.filters.unblocking": "enabled",
+      "app.ios": "enabled",
+      "map.filters.max": 25,
+      "user.fleets.max.aircraft": 1000,
+      "map.info.flight.ground-speed": "enabled",
+      "map.info.flight.track": "enabled",
+      "map.layer.waypoints": "enabled",
+      "map.info.aircraft.type": "enabled",
+      "history.playback.flight.days": 365,
+      "history.playback.global.days": 365,
+      "map.data.delaystats": "enabled",
+      "user.fleets.max": 3,
+      "map.data.flarm": "enabled",
+      "map.filters.fleets": "enabled",
+      "map.layer.trail.tooltip": "enabled",
+      "support.platform": "full",
+      "map.view.3d.basic": 3,
+      "map.info.aircraft.msn": "enabled",
+      "map.data.satellite": "enabled",
+      "support.level": "Yes",
+      "map.view.radar": "enabled",
+      "history.flight.days": 365,
+      "map.view.multi": "enabled",
+      "map.info.aircraft.code": "enabled",
+      "map.widgets.last_clicked_flights": "enabled",
+      "map.info.flight.calibrated-altitude": "enabled",
+      "user.alerts.max": 25,
+      "map.info.airport.arrivals": "enabled",
+      "map.view.delay": "enabled",
+      "map.widgets.bookmarks.max": 25,
+      "user.sessions.max": 3,
+      "map.info.airport.departures": "enabled",
+      "map.info.aircraft": "full",
+      "map.data.ads-b": "enabled",
+      "history.playback.days": 365,
+      "map.data.mlat": "enabled",
+      "map.filters.receivers": "enabled",
+      "map.view.3d": "enabled",
+      "map.info.flight.position": "enabled",
+      "adverts": "disabled",
+      "map.view.fullscreen": "enabled",
+      "user.users": 3,
+      "map.layer.weather.volcano": "enabled",
+      "app.android": "enabled",
+      "map.data.faa": "enabled",
+      "usage.rights": "Private",
+      "map.hide_header": "enabled",
+      "map.search": "enabled",
+      "map.timeout.mins": -1,
+      "map.info.flight.squawk": "enabled",
+      "map.layer.weather": "enabled",
+      "map.info.flight": "enhanced",
+      "history.aircraft.days": 365,
+      "map.filters.categories": "enabled",
+      "map.sidemenu.photo.hide": "enabled",
+      "map.info.aircraft.registration": "enabled",
+      "map.tracking.live": "enabled",
+      "history.flight.kml": 25,
+      "map.info.flight.vertical-speed": "enabled",
+      "map.widgets.bookmarks": "enabled",
+      "map.labels.rows": 4,
+      "map.status.flight": "enabled",
+      "map.info.aircraft.age": "enabled",
+      "map.info.airport.onground.hours": 720,
+      "map.view.fleet.onground": 1,
+      "user.bookmarks.max": 25
+    },
+    "oAuth": null
+  },
+  "message": "Subscription has been successfully created",
+  "msg": "Subscription has been successfully created",
+  "response_code": 100,
+  "success": true,
+  "token": "6fed32da5e1e93b406edc4819ce14e690f34223b9d664cab6855492c0a2b186c"
+};
+body = JSON.stringify(obj);
+$done({
+  "body": body
+});
