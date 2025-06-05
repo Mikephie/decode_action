@@ -1531,10 +1531,10 @@ function cleanInput() {
         //.replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
         //.replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
         // 清理空白
-        .replace(/^\s*[\r\n]/gm, '')
-        .replace(/^\s+/gm, '')
-        .replace(/\s+/g, ' ')
-        .trim();
+        //.replace(/^\s*[\r\n]/gm, '')
+        //.replace(/^\s+/gm, '')
+        //.replace(/\s+/g, ' ')
+        //.trim();
     
     // 检查清理效果
     if (cleaned.length === input.length) {
