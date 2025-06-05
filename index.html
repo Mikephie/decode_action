@@ -1222,21 +1222,9 @@
         }
         
         function testEvalInput() {
-const input = document.getElementById(‘input’).value.trim();
-if (!input) {
-showToast(‘请先输入Eval包装的密文’);
-return;
-}
-
-        // 🆕 优先检测jsjiami
-        if (input.includes('jsjiami.com.v5') || input.includes('jsjiami.com.v6') || input.includes('jsjiami.com.v7')) {
-            showToast('❌ 检测到jsjiami混淆，此工具暂不支持jsjiami解密');
-            addLog('检测到jsjiami混淆代码，建议使用专门的jsjiami解密工具', 'warning');
-            updateDetectionPanel({ 
-                primaryType: 'jsjiami', 
-                primaryConfidence: 95,
-                evalResult: { isDetected: true, confidence: 95 }
-            });
+        const input = document.getElementById('input').value.trim();
+        if (!input) {
+            showToast('请先输入Eval包装的密文');
             return;
         }
         
