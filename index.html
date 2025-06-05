@@ -1456,81 +1456,354 @@ function loadRemoteFile(url) {
            }
        }
        
-       function cleanInput() {
-           const input = document.getElementById('input').value.trim();
-           if (!input) {
-               showToast('请先输入代码');
-               return;
-           }
-           
-           const detection = comprehensiveDetection(input);
-           if (detection.primaryType !== 'Unknown') {
-               showToast(`⚠️ 检测到${detection.primaryType}，跳过清理以保持完整性`);
-               return;
-           }
-           
-           let cleaned = input
-               .replace(/\/\/.*$/gm, '')
-               .replace(/\/\*[\s\S]*?\*\//g, '')
-               .replace(/^\s*[\r\n]/gm, '')
-               .replace(/^\s+/gm, '')
-               .trim();
-           
-           document.getElementById('input').value = cleaned;
-           showToast('🧹 代码清理完成');
-           addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
-       }
-       
-       function validateInput() {
-           const input = document.getElementById('input').value.trim();
-           if (!input) {
-               showToast('请先输入代码');
-               return;
-           }
-           
-           const issues = [];
-           
-           if (input.length < 50) {
-               issues.push('代码长度过短');
-           }
-           
-           const detection = comprehensiveDetection(input);
-           if (detection.primaryType !== 'Unknown') {
-               if (detection.primaryConfidence < 80) {
-                   issues.push(`${detection.primaryType}置信度较低 (${detection.primaryConfidence}%)`);
-               }
-               
-               if (detection.primaryType === 'AAEncode' && detection.aaResult.patternMatches < 3) {
-                   issues.push('AAEncode特征模式不足');
-               }
-               
-               if (detection.primaryType === 'Eval' && detection.evalResult.evalCount < 2) {
-                   issues.push('Eval调用次数较少');
-               }
-           } else {
-               if (/[\u4e00-\u9fff]/.test(input)) {
-                   issues.push('包含中文字符');
-               }
-               if (/\/\/|\/\*|\*\//.test(input)) {
-                   issues.push('包含注释符号');
-               }
-           }
-           
-           if (issues.length === 0) {
-               showToast('✅ 代码质量良好');
-               addLog('代码质量检查通过', 'success');
-           } else {
-               showToast(`⚠️ 发现 ${issues.length} 个问题`);
-               addLog('质量问题: ' + issues.join(', '), 'warning');
-           }
-       }
-       
-       function clearInput() {
-           document.getElementById('input').value = '';
-           updateDetectionPanel({ primaryType: 'Unknown' });
-           showToast('🗑 输入已清空');
-           addLog('清空输入内容', 'info');
-       }
+       // 智能清理输入
+function cleanInput() {
+    const input = document.getElementById('input').value.trim();
+    if (!input) {
+        showToast('请先输入代码');
+        return;
+    }
+    
+    // 先检测类型，避免破坏已识别的密文
+    const detection = comprehensiveDetection(input);
+    if (detection.primaryType !== 'Unknown') {
+        showToast(`⚠️ 检测到${detection.primaryType}，跳过清理以保持完整性`);
+        addLog(`检测到${detection.primaryType}格式，置信度${detection.primaryConfidence}%`, 'info');
+        return;
+    }
+    
+    addLog('开始智能清理代码...', 'info');
+    
+    // 智能预处理
+    const processed = preprocessCiphertext(input);
+    
+    // 如果预处理后有显著变化，说明提取到了密文
+    if (processed.length < input.length * 0.8 && processed.length > 50) {
+        document.getElementById('input').value = processed;
+        showToast('🎯 智能提取密文完成');
+        addLog(`智能提取: 从${input.length}字符中提取${processed.length}字符`, 'success');
+        return;
+    }
+    
+    // 否则进行基础清理
+    let cleaned = input
+        // 移除注释
+        .replace(/\/\/.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/<!--[\s\S]*?-->/g, '')
+        // 移除时间戳和说明行
+        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '')
+        // 移除明显的原文标识
+        .replace(/^\s*\/\/\s*(原始代码|原文|明文).*$/gm, '')
+        .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
+        .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
+        // 清理空白
+        .replace(/^\s*[\r\n]/gm, '')
+        .replace(/^\s+/gm, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    
+    // 检查清理效果
+    if (cleaned.length === input.length) {
+        showToast('🔍 未发现需要清理的内容');
+        addLog('代码已经是纯净格式', 'info');
+    } else {
+        document.getElementById('input').value = cleaned;
+        showToast('🧹 代码清理完成');
+        addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
+        
+        // 清理后重新检测
+        const newDetection = comprehensiveDetection(cleaned);
+        if (newDetection.primaryType !== 'Unknown') {
+            addLog(`清理后检测到: ${newDetection.primaryType} (置信度: ${newDetection.primaryConfidence}%)`, 'success');
+        }
+    }
+}
+
+// 智能预处理密文
+function preprocessCiphertext(input) {
+    addLog('执行智能预处理...', 'info');
+    
+    // 去除注释和多余内容
+    let processed = input
+        .replace(/\/\/.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+        .replace(/^\s*\/\/解密脚本.*$/gm, '')
+        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
+    
+    const patterns = [
+        // jsjiami混淆
+        {
+            name: 'jsjiami混淆',
+            pattern: /jsjiami\.com\.v\d+.*?(['"`])(.*?)\1/s,
+            extract: (match) => match[2]
+        },
+        
+        // AAEncode混淆  
+        {
+            name: 'AAEncode混淆',
+            pattern: /(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s,
+            extract: (match) => match[1]
+        },
+        
+        // eval包装
+        {
+            name: 'eval包装',
+            pattern: /eval\s*\(\s*(['"`])(.*?)\1\s*\)/s,
+            extract: (match) => match[2]
+        },
+        
+        // Function构造器
+        {
+            name: 'Function构造器',
+            pattern: /(?:new\s+)?Function\s*\(\s*(['"`])(.*?)\1\s*\)/s,
+            extract: (match) => match[2]
+        },
+        
+        // atob包装
+        {
+            name: 'atob包装',
+            pattern: /atob\s*\(\s*(['"`])(.*?)\1\s*\)/s,
+            extract: (match) => match[2]
+        },
+        
+        // 解码函数包装
+        {
+            name: '解码函数包装',
+            pattern: /(?:decode|decrypt|deobfuscate)\s*\(\s*(['"`])(.*?)\1\s*\)/s,
+            extract: (match) => match[2]
+        },
+        
+        // 纯Base64编码
+        {
+            name: 'Base64编码',
+            pattern: /^[A-Za-z0-9+/]{20,}={0,2}$/m,
+            extract: (match) => match[0]
+        },
+        
+        // 十六进制编码
+        {
+            name: '十六进制编码',
+            pattern: /^[0-9a-fA-F\s]{40,}$/m,
+            extract: (match) => match[0].replace(/\s/g, '')
+        },
+        
+        // Unicode转义序列
+        {
+            name: 'Unicode转义',
+            pattern: /(?:\\u[0-9a-fA-F]{4}){10,}/,
+            extract: (match) => match[0]
+        },
+        
+        // 字符编码混淆
+        {
+            name: '字符编码混淆',
+            pattern: /String\.fromCharCode\s*\([^)]+\)/g,
+            extract: (match) => match[0]
+        },
+        
+        // JS混淆代码块
+        {
+            name: 'JS混淆代码',
+            pattern: /\(function\s*\([^)]*\)\s*\{[\s\S]{100,}?\}\s*\([^)]*\)\)/,
+            extract: (match) => match[0]
+        },
+        
+        // 数组形式的密文
+        {
+            name: '数组密文',
+            pattern: /\[\s*(['"`])[^'"`]{10,}\1(?:\s*,\s*\1[^'"`]{10,}\1){3,}\s*\]/,
+            extract: (match) => match[0]
+        },
+        
+        // 混淆对象
+        {
+            name: '混淆对象',
+            pattern: /\{[^{}]*?(['"`])[0-9a-fA-F]{8,}\1[^{}]*?\}/g,
+            extract: (match) => match[0]
+        }
+    ];
+    
+    // 尝试匹配各种模式
+    for (const pattern of patterns) {
+        const matches = processed.match(pattern.pattern);
+        if (matches) {
+            const extracted = pattern.extract(matches);
+            if (extracted && extracted.length > 50) {
+                addLog(`智能提取${pattern.name}格式密文`, 'success');
+                return extracted;
+            }
+        }
+    }
+    
+    // 如果没有匹配到特定模式，进行基础清理
+    processed = processed
+        // 移除明显的原文行
+        .replace(/^\s*\/\/\s*(原始|原文|明文).*$/gm, '')
+        .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
+        .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
+        // 移除空行
+        .replace(/^\s*[\r\n]/gm, '')
+        // 移除行首空白
+        .replace(/^\s+/gm, '')
+        // 合并连续空白
+        .replace(/\s+/g, ' ')
+        .trim();
+    
+    return processed;
+}
+
+// 验证输入质量
+function validateInput() {
+    const input = document.getElementById('input').value.trim();
+    if (!input) {
+        showToast('请先输入代码');
+        return;
+    }
+    
+    addLog('🔍 开始质量检查...', 'info');
+    
+    const issues = [];
+    const warnings = [];
+    const suggestions = [];
+    
+    // 基础检查
+    if (input.length < 50) {
+        issues.push('代码长度过短(<50字符)');
+        suggestions.push('确保复制了完整的代码内容');
+    }
+    
+    if (input.length > 500000) {
+        warnings.push('代码长度过长(>500KB)');
+        suggestions.push('考虑分段处理大文件');
+    }
+    
+    // 检测代码类型
+    const detection = comprehensiveDetection(input);
+    
+    if (detection.primaryType !== 'Unknown') {
+        // 已识别的密文格式
+        addLog(`🎯 检测到格式: ${detection.primaryType} (置信度: ${detection.primaryConfidence}%)`, 'info');
+        
+        if (detection.primaryConfidence < 70) {
+            warnings.push(`${detection.primaryType}置信度较低 (${detection.primaryConfidence}%)`);
+            suggestions.push('可能需要清理或格式不完整');
+        }
+        
+        // 特定格式的详细检查
+        if (detection.primaryType === 'AAEncode' && detection.aaResult.patternMatches < 3) {
+            warnings.push('AAEncode特征模式不足');
+            suggestions.push('检查是否为完整的AAEncode代码');
+        }
+        
+        if (detection.primaryType === 'Eval' && detection.evalResult.evalCount < 2) {
+            warnings.push('Eval调用次数较少');
+            suggestions.push('可能不是标准的Eval混淆');
+        }
+        
+        if (detection.primaryType === 'jsjiami') {
+            if (!input.includes('jsjiami.com.v')) {
+                warnings.push('jsjiami标识不完整');
+                suggestions.push('确保包含完整的jsjiami标识');
+            }
+        }
+        
+        // 检查多重编码
+        if (detection.hasMultipleEncodings) {
+            warnings.push('检测到多重编码');
+            suggestions.push('可能需要多次解密');
+        }
+        
+    } else {
+        // 未识别格式的清洁度检查
+        addLog('🔍 未识别的格式，进行清洁度检查', 'info');
+        
+        if (/[\u4e00-\u9fff]/.test(input)) {
+            issues.push('包含中文字符');
+            suggestions.push('使用智能清理功能移除注释');
+        }
+        
+        if (/\/\/|\/\*|\*\/|<!--/.test(input)) {
+            issues.push('包含注释符号');
+            suggestions.push('使用智能清理功能移除注释');
+        }
+        
+        if (/<[^>]+>/.test(input)) {
+            issues.push('包含HTML标签');
+            suggestions.push('提取script标签内的代码内容');
+        }
+        
+        if (/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(input)) {
+            issues.push('包含时间戳');
+            suggestions.push('移除解密脚本的时间信息');
+        }
+        
+        if (input.includes('原始代码') || input.includes('原文') || input.includes('明文')) {
+            issues.push('包含原文标识');
+            suggestions.push('移除原始代码说明部分');
+        }
+        
+        if (input.includes('解密完成') || input.includes('解密结果')) {
+            issues.push('包含解密结果标识');
+            suggestions.push('只保留密文部分');
+        }
+        
+        if (/console\.log|alert|document\.write/.test(input)) {
+            warnings.push('包含调试代码');
+            suggestions.push('移除调试输出语句');
+        }
+    }
+    
+    // 计算质量评分
+    let score = 100;
+    score -= issues.length * 25;
+    score -= warnings.length * 10;
+    score = Math.max(0, score);
+    
+    // 显示结果
+    addLog(`📊 质量评分: ${score}/100`, score >= 80 ? 'success' : score >= 60 ? 'warning' : 'error');
+    
+    if (issues.length > 0) {
+        addLog(`❌ 发现问题: ${issues.join(', ')}`, 'error');
+    }
+    
+    if (warnings.length > 0) {
+        addLog(`⚠️ 警告: ${warnings.join(', ')}`, 'warning');
+    }
+    
+    if (suggestions.length > 0) {
+        addLog(`💡 建议: ${suggestions.join('; ')}`, 'info');
+    }
+    
+    // 总结和建议
+    if (score >= 90) {
+        showToast('✅ 代码质量优秀！');
+        addLog('代码质量检查通过，可以直接解密', 'success');
+    } else if (score >= 70) {
+        showToast('👍 代码质量良好');
+        addLog('代码质量良好，建议直接解密', 'success');
+    } else if (score >= 50) {
+        showToast('⚠️ 代码质量一般');
+        addLog('建议使用智能清理功能后再解密', 'warning');
+    } else {
+        showToast('❌ 代码质量较差');
+        addLog('强烈建议先进行智能清理', 'error');
+    }
+}
+
+// 清空输入
+function clearInput() {
+    document.getElementById('input').value = '';
+    const remoteUrlElement = document.getElementById('remoteUrl');
+    if (remoteUrlElement) {
+        remoteUrlElement.value = '';
+    }
+    showToast('代码输入已清空');
+    addLog('清空代码输入内容', 'info');
+}
        
        async function startDecrypt() {
            const input = document.getElementById('input').value.trim();
