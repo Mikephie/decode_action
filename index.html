@@ -1585,6 +1585,70 @@ function checkIfMixedContent(input) {
   return false;
 }
 
+// 增强版预处理 - 专门处理混合内容中的密文提取
+function preprocessCiphertext(input) {
+  addLog('执行智能预处理...', 'info');
+
+  // 初步清理注释与提示
+  let processed = input
+    .replace(/\/\/.*$/gm, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+    .replace(/^\s*\/\/解密脚本.*$/gm, '')
+    .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
+
+  // 尝试匹配密文段
+  const patterns = [
+    {
+      name: 'jsjiami混淆',
+      pattern: /var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*,.*?['"`]((?:\\u[0-9a-fA-F]{4})+)['"`]/s,
+      extract: (match) => match[0]
+    },
+    {
+      name: 'eval包装的jsjiami',
+      pattern: /eval\s*\(\s*(['"`])(.*?jsjiami\.com\.v\d+.*?)\1\s*\)/s,
+      extract: (match) => match[2]
+    },
+    {
+      name: 'AAEncode混淆',
+      pattern: /(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s,
+      extract: (match) => match[1]
+    },
+    {
+      name: 'eval包装',
+      pattern: /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
+      extract: (match) => match[2]
+    },
+    {
+      name: 'Function构造器',
+      pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
+      extract: (match) => match[2]
+    }
+  ];
+
+  for (const pattern of patterns) {
+    const matches = processed.match(pattern.pattern);
+    if (matches) {
+      const extracted = pattern.extract(matches);
+      if (extracted && extracted.length > 50) {
+        addLog(`智能提取${pattern.name}格式密文`, 'success');
+        return extracted;
+      }
+    }
+  }
+
+  // fallback 简单清理格式
+  return processed
+    .replace(/^\s*\/\/\s*(原始|原文|明文).*$/gm, '')
+    .replace(/^\s*console\.log\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
+    .replace(/^\s*alert\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
+    .replace(/^\s*[\r\n]/gm, '')
+    .replace(/^\s+/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 // 验证输入质量
 function validateInput() {
     const input = document.getElementById('input').value.trim();
