@@ -1473,80 +1473,49 @@ function loadRemoteFile(url) {
        
        // 智能清理输入 - 优化版
 function cleanInput() {
-    try {
-        const input = document.getElementById('input').value.trim();
-        if (!input) {
-            showToast('请先输入代码');
-            return;
-        }
-        
-        // jsjiami特殊处理 - 只做最基本的清理
-        if (input.includes('jsjiami.com.v')) {
-            let cleaned = input
-                .replace(/\/\/\s*(解密|脚本|说明|注释|原始|混淆|结果|原文|明文).*$/gm, '')
-                .replace(/\/\/\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
-                .replace(/console\.log\s*\([^)]*\)\s*;?\s*$/gm, '')
-                .replace(/alert\s*\([^)]*\)\s*;?\s*$/gm, '')
-                .split('\n')
-                .filter(line => line.trim().length > 0)
-                .join('\n');
-            
-            document.getElementById('input').value = cleaned;
-            showToast('🛡️ jsjiami保护性清理完成');
-            return;
-        }
-        
-        // 常规清理 - 修复版
-        let cleaned = input
-            .replace(/\/\/.*$/gm, '')
-            .replace(/\/\*[\s\S]*?\*\//g, '')
-            .replace(/<!--[\s\S]*?-->/g, '')
-            .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
-            .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
-            .replace(/^[ \t]+/gm, '')  // 只删空格制表符，不删分号
-            .replace(/\s+/g, ' ')
-            .trim();
-        
-        document.getElementById('input').value = cleaned;
-        showToast('🧹 代码清理完成');
-        
-    } catch (error) {
-        console.error('清理函数错误:', error);
-        showToast('❌ 清理功能出错');
+    const input = document.getElementById('input').value.trim();
+    if (!input) {
+        showToast('请先输入代码');
+        return;
     }
-}
     
-    // 否则进行基础清理
-    let cleaned = input
-        .replace(/\/\/.*$/gm, '')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/<!--[\s\S]*?-->/g, '')
-        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
-        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '')
-        .replace(/^\s*\/\/\s*(原始代码|原文|明文).*$/gm, '')
-        .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
-        .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
-        .replace(/^\s*[\r\n]/gm, '')
-        .replace(/^[ \t]+/gm, '')  // 🔧 修复：只删除空格制表符，不删除分号
-        .replace(/\s+/g, ' ')
-        .trim();
+    // 先检测类型
+    const detection = comprehensiveDetection(input);
     
-    // 检查清理效果
-    if (cleaned.length === input.length) {
-        showToast('🔍 未发现需要清理的内容');
-        addLog('代码已经是纯净格式', 'info');
-    } else {
-        document.getElementById('input').value = cleaned;
-        showToast('🧹 代码清理完成');
-        addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
+    // 检查是否为混合内容
+    const isMixedContent = checkIfMixedContent(input);
+    
+    if (detection.primaryType !== 'Unknown' && !isMixedContent) {
+        // 纯密文格式，跳过清理
+        showToast(`⚠️ 检测到纯${detection.primaryType}格式，跳过清理以保持完整性`);
+        addLog(`${detection.primaryType}格式对完整性要求较高，建议直接解密`, 'info');
+        return;
+    }
+    
+    if (detection.primaryType !== 'Unknown' && isMixedContent) {
+        // 混合内容中包含已知格式，允许清理
+        showToast(`🔍 检测到混合内容中的${detection.primaryType}，开始智能提取...`);
+        addLog(`混合内容中检测到${detection.primaryType}，进行智能分离`, 'info');
+    }
+    
+    addLog('开始智能清理代码...', 'info');
+    
+    // 智能预处理
+    const processed = preprocessCiphertext(input);
+    
+    // 如果预处理后有显著变化，说明提取到了密文
+    if (processed.length < input.length * 0.8 && processed.length > 50) {
+        document.getElementById('input').value = processed;
+        showToast('🎯 智能提取密文完成');
+        addLog(`智能提取: 从${input.length}字符中提取${processed.length}字符`, 'success');
         
         // 清理后重新检测
-        const newDetection = comprehensiveDetection(cleaned);
+        const newDetection = comprehensiveDetection(processed);
         if (newDetection.primaryType !== 'Unknown') {
-            addLog(`清理后检测到: ${newDetection.primaryType} (置信度: ${newDetection.primaryConfidence}%)`, 'success');
+            addLog(`提取后检测到: ${newDetection.primaryType} (置信度: ${newDetection.primaryConfidence}%)`, 'success');
         }
+        return;
     }
-}
     
     // 否则进行基础清理
     let cleaned = input
