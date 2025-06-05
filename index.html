@@ -1521,7 +1521,7 @@ function cleanInput() {
         .trim();
 
     // ✅ 修复 encode_version 被清除掉的分号
-    cleaned = cleaned.replace(/^(?!;)(\s*var\s+encode_version)/, ';$1');
+    cleaned = cleaned.replace(/([^;\n])(\s*var\s+encode_version\s*=)/g, '$1;$2');
     
     // 检查清理效果
     if (cleaned.length === input.length) {
