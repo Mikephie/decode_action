@@ -1594,7 +1594,7 @@ function preprocessCiphertext(input) {
     const patterns = [
         {
             name: 'jsjiami混淆',
-            pattern: /var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*,.*?['"`]((?:\\u[0-9a-fA-F]{4})+)['"`]/s,
+            pattern: /;?var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*,.*?['"`]((?:\\u[0-9a-fA-F]{4})+)['"`]/s,
             extract: match => match[0]
         },
         {
