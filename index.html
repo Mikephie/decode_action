@@ -1417,7 +1417,7 @@ function loadRemoteFile(url) {
         })
         .then(content => {
             document.getElementById('input').value = content;
-            detectCode();
+            // detectCode(); // 删除这行
             addLog('远程文件加载成功', 'success');
             showToast('✅ 远程文件加载成功');
         })
