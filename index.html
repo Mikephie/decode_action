@@ -548,40 +548,31 @@
             </div>
         </div>
         
-        <!-- 代码输入 -->
-        <div class="section">
-            <div class="section-title">📝 密文输入</div>
-            <textarea id="input" placeholder="请粘贴需要解密的密文代码...
-
-✅ v5.7 专业解密支持：
-- AAEncode格式：自动检测和解码
-- Eval包装：智能解包和递归处理
-- 保留脚本头部注释
-- 智能提取编码部分
-- 高精度解码算法
-- 完整错误处理机制
-
-💡 其他支持格式：
-- JavaScript混淆代码
-- Base64/十六进制编码
-- Unicode转义序列
-- 多层嵌套编码"></textarea>
-            
-            <div class="file-options">
-                <div class="file-option" onclick="autoDetectAndDecrypt()">
-                    🤖<br>智能解密
-                </div>
-                <div class="file-option" onclick="cleanInput()">
-                    🧹<br>清理代码
-                </div>
-                <div class="file-option" onclick="validateInput()">
-                    ✅<br>质量检查
-                </div>
-                <div class="file-option" onclick="clearInput()">
-                    🗑<br>清空
-                </div>
+        <!-- 代码输入区域 - 去掉多余按钮 -->
+<div class="card">
+    <h3>✏️ 代码输入</h3>
+    
+    <div class="detection-panel" id="detectionPanel">
+        <div class="detection-info">
+            <div>
+                <strong>检测类型:</strong> <span id="detectionType">Unknown</span> | 
+                <strong>置信度:</strong> <span id="detectionConfidence">0%</span>
+            </div>
+            <div class="detection-indicators">
+                <div class="indicator indicator-aaencode" id="aaencodeIndicator">AAEncode</div>
+                <div class="indicator indicator-eval" id="evalIndicator">Eval</div>
             </div>
         </div>
+        <div>
+            <strong>特征:</strong> <span id="detectionFeatures">-</span> | 
+            <strong>详情:</strong> <span id="detectionDetails">-</span>
+        </div>
+    </div>
+    
+    <div class="input-section">
+        <textarea id="input" placeholder="请粘贴需要解密的JavaScript代码..."></textarea>
+    </div>
+</div>
         
         <!-- 进度条 -->
         <div class="progress-bar">
