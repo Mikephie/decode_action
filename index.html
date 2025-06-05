@@ -1473,65 +1473,48 @@ function loadRemoteFile(url) {
        
        // 智能清理输入 - 优化版
 function cleanInput() {
-    const input = document.getElementById('input').value.trim();
-    if (!input) {
-        showToast('请先输入代码');
-        return;
-    }
-    
-    // 🔒 jsjiami特殊保护清理
-    if (input.includes('jsjiami.com.v')) {
-        addLog('检测到jsjiami，使用保护性清理...', 'info');
-        
-        // 按行处理，保护分号
-        const lines = input.split('\n');
-        const cleanedLines = lines.map(line => {
-            // 只清理明显的注释和说明，不删除分号
-            return line
-                .replace(/\/\/\s*(解密|脚本|说明|注释|原始|混淆|结果|原文|明文).*$/, '') // 删除特定注释
-                .replace(/\/\/\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/, '')          // 删除时间戳
-                .replace(/<!--[\s\S]*?-->/, '')                                        // 删除HTML注释
-                .replace(/console\.log\s*\([^)]*\)\s*;?\s*$/, '')                     // 删除console.log
-                .replace(/alert\s*\([^)]*\)\s*;?\s*$/, '');                           // 删除alert
-        }).filter(line => {
-            const trimmed = line.trim();
-            // 过滤空行，但保留所有有内容的行（包括以分号开头的）
-            return trimmed.length > 0;
-        });
-        
-        const cleaned = cleanedLines.join('\n');
-        document.getElementById('input').value = cleaned;
-        showToast('🛡️ jsjiami保护性清理完成');
-        addLog(`清理: ${lines.length} → ${cleanedLines.length} 行，分号已保护`, 'success');
-        return;
-    }
-    
-    // 其他格式的常规清理
-    const detection = comprehensiveDetection(input);
-    if (detection.primaryType !== 'Unknown') {
-        showToast(`⚠️ 检测到${detection.primaryType}，跳过清理以保持完整性`);
-        addLog(`检测到${detection.primaryType}格式，置信度${detection.primaryConfidence}%`, 'info');
-        return;
-    }
-    
-    addLog('开始智能清理代码...', 'info');
-    
-    // 智能预处理
-    const processed = preprocessCiphertext(input);
-    
-    // 如果预处理后有显著变化，说明提取到了密文
-    if (processed.length < input.length * 0.8 && processed.length > 50) {
-        document.getElementById('input').value = processed;
-        showToast('🎯 智能提取密文完成');
-        addLog(`智能提取: 从${input.length}字符中提取${processed.length}字符`, 'success');
-        
-        // 清理后重新检测
-        const newDetection = comprehensiveDetection(processed);
-        if (newDetection.primaryType !== 'Unknown') {
-            addLog(`提取后检测到: ${newDetection.primaryType} (置信度: ${newDetection.primaryConfidence}%)`, 'success');
+    try {
+        const input = document.getElementById('input').value.trim();
+        if (!input) {
+            showToast('请先输入代码');
+            return;
         }
-        return;
+        
+        // jsjiami特殊处理 - 只做最基本的清理
+        if (input.includes('jsjiami.com.v')) {
+            let cleaned = input
+                .replace(/\/\/\s*(解密|脚本|说明|注释|原始|混淆|结果|原文|明文).*$/gm, '')
+                .replace(/\/\/\s*\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+                .replace(/console\.log\s*\([^)]*\)\s*;?\s*$/gm, '')
+                .replace(/alert\s*\([^)]*\)\s*;?\s*$/gm, '')
+                .split('\n')
+                .filter(line => line.trim().length > 0)
+                .join('\n');
+            
+            document.getElementById('input').value = cleaned;
+            showToast('🛡️ jsjiami保护性清理完成');
+            return;
+        }
+        
+        // 常规清理 - 修复版
+        let cleaned = input
+            .replace(/\/\/.*$/gm, '')
+            .replace(/\/\*[\s\S]*?\*\//g, '')
+            .replace(/<!--[\s\S]*?-->/g, '')
+            .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
+            .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
+            .replace(/^[ \t]+/gm, '')  // 只删空格制表符，不删分号
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        document.getElementById('input').value = cleaned;
+        showToast('🧹 代码清理完成');
+        
+    } catch (error) {
+        console.error('清理函数错误:', error);
+        showToast('❌ 清理功能出错');
     }
+}
     
     // 否则进行基础清理
     let cleaned = input
