@@ -1547,6 +1547,44 @@ function cleanInput() {
   }
 }
 
+// 检查是否为混合内容
+function checkIfMixedContent(input) {
+  const mixedContentIndicators = [
+    /\/\/.*$/m,
+    /\/\*[\s\S]*?\*\//,
+    /<!--[\s\S]*?-->/,
+    /[\u4e00-\u9fff]/,
+    /(原始代码|原文|明文|解密结果|解密完成)/,
+    /<[^>]+>/,
+    /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+    /(console\.log|alert|document\.write)\s*\(/,
+    /eval\s*\(.*?\).*eval\s*\(/s,
+    /(解密脚本|混淆工具|加密工具)/
+  ];
+
+  for (const indicator of mixedContentIndicators) {
+    if (indicator.test(input)) {
+      return true;
+    }
+  }
+
+  const lines = input.split('\n');
+  if (lines.length > 10) {
+    const nonCipherLines = lines.filter(line => {
+      const trimmedLine = line.trim();
+      return trimmedLine.length > 0 &&
+             !(/^[A-Za-z0-9+/=\\u]+$/.test(trimmedLine)) &&
+             !(/^[0-9a-fA-F\s]+$/.test(trimmedLine)) &&
+             !(/^[\x20-\x7E]*$/.test(trimmedLine));
+    });
+    if (nonCipherLines.length > lines.length * 0.3) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // 验证输入质量
 function validateInput() {
     const input = document.getElementById('input').value.trim();
