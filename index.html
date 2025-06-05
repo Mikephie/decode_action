@@ -1681,7 +1681,7 @@ function preprocessCiphertext(input) {
         .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
         .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
         .replace(/^\s*[\r\n]/gm, '')
-        .replace(/^\s+/gm, '')
+        .replace(/^[ \t]+/gm, '')  // 只删除空格和制表符，保留分号等符号
         .replace(/\s+/g, ' ')
         .trim();
 }
