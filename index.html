@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v5.7 - 增强版AADecode+Eval解密工具</title>
+    <title>羊毛助手 v6.0 - 增强版AADecode+Eval解密工具</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -456,7 +456,7 @@
     <div class="container">
         <h1>
             羊毛助手 
-            <span class="version">v5.7</span>
+            <span class="version">v6.0</span>
             <div class="encoding-indicators">
                 <span id="aaencodeIndicator" class="encoding-indicator aaencode-indicator">AAEncode已检测</span>
                 <span id="evalIndicator" class="encoding-indicator eval-indicator">Eval已检测</span>
@@ -464,7 +464,7 @@
         </h1>
         
         <div class="features-banner">
-            🎯 v5.7增强版：专业AADecode+Eval解包插件 | 支持头部注释保留 | 智能多重检测 | 一键本地解密
+            🎯 v6.0增强版：专业AADecode+Eval解包插件 | 支持头部注释保留 | 智能多重检测 | 一键本地解密
         </div>
         
         <!-- GitHub 配置 -->
@@ -766,7 +766,7 @@
         
         // 应用配置
         const APP_CONFIG = {
-            VERSION: '5.7',
+            VERSION: '6.0',
             VERSION_NAME: '增强版AADecode+Eval解密工具',
             UPDATE_NOTES: '集成专业AADecode和Eval解包插件，支持头部注释保留和智能检测'
         };
@@ -1841,7 +1841,7 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             
             // 添加注释头部
             const timestamp = new Date().toLocaleString();
-            const header = `//解密时间: ${timestamp}\n//解密工具: 羊毛助手 v5.7\n//解密插件: eval\n\n`;
+            const header = `//解密时间: ${timestamp}\n//解密工具: 羊毛助手 v6.0\n//解密插件: eval\n\n`;
             
             // 特殊格式化处理
             formatted = formatted
