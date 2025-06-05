@@ -1524,8 +1524,8 @@ function cleanInput() {
         //.replace(/\/\*[\s\S]*?\*\//g, '')
         //.replace(/<!--[\s\S]*?-->/g, '')
         // 移除时间戳和说明行
-        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
-        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '')
+        //.replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+        //.replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '')
         // 移除明显的原文标识
         //.replace(/^\s*\/\/\s*(原始代码|原文|明文).*$/gm, '')
         //.replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
@@ -1611,7 +1611,7 @@ function checkIfMixedContent(input) {
 }
 
 // 增强版预处理 - 专门处理混合内容
-//function preprocessCiphertext(input) {
+function preprocessCiphertext(input) {
     addLog('执行智能预处理...', 'info');
     
     // 先进行基础清理
