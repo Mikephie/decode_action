@@ -422,34 +422,66 @@
         }
         
         /* 移动端适配 */
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            h1 {
-                font-size: 1.5rem;
-                padding: 12px;
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .buttons {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                margin: 0;
-                border-radius: 0;
-                border-top: 1px solid rgba(255,255,255,0.2);
-            }
-            
-            body {
-                padding-bottom: 80px;
-            }
-        }
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+        padding: 12px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .buttons {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+        border-radius: 0;
+        border-top: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    body {
+        padding-bottom: 80px;
+    }
+    
+    /* 新增按钮优化 */
+    .card {
+        padding: 15px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    button {
+        font-size: 10px !important;
+        min-height: 55px !important;
+        padding: 10px 2px !important;
+    }
+    
+    button span {
+        font-size: 9px !important;
+    }
+    
+    div[style*="display: flex"] {
+        gap: 4px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    button {
+        font-size: 9px !important;
+        min-height: 50px !important;
+        padding: 8px 1px !important;
+    }
+    
+    button span {
+        font-size: 8px !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -486,35 +518,45 @@
         </div>
         
         <!-- 文件上传 -->
-        <div class="section">
-            <div class="section-title">📁 文件输入</div>
-            <div class="file-upload" onclick="document.getElementById('fileInput').click()">
-                <div class="file-upload-icon">📄</div>
-                <div>点击选择文件或拖拽文件到此处</div>
-                <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 5px;">
-                    支持 .js .txt .json 等文本文件
-                </div>
-            </div>
-            <input type="file" id="fileInput" class="hidden" accept=".js,.txt,.json,.md,.log,.conf,.py,.php,.html,.css">
-            
-            <div class="file-options">
-                <div class="file-option" onclick="document.getElementById('fileInput').click()">
-                    📄<br>选择文件
-                </div>
-                <div class="file-option" onclick="pasteFromClipboard()">
-                    📋<br>粘贴剪贴板
-                </div>
-                <div class="file-option aaencode" onclick="testAAEncodeInput()">
-                    🔤<br>AAEncode解密
-                </div>
-                <div class="file-option eval" onclick="testEvalInput()">
-                    🔧<br>Eval解密
-                </div>
-                <div class="file-option" onclick="loadDemoCode()">
-                    🧪<br>加载示例
-                </div>
-            </div>
-        </div>
+        <!-- 文件输入区域 - 5个固定按钮 -->
+<div class="card">
+    <h3>📁 文件输入</h3>
+    
+    <div class="file-upload" onclick="document.getElementById('fileInput').click()" 
+         ondragover="handleDragOver(event)" 
+         ondragleave="handleDragLeave(event)" 
+         ondrop="handleDrop(event)">
+        <div class="file-upload-icon">📄</div>
+        <div class="file-upload-text">点击选择文件或拖拽文件到此处</div>
+        <div class="file-upload-hint">支持 .js .txt .json 等文本文件</div>
+    </div>
+    
+    <input type="file" id="fileInput" accept=".js,.txt,.json">
+    
+    <!-- 固定5按钮布局 -->
+    <div style="display: flex; gap: 6px; margin-top: 20px;">
+        <button onclick="document.getElementById('fileInput').click()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #2196f3, #21cbf3); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            📁<br><span style="font-size: 10px;">选择文件</span>
+        </button>
+        <button onclick="pasteFromClipboard()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #4caf50, #66bb6a); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            📋<br><span style="font-size: 10px;">粘贴板</span>
+        </button>
+        <button onclick="testAAEncodeInput()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #ff9800, #ffb74d); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            🔤<br><span style="font-size: 10px;">AA解密</span>
+        </button>
+        <button onclick="testEvalInput()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #9c27b0, #ba68c8); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            🔧<br><span style="font-size: 10px;">Eval解密</span>
+        </button>
+        <button onclick="loadDemoCode()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #f44336, #e57373); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            📝<br><span style="font-size: 10px;">加载示例</span>
+        </button>
+    </div>
+</div>
         
         <!-- 检测面板 -->
         <div id="detectionPanel" class="detection-panel" style="display: none;">
@@ -539,97 +581,66 @@
             </div>
         </div>
         
-        <!-- 代码输入 -->
-        <div class="section">
-            <div class="section-title">📝 密文输入</div>
-            <textarea id="input" placeholder="请粘贴需要解密的密文代码...
-
-✅ v5.7 专业解密支持：
-- AAEncode格式：自动检测和解码
-- Eval包装：智能解包和递归处理
-- 保留脚本头部注释
-- 智能提取编码部分
-- 高精度解码算法
-- 完整错误处理机制
-
-💡 其他支持格式：
-- JavaScript混淆代码
-- Base64/十六进制编码
-- Unicode转义序列
-- 多层嵌套编码"></textarea>
-            
-            <div class="file-options">
-                <div class="file-option" onclick="autoDetectAndDecrypt()">
-                    🤖<br>智能解密
-                </div>
-                <div class="file-option" onclick="cleanInput()">
-                    🧹<br>清理代码
-                </div>
-                <div class="file-option" onclick="validateInput()">
-                    ✅<br>质量检查
-                </div>
-                <div class="file-option" onclick="clearInput()">
-                    🗑<br>清空
-                </div>
+        <!-- 代码输入区域 - 去掉多余按钮 -->
+<div class="card">
+    <h3>✏️ 代码输入</h3>
+    
+    <div class="detection-panel" id="detectionPanel">
+        <div class="detection-info">
+            <div>
+                <strong>检测类型:</strong> <span id="detectionType">Unknown</span> | 
+                <strong>置信度:</strong> <span id="detectionConfidence">0%</span>
+            </div>
+            <div class="detection-indicators">
+                <div class="indicator indicator-aaencode" id="aaencodeIndicator">AAEncode</div>
+                <div class="indicator indicator-eval" id="evalIndicator">Eval</div>
             </div>
         </div>
-        
-        <!-- 进度条 -->
-        <div class="progress-bar">
-            <div id="progress" class="progress-fill"></div>
-        </div>
-        
-        <!-- 输出结果 -->
-        <div class="section">
-            <div class="section-title">✨ 解密结果</div>
-            <div id="output" class="output">// 解密结果将显示在这里...</div>
-            
-            <div class="file-options">
-                <div class="file-option" onclick="beautifyCode()">
-                    🎨<br>代码美化
-                </div>
-                <div class="file-option" onclick="copyResult()">
-                    📋<br>复制结果
-                </div>
-                <div class="file-option" onclick="downloadResult()">
-                    💾<br>下载文件
-                </div>
-                <div class="file-option" onclick="validateResult()">
-                    ✅<br>语法检查
-                </div>
-            </div>
-        </div>
-        
-        <!-- 执行日志 -->
-        <div class="section">
-            <div class="section-title">📋 执行日志</div>
-            <div id="logs" class="logs"></div>
-        </div>
-        
-        <!-- 控制按钮 -->
-        <div class="buttons">
-            <button class="btn-blue" onclick="startDecrypt()">
-                <div class="btn-icon">🔓</div>
-                <div class="btn-text">开始解密</div>
-            </button>
-            <button class="btn-green" onclick="getResult()">
-                <div class="btn-icon">📥</div>
-                <div class="btn-text">获取结果</div>
-            </button>
-            <button class="btn-yellow" onclick="copyResult()">
-                <div class="btn-icon">📋</div>
-                <div class="btn-text">复制</div>
-            </button>
-            <button class="btn-purple" onclick="downloadResult()">
-                <div class="btn-icon">💾</div>
-                <div class="btn-text">下载</div>
-            </button>
-            <button class="btn-red" onclick="clearAll()">
-                <div class="btn-icon">🗑</div>
-                <div class="btn-text">清除</div>
-            </button>
+        <div>
+            <strong>特征:</strong> <span id="detectionFeatures">-</span> | 
+            <strong>详情:</strong> <span id="detectionDetails">-</span>
         </div>
     </div>
+    
+    <div class="input-section">
+        <textarea id="input" placeholder="请粘贴需要解密的JavaScript代码..."></textarea>
+    </div>
+</div>
+
+<!-- 主操作区域 - 固定5按钮 -->
+<div class="card">
+    <h3>🎛️ 操作面板</h3>
+    <div style="display: flex; gap: 6px;">
+        <button onclick="startDecrypt()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #2196f3, #21cbf3); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            🔓<br><span style="font-size: 10px;">开始解密</span>
+        </button>
+        <button onclick="getResult()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #4caf50, #66bb6a); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            📥<br><span style="font-size: 10px;">获取结果</span>
+        </button>
+        <button onclick="beautifyCode()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #ff9800, #ffb74d); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            🎨<br><span style="font-size: 10px;">美化</span>
+        </button>
+        <button onclick="copyResult()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #9c27b0, #ba68c8); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            📋<br><span style="font-size: 10px;">复制</span>
+        </button>
+        <button onclick="downloadResult()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #f44336, #e57373); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            💾<br><span style="font-size: 10px;">下载</span>
+        </button>
+    </div>
+    
+    <!-- 清除按钮单独一行，居中 -->
+    <div style="margin-top: 10px; text-align: center;">
+        <button onclick="clearAll()" 
+                style="background: linear-gradient(135deg, #607d8b, #90a4ae); color: white; padding: 10px 30px; border-radius: 10px; border: none; font-size: 12px; cursor: pointer;">
+            🗑️ 清除所有
+        </button>
+    </div>
+</div>
     
     <!-- Toast -->
     <div id="toast" class="toast"></div>
