@@ -1677,13 +1677,13 @@ function preprocessCiphertext(input) {
     
     // 如果没有匹配到特定模式，进行通用清理
     return processed
-        .replace(/^\s*\/\/\s*(原始|原文|明文).*$/gm, '')
-        .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
-        .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
-        .replace(/^\s*[\r\n]/gm, '')
-        .replace(/^\s+/gm, '')
-        .replace(/\s+/g, ' ')
-        .trim();
+        //.replace(/^\s*\/\/\s*(原始|原文|明文).*$/gm, '')
+        //.replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
+        //.replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
+        //.replace(/^\s*[\r\n]/gm, '')
+        //.replace(/^\s+/gm, '')
+        //.replace(/\s+/g, ' ')
+        //.trim();
 }
 
 // 验证输入质量
