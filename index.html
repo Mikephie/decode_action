@@ -5,581 +5,643 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>羊毛助手 v5.7 - 增强版AADecode+Eval解密工具</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #333;
+            color: #fff;
+            overflow-x: hidden;
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 15px;
         }
         
-        .header {
+        h1 {
             text-align: center;
-            margin-bottom: 30px;
-            position: relative;
-        }
-        
-        .title {
-            font-size: 2.5rem;
-            color: white;
-            font-weight: 700;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            margin-bottom: 10px;
+            margin: 20px 0;
+            font-size: 2rem;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            position: sticky;
+            top: 10px;
+            z-index: 100;
         }
         
         .version {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-            padding: 6px 16px;
+            background: linear-gradient(45deg, #10b981, #3b82f6);
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        
+        .encoding-indicators {
+            display: flex;
+            gap: 10px;
+            margin-left: 10px;
+        }
+        
+        .encoding-indicator {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+        
+        .aaencode-indicator {
+            background: linear-gradient(45deg, #ffc107, #ff9800);
+            color: #000;
+        }
+        
+        .eval-indicator {
+            background: linear-gradient(45deg, #e91e63, #9c27b0);
+            color: #fff;
+        }
+        
+        .encoding-indicator.show {
             display: inline-block;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         
-        .subtitle {
-            color: rgba(255,255,255,0.9);
-            margin-top: 10px;
-            font-size: 1.1rem;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
         
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 25px;
+        .features-banner {
+            background: linear-gradient(45deg, #f59e0b, #ef4444);
+            color: #fff;
+            padding: 12px;
+            border-radius: 10px;
             margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
         }
         
-        .card h3 {
-            color: #2c3e50;
+        .section:hover {
+            transform: translateY(-2px);
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
             margin-bottom: 15px;
-            font-size: 1.3rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            color: #fbbf24;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #e5e7eb;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(255,255,255,0.15);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+        }
+        
+        textarea {
+            height: 200px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            resize: vertical;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+        
+        /* 修复输入框问题 */
+        #input {
+            background: rgba(0,0,0,0.3) !important;
+            border: 2px solid rgba(255,255,255,0.2) !important;
+            color: #ffffff !important;
+            min-height: 200px;
+            white-space: pre;
+            word-wrap: break-word;
+        }
+        
+        #input:focus {
+            background: rgba(0,0,0,0.4) !important;
+            border-color: #3b82f6 !important;
         }
         
         .file-upload {
-            border: 2px dashed #cbd5e0;
-            border-radius: 12px;
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 15px;
             padding: 30px;
             text-align: center;
-            background: #f8fafc;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
             cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.05);
         }
         
-        .file-upload:hover {
-            border-color: #4299e1;
-            background: #ebf8ff;
-        }
-        
-        .file-upload.dragover {
-            border-color: #3182ce;
-            background: #bee3f8;
+        .file-upload:hover, .file-upload.dragover {
+            border-color: #3b82f6;
+            background: rgba(59,130,246,0.1);
+            transform: translateY(-2px);
         }
         
         .file-upload-icon {
             font-size: 3rem;
-            margin-bottom: 15px;
-            color: #a0aec0;
-        }
-        
-        .file-upload-text {
-            color: #4a5568;
-            margin-bottom: 8px;
-        }
-        
-        .file-upload-hint {
-            color: #718096;
-            font-size: 0.9rem;
-        }
-        
-        .input-section {
-            margin-bottom: 20px;
-        }
-        
-        .input-section textarea {
-            width: 100%;
-            min-height: 200px;
-            padding: 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.5;
-            resize: vertical;
-            background: #fafafa;
-            transition: border-color 0.3s ease;
-        }
-        
-        .input-section textarea:focus {
-            outline: none;
-            border-color: #4299e1;
-            background: white;
+            margin-bottom: 10px;
+            opacity: 0.7;
         }
         
         .detection-panel {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(45deg, #1f2937, #374151);
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 10px;
             padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            display: none;
+            margin: 15px 0;
         }
         
-        .detection-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .detection-indicators {
-            display: flex;
+        .detection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 10px;
+            margin-top: 10px;
         }
         
-        .indicator {
-            padding: 4px 8px;
-            border-radius: 6px;
+        .detection-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .detection-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #10b981;
+        }
+        
+        .detection-label {
             font-size: 0.8rem;
-            opacity: 0.3;
-            transition: opacity 0.3s ease;
+            opacity: 0.8;
         }
         
-        .indicator.show {
-            opacity: 1;
+        .file-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
         }
         
-        .indicator-aaencode {
-            background: rgba(255, 193, 7, 0.2);
-            border: 1px solid #ffc107;
+        .file-option {
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
         }
         
-        .indicator-eval {
-            background: rgba(156, 39, 176, 0.2);
-            border: 1px solid #9c27b0;
-        }
-        
-        .progress-container {
+        .file-option:hover {
             background: rgba(255,255,255,0.2);
-            height: 6px;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 15px;
+            transform: translateY(-2px);
+        }
+        
+        .file-option.aaencode {
+            background: linear-gradient(45deg, rgba(255,193,7,0.3), rgba(255,152,0,0.3));
+            border-color: rgba(255,193,7,0.5);
+        }
+        
+        .file-option.eval {
+            background: linear-gradient(45deg, rgba(233,30,99,0.3), rgba(156,39,176,0.3));
+            border-color: rgba(233,30,99,0.5);
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+            position: sticky;
+            bottom: 15px;
+            background: rgba(102, 126, 234, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 15px;
+            z-index: 100;
+        }
+        
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #fff;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-blue { background: linear-gradient(45deg, #3b82f6, #1d4ed8); }
+        .btn-green { background: linear-gradient(45deg, #10b981, #059669); }
+        .btn-yellow { background: linear-gradient(45deg, #f59e0b, #d97706); }
+        .btn-purple { background: linear-gradient(45deg, #8b5cf6, #7c3aed); }
+        .btn-red { background: linear-gradient(45deg, #ef4444, #dc2626); }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .btn-icon {
+            font-size: 1.4rem;
+        }
+        
+        .btn-text {
+            font-size: 0.75rem;
         }
         
         .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #4CAF50, #81C784);
+            background: linear-gradient(90deg, #3b82f6, #10b981);
             width: 0%;
             transition: width 0.3s ease;
         }
         
-        .output-section {
-            margin-bottom: 20px;
-        }
-        
-        .output-section pre {
-            background: #2d3748;
-            color: #e2e8f0;
-            padding: 20px;
-            border-radius: 12px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
+        .output {
+            background: #1e1e1e;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 200px;
+            max-height: 500px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 13px;
-            line-height: 1.6;
-            min-height: 150px;
+            line-height: 1.5;
+            overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
+            color: #d4d4d4;
         }
-        
-        .hljs-keyword { color: #c678dd; }
-        .hljs-string { color: #98c379; }
-        .hljs-number { color: #d19a66; }
-        .hljs-comment { color: #5c6370; }
-        .hljs-function { color: #61dafb; }
-        .hljs-property { color: #e06c75; }
         
         .logs {
-            max-height: 200px;
-            overflow-y: auto;
-            background: #1a202c;
-            color: #e2e8f0;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
             padding: 15px;
-            border-radius: 12px;
-            font-family: 'Courier New', monospace;
+            height: 150px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 12px;
-            line-height: 1.4;
+            scroll-behavior: smooth;
         }
         
-        .log-info { color: #63b3ed; }
-        .log-success { color: #68d391; }
-        .log-warning { color: #fbb040; }
-        .log-error { color: #fc8181; }
-        
-        .config-section {
-            margin-bottom: 20px;
-        }
-        
-        .config-section input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 10px;
-            transition: border-color 0.3s ease;
-        }
-        
-        .config-section input:focus {
-            outline: none;
-            border-color: #4299e1;
-        }
+        .log-success { color: #10b981; }
+        .log-error { color: #ef4444; }
+        .log-warning { color: #f59e0b; }
+        .log-info { color: #3b82f6; }
         
         .toast {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.9);
             color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 14px;
-            z-index: 1000;
-            transform: translateX(100%);
+            padding: 15px 20px;
+            border-radius: 10px;
+            transform: translateX(400px);
             transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 300px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
         .toast.show {
             transform: translateX(0);
         }
         
-        input[type="file"] {
-            display: none;
+        .note {
+            background: rgba(59,130,246,0.2);
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            margin-top: 10px;
         }
         
-        /* 按钮基础样式 */
-        button {
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+        .hidden {
+            display: none !important;
         }
         
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        /* 语法高亮 */
+        .hljs-keyword { color: #569cd6; }
+        .hljs-string { color: #ce9178; }
+        .hljs-number { color: #b5cea8; }
+        .hljs-comment { color: #6a9955; font-style: italic; }
+        .hljs-function { color: #dcdcaa; }
+        .hljs-variable { color: #9cdcfe; }
+        
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
         }
         
         /* 移动端适配 */
         @media (max-width: 768px) {
             .container {
-                padding: 15px;
-            }
-            
-            .title {
-                font-size: 2rem;
-            }
-            
-            .card {
-                padding: 15px !important;
-                margin-bottom: 15px !important;
-            }
-            
-            /* 按钮优化 */
-            button {
-                font-size: 10px !important;
-                min-height: 55px !important;
-                padding: 10px 2px !important;
-                min-width: 0 !important;
-            }
-            
-            button span {
-                font-size: 9px !important;
-            }
-            
-            /* 调整按钮容器间距 */
-            div[style*="display: flex"] {
-                gap: 4px !important;
-            }
-            
-            /* 文本域优化 */
-            .input-section textarea {
-                min-height: 150px !important;
-                font-size: 12px !important;
-            }
-            
-            /* 检测面板优化 */
-            .detection-panel {
-                font-size: 12px !important;
-                padding: 12px !important;
-            }
-            
-            /* 日志区域优化 */
-            .logs {
-                max-height: 150px !important;
-                font-size: 11px !important;
-                padding: 12px !important;
-            }
-            
-            /* 文件上传区域优化 */
-            .file-upload {
-                padding: 20px !important;
-            }
-            
-            .file-upload-icon {
-                font-size: 2.5rem !important;
-                margin-bottom: 10px !important;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .container {
                 padding: 10px;
             }
             
-            .title {
-                font-size: 1.8rem;
+            h1 {
+                font-size: 1.5rem;
+                padding: 12px;
             }
             
-            .card {
-                padding: 12px !important;
-                margin-bottom: 12px !important;
+            .form-row {
+                grid-template-columns: 1fr;
             }
             
-            /* 超小屏幕按钮优化 */
-            button {
-                font-size: 9px !important;
-                min-height: 50px !important;
-                padding: 8px 1px !important;
+            .buttons {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin: 0;
+                border-radius: 0;
+                border-top: 1px solid rgba(255,255,255,0.2);
             }
             
-            button span {
-                font-size: 8px !important;
-            }
-            
-            /* 更紧凑的间距 */
-            div[style*="display: flex"] {
-                gap: 2px !important;
-            }
-            
-            /* 文本域进一步优化 */
-            .input-section textarea {
-                min-height: 120px !important;
-                font-size: 11px !important;
-                padding: 10px !important;
-            }
-            
-            /* 文件上传区域优化 */
-            .file-upload {
-                padding: 15px !important;
-            }
-            
-            .file-upload-icon {
-                font-size: 2rem !important;
-                margin-bottom: 8px !important;
-            }
-            
-            /* 检测面板紧凑显示 */
-            .detection-panel {
-                font-size: 11px !important;
-                padding: 10px !important;
-            }
-            
-            .detection-info {
-                flex-direction: column !important;
-                gap: 5px !important;
-            }
-            
-            /* 日志区域紧凑显示 */
-            .logs {
-                max-height: 120px !important;
-                font-size: 10px !important;
-                padding: 10px !important;
-            }
-        }
-
-        /* 确保按钮容器永远不换行 */
-        div[style*="display: flex"]:not([style*="flex-direction"]) {
-            flex-wrap: nowrap !important;
-        }
-
-        /* 按钮悬停效果在移动端禁用 */
-        @media (hover: none) {
-            button:hover {
-                transform: none !important;
-                box-shadow: none !important;
+            body {
+                padding-bottom: 80px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1 class="title">羊毛助手</h1>
+        <h1>
+            羊毛助手 
             <span class="version">v5.7</span>
-            <p class="subtitle">支持AAEncode和Eval代码直接解密，无需配置</p>
-        </div>
-
-```
-    <!-- 文件输入区域 -->
-    <div class="card">
-        <h3>📁 文件输入</h3>
+            <div class="encoding-indicators">
+                <span id="aaencodeIndicator" class="encoding-indicator aaencode-indicator">AAEncode已检测</span>
+                <span id="evalIndicator" class="encoding-indicator eval-indicator">Eval已检测</span>
+            </div>
+        </h1>
         
-        <div class="file-upload" onclick="document.getElementById('fileInput').click()" 
-             ondragover="handleDragOver(event)" 
-             ondragleave="handleDragLeave(event)" 
-             ondrop="handleDrop(event)">
-            <div class="file-upload-icon">📄</div>
-            <div class="file-upload-text">点击选择文件或拖拽文件到此处</div>
-            <div class="file-upload-hint">支持 .js .txt .json 等文本文件</div>
+        <div class="features-banner">
+            🎯 v5.7增强版：专业AADecode+Eval解包插件 | 支持头部注释保留 | 智能多重检测 | 一键本地解密
         </div>
         
-        <input type="file" id="fileInput" accept=".js,.txt,.json">
-        
-        <!-- 固定5按钮布局 -->
-        <div style="display: flex; gap: 6px; margin-top: 20px;">
-            <button onclick="document.getElementById('fileInput').click()" 
-                    style="flex: 1; min-width: 0; background: linear-gradient(135deg, #2196f3, #21cbf3); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-                📁<br><span style="font-size: 10px;">选择文件</span>
-            </button>
-            <button onclick="pasteFromClipboard()" 
-                    style="flex: 1; min-width: 0; background: linear-gradient(135deg, #4caf50, #66bb6a); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-                📋<br><span style="font-size: 10px;">粘贴板</span>
-            </button>
-            <button onclick="testAAEncodeInput()" 
-                    style="flex: 1; min-width: 0; background: linear-gradient(135deg, #ff9800, #ffb74d); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-                🔤<br><span style="font-size: 10px;">AA解密</span>
-            </button>
-            <button onclick="testEvalInput()" 
-                    style="flex: 1; min-width: 0; background: linear-gradient(135deg, #9c27b0, #ba68c8); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-                🔧<br><span style="font-size: 10px;">Eval解密</span>
-            </button>
-            <button onclick="loadDemoCode()" 
-                    style="flex: 1; min-width: 0; background: linear-gradient(135deg, #f44336, #e57373); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-                📝<br><span style="font-size: 10px;">加载示例</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- 代码输入区域 -->
-    <div class="card">
-        <h3>✏️ 代码输入</h3>
-        
-        <div class="detection-panel" id="detectionPanel">
-            <div class="detection-info">
+        <!-- GitHub 配置 -->
+        <div class="section">
+            <div class="section-title">⚙️ GitHub 配置（可选）</div>
+            <div class="form-row">
                 <div>
-                    <strong>检测类型:</strong> <span id="detectionType">Unknown</span> | 
-                    <strong>置信度:</strong> <span id="detectionConfidence">0%</span>
+                    <label>GitHub Token</label>
+                    <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxx">
                 </div>
-                <div class="detection-indicators">
-                    <div class="indicator indicator-aaencode" id="aaencodeIndicator">AAEncode</div>
-                    <div class="indicator indicator-eval" id="evalIndicator">Eval</div>
+                <div>
+                    <label>仓库地址</label>
+                    <input type="text" id="repo" placeholder="username/repo">
                 </div>
             </div>
-            <div>
-                <strong>特征:</strong> <span id="detectionFeatures">-</span> | 
-                <strong>详情:</strong> <span id="detectionDetails">-</span>
+            <div class="note">
+                <strong>💡 说明：</strong>AAEncode和Eval代码可直接本地解密，无需GitHub配置。GitHub配置仅用于其他复杂混淆代码的云端解密。
             </div>
         </div>
         
-        <div class="input-section">
-            <textarea id="input" placeholder="请粘贴需要解密的JavaScript代码..."></textarea>
-        </div>
+        <!-- 文件输入区域 - 5个固定按钮 -->
+<div class="card">
+    <h3>📁 文件输入</h3>
+    
+    <div class="file-upload" onclick="document.getElementById('fileInput').click()" 
+         ondragover="handleDragOver(event)" 
+         ondragleave="handleDragLeave(event)" 
+         ondrop="handleDrop(event)">
+        <div class="file-upload-icon">📄</div>
+        <div class="file-upload-text">点击选择文件或拖拽文件到此处</div>
+        <div class="file-upload-hint">支持 .js .txt .json 等文本文件</div>
     </div>
-
-    <!-- 主操作区域 -->
-    <div class="card">
-        <h3>🎛️ 操作面板</h3>
-        <div style="display: flex; gap: 6px;">
-            <button onclick="startDecrypt()" 
-                    style="flex: 1; min-width: 0; background: linear-gradient(135deg, #2196f3, #21cbf3); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-                🔓<br><span style="font-size: 10px;">开始解密</span>
-            </button>
-            <button onclick="getResult()" 
-                    style="flex: 1; min-width: 0; background: linear-gradient(135deg, #4caf50, #66bb6a); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-                📥<br><span style="font-size: 10px;">获取结果</span>
-            </button>
-            <button onclick="beautifyCode()" 
-                    style="flex: 1; min-width: 0; background: linear-gradient(135deg, #ff9800, #ffb74d); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-                🎨<br><span style="font-size: 10px;">美化</span>
-            </button>
-            <button onclick="copyResult()" 
-                    style="flex: 1; min-width: 0; background: linear-gradient(135deg, #9c27b0, #ba68c8); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-                📋<br><span style="font-size: 10px;">复制</span>
-            </button>
-            <button onclick="downloadResult()" 
-                    style="flex: 1; min-width: 0; background: linear-gradient(135deg, #f44336, #e57373); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-                💾<br><span style="font-size: 10px;">下载</span>
-            </button>
-        </div>
-        
-        <!-- 清除按钮单独一行，居中 -->
-        <div style="margin-top: 15px; text-align: center;">
-            <button onclick="clearAll()" 
-                    style="background: linear-gradient(135deg, #607d8b, #90a4ae); color: white; padding: 10px 30px; border-radius: 10px; border: none; font-size: 12px; cursor: pointer;">
-                🗑️ 清除所有
-            </button>
-        </div>
-    </div>
-
-    <!-- 进度条 -->
-    <div class="card" style="padding: 15px;">
-        <div class="progress-container">
-            <div class="progress-bar" id="progress"></div>
-        </div>
-    </div>
-
-    <!-- 解密结果 -->
-    <div class="card">
-        <h3>📋 解密结果</h3>
-        <div class="output-section">
-            <pre id="output">// 解密结果将显示在这里...</pre>
-        </div>
-    </div>
-
-    <!-- 操作日志 -->
-    <div class="card">
-        <h3>📝 操作日志</h3>
-        <div class="logs" id="logs"></div>
-    </div>
-
-    <!-- GitHub配置 -->
-    <div class="card">
-        <h3>⚙️ GitHub配置</h3>
-        <div class="config-section">
-            <input type="password" id="token" placeholder="GitHub Token (可选，用于在线解密)">
-            <input type="text" id="repo" placeholder="GitHub仓库 (格式: username/repo-name)">
-        </div>
+    
+    <input type="file" id="fileInput" accept=".js,.txt,.json">
+    
+    <!-- 固定5按钮布局 -->
+    <div style="display: flex; gap: 6px; margin-top: 20px;">
+        <button onclick="document.getElementById('fileInput').click()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #2196f3, #21cbf3); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            📁<br><span style="font-size: 10px;">选择文件</span>
+        </button>
+        <button onclick="pasteFromClipboard()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #4caf50, #66bb6a); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            📋<br><span style="font-size: 10px;">粘贴板</span>
+        </button>
+        <button onclick="testAAEncodeInput()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #ff9800, #ffb74d); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            🔤<br><span style="font-size: 10px;">AA解密</span>
+        </button>
+        <button onclick="testEvalInput()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #9c27b0, #ba68c8); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            🔧<br><span style="font-size: 10px;">Eval解密</span>
+        </button>
+        <button onclick="loadDemoCode()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #f44336, #e57373); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            📝<br><span style="font-size: 10px;">加载示例</span>
+        </button>
     </div>
 </div>
+        
+        <!-- 检测面板 -->
+        <div id="detectionPanel" class="detection-panel" style="display: none;">
+            <div class="section-title">🔍 编码格式检测结果</div>
+            <div class="detection-grid">
+                <div class="detection-item">
+                    <div id="detectionType" class="detection-value">未检测</div>
+                    <div class="detection-label">编码类型</div>
+                </div>
+                <div class="detection-item">
+                    <div id="detectionConfidence" class="detection-value">0%</div>
+                    <div class="detection-label">置信度</div>
+                </div>
+                <div class="detection-item">
+                    <div id="detectionFeatures" class="detection-value">0</div>
+                    <div class="detection-label">特征匹配</div>
+                </div>
+                <div class="detection-item">
+                    <div id="detectionDetails" class="detection-value">-</div>
+                    <div class="detection-label">详细信息</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 代码输入 -->
+        <div class="section">
+            <div class="section-title">📝 密文输入</div>
+            <textarea id="input" placeholder="请粘贴需要解密的密文代码...
 
-<!-- Toast提示 -->
-<div class="toast" id="toast"></div>
-```
+✅ v5.7 专业解密支持：
+- AAEncode格式：自动检测和解码
+- Eval包装：智能解包和递归处理
+- 保留脚本头部注释
+- 智能提取编码部分
+- 高精度解码算法
+- 完整错误处理机制
+
+💡 其他支持格式：
+- JavaScript混淆代码
+- Base64/十六进制编码
+- Unicode转义序列
+- 多层嵌套编码"></textarea>
+            
+            <div class="file-options">
+                <div class="file-option" onclick="autoDetectAndDecrypt()">
+                    🤖<br>智能解密
+                </div>
+                <div class="file-option" onclick="cleanInput()">
+                    🧹<br>清理代码
+                </div>
+                <div class="file-option" onclick="validateInput()">
+                    ✅<br>质量检查
+                </div>
+                <div class="file-option" onclick="clearInput()">
+                    🗑<br>清空
+                </div>
+            </div>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="progress-bar">
+            <div id="progress" class="progress-fill"></div>
+        </div>
+        
+        <!-- 输出结果 -->
+        <div class="section">
+            <div class="section-title">✨ 解密结果</div>
+            <div id="output" class="output">// 解密结果将显示在这里...</div>
+            
+            <div class="file-options">
+                <div class="file-option" onclick="beautifyCode()">
+                    🎨<br>代码美化
+                </div>
+                <div class="file-option" onclick="copyResult()">
+                    📋<br>复制结果
+                </div>
+                <div class="file-option" onclick="downloadResult()">
+                    💾<br>下载文件
+                </div>
+                <div class="file-option" onclick="validateResult()">
+                    ✅<br>语法检查
+                </div>
+            </div>
+        </div>
+        
+        <!-- 执行日志 -->
+        <div class="section">
+            <div class="section-title">📋 执行日志</div>
+            <div id="logs" class="logs"></div>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="buttons">
+            <button class="btn-blue" onclick="startDecrypt()">
+                <div class="btn-icon">🔓</div>
+                <div class="btn-text">开始解密</div>
+            </button>
+            <button class="btn-green" onclick="getResult()">
+                <div class="btn-icon">📥</div>
+                <div class="btn-text">获取结果</div>
+            </button>
+            <button class="btn-yellow" onclick="copyResult()">
+                <div class="btn-icon">📋</div>
+                <div class="btn-text">复制</div>
+            </button>
+            <button class="btn-purple" onclick="downloadResult()">
+                <div class="btn-icon">💾</div>
+                <div class="btn-text">下载</div>
+            </button>
+            <button class="btn-red" onclick="clearAll()">
+                <div class="btn-icon">🗑</div>
+                <div class="btn-text">清除</div>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
 
     <script>
     
