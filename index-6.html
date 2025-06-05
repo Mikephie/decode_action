@@ -1455,81 +1455,84 @@ function loadRemoteFile(url) {
            }
        }
        
-       // 智能清理输入 - 优化版
+       // 智能清理输入 - 优化版（修复 ;var encode_version 丢失）
 function cleanInput() {
-    const input = document.getElementById('input').value.trim();
+    const inputEl = document.getElementById('input');
+    const input = inputEl.value.trim();
     if (!input) {
         showToast('请先输入代码');
         return;
     }
-    
-    // 先检测类型
+
     const detection = comprehensiveDetection(input);
-    
-    // 检查是否为混合内容
     const isMixedContent = checkIfMixedContent(input);
-    
+
     if (detection.primaryType !== 'Unknown' && !isMixedContent) {
-        // 纯密文格式，跳过清理
         showToast(`⚠️ 检测到纯${detection.primaryType}格式，跳过清理以保持完整性`);
         addLog(`${detection.primaryType}格式对完整性要求较高，建议直接解密`, 'info');
         return;
     }
-    
+
     if (detection.primaryType !== 'Unknown' && isMixedContent) {
-        // 混合内容中包含已知格式，允许清理
         showToast(`🔍 检测到混合内容中的${detection.primaryType}，开始智能提取...`);
         addLog(`混合内容中检测到${detection.primaryType}，进行智能分离`, 'info');
     }
-    
+
     addLog('开始智能清理代码...', 'info');
-    
+
+    // ✅ 保护 encode_version 整行
+    let encodeLine = '';
+    let protectedInput = input.replace(/^[\s;]*var\s+encode_version\s*=.*$/m, match => {
+        encodeLine = match.trimStart().startsWith(';') ? match : ';' + match.trimStart();
+        return '__ENCODE_VERSION_LINE__';
+    });
+
     // 智能预处理
-    const processed = preprocessCiphertext(input);
-    
-    // 如果预处理后有显著变化，说明提取到了密文
+    let processed = preprocessCiphertext(protectedInput);
+
     if (processed.length < input.length * 0.8 && processed.length > 50) {
-        document.getElementById('input').value = processed;
+        if (encodeLine && !processed.includes('encode_version')) {
+            processed = encodeLine + '\n' + processed;
+        }
+        inputEl.value = processed;
         showToast('🎯 智能提取密文完成');
         addLog(`智能提取: 从${input.length}字符中提取${processed.length}字符`, 'success');
-        
-        // 清理后重新检测
+
         const newDetection = comprehensiveDetection(processed);
         if (newDetection.primaryType !== 'Unknown') {
             addLog(`提取后检测到: ${newDetection.primaryType} (置信度: ${newDetection.primaryConfidence}%)`, 'success');
         }
         return;
     }
-    
-    // 否则进行基础清理
-    let cleaned = input
-        // 移除注释
+
+    // === 基础清理
+    let cleaned = protectedInput
         .replace(/\/\/.*$/gm, '')
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/<!--[\s\S]*?-->/g, '')
-        // 移除时间戳和说明行
         .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
         .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '')
-        // 移除明显的原文标识
         .replace(/^\s*\/\/\s*(原始代码|原文|明文).*$/gm, '')
         .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
         .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
-        // 清理空白
         .replace(/^\s*[\r\n]/gm, '')
         .replace(/^\s+/gm, '')
         .replace(/\s+/g, ' ')
         .trim();
-    
-    // 检查清理效果
+
+    // ✅ 还原 encode_version 行
+    if (encodeLine) {
+        cleaned = cleaned.replace('__ENCODE_VERSION_LINE__', encodeLine);
+    }
+
     if (cleaned.length === input.length) {
         showToast('🔍 未发现需要清理的内容');
         addLog('代码已经是纯净格式', 'info');
     } else {
-        document.getElementById('input').value = cleaned;
+        inputEl.value = cleaned;
         showToast('🧹 代码清理完成');
         addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
-        
-        // 清理后重新检测
+
         const newDetection = comprehensiveDetection(cleaned);
         if (newDetection.primaryType !== 'Unknown') {
             addLog(`清理后检测到: ${newDetection.primaryType} (置信度: ${newDetection.primaryConfidence}%)`, 'success');
@@ -1540,65 +1543,46 @@ function cleanInput() {
 // 检查是否为混合内容
 function checkIfMixedContent(input) {
     const mixedContentIndicators = [
-        // 包含注释
         /\/\/.*$/m,
         /\/\*[\s\S]*?\*\//,
         /<!--[\s\S]*?-->/,
-        
-        // 包含中文说明
         /[\u4e00-\u9fff]/,
-        
-        // 包含原文标识
         /(原始代码|原文|明文|解密结果|解密完成)/,
-        
-        // 包含HTML标签
         /<[^>]+>/,
-        
-        // 包含时间戳
         /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
-        
-        // 包含调试代码
         /(console\.log|alert|document\.write)\s*\(/,
-        
-        // 包含多个代码块（原文+密文）
         /eval\s*\(.*?\).*eval\s*\(/s,
-        
-        // 包含说明性文字
         /(解密脚本|混淆工具|加密工具)/
     ];
-    
-    // 如果匹配任何一个指标，说明是混合内容
+
     for (const indicator of mixedContentIndicators) {
         if (indicator.test(input)) {
             return true;
         }
     }
-    
-    // 检查长度比例 - 如果代码很长但密文特征不明显，可能是混合内容
+
     const lines = input.split('\n');
     if (lines.length > 10) {
-        // 多行代码，检查是否有明显的非密文行
         const nonCipherLines = lines.filter(line => {
             const trimmedLine = line.trim();
-            return trimmedLine.length > 0 && 
-                   !(/^[A-Za-z0-9+/=\\u]+$/.test(trimmedLine)) && // 不是Base64或Unicode
-                   !(/^[0-9a-fA-F\s]+$/.test(trimmedLine)) && // 不是十六进制
-                   !(/^[\x20-\x7E]*$/.test(trimmedLine)); // 不是纯ASCII
+            return trimmedLine.length > 0 &&
+                !(/^[A-Za-z0-9+/=\\u]+$/.test(trimmedLine)) &&
+                !(/^[0-9a-fA-F\s]+$/.test(trimmedLine)) &&
+                !(/^[\x20-\x7E]*$/.test(trimmedLine));
         });
-        
+
         if (nonCipherLines.length > lines.length * 0.3) {
-            return true; // 超过30%的行不像密文
+            return true;
         }
     }
-    
+
     return false;
 }
 
-// 增强版预处理 - 专门处理混合内容
+// 智能预处理混合密文
 function preprocessCiphertext(input) {
     addLog('执行智能预处理...', 'info');
-    
-    // 先进行基础清理
+
     let processed = input
         .replace(/\/\/.*$/gm, '')
         .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -1606,48 +1590,35 @@ function preprocessCiphertext(input) {
         .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
         .replace(/^\s*\/\/解密脚本.*$/gm, '')
         .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
-    
-    // 密文提取模式 - 按优先级排序
+
     const patterns = [
-        // 1. jsjiami混淆 (最高优先级)
         {
             name: 'jsjiami混淆',
             pattern: /var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*,.*?['"`]((?:\\u[0-9a-fA-F]{4})+)['"`]/s,
-            extract: (match) => match[0] // 保留完整的jsjiami代码块
+            extract: match => match[0]
         },
-        
-        // 2. eval包装的jsjiami
         {
             name: 'eval包装的jsjiami',
             pattern: /eval\s*\(\s*(['"`])(.*?jsjiami\.com\.v\d+.*?)\1\s*\)/s,
-            extract: (match) => match[2]
+            extract: match => match[2]
         },
-        
-        // 3. AAEncode混淆  
         {
             name: 'AAEncode混淆',
             pattern: /(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s,
-            extract: (match) => match[1]
+            extract: match => match[1]
         },
-        
-        // 4. 标准eval包装
         {
             name: 'eval包装',
             pattern: /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
-            extract: (match) => match[2]
+            extract: match => match[2]
         },
-        
-        // 5. Function构造器
         {
             name: 'Function构造器',
             pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
-            extract: (match) => match[2]
-        },
-        
-        // 其他模式...
+            extract: match => match[2]
+        }
     ];
-    
-    // 尝试匹配各种模式
+
     for (const pattern of patterns) {
         const matches = processed.match(pattern.pattern);
         if (matches) {
@@ -1658,12 +1629,11 @@ function preprocessCiphertext(input) {
             }
         }
     }
-    
-    // 如果没有匹配到特定模式，进行通用清理
+
     return processed
         .replace(/^\s*\/\/\s*(原始|原文|明文).*$/gm, '')
-        .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
-        .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
+        .replace(/^\s*console\.log\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
+        .replace(/^\s*alert\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
         .replace(/^\s*[\r\n]/gm, '')
         .replace(/^\s+/gm, '')
         .replace(/\s+/g, ' ')
