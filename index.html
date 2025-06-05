@@ -1611,7 +1611,7 @@ function checkIfMixedContent(input) {
 }
 
 // 增强版预处理 - 专门处理混合内容
-function preprocessCiphertext(input) {
+//function preprocessCiphertext(input) {
     addLog('执行智能预处理...', 'info');
     
     // 先进行基础清理
@@ -1751,27 +1751,27 @@ function validateInput() {
         // 未识别格式的清洁度检查
         addLog('🔍 未识别的格式，进行清洁度检查', 'info');
         
-        //if (/[\u4e00-\u9fff]/.test(input)) {
+        if (/[\u4e00-\u9fff]/.test(input)) {
             issues.push('包含中文字符');
             suggestions.push('使用智能清理功能移除注释');
         }
         
-        //if (/\/\/|\/\*|\*\/|<!--/.test(input)) {
+        if (/\/\/|\/\*|\*\/|<!--/.test(input)) {
             issues.push('包含注释符号');
             suggestions.push('使用智能清理功能移除注释');
         }
         
-        //if (/<[^>]+>/.test(input)) {
+        if (/<[^>]+>/.test(input)) {
             issues.push('包含HTML标签');
             suggestions.push('提取script标签内的代码内容');
         }
         
-        //if (/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(input)) {
+        if (/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(input)) {
             issues.push('包含时间戳');
             suggestions.push('移除解密脚本的时间信息');
         }
         
-        //if (input.includes('原始代码') || input.includes('原文') || input.includes('明文')) {
+        if (input.includes('原始代码') || input.includes('原文') || input.includes('明文')) {
             issues.push('包含原文标识');
             suggestions.push('移除原始代码说明部分');
         }
@@ -1781,7 +1781,7 @@ function validateInput() {
             suggestions.push('只保留密文部分');
         }
         
-        //if (/console\.log|alert|document\.write/.test(input)) {
+        if (/console\.log|alert|document\.write/.test(input)) {
             warnings.push('包含调试代码');
             suggestions.push('移除调试输出语句');
         }
