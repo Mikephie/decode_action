@@ -1480,21 +1480,35 @@ function cleanInput() {
 
     addLog('开始智能清理代码...', 'info');
 
-    // ✅ 保护 encode_version 整行
+    // ✅ 保护 encode_version 整行 - 只有在不是jsjiami格式时才保护
     let encodeLine = '';
-    let protectedInput = input.replace(/^[\s;]*var\s+encode_version\s*=.*$/m, match => {
-        encodeLine = match.trimStart().startsWith(';') ? match : ';' + match.trimStart();
-        return '__ENCODE_VERSION_LINE__';
-    });
+    let protectedInput = input;
+    
+    // 如果不是以jsjiami开头，才进行encode_version保护
+    if (!input.trim().startsWith(';var encode_version')) {
+        protectedInput = input.replace(/^[\s;]*var\s+encode_version\s*=.*$/m, match => {
+            encodeLine = match.trimStart().startsWith(';') ? match : ';' + match.trimStart();
+            return '__ENCODE_VERSION_LINE__';
+        });
+    }
 
     // 智能预处理
     let processed = preprocessCiphertext(protectedInput);
 
     if (processed.length < input.length * 0.8 && processed.length > 50) {
-        // 修复：只有当processed不包含encode_version时才添加
+        // 如果提取的是完整jsjiami（已包含encode_version），直接使用
+        if (processed.includes('encode_version')) {
+            inputEl.value = processed;
+            showToast('🎯 智能提取密文完成');
+            addLog(`智能提取: 从${input.length}字符中提取${processed.length}字符`, 'success');
+            return;
+        }
+        
+        // 只有当processed不包含encode_version且有保护的encodeLine时才添加
         if (encodeLine && !processed.includes('encode_version')) {
             processed = encodeLine + '\n' + processed;
         }
+        
         inputEl.value = processed;
         showToast('🎯 智能提取密文完成');
         addLog(`智能提取: 从${input.length}字符中提取${processed.length}字符`, 'success');
