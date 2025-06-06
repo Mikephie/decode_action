@@ -1498,17 +1498,47 @@ function cleanInput() {
     }
 }
 
-// 智能提取密文 - 简化版
+// 智能提取密文 - 修复长篇jsjiami
 function extractCiphertext(input) {
-    // 1. jsjiami 混淆 - 直接字符串搜索
+    // 1. jsjiami 混淆 - 改进的字符串搜索
     const jsjiamiStart = input.indexOf(';var encode_version');
     if (jsjiamiStart !== -1) {
         const fromStart = input.substring(jsjiamiStart);
-        const jsjiamiEnd = fromStart.lastIndexOf(";encode_version = 'jsjiami.com.v5';");
-        if (jsjiamiEnd !== -1) {
-            const extracted = fromStart.substring(0, jsjiamiEnd + ";encode_version = 'jsjiami.com.v5';".length);
-            addLog('提取到 jsjiami 混淆代码', 'success');
-            return extracted;
+        
+        // 查找结束标记的所有可能位置
+        const endPatterns = [
+            ";encode_version = 'jsjiami.com.v5';",
+            ';encode_version = "jsjiami.com.v5";',
+            ';encode_version="jsjiami.com.v5";',
+            ";encode_version='jsjiami.com.v5';"
+        ];
+        
+        let bestEndIndex = -1;
+        let bestPattern = '';
+        
+        for (const pattern of endPatterns) {
+            const endIndex = fromStart.lastIndexOf(pattern);
+            if (endIndex > bestEndIndex) {
+                bestEndIndex = endIndex;
+                bestPattern = pattern;
+            }
+        }
+        
+        if (bestEndIndex !== -1) {
+            const extracted = fromStart.substring(0, bestEndIndex + bestPattern.length);
+            
+            // 验证提取的内容确实是jsjiami格式
+            if (extracted.includes('jsjiami.com.v') && extracted.includes('__0x')) {
+                addLog(`提取到 jsjiami 混淆代码 (${extracted.length}字符)`, 'success');
+                return extracted;
+            }
+        }
+        
+        // 如果上面的方法失败，尝试正则表达式兜底
+        const regexMatch = fromStart.match(/^.*?;encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*;/s);
+        if (regexMatch) {
+            addLog('通过正则提取到 jsjiami 混淆代码', 'success');
+            return regexMatch[0];
         }
     }
 
