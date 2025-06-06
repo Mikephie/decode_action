@@ -1565,8 +1565,15 @@ function cleanInput() {
             const extracted = pattern.extract(match);
             if (extracted && extracted.length > 100) {
                 inputEl.value = extracted;
-                showToast(`🎯 提取${pattern.name}完成`);
-                addLog(`提取: ${input.length} → ${extracted.length} 字符`, 'success');
+                
+                // 根据解密类型显示不同提示
+                if (pattern.type === 'local') {
+                    showToast(`🎯 提取${pattern.name}完成 (可本地解密)`);
+                    addLog(`提取 ${pattern.name}: ${input.length} → ${extracted.length} 字符 [本地解密]`, 'success');
+                } else {
+                    showToast(`🎯 提取${pattern.name}完成`);
+                    addLog(`提取 ${pattern.name}: ${input.length} → ${extracted.length} 字符 [GitHub解密]`, 'success');
+                }
                 return;
             }
         }
