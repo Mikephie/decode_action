@@ -1683,6 +1683,17 @@ function comprehensiveDetection(input) {
     return { primaryType: 'Unknown', primaryConfidence: 0 };
 }
 
+// 简化的检测函数（模拟）
+function comprehensiveDetection(input) {
+    if (input.includes('jsjiami.com.v')) {
+        return { primaryType: 'jsjiami', primaryConfidence: 95 };
+    }
+    if (input.includes('eval(')) {
+        return { primaryType: 'eval', primaryConfidence: 80 };
+    }
+    return { primaryType: 'Unknown', primaryConfidence: 0 };
+}
+
 // 验证输入质量
 function validateInput() {
     const input = document.getElementById('input').value.trim();
