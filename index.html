@@ -1498,11 +1498,145 @@ function cleanInput() {
     }
 }
 
-// 智能提取密文 - 修复长篇jsjiami
+// 智能提取密文 - 修复超长jsjiami数组
 function extractCiphertext(input) {
-    // 1. jsjiami 混淆 - 改进的字符串搜索
+    // 1. jsjiami 混淆 - 处理超长密文数组
     const jsjiamiStart = input.indexOf(';var encode_version');
     if (jsjiamiStart !== -1) {
+        const fromStart = input.substring(jsjiamiStart);
+        
+        // 使用堆栈匹配来找到真正的结束位置
+        let endIndex = findJsjiamiEnd(fromStart);
+        
+        if (endIndex !== -1) {
+            const extracted = fromStart.substring(0, endIndex);
+            
+            // 验证提取的内容
+            const hasStart = extracted.startsWith(';var encode_version');
+            const hasJsjiami = extracted.includes('jsjiami.com.v');
+            const hasEnd = /encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*;$/.test(extracted);
+            
+            if (hasStart && hasJsjiami && hasEnd) {
+                addLog(`提取到完整 jsjiami 混淆代码 (${extracted.length}字符)`, 'success');
+                return extracted;
+            }
+        }
+        
+        addLog('jsjiami 格式识别失败，尝试其他方法', 'warn');
+    }
+
+    // 2. eval 包装
+    const evalMatch = input.match(/eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s);
+    if (evalMatch) {
+        addLog('提取到 eval 包装代码', 'success');
+        return evalMatch[2];
+    }
+
+    // 3. Function 构造器
+    const funcMatch = input.match(/(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s);
+    if (funcMatch) {
+        addLog('提取到 Function 构造器代码', 'success');
+        return funcMatch[2];
+    }
+
+    // 4. AAEncode
+    const aaMatch = input.match(/(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s);
+    if (aaMatch) {
+        addLog('提取到 AAEncode 代码', 'success');
+        return aaMatch[1];
+    }
+
+    // 5. 纯Unicode序列
+    const unicodeMatch = input.match(/((?:\\u[0-9a-fA-F]{4}){50,})/);
+    if (unicodeMatch) {
+        addLog('提取到 Unicode 转义序列', 'success');
+        return unicodeMatch[1];
+    }
+
+    // 6. 纯十六进制序列
+    const hexMatch = input.match(/((?:\\x[0-9a-fA-F]{2}){50,})/);
+    if (hexMatch) {
+        addLog('提取到十六进制转义序列', 'success');
+        return hexMatch[1];
+    }
+
+    // 7. Base64 (严格模式)
+    const base64Match = input.match(/^([A-Za-z0-9+/]{200,}={0,2})$/m);
+    if (base64Match) {
+        addLog('提取到 Base64 编码', 'success');
+        return base64Match[1];
+    }
+
+    return null;
+}
+
+// 智能寻找jsjiami结束位置
+function findJsjiamiEnd(text) {
+    let i = 0;
+    let bracketStack = 0;
+    let parenStack = 0;
+    let inString = false;
+    let stringChar = '';
+    let escaped = false;
+    
+    // 寻找数组开始位置
+    const arrayStart = text.indexOf('=[');
+    if (arrayStart === -1) return -1;
+    
+    i = arrayStart + 1; // 从 '[' 开始
+    bracketStack = 1;
+    
+    // 遍历字符，正确匹配括号和字符串
+    while (i < text.length && bracketStack > 0) {
+        const char = text[i];
+        
+        if (escaped) {
+            escaped = false;
+            i++;
+            continue;
+        }
+        
+        if (char === '\\') {
+            escaped = true;
+            i++;
+            continue;
+        }
+        
+        if (inString) {
+            if (char === stringChar) {
+                inString = false;
+                stringChar = '';
+            }
+        } else {
+            if (char === '"' || char === "'" || char === '`') {
+                inString = true;
+                stringChar = char;
+            } else if (char === '[') {
+                bracketStack++;
+            } else if (char === ']') {
+                bracketStack--;
+            } else if (char === '(') {
+                parenStack++;
+            } else if (char === ')') {
+                parenStack--;
+            }
+        }
+        
+        i++;
+    }
+    
+    if (bracketStack === 0) {
+        // 数组结束，继续寻找最终的 encode_version 标记
+        const remaining = text.substring(i);
+        const endMatch = remaining.match(/.*?encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*;/s);
+        
+        if (endMatch) {
+            return i + endMatch.index + endMatch[0].length;
+        }
+    }
+    
+    return -1;
+}miStart !== -1) {
         const fromStart = input.substring(jsjiamiStart);
         
         // 查找结束标记的所有可能位置
