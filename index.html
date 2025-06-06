@@ -1455,7 +1455,7 @@ function loadRemoteFile(url) {
            }
        }
        
-       // 智能清理输入 - 优化版（修复 ;var encode_version 丢失）
+       // 智能清理输入 - 完整修复版
 function cleanInput() {
     const inputEl = document.getElementById('input');
     const input = inputEl.value.trim();
@@ -1480,20 +1480,10 @@ function cleanInput() {
 
     addLog('开始智能清理代码...', 'info');
 
-    // ✅ 保护 encode_version 整行
-    let encodeLine = '';
-    let protectedInput = input.replace(/^[\s;]*var\s+encode_version\s*=.*$/m, match => {
-        encodeLine = match.trimStart().startsWith(';') ? match : ';' + match.trimStart();
-        return '__ENCODE_VERSION_LINE__';
-    });
-
     // 智能预处理
-    let processed = preprocessCiphertext(protectedInput);
+    let processed = preprocessCiphertext(input);
 
     if (processed.length < input.length * 0.8 && processed.length > 50) {
-        if (encodeLine && !processed.includes('encode_version')) {
-            processed = encodeLine + '\n' + processed;
-        }
         inputEl.value = processed;
         showToast('🎯 智能提取密文完成');
         addLog(`智能提取: 从${input.length}字符中提取${processed.length}字符`, 'success');
@@ -1506,7 +1496,7 @@ function cleanInput() {
     }
 
     // === 基础清理
-    let cleaned = protectedInput
+    let cleaned = input
         .replace(/\/\/.*$/gm, '')
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/<!--[\s\S]*?-->/g, '')
@@ -1519,11 +1509,6 @@ function cleanInput() {
         .replace(/^\s+/gm, '')
         .replace(/\s+/g, ' ')
         .trim();
-
-    // ✅ 还原 encode_version 行
-    if (encodeLine) {
-        cleaned = cleaned.replace('__ENCODE_VERSION_LINE__', encodeLine);
-    }
 
     if (cleaned.length === input.length) {
         showToast('🔍 未发现需要清理的内容');
@@ -1594,8 +1579,16 @@ function preprocessCiphertext(input) {
     const patterns = [
         {
             name: 'jsjiami混淆',
-            pattern: /;?var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*,.*?['"`]((?:\\u[0-9a-fA-F]{4})+)['"`]/s,
-            extract: match => match[0]
+            // 修复：更精确地匹配jsjiami代码块，避免匹配到前面的普通代码
+            pattern: /;?\s*var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`][\s\S]*?__0x\w+\s*=\s*\[[^\]]+\]\s*;?/,
+            extract: match => {
+                let extracted = match[0].trim();
+                // 确保以分号开头
+                if (!extracted.startsWith(';')) {
+                    extracted = ';' + extracted;
+                }
+                return extracted;
+            }
         },
         {
             name: 'eval包装的jsjiami',
@@ -1632,8 +1625,8 @@ function preprocessCiphertext(input) {
 
     return processed
         .replace(/^\s*\/\/\s*(原始|原文|明文).*$/gm, '')
-        .replace(/^\s*console\.log\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
-        .replace(/^\s*alert\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
+        .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
+        .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
         .replace(/^\s*[\r\n]/gm, '')
         .replace(/^\s+/gm, '')
         .replace(/\s+/g, ' ')
