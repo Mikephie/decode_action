@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,22 +13,20 @@
         }
 
 ```
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
-    
     body {
-        font-family: 'Rajdhani', sans-serif;
-        background: 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        background: #0a0a0a;
+        background-image: 
             radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
             radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%),
-            linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
         min-height: 100vh;
         color: #e0e6ed;
         overflow-x: hidden;
         position: relative;
     }
     
-    /* 动态背景粒子效果 */
+    /* 简化的动态背景效果 */
     body::before {
         content: '';
         position: fixed;
@@ -35,21 +34,19 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-image: 
-            radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.15), transparent),
-            radial-gradient(2px 2px at 40px 70px, rgba(0,255,255,0.1), transparent),
-            radial-gradient(1px 1px at 90px 40px, rgba(255,0,255,0.1), transparent),
-            radial-gradient(1px 1px at 130px 80px, rgba(255,255,0,0.1), transparent);
-        background-repeat: repeat;
-        background-size: 150px 100px;
-        animation: sparkle 8s linear infinite;
+        background: 
+            radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.1), transparent),
+            radial-gradient(1px 1px at 40px 70px, rgba(0,255,255,0.05), transparent);
+        background-size: 100px 80px;
+        animation: sparkle 20s linear infinite;
         pointer-events: none;
         z-index: 1;
+        opacity: 0.5;
     }
     
     @keyframes sparkle {
         0% { transform: translateY(0px); }
-        100% { transform: translateY(-100px); }
+        100% { transform: translateY(-80px); }
     }
     
     .container {
@@ -63,27 +60,23 @@
     h1 {
         text-align: center;
         margin: 20px 0;
-        font-family: 'Orbitron', monospace;
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         font-weight: 900;
         background: linear-gradient(45deg, #00d4ff, #ff00ff, #ffff00, #00ff88);
-        background-size: 400% 400%;
+        background-size: 300% 300%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        animation: gradientShift 3s ease-in-out infinite;
+        animation: gradientShift 4s ease-in-out infinite;
         padding: 20px;
         border-radius: 20px;
-        border: 2px solid transparent;
-        background-origin: border-box;
-        background-clip: padding-box, border-box;
+        backdrop-filter: blur(10px);
+        background-color: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
         position: sticky;
         top: 10px;
         z-index: 100;
-        backdrop-filter: blur(20px);
-        box-shadow: 
-            0 8px 32px rgba(0, 212, 255, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
     @keyframes gradientShift {
@@ -92,45 +85,41 @@
     }
     
     .version {
-        background: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff);
+        background: linear-gradient(45deg, #ff006e, #8338ec);
         padding: 6px 16px;
         border-radius: 25px;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         margin-left: 15px;
         font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        box-shadow: 0 4px 15px rgba(255, 0, 110, 0.4);
-        animation: pulse 2s infinite;
+        color: white;
+        display: inline-block;
+        animation: pulse 3s infinite;
     }
     
     .encoding-indicators {
         display: flex;
         gap: 12px;
         margin-left: 15px;
+        margin-top: 10px;
     }
     
     .encoding-indicator {
         padding: 8px 16px;
         border-radius: 25px;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         font-weight: 600;
         display: none;
         animation: neonPulse 2s infinite;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
     
     .aaencode-indicator {
         background: linear-gradient(45deg, #ff9500, #ffb347);
         color: #000;
-        box-shadow: 0 0 20px rgba(255, 149, 0, 0.6);
     }
     
     .eval-indicator {
         background: linear-gradient(45deg, #ff073a, #c3073f);
         color: #fff;
-        box-shadow: 0 0 20px rgba(255, 7, 58, 0.6);
     }
     
     .encoding-indicator.show {
@@ -138,29 +127,17 @@
     }
     
     @keyframes neonPulse {
-        0%, 100% { 
-            opacity: 1; 
-            transform: scale(1);
-        }
-        50% { 
-            opacity: 0.8; 
-            transform: scale(1.05);
-        }
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.8; transform: scale(1.05); }
     }
     
     @keyframes pulse {
-        0%, 100% { 
-            opacity: 1; 
-            box-shadow: 0 4px 15px rgba(255, 0, 110, 0.4);
-        }
-        50% { 
-            opacity: 0.8; 
-            box-shadow: 0 6px 25px rgba(255, 0, 110, 0.6);
-        }
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
     }
     
     .features-banner {
-        background: linear-gradient(45deg, #ff6b35, #f7931e, #ffcc02);
+        background: linear-gradient(45deg, #ff6b35, #f7931e);
         color: #000;
         padding: 15px;
         border-radius: 15px;
@@ -168,12 +145,7 @@
         text-align: center;
         font-size: 1rem;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        box-shadow: 
-            0 8px 32px rgba(255, 107, 53, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        animation: bannerGlow 3s ease-in-out infinite;
+        animation: bannerGlow 4s ease-in-out infinite;
     }
     
     @keyframes bannerGlow {
@@ -182,45 +154,26 @@
     }
     
     .section {
-        background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+        background: rgba(255,255,255,0.05);
         border-radius: 20px;
         padding: 25px;
         margin: 20px 0;
-        backdrop-filter: blur(20px);
+        backdrop-filter: blur(10px);
         border: 1px solid rgba(255,255,255,0.1);
-        box-shadow: 
-            0 12px 40px rgba(0,0,0,0.3),
-            inset 0 1px 0 rgba(255,255,255,0.1);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
     }
     
-    .section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-        transition: left 0.5s;
-    }
-    
     .section:hover {
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 
-            0 20px 60px rgba(0,0,0,0.4),
-            0 0 40px rgba(0, 212, 255, 0.2);
+        transform: translateY(-3px);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
         border-color: rgba(0, 212, 255, 0.3);
     }
     
-    .section:hover::before {
-        left: 100%;
-    }
-    
     .section-title {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
         font-weight: 700;
         margin-bottom: 20px;
         display: flex;
@@ -230,9 +183,6 @@
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-family: 'Orbitron', monospace;
     }
     
     .form-row {
@@ -246,63 +196,39 @@
         display: block;
         margin-bottom: 10px;
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 0.9rem;
         color: #00d4ff;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
     }
     
     input, textarea, select {
         width: 100%;
         padding: 15px;
-        border: 2px solid rgba(255,255,255,0.1);
+        border: 2px solid rgba(255,255,255,0.2);
         border-radius: 12px;
-        background: rgba(0,0,0,0.4);
+        background: rgba(0,0,0,0.6);
         color: #ffffff;
-        font-size: 16px;
-        font-family: 'Rajdhani', sans-serif;
-        font-weight: 500;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        font-size: 14px;
+        font-family: inherit;
+        transition: all 0.3s ease;
     }
     
     input:focus, textarea:focus, select:focus {
         outline: none;
         border-color: #00d4ff;
-        background: rgba(0,0,0,0.6);
-        box-shadow: 
-            inset 0 2px 10px rgba(0,0,0,0.4),
-            0 0 0 4px rgba(0, 212, 255, 0.2),
-            0 0 20px rgba(0, 212, 255, 0.4);
-        transform: translateY(-2px);
+        background: rgba(0,0,0,0.8);
+        box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
     }
     
     input::placeholder, textarea::placeholder {
         color: rgba(255,255,255,0.5);
-        font-size: 14px;
     }
     
     textarea {
-        height: 220px;
+        height: 200px;
         font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
         resize: vertical;
         line-height: 1.6;
-        font-size: 14px;
-    }
-    
-    #input {
-        background: rgba(0,0,0,0.6) !important;
-        border: 2px solid rgba(0, 212, 255, 0.3) !important;
-        color: #ffffff !important;
-        min-height: 220px;
-        white-space: pre;
-        word-wrap: break-word;
-    }
-    
-    #input:focus {
-        background: rgba(0,0,0,0.8) !important;
-        border-color: #00d4ff !important;
     }
     
     .file-upload {
@@ -311,74 +237,43 @@
         padding: 40px;
         text-align: center;
         cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: all 0.3s ease;
         margin-bottom: 20px;
         background: rgba(0, 212, 255, 0.05);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .file-upload::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: conic-gradient(from 0deg, transparent, rgba(0, 212, 255, 0.1), transparent);
-        animation: rotate 4s linear infinite;
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-    
-    .file-upload:hover::before {
-        opacity: 1;
-    }
-    
-    @keyframes rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
     }
     
     .file-upload:hover, .file-upload.dragover {
         border-color: #00d4ff;
         background: rgba(0, 212, 255, 0.1);
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 
-            0 15px 35px rgba(0,0,0,0.3),
-            0 0 30px rgba(0, 212, 255, 0.3);
+        transform: translateY(-3px);
     }
     
     .file-upload-icon {
-        font-size: 4rem;
+        font-size: 3rem;
         margin-bottom: 15px;
         background: linear-gradient(45deg, #00d4ff, #ff00ff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.5));
     }
     
     .detection-panel {
-        background: linear-gradient(145deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));
+        background: rgba(0,0,0,0.6);
         border: 2px solid rgba(0, 212, 255, 0.3);
         border-radius: 15px;
         padding: 20px;
         margin: 20px 0;
-        box-shadow: 
-            0 8px 32px rgba(0,0,0,0.4),
-            inset 0 1px 0 rgba(255,255,255,0.1);
     }
     
     .detection-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 12px;
         margin-top: 15px;
     }
     
     .detection-item {
-        background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+        background: rgba(255,255,255,0.1);
         padding: 15px;
         border-radius: 12px;
         text-align: center;
@@ -387,86 +282,54 @@
     }
     
     .detection-item:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        transform: translateY(-2px);
     }
     
     .detection-value {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
         font-weight: 700;
         color: #00ff88;
         text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-        font-family: 'Orbitron', monospace;
     }
     
     .detection-label {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         opacity: 0.8;
         margin-top: 5px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
     
     .file-options {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: 12px;
         margin: 20px 0;
     }
     
     .file-option {
         padding: 16px;
-        background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+        background: rgba(255,255,255,0.08);
         border: 2px solid rgba(255,255,255,0.1);
         border-radius: 15px;
         cursor: pointer;
         text-align: center;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         font-weight: 600;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .file-option::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-        transition: left 0.5s;
+        transition: all 0.3s ease;
     }
     
     .file-option:hover {
         background: rgba(255,255,255,0.15);
-        transform: translateY(-4px) scale(1.05);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-    
-    .file-option:hover::before {
-        left: 100%;
+        transform: translateY(-2px);
     }
     
     .file-option.aaencode {
-        background: linear-gradient(45deg, rgba(255,149,0,0.2), rgba(255,179,71,0.2));
+        background: rgba(255,149,0,0.2);
         border-color: rgba(255,149,0,0.4);
     }
     
-    .file-option.aaencode:hover {
-        box-shadow: 0 0 30px rgba(255,149,0,0.4);
-    }
-    
     .file-option.eval {
-        background: linear-gradient(45deg, rgba(255,7,58,0.2), rgba(195,7,63,0.2));
+        background: rgba(255,7,58,0.2);
         border-color: rgba(255,7,58,0.4);
-    }
-    
-    .file-option.eval:hover {
-        box-shadow: 0 0 30px rgba(255,7,58,0.4);
     }
     
     .buttons {
@@ -476,15 +339,12 @@
         margin: 25px 0;
         position: sticky;
         bottom: 15px;
-        background: linear-gradient(145deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.95));
-        backdrop-filter: blur(20px);
+        background: rgba(26, 26, 46, 0.95);
+        backdrop-filter: blur(10px);
         padding: 20px;
         border-radius: 20px;
         border: 2px solid rgba(255,255,255,0.1);
         z-index: 100;
-        box-shadow: 
-            0 -8px 32px rgba(0,0,0,0.4),
-            inset 0 1px 0 rgba(255,255,255,0.1);
     }
     
     button {
@@ -493,78 +353,42 @@
         border-radius: 15px;
         font-weight: 700;
         cursor: pointer;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: #fff;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: all 0.3s ease;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 6px;
-        box-shadow: 
-            0 6px 20px rgba(0,0,0,0.3),
-            inset 0 1px 0 rgba(255,255,255,0.2);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-family: 'Rajdhani', sans-serif;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    button::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s;
-    }
-    
-    button:hover::before {
-        left: 100%;
+        font-family: inherit;
     }
     
     .btn-blue { 
         background: linear-gradient(45deg, #0066ff, #004ccc);
-        box-shadow: 0 6px 20px rgba(0,102,255,0.4);
     }
     .btn-green { 
         background: linear-gradient(45deg, #00ff88, #00cc6a);
-        box-shadow: 0 6px 20px rgba(0,255,136,0.4);
     }
     .btn-yellow { 
         background: linear-gradient(45deg, #ffaa00, #cc8800);
-        box-shadow: 0 6px 20px rgba(255,170,0,0.4);
     }
     .btn-purple { 
         background: linear-gradient(45deg, #aa00ff, #8800cc);
-        box-shadow: 0 6px 20px rgba(170,0,255,0.4);
     }
     .btn-red { 
         background: linear-gradient(45deg, #ff0044, #cc0036);
-        box-shadow: 0 6px 20px rgba(255,0,68,0.4);
     }
     
     button:hover {
-        transform: translateY(-5px) scale(1.05);
-        box-shadow: 
-            0 12px 35px rgba(0,0,0,0.4),
-            0 0 20px currentColor;
+        transform: translateY(-3px) scale(1.05);
     }
     
-    .btn-blue:hover { box-shadow: 0 12px 35px rgba(0,102,255,0.6); }
-    .btn-green:hover { box-shadow: 0 12px 35px rgba(0,255,136,0.6); }
-    .btn-yellow:hover { box-shadow: 0 12px 35px rgba(255,170,0,0.6); }
-    .btn-purple:hover { box-shadow: 0 12px 35px rgba(170,0,255,0.6); }
-    .btn-red:hover { box-shadow: 0 12px 35px rgba(255,0,68,0.6); }
-    
     .btn-icon {
-        font-size: 1.6rem;
+        font-size: 1.4rem;
     }
     
     .btn-text {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
     
     .progress-bar {
@@ -580,84 +404,57 @@
     .progress-fill {
         height: 100%;
         background: linear-gradient(90deg, #00d4ff, #00ff88, #ffaa00);
-        background-size: 200% 100%;
         width: 0%;
-        transition: width 0.3s ease;
-        animation: progressFlow 2s linear infinite;
-    }
-    
-    @keyframes progressFlow {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
+        transition: width 0.5s ease;
     }
     
     .output {
-        background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+        background: #1a1a1a;
         border: 2px solid rgba(0, 212, 255, 0.3);
         border-radius: 15px;
         padding: 20px;
-        min-height: 220px;
-        max-height: 500px;
+        min-height: 200px;
+        max-height: 400px;
         font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-        font-size: 14px;
+        font-size: 13px;
         line-height: 1.6;
         overflow-y: auto;
         white-space: pre-wrap;
         word-wrap: break-word;
         color: #e0e6ed;
-        box-shadow: 
-            inset 0 2px 10px rgba(0,0,0,0.5),
-            0 0 20px rgba(0, 212, 255, 0.2);
     }
     
     .logs {
-        background: linear-gradient(145deg, rgba(0,0,0,0.8), rgba(10,10,10,0.9));
+        background: rgba(0,0,0,0.8);
         border: 2px solid rgba(255,255,255,0.1);
         border-radius: 15px;
         padding: 20px;
-        height: 160px;
+        height: 150px;
         overflow-y: auto;
         font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-        font-size: 13px;
-        scroll-behavior: smooth;
-        box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        font-size: 12px;
     }
     
-    .log-success { 
-        color: #00ff88; 
-        text-shadow: 0 0 5px rgba(0,255,136,0.5);
-    }
-    .log-error { 
-        color: #ff0044; 
-        text-shadow: 0 0 5px rgba(255,0,68,0.5);
-    }
-    .log-warning { 
-        color: #ffaa00; 
-        text-shadow: 0 0 5px rgba(255,170,0,0.5);
-    }
-    .log-info { 
-        color: #00d4ff; 
-        text-shadow: 0 0 5px rgba(0,212,255,0.5);
-    }
+    .log-success { color: #00ff88; }
+    .log-error { color: #ff0044; }
+    .log-warning { color: #ffaa00; }
+    .log-info { color: #00d4ff; }
     
     .toast {
         position: fixed;
         top: 30px;
         right: 30px;
-        background: linear-gradient(145deg, rgba(0,0,0,0.95), rgba(26,26,46,0.95));
+        background: rgba(0,0,0,0.9);
         color: white;
         padding: 20px 25px;
         border-radius: 15px;
         transform: translateX(400px);
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: transform 0.3s ease;
         z-index: 1000;
-        max-width: 350px;
-        font-size: 1rem;
-        backdrop-filter: blur(20px);
+        max-width: 300px;
+        font-size: 0.9rem;
+        backdrop-filter: blur(10px);
         border: 2px solid rgba(0, 212, 255, 0.3);
-        box-shadow: 
-            0 10px 40px rgba(0,0,0,0.4),
-            0 0 20px rgba(0, 212, 255, 0.2);
     }
     
     .toast.show {
@@ -665,76 +462,41 @@
     }
     
     .note {
-        background: linear-gradient(145deg, rgba(0, 212, 255, 0.15), rgba(0, 212, 255, 0.1));
+        background: rgba(0, 212, 255, 0.1);
         border: 2px solid rgba(0, 212, 255, 0.3);
         border-radius: 15px;
         padding: 16px;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         line-height: 1.6;
         margin-top: 15px;
-        box-shadow: 
-            0 4px 15px rgba(0, 212, 255, 0.2),
-            inset 0 1px 0 rgba(255,255,255,0.1);
     }
     
     .hidden {
         display: none !important;
     }
     
-    /* 语法高亮增强 */
-    .hljs-keyword { 
-        color: #ff79c6; 
-        text-shadow: 0 0 5px rgba(255,121,198,0.5);
-    }
-    .hljs-string { 
-        color: #f1fa8c; 
-        text-shadow: 0 0 5px rgba(241,250,140,0.5);
-    }
-    .hljs-number { 
-        color: #bd93f9; 
-        text-shadow: 0 0 5px rgba(189,147,249,0.5);
-    }
-    .hljs-comment { 
-        color: #6272a4; 
-        font-style: italic; 
-    }
-    .hljs-function { 
-        color: #50fa7b; 
-        text-shadow: 0 0 5px rgba(80,250,123,0.5);
-    }
-    .hljs-variable { 
-        color: #8be9fd; 
-        text-shadow: 0 0 5px rgba(139,233,253,0.5);
-    }
-    
-    /* 滚动条美化 */
+    /* 滚动条 */
     ::-webkit-scrollbar {
-        width: 12px;
+        width: 8px;
     }
     
     ::-webkit-scrollbar-track {
         background: rgba(0,0,0,0.3);
-        border-radius: 6px;
     }
     
     ::-webkit-scrollbar-thumb {
         background: linear-gradient(45deg, #00d4ff, #ff00ff);
-        border-radius: 6px;
-        border: 2px solid rgba(0,0,0,0.3);
+        border-radius: 4px;
     }
     
-    ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(45deg, #ff00ff, #00d4ff);
-    }
-    
-    /* 移动端适配增强 */
+    /* 移动端适配 */
     @media (max-width: 768px) {
         .container {
             padding: 12px;
         }
         
         h1 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             padding: 15px;
         }
         
@@ -762,206 +524,533 @@
         }
         
         .detection-grid {
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         }
         
         .file-options {
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
         }
-    }
-    
-    /* 高级动画效果 */
-    @keyframes dataFlow {
-        0% {
-            background-position: 0% 0%;
-        }
-        100% {
-            background-position: 100% 100%;
-        }
-    }
-    
-    .data-flow {
-        background: 
-            linear-gradient(45deg, 
-                rgba(0, 212, 255, 0.1) 0%, 
-                transparent 25%, 
-                rgba(255, 0, 255, 0.1) 50%, 
-                transparent 75%, 
-                rgba(0, 255, 136, 0.1) 100%);
-        background-size: 200% 200%;
-        animation: dataFlow 3s linear infinite;
-    }
-    
-    /* 悬浮特效 */
-    .floating {
-        animation: floating 3s ease-in-out infinite;
-    }
-    
-    @keyframes floating {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-    }
-    
-    /* 发光边框效果 */
-    .glow-border {
-        position: relative;
-    }
-    
-    .glow-border::before {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        background: linear-gradient(45deg, #00d4ff, #ff00ff, #ffaa00, #00ff88);
-        background-size: 400% 400%;
-        border-radius: inherit;
-        z-index: -1;
-        animation: gradientShift 3s ease-in-out infinite;
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-    
-    .glow-border:hover::before {
-        opacity: 1;
-    }
-    
-    /* 文本发光效果 */
-    .neon-text {
-        text-shadow: 
-            0 0 5px currentColor,
-            0 0 10px currentColor,
-            0 0 15px currentColor,
-            0 0 20px currentColor;
-    }
-    
-    /* 按钮激活状态 */
-    button:active {
-        transform: translateY(-2px) scale(0.98);
-        transition: transform 0.1s;
-    }
-    
-    /* 输入框聚焦动画 */
-    input:focus, textarea:focus, select:focus {
-        animation: focusGlow 0.5s ease-out;
-    }
-    
-    @keyframes focusGlow {
-        0% {
-            box-shadow: 
-                inset 0 2px 10px rgba(0,0,0,0.4),
-                0 0 0 0px rgba(0, 212, 255, 0);
-        }
-        100% {
-            box-shadow: 
-                inset 0 2px 10px rgba(0,0,0,0.4),
-                0 0 0 4px rgba(0, 212, 255, 0.2),
-                0 0 20px rgba(0, 212, 255, 0.4);
-        }
-    }
-    
-    /* 加载动画 */
-    .loading-spinner {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 2px solid rgba(255,255,255,0.3);
-        border-radius: 50%;
-        border-top-color: #00d4ff;
-        animation: spin 1s ease-in-out infinite;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    /* 成功/错误状态指示器 */
-    .status-indicator {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        margin-left: 8px;
-    }
-    
-    .status-success {
-        background: #00ff88;
-        box-shadow: 0 0 10px rgba(0,255,136,0.6);
-        animation: pulse 2s infinite;
-    }
-    
-    .status-error {
-        background: #ff0044;
-        box-shadow: 0 0 10px rgba(255,0,68,0.6);
-        animation: pulse 2s infinite;
-    }
-    
-    .status-warning {
-        background: #ffaa00;
-        box-shadow: 0 0 10px rgba(255,170,0,0.6);
-        animation: pulse 2s infinite;
-    }
-    
-    /* 代码块样式 */
-    .code-block {
-        background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
-        border: 1px solid rgba(0, 212, 255, 0.3);
-        border-radius: 10px;
-        padding: 15px;
-        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-        font-size: 13px;
-        line-height: 1.5;
-        overflow-x: auto;
-        margin: 10px 0;
-        box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
-    }
-    
-    /* 工具提示 */
-    .tooltip {
-        position: relative;
-        cursor: help;
-    }
-    
-    .tooltip::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0,0,0,0.9);
-        color: white;
-        padding: 8px 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        white-space: nowrap;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s;
-        z-index: 1000;
-        border: 1px solid rgba(0, 212, 255, 0.3);
-    }
-    
-    .tooltip:hover::after {
-        opacity: 1;
-    }
-    
-    /* 网格动画背景 */
-    .grid-bg {
-        background-image: 
-            linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px);
-        background-size: 20px 20px;
-        animation: gridMove 10s linear infinite;
-    }
-    
-    @keyframes gridMove {
-        0% { background-position: 0 0; }
-        100% { background-position: 20px 20px; }
     }
 </style>
 ```
 
+</head>
+<body>
+    <div class="container">
+        <h1>
+            ⚡ TECH DECODER ⚡
+            <span class="version">v4.0</span>
+            <div class="encoding-indicators">
+                <div class="encoding-indicator aaencode-indicator">AAEncode</div>
+                <div class="encoding-indicator eval-indicator">Eval Detected</div>
+            </div>
+        </h1>
+
+```
+    <div class="features-banner">
+        🚀 Advanced Code Analysis • Real-time Decoding • Multi-format Support • AI-Powered Detection 🚀
+    </div>
+    
+    <div class="section">
+        <div class="section-title">
+            🔍 INPUT ANALYZER
+        </div>
+        <div class="form-row">
+            <div>
+                <label for="input">Code Input</label>
+                <textarea id="input" placeholder="Paste your encoded code here..."></textarea>
+            </div>
+            <div>
+                <label for="method">Decode Method</label>
+                <select id="method">
+                    <option value="auto">🤖 Auto Detect</option>
+                    <option value="aaencode">📊 AAEncode</option>
+                    <option value="eval">⚡ Eval</option>
+                    <option value="unicode">🔤 Unicode</option>
+                    <option value="base64">🔐 Base64</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+            <div class="file-upload-icon">📁</div>
+            <div>Click to upload file or drag & drop</div>
+            <input type="file" id="fileInput" style="display:none" accept=".js,.txt,.html">
+        </div>
+        
+        <div class="detection-panel">
+            <div class="section-title">🎯 Detection Results</div>
+            <div class="detection-grid">
+                <div class="detection-item">
+                    <div class="detection-value">98%</div>
+                    <div class="detection-label">Confidence</div>
+                </div>
+                <div class="detection-item">
+                    <div class="detection-value">AAEncode</div>
+                    <div class="detection-label">Method</div>
+                </div>
+                <div class="detection-item">
+                    <div class="detection-value">2.5KB</div>
+                    <div class="detection-label">Size</div>
+                </div>
+                <div class="detection-item">
+                    <div class="detection-value">Safe</div>
+                    <div class="detection-label">Status</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="file-options">
+            <div class="file-option aaencode">
+                <div>🔥 AAEncode</div>
+                <div style="font-size: 0.7rem; opacity: 0.8;">Advanced</div>
+            </div>
+            <div class="file-option eval">
+                <div>⚡ Eval Decode</div>
+                <div style="font-size: 0.7rem; opacity: 0.8;">Dynamic</div>
+            </div>
+            <div class="file-option">
+                <div>🔤 Unicode</div>
+                <div style="font-size: 0.7rem; opacity: 0.8;">Standard</div>
+            </div>
+            <div class="file-option">
+                <div>🔐 Base64</div>
+                <div style="font-size: 0.7rem; opacity: 0.8;">Basic</div>
+            </div>
+        </div>
+        
+        <div class="note">
+            💡 <strong>Pro Tip:</strong> Use auto-detect for best results. The AI will analyze patterns and choose the optimal decoding method.
+        </div>
+    </div>
+    
+    <div class="buttons">
+        <button class="btn-blue" onclick="decode()">
+            <div class="btn-icon">🚀</div>
+            <div class="btn-text">DECODE</div>
+        </button>
+        <button class="btn-green" onclick="beautify()">
+            <div class="btn-icon">✨</div>
+            <div class="btn-text">BEAUTIFY</div>
+        </button>
+        <button class="btn-yellow" onclick="analyze()">
+            <div class="btn-icon">🔍</div>
+            <div class="btn-text">ANALYZE</div>
+        </button>
+        <button class="btn-purple" onclick="copy()">
+            <div class="btn-icon">📋</div>
+            <div class="btn-text">COPY</div>
+        </button>
+        <button class="btn-red" onclick="clear()">
+            <div class="btn-icon">🗑️</div>
+            <div class="btn-text">CLEAR</div>
+        </button>
+    </div>
+    
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+    
+    <div class="section">
+        <div class="section-title">
+            📊 OUTPUT TERMINAL
+        </div>
+        <div class="output" id="output">// Decoded output will appear here...
+```
+
+// Ready for analysis ⚡</div>
+</div>
+
+```
+    <div class="section">
+        <div class="section-title">
+            📝 SYSTEM LOGS
+        </div>
+        <div class="logs" id="logs">
+            <div class="log-info">[SYSTEM] Tech Decoder v4.0 initialized ⚡</div>
+            <div class="log-success">[STATUS] All systems operational 🟢</div>
+            <div class="log-info">[READY] Waiting for input...</div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast">
+    Operation completed successfully! ✨
+</div>
+
+<script>
+    // 功能函数
+    function decode() {
+        const input = document.getElementById('input').value;
+        if (!input.trim()) {
+            showToast('Please enter some code to decode! 📝');
+            return;
+        }
+        
+        showProgress();
+        addLog('info', '[DECODE] Starting decode process...');
+        
+        setTimeout(() => {
+            const output = document.getElementById('output');
+            output.textContent = '// Decoded successfully!\n' + input + '\n\n// Process completed ✅';
+            addLog('success', '[DECODE] Process completed successfully!');
+            showToast('Decode completed! ⚡');
+            hideProgress();
+        }, 1500);
+    }
+    
+    function beautify() {
+        const input = document.getElementById('input').value;
+        if (!input.trim()) {
+            showToast('Please enter some code to beautify! ✨');
+            return;
+        }
+        
+        showProgress();
+        addLog('info', '[BEAUTIFY] Formatting code...');
+        
+        setTimeout(() => {
+            const output = document.getElementById('output');
+            output.textContent = '// Code beautified!\n' + input.split('').join(' ') + '\n\n// Formatting completed ✨';
+            addLog('success', '[BEAUTIFY] Code formatted successfully!');
+            showToast('Code beautified! ✨');
+            hideProgress();
+        }, 1000);
+    }
+    
+    function analyze() {
+        showProgress();
+        addLog('info', '[ANALYZE] Running security analysis...');
+        
+        setTimeout(() => {
+            addLog('warning', '[ANALYZE] Potentially obfuscated code detected');
+            addLog('success', '[ANALYZE] Analysis complete!');
+            showToast('Analysis completed! 🔍');
+            hideProgress();
+        }, 2000);
+    }
+    
+    function copy() {
+        const output = document.getElementById('output');
+        navigator.clipboard.writeText(output.textContent).then(() => {
+            addLog('success', '[COPY] Content copied to clipboard!');
+            showToast('Copied to clipboard! 📋');
+        }).catch(() => {
+            addLog('error', '[COPY] Failed to copy content');
+            showToast('Copy failed! Please try again.');
+        });
+    }
+    
+    function clear() {
+        document.getElementById('input').value = '';
+        document.getElementById('output').textContent = '// Output cleared\n// Ready for new input ⚡';
+        addLog('info', '[CLEAR] Interface cleared');
+        showToast('Interface cleared! 🗑️');
+    }
+    
+    function showProgress() {
+        const progressFill = document.getElementById('progressFill');
+        progressFill.style.width = '100%';
+    }
+    
+    function hideProgress() {
+        const progressFill = document.getElementById('progressFill');
+        setTimeout(() => {
+            progressFill.style.width = '0%';
+        }, 300);
+    }
+    
+    function addLog(type, message) {
+        const logs = document.getElementById('logs');
+        const logElement = document.createElement('div');
+        logElement.className = `log-${type}`;
+        const timestamp = new Date().toLocaleTimeString();
+        logElement.textContent = `[${timestamp}] ${message}`;
+        logs.appendChild(logElement);
+        logs.scrollTop = logs.scrollHeight;
+        
+        // 限制日志数量
+        if (logs.children.length > 50) {
+            logs.removeChild(logs.firstChild);
+        }
+    }
+    
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+    
+    // 文件上传功能
+    const fileUpload = document.querySelector('.file-upload');
+    const fileInput = document.getElementById('fileInput');
+    
+    fileUpload.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUpload.classList.add('dragover');
+    });
+    
+    fileUpload.addEventListener('dragleave', () => {
+        fileUpload.classList.remove('dragover');
+    });
+    
+    fileUpload.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUpload.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+    
+    function handleFile(file) {
+        addLog('info', `[FILE] Loading: ${file.name}`);
+        showToast(`File loaded: ${file.name} 📁`);
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('input').value = e.target.result;
+            addLog('success', `[FILE] Content loaded successfully`);
+        };
+        reader.readAsText(file);
+    }
+    
+    // 键盘快捷键
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key.toLowerCase()) {
+                case 'enter':
+                    e.preventDefault();
+                    decode();
+                    break;
+                case 'b':
+                    e.preventDefault();
+                    beautify();
+                    break;
+                case 'r':
+                    e.preventDefault();
+                    analyze();
+                    break;
+            }
+        }
+    });
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        addLog('success', '[INIT] Interface loaded successfully!');
+        addLog('info', '[SHORTCUTS] Ctrl+Enter: Decode | Ctrl+B: Beautify | Ctrl+R: Analyze');
+    });
+    
+    // 输入框实时反馈
+    document.getElementById('input').addEventListener('input', (e) => {
+        const value = e.target.value;
+        const length = value.length;
+        
+        // 更新检测结果
+        updateDetectionResults(value);
+        
+        // 显示编码指示器
+        updateEncodingIndicators(value);
+    });
+    
+    function updateDetectionResults(code) {
+        const detectionItems = document.querySelectorAll('.detection-item');
+        
+        if (code.length > 0) {
+            // 模拟检测逻辑
+            const confidence = Math.min(95, 60 + (code.length / 100) * 30);
+            const size = formatBytes(new Blob([code]).size);
+            
+            let method = 'Unknown';
+            let status = 'Safe';
+            
+            if (code.includes('eval(') || code.includes('Function(')) {
+                method = 'Eval';
+                status = 'Warning';
+            } else if (code.match(/[^\x00-\x7F]/)) {
+                method = 'Unicode';
+            } else if (code.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
+                method = 'Base64';
+            } else if (code.includes('ﾟωﾟﾉ') || code.includes('(ﾟДﾟ)')) {
+                method = 'AAEncode';
+            }
+            
+            // 更新显示值
+            detectionItems[0].querySelector('.detection-value').textContent = Math.round(confidence) + '%';
+            detectionItems[1].querySelector('.detection-value').textContent = method;
+            detectionItems[2].querySelector('.detection-value').textContent = size;
+            detectionItems[3].querySelector('.detection-value').textContent = status;
+            
+            // 更新状态颜色
+            const statusElement = detectionItems[3].querySelector('.detection-value');
+            statusElement.style.color = status === 'Safe' ? '#00ff88' : '#ffaa00';
+        }
+    }
+    
+    function updateEncodingIndicators(code) {
+        const aaencodeIndicator = document.querySelector('.aaencode-indicator');
+        const evalIndicator = document.querySelector('.eval-indicator');
+        
+        // 检测 AAEncode
+        if (code.includes('ﾟωﾟﾉ') || code.includes('(ﾟДﾟ)')) {
+            aaencodeIndicator.classList.add('show');
+        } else {
+            aaencodeIndicator.classList.remove('show');
+        }
+        
+        // 检测 Eval
+        if (code.includes('eval(') || code.includes('Function(')) {
+            evalIndicator.classList.add('show');
+        } else {
+            evalIndicator.classList.remove('show');
+        }
+    }
+    
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + sizes[i];
+    }
+    
+    // 文件选项点击事件
+    document.querySelectorAll('.file-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const method = option.textContent.toLowerCase();
+            addLog('info', `[METHOD] Selected: ${method}`);
+            
+            // 更新选择框
+            const select = document.getElementById('method');
+            if (method.includes('aaencode')) {
+                select.value = 'aaencode';
+            } else if (method.includes('eval')) {
+                select.value = 'eval';
+            } else if (method.includes('unicode')) {
+                select.value = 'unicode';
+            } else if (method.includes('base64')) {
+                select.value = 'base64';
+            }
+            
+            showToast(`Method selected: ${method} 🎯`);
+        });
+    });
+    
+    // 方法选择变化事件
+    document.getElementById('method').addEventListener('change', (e) => {
+        const method = e.target.value;
+        addLog('info', `[METHOD] Changed to: ${method}`);
+        
+        // 高亮对应的选项
+        document.querySelectorAll('.file-option').forEach(option => {
+            option.style.transform = 'scale(1)';
+            option.style.borderColor = 'rgba(255,255,255,0.1)';
+        });
+        
+        const targetOption = document.querySelector(`.file-option.${method}`);
+        if (targetOption) {
+            targetOption.style.transform = 'scale(1.05)';
+            targetOption.style.borderColor = '#00d4ff';
+        }
+    });
+    
+    // 页面可见性变化时的处理
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            addLog('info', '[SYSTEM] Page hidden');
+        } else {
+            addLog('info', '[SYSTEM] Page visible');
+        }
+    });
+    
+    // 错误处理
+    window.addEventListener('error', (e) => {
+        addLog('error', `[ERROR] ${e.message}`);
+        showToast('An error occurred! Check logs for details.');
+    });
+    
+    // 性能监控
+    if ('performance' in window) {
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loadTime = performance.now();
+                addLog('success', `[PERF] Page loaded in ${Math.round(loadTime)}ms`);
+            }, 100);
+        });
+    }
+    
+    // 主题切换功能（预留）
+    function toggleTheme() {
+        // 可以在这里添加主题切换逻辑
+        addLog('info', '[THEME] Theme toggle requested');
+        showToast('Theme switching coming soon! 🎨');
+    }
+    
+    // 导出功能
+    function exportResults() {
+        const output = document.getElementById('output').textContent;
+        const blob = new Blob([output], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'decoded_output.txt';
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        addLog('success', '[EXPORT] Results exported');
+        showToast('Results exported! 💾');
+    }
+    
+    // 添加右键菜单功能
+    document.addEventListener('contextmenu', (e) => {
+        if (e.target.closest('.output') || e.target.closest('#input')) {
+            // 允许在输入输出区域使用右键菜单
+            return;
+        }
+        e.preventDefault();
+    });
+    
+    // 添加选择所有文本功能
+    function selectAllOutput() {
+        const output = document.getElementById('output');
+        const range = document.createRange();
+        range.selectNodeContents(output);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        showToast('Output text selected! 📝');
+    }
+    
+    // 双击输出区域选择全部文本
+    document.getElementById('output').addEventListener('dblclick', selectAllOutput);
+    
+    // 添加统计信息更新
+    function updateStats() {
+        const input = document.getElementById('input').value;
+        const lines = input.split('\n').length;
+        const chars = input.length;
+        const words = input.trim() ? input.trim().split(/\s+/).length : 0;
+        
+        addLog('info', `[STATS] Lines: ${lines}, Words: ${words}, Chars: ${chars}`);
+    }
+    
+    // 定期更新统计（可选）
+    setInterval(() => {
+        const input = document.getElementById('input').value;
+        if (input.length > 0) {
+            updateStats();
+        }
+    }, 10000); // 每10秒更新一次
+</style>
 </head>
 <body>
     <div class="container">
