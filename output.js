@@ -1,6 +1,2036 @@
-//2025-06-06T01:19:00.389Z
+//2025-06-06T01:23:21.452Z
 //解密脚本在此
-;
-var encode_version = 'jsjiami.com.v5',
-  huwms = '__0x1230b8',
-  __0x1230b8 = ['\x4b\x73\x4f\x36\x77\x34\x6e\x43\x73\x4d\x4f\x70\x57\x31\x73\x63\x52\x73\x4f\x4e\x77\x35\x56\x66\x56\x7a\x44\x44\x74\x67\x3d\x3d', '\x59\x63\x4b\x57\x47\x73\x4f\x78\x77\x6f\x59\x3d', '\x77\x34\x2f\x43\x70\x31\x63\x4c\x4b\x4d\x4b\x49\x77\x71\x31\x4b\x77\x72\x64\x63\x77\x71\x66\x43\x71\x45\x4e\x65\x53\x51\x3d\x3d', '\x77\x34\x76\x44\x6c\x73\x4f\x64\x77\x35\x77\x64\x77\x35\x56\x39\x47\x38\x4f\x76\x77\x37\x45\x75\x53\x73\x4f\x67\x77\x70\x55\x71\x56\x4d\x4f\x6e\x44\x73\x4f\x6a\x77\x71\x62\x43\x68\x43\x52\x32\x77\x37\x54\x43\x69\x63\x4f\x31\x63\x41\x3d\x3d', '\x77\x6f\x39\x49\x56\x58\x37\x44\x6d\x47\x35\x4c\x77\x35\x44\x44\x73\x73\x4b\x78\x5a\x6c\x44\x43\x6c\x58\x33\x44\x6a\x38\x4b\x63\x77\x70\x39\x65\x61\x78\x56\x75\x77\x35\x73\x4d\x77\x72\x64\x76\x41\x69\x39\x78\x77\x70\x7a\x43\x75\x73\x4f\x7a\x77\x72\x54\x43\x6a\x38\x4f\x78\x59\x30\x6e\x43\x6b\x63\x4b\x70\x77\x34\x30\x3d', '\x77\x71\x6e\x43\x72\x47\x6f\x4d\x50\x58\x44\x43\x71\x38\x4f\x41\x64\x77\x3d\x3d', '\x64\x56\x68\x32\x77\x36\x48\x43\x6c\x73\x4f\x66\x63\x77\x46\x31\x77\x34\x4c\x44\x6e\x38\x4b\x44\x43\x67\x3d\x3d', '\x48\x73\x4b\x58\x77\x72\x38\x71\x4e\x7a\x44\x43\x71\x30\x68\x31\x64\x30\x4c\x44\x69\x30\x55\x6a\x58\x67\x3d\x3d', '\x51\x38\x4b\x50\x77\x37\x37\x43\x76\x73\x4b\x73\x63\x4d\x4f\x6d\x77\x36\x6c\x71\x58\x7a\x50\x43\x70\x33\x38\x46\x77\x35\x4c\x44\x6f\x6a\x4e\x4a\x77\x6f\x50\x44\x6d\x4d\x4b\x7a\x44\x38\x4b\x57\x46\x38\x4f\x61\x49\x52\x4a\x6e\x77\x71\x5a\x68\x4a\x63\x4b\x39\x77\x72\x54\x44\x75\x73\x4b\x4b\x63\x42\x50\x44\x76\x4d\x4f\x4d', '\x45\x30\x6a\x44\x6a\x57\x42\x67\x77\x70\x33\x44\x6b\x73\x4f\x77\x77\x34\x66\x44\x6d\x4d\x4b\x74\x65\x4d\x4f\x61\x59\x38\x4f\x58\x77\x37\x64\x75\x77\x71\x70\x33\x50\x73\x4f\x63\x51\x63\x4b\x6d\x58\x6c\x42\x2f\x66\x67\x3d\x3d', '\x51\x38\x4b\x50\x77\x37\x58\x43\x74\x4d\x4b\x73\x63\x4d\x4f\x6d\x77\x36\x6c\x71\x58\x7a\x50\x43\x70\x33\x51\x46\x77\x35\x4c\x44\x6f\x6a\x4e\x4a\x77\x6f\x50\x44\x6d\x4d\x4b\x33\x46\x73\x4b\x51\x53\x73\x4f\x30\x44\x79\x63\x3d', '\x44\x53\x76\x43\x73\x4d\x4f\x6c\x63\x33\x35\x56\x41\x68\x59\x78\x77\x71\x63\x45\x63\x6d\x35\x4e\x57\x63\x4f\x64\x77\x6f\x66\x43\x76\x47\x6a\x44\x67\x44\x66\x44\x6d\x73\x4b\x47\x51\x48\x51\x57\x77\x70\x50\x44\x6d\x4d\x4b\x74\x77\x35\x4c\x43\x6b\x46\x6e\x44\x68\x38\x4f\x64\x63\x63\x4b\x75\x51\x52\x51\x3d', '\x77\x34\x2f\x43\x72\x6c\x34\x4a\x4c\x63\x4b\x41\x77\x71\x64\x49\x77\x72\x64\x51\x77\x71\x58\x43\x71\x45\x4d\x3d', '\x61\x73\x4b\x6d\x77\x6f\x72\x44\x74\x41\x3d\x3d', '\x77\x35\x4a\x44\x48\x6c\x30\x3d', '\x77\x72\x31\x2b\x57\x31\x58\x43\x74\x63\x4b\x35', '\x56\x41\x72\x43\x6a\x63\x4f\x54\x77\x70\x6b\x3d', '\x51\x52\x44\x43\x6b\x38\x4f\x66\x77\x70\x2f\x43\x71\x77\x3d\x3d', '\x77\x37\x46\x35\x4b\x6c\x58\x44\x73\x41\x3d\x3d', '\x4b\x4d\x4b\x65\x77\x6f\x63\x44\x77\x70\x55\x3d', '\x77\x34\x41\x6e\x61\x73\x4b\x49\x59\x67\x3d\x3d', '\x53\x38\x4f\x64\x77\x37\x78\x7a\x59\x47\x34\x3d', '\x4e\x73\x4f\x32\x59\x47\x4e\x34\x77\x71\x45\x3d', '\x4b\x4d\x4f\x77\x64\x58\x41\x48\x62\x6b\x35\x4a', '\x64\x73\x4f\x4c\x42\x73\x4f\x66\x54\x51\x3d\x3d', '\x57\x4d\x4f\x4c\x77\x36\x78\x2f\x62\x6e\x44\x44\x72\x67\x3d\x3d', '\x77\x37\x77\x43\x54\x73\x4f\x49\x63\x42\x77\x3d', '\x77\x35\x62\x43\x75\x63\x4b\x58\x77\x70\x39\x75\x77\x34\x41\x58\x77\x35\x50\x43\x73\x43\x34\x61\x77\x36\x76\x44\x71\x73\x4b\x49\x65\x6d\x2f\x44\x76\x45\x4e\x6b', '\x77\x34\x30\x64\x43\x53\x6e\x43\x6e\x44\x41\x56\x77\x71\x4c\x43\x73\x4d\x4f\x74\x4b\x41\x58\x44\x6b\x43\x62\x43\x6b\x38\x4f\x36\x77\x34\x77\x42\x50\x56\x6f\x3d', '\x77\x34\x4e\x32\x4d\x6b\x68\x2f\x77\x70\x6a\x43\x6e\x38\x4f\x41\x77\x34\x63\x6f\x77\x6f\x31\x32\x4f\x77\x59\x76', '\x45\x56\x76\x44\x72\x31\x30\x57\x57\x56\x78\x6e\x57\x44\x5a\x47\x45\x53\x31\x5a', '\x54\x57\x33\x43\x6a\x56\x38\x4c\x42\x63\x4f\x71\x64\x41\x3d\x3d', '\x77\x70\x4c\x43\x6d\x63\x4b\x66\x59\x73\x4b\x4a', '\x5a\x46\x7a\x44\x6f\x38\x4f\x30\x77\x37\x6a\x43\x70\x4d\x4f\x31', '\x64\x38\x4f\x64\x4b\x63\x4f\x61\x58\x43\x34\x3d', '\x77\x70\x44\x43\x6c\x31\x73\x6a\x41\x46\x58\x43\x6e\x63\x4f\x32', '\x4e\x4d\x4b\x50\x77\x70\x6f\x43\x77\x70\x55\x3d', '\x77\x35\x64\x79\x77\x37\x73\x56\x77\x72\x68\x4a\x5a\x63\x4b\x36\x77\x72\x66\x44\x71\x54\x4d\x72\x77\x35\x67\x3d', '\x4d\x63\x4b\x49\x59\x52\x46\x4e\x77\x35\x55\x4f\x4c\x63\x4b\x47\x50\x73\x4b\x4d\x56\x55\x64\x68\x4c\x69\x64\x4d\x4e\x30\x56\x42\x59\x38\x4f\x4f\x52\x78\x59\x61\x77\x34\x76\x44\x76\x4d\x4f\x56\x77\x70\x2f\x44\x6a\x31\x63\x45\x5a\x79\x34\x59\x52\x30\x76\x43\x6a\x4d\x4b\x58', '\x77\x35\x52\x44\x44\x6b\x78\x5a\x47\x38\x4f\x50', '\x50\x4d\x4b\x76\x77\x6f\x44\x43\x6b\x38\x4f\x4f\x56\x77\x3d\x3d', '\x77\x34\x6a\x43\x76\x63\x4b\x41\x77\x70\x39\x30\x77\x34\x51\x38', '\x4b\x41\x38\x37\x77\x72\x44\x44\x6c\x38\x4b\x65\x48\x45\x59\x6c\x77\x70\x48\x43\x69\x73\x4f\x61\x53\x67\x66\x43\x72\x6b\x52\x43\x61\x38\x4b\x6d', '\x4d\x32\x59\x32\x65\x73\x4f\x67\x77\x72\x34\x3d', '\x77\x34\x4c\x44\x6a\x73\x4b\x6a\x41\x63\x4b\x38\x77\x72\x48\x44\x6a\x41\x3d\x3d', '\x62\x63\x4f\x48\x46\x38\x4f\x50\x57\x53\x30\x3d', '\x51\x78\x4a\x6e\x52\x38\x4b\x6b\x77\x6f\x34\x58\x77\x37\x31\x64\x4a\x6e\x52\x69\x77\x36\x6a\x44\x6c\x38\x4f\x33\x77\x34\x30\x6f', '\x77\x70\x59\x36\x64\x68\x63\x51\x77\x35\x76\x44\x69\x63\x4b\x66\x77\x70\x5a\x71\x77\x36\x41\x32\x65\x56\x6c\x37\x65\x54\x4d\x37\x77\x34\x7a\x44\x6c\x31\x6f\x3d', '\x77\x70\x66\x44\x76\x78\x4e\x65\x61\x38\x4f\x4e\x77\x34\x45\x65\x77\x37\x73\x5a\x77\x37\x7a\x44\x71\x68\x59\x4b\x4a\x6c\x6c\x76\x48\x4d\x4b\x76\x77\x37\x72\x44\x6f\x41\x70\x6a\x64\x54\x7a\x43\x70\x7a\x45\x3d', '\x55\x4d\x4f\x64\x77\x72\x2f\x44\x6b\x38\x4b\x6e\x77\x35\x54\x44\x6c\x63\x4b\x78\x77\x37\x67\x46\x77\x37\x58\x43\x6c\x4d\x4f\x53\x77\x71\x58\x44\x76\x38\x4f\x37\x43\x41\x3d\x3d', '\x63\x38\x4b\x46\x48\x38\x4f\x76', '\x65\x48\x6b\x71\x77\x72\x74\x76\x77\x37\x67\x75', '\x77\x70\x58\x43\x6b\x38\x4b\x47\x59\x63\x4b\x43\x47\x6b\x4c\x43\x69\x6a\x55\x44\x55\x47\x7a\x43\x73\x45\x33\x44\x70\x73\x4f\x74\x77\x36\x64\x59\x42\x38\x4f\x4d\x59\x6b\x6c\x77\x54\x38\x4f\x41\x77\x34\x74\x75\x77\x72\x30\x3d', '\x50\x6e\x6f\x69', '\x35\x6f\x4b\x78\x35\x5a\x61\x52\x35\x6f\x4b\x41\x37\x37\x79\x77\x35\x62\x53\x67\x35\x70\x43\x61\x35\x4c\x36\x6e\x35\x6f\x6d\x70\x35\x59\x69\x50\x38\x59\x71\x4e\x71\x50\x43\x57\x76\x4b\x48\x77\x76\x59\x79\x43\x77\x35\x50\x6c\x6a\x34\x66\x6c\x76\x4b\x54\x6e\x6a\x6f\x33\x6a\x67\x62\x54\x6c\x69\x4c\x66\x6b\x75\x4a\x7a\x70\x6f\x4c\x4c\x70\x67\x35\x67\x53\x45\x63\x4f\x4b\x77\x37\x34\x36\x64\x73\x4f\x37\x55\x4d\x4f\x39\x77\x36\x48\x44\x6f\x77\x48\x43\x69\x4d\x4b\x2f\x77\x71\x76\x43\x6b\x48\x76\x44\x6f\x38\x4b\x68\x77\x35\x7a\x44\x68\x69\x51\x3d', '\x77\x6f\x50\x44\x6c\x38\x4f\x79\x47\x4d\x4f\x68\x77\x72\x33\x43\x6a\x57\x46\x39\x52\x45\x4d\x3d', '\x77\x34\x63\x2b\x61\x38\x4b\x45\x63\x67\x3d\x3d', '\x77\x72\x42\x73\x58\x46\x6e\x43\x6f\x63\x4b\x6a\x77\x71\x51\x4c\x77\x37\x58\x43\x74\x38\x4b\x45\x54\x73\x4f\x59\x77\x37\x77\x3d', '\x77\x6f\x77\x47\x77\x71\x6f\x33\x77\x34\x4c\x43\x6b\x53\x55\x3d', '\x52\x73\x4f\x42\x77\x36\x67\x3d', '\x35\x62\x36\x57\x36\x59\x4f\x6b\x35\x6f\x65\x49\x35\x70\x36\x52\x36\x49\x4f\x52\x36\x4b\x36\x59\x35\x59\x69\x34\x35\x59\x57\x45\x42\x54\x44\x6d\x69\x62\x33\x43\x74\x6c\x66\x43\x68\x77\x77\x34\x77\x71\x2f\x44\x6a\x4d\x4b\x66\x51\x54\x4c\x6b\x76\x61\x76\x6c\x74\x34\x62\x6b\x76\x49\x44\x6e\x6c\x37\x48\x6c\x70\x71\x62\x6e\x6c\x4b\x72\x6d\x6c\x59\x58\x6d\x6f\x36\x66\x78\x67\x72\x36\x59\x38\x59\x4f\x66\x6b\x76\x43\x2f\x72\x72\x73\x6b\x35\x59\x2b\x33\x35\x62\x79\x61\x35\x34\x36\x79\x34\x34\x43\x6b\x35\x59\x71\x6f\x35\x4c\x69\x57\x36\x61\x4f\x6e\x36\x59\x47\x37\x77\x71\x54\x43\x6f\x6c\x76\x43\x6f\x44\x37\x44\x6c\x47\x41\x53\x4a\x7a\x48\x43\x6d\x48\x77\x76\x49\x45\x4c\x44\x6a\x6e\x77\x56\x45\x6e\x37\x44\x6f\x73\x4b\x6d', '\x77\x34\x38\x64\x42\x43\x6a\x43\x6e\x43\x34\x47', '\x77\x70\x6a\x44\x73\x48\x4c\x44\x6c\x6a\x77\x55', '\x77\x6f\x38\x6a\x77\x72\x5a\x43\x77\x37\x34\x45\x41\x38\x4f\x37\x77\x36\x62\x43\x73\x32\x5a\x79\x77\x70\x67\x2b\x49\x38\x4b\x52\x44\x58\x54\x43\x69\x77\x3d\x3d', '\x77\x34\x4c\x44\x75\x79\x70\x4a\x53\x63\x4f\x41\x77\x36\x37\x44\x6b\x58\x63\x76\x54\x53\x6b\x4c\x66\x77\x7a\x43\x69\x73\x4f\x30\x77\x34\x7a\x43\x6c\x38\x4f\x6b', '\x61\x63\x4f\x6c\x77\x34\x50\x44\x69\x73\x4b\x5a\x43\x4d\x4f\x46\x77\x36\x72\x44\x72\x73\x4b\x4c\x42\x38\x4f\x34\x4c\x54\x48\x43\x71\x41\x3d\x3d', '\x4e\x78\x6f\x39\x77\x72\x7a\x44\x69\x73\x4b\x4e\x4b\x6c\x49\x35', '\x4e\x32\x63\x78', '\x53\x42\x52\x35\x51\x63\x4b\x61\x77\x70\x45\x62\x77\x72\x31\x62\x50\x6b\x59\x2f\x77\x36\x72\x43\x67\x77\x3d\x3d', '\x35\x34\x69\x56\x35\x70\x2b\x77\x35\x59\x79\x45\x37\x37\x2b\x32\x77\x34\x4e\x4b\x35\x4c\x2b\x73\x35\x61\x32\x42\x35\x70\x2b\x46\x35\x62\x36\x48\x35\x36\x71\x69\x37\x37\x2b\x45\x36\x4c\x2b\x46\x36\x4b\x2b\x32\x35\x70\x61\x33\x35\x6f\x32\x78\x35\x6f\x69\x41\x35\x4c\x75\x2f\x35\x35\x71\x41\x35\x62\x61\x61\x35\x4c\x36\x63', '\x35\x59\x71\x72\x36\x5a\x75\x2f\x35\x34\x6d\x41\x35\x70\x2b\x30\x35\x59\x2b\x57\x37\x37\x79\x42\x58\x63\x4f\x4b\x35\x4c\x79\x7a\x35\x61\x36\x79\x35\x70\x36\x41\x35\x62\x79\x59\x35\x36\x69\x52', '\x77\x36\x6a\x44\x76\x73\x4b\x6f\x55\x55\x59\x3d', '\x77\x70\x76\x43\x6b\x4d\x4b\x47\x58\x73\x4b\x79', '\x77\x70\x34\x4a\x77\x71\x74\x2b\x77\x70\x73\x3d', '\x77\x70\x38\x4a\x63\x69\x77\x4a', '\x77\x37\x33\x43\x72\x38\x4b\x43\x77\x6f\x70\x31', '\x63\x63\x4f\x63\x77\x36\x72\x44\x68\x78\x45\x3d', '\x77\x6f\x37\x44\x73\x41\x4e\x65\x66\x73\x4f\x51\x77\x37\x41\x65\x77\x36\x63\x3d', '\x53\x67\x74\x66', '\x77\x34\x4c\x44\x67\x63\x4b\x47', '\x77\x70\x59\x73\x77\x71\x5a\x43\x77\x36\x73\x5a\x4d\x73\x4f\x73\x77\x36\x63\x3d', '\x77\x35\x62\x44\x6e\x73\x4b\x75\x42\x38\x4b\x68\x77\x71\x6a\x44\x6c\x33\x4d\x3d', '\x77\x6f\x33\x44\x76\x53\x41\x3d', '\x62\x32\x34\x39', '\x77\x35\x44\x43\x71\x38\x4b\x4a\x77\x70\x4e\x38\x77\x35\x6b\x68\x77\x6f\x2f\x43\x74\x69\x49\x53\x77\x71\x7a\x44\x72\x4d\x4f\x4a', '\x35\x34\x71\x55\x35\x70\x79\x68\x35\x59\x2b\x66\x37\x37\x79\x77\x77\x72\x6a\x43\x70\x4f\x53\x2f\x6f\x65\x57\x76\x6f\x2b\x61\x65\x6a\x2b\x57\x2f\x72\x65\x65\x70\x74\x75\x2b\x38\x71\x2b\x69\x39\x73\x4f\x69\x74\x76\x2b\x61\x57\x70\x4f\x61\x50\x6d\x4f\x61\x49\x75\x4f\x53\x36\x6d\x2b\x65\x59\x6f\x75\x57\x33\x76\x2b\x53\x39\x72\x51\x3d\x3d', '\x35\x59\x6d\x38\x36\x5a\x71\x54\x35\x34\x71\x69\x35\x70\x32\x4b\x35\x59\x79\x42\x37\x37\x2b\x4c\x65\x6c\x54\x6b\x76\x4c\x6e\x6c\x72\x71\x37\x6d\x6e\x35\x6e\x6c\x76\x5a\x54\x6e\x71\x4c\x6f\x3d', '\x77\x6f\x4c\x44\x6e\x41\x6f\x3d', '\x77\x37\x37\x44\x6e\x6b\x50\x44\x75\x33\x54\x44\x71\x67\x67\x49\x77\x70\x45\x45\x77\x71\x44\x44\x71\x63\x4f\x6e\x77\x35\x35\x70\x77\x6f\x34\x2b\x58\x73\x4b\x63\x77\x72\x78\x32\x77\x34\x54\x43\x76\x55\x2f\x44\x6e\x73\x4b\x4a\x66\x57\x78\x46\x4e\x63\x4f\x45\x77\x34\x66\x43\x68\x73\x4b\x58\x77\x36\x59\x68\x59\x38\x4f\x68\x77\x72\x30\x3d', '\x65\x63\x4f\x49\x56\x38\x4f\x79\x49\x73\x4b\x6d\x77\x37\x77\x3d', '\x77\x72\x46\x38\x4c\x38\x4f\x6f\x77\x72\x48\x43\x6f\x63\x4f\x39\x77\x34\x54\x44\x6c\x68\x44\x43\x72\x63\x4b\x4a\x52\x45\x78\x55\x77\x71\x41\x6e\x77\x37\x6e\x43\x67\x41\x3d\x3d', '\x65\x57\x67\x6f\x77\x71\x70\x7a\x77\x37\x73\x3d', '\x61\x32\x6b\x39\x77\x72\x46\x5a\x77\x37\x6f\x2f\x77\x71\x6e\x43\x75\x4d\x4b\x47\x77\x72\x31\x51\x77\x70\x46\x56\x77\x6f\x37\x43\x74\x73\x4f\x30', '\x77\x6f\x6b\x58\x77\x72\x4e\x70\x77\x71\x33\x44\x6b\x58\x4e\x76\x77\x72\x77\x4f\x77\x34\x7a\x44\x72\x63\x4b\x53\x77\x72\x7a\x43\x75\x4d\x4f\x47\x59\x45\x41\x6f\x77\x34\x74\x49', '\x77\x36\x66\x44\x75\x6e\x7a\x43\x76\x56\x4a\x35\x61\x4d\x4f\x63\x55\x56\x6a\x44\x74\x6c\x50\x44\x6f\x7a\x41\x32\x77\x72\x30\x77\x77\x37\x55\x67\x4b\x63\x4f\x2f\x77\x37\x50\x44\x6c\x43\x6e\x44\x6f\x73\x4f\x2b\x50\x77\x3d\x3d', '\x53\x4d\x4f\x58\x50\x6b\x6f\x53', '\x77\x34\x72\x43\x74\x73\x4b\x76\x77\x72\x31\x5a', '\x77\x72\x37\x44\x6c\x56\x76\x44\x72\x67\x73\x3d', '\x51\x4d\x4f\x43\x55\x73\x4f\x31\x4f\x51\x3d\x3d', '\x77\x72\x44\x44\x68\x6d\x58\x44\x74\x79\x73\x3d', '\x64\x67\x4c\x43\x6c\x63\x4f\x6e\x77\x71\x45\x3d', '\x4c\x73\x4b\x53\x77\x6f\x73\x43', '\x77\x6f\x56\x37\x65\x48\x6a\x43\x71\x77\x3d\x3d', '\x77\x34\x44\x44\x75\x79\x56\x4a', '\x63\x73\x4b\x73\x77\x70\x34\x3d', '\x38\x4a\x43\x6b\x6c\x73\x4b\x70\x35\x6f\x75\x4d\x35\x59\x75\x42\x36\x4b\x36\x31\x35\x59\x36\x36\x44\x32\x52\x6e\x77\x37\x39\x2b\x46\x33\x54\x6c\x67\x59\x48\x76\x76\x61\x66\x44\x67\x38\x4f\x48\x77\x36\x38\x36\x77\x37\x49\x7a\x77\x34\x7a\x43\x67\x45\x78\x35\x41\x38\x4f\x76\x77\x36\x44\x43\x72\x63\x4f\x54\x77\x71\x72\x76\x76\x4a\x48\x76\x76\x72\x4d\x3d', '\x77\x35\x64\x79\x49\x67\x3d\x3d', '\x51\x58\x4d\x76\x77\x72\x78\x30', '\x77\x71\x68\x7a\x50\x38\x4f\x6f\x77\x71\x54\x43\x76\x4d\x4f\x4d\x77\x35\x50\x44\x6c\x77\x3d\x3d', '\x77\x71\x2f\x43\x73\x31\x6b\x73\x4e\x67\x3d\x3d', '\x77\x34\x7a\x44\x71\x38\x4b\x39\x61\x6e\x52\x75\x49\x78\x30\x53\x77\x70\x74\x55', '\x63\x38\x4f\x59\x77\x35\x39\x65\x66\x67\x3d\x3d', '\x46\x48\x6a\x44\x72\x30\x49\x74', '\x61\x6a\x4c\x43\x75\x54\x63\x64', '\x61\x53\x31\x56\x54\x4d\x4b\x72', '\x57\x4d\x4f\x49\x65\x73\x4f\x2f\x45\x51\x3d\x3d', '\x77\x72\x56\x50\x58\x45\x62\x43\x6d\x67\x3d\x3d', '\x64\x73\x4f\x4f\x77\x70\x2f\x44\x6a\x38\x4b\x58', '\x58\x45\x30\x6f\x77\x71\x70\x4c', '\x77\x37\x52\x73\x44\x46\x6c\x53', '\x4e\x58\x6b\x79\x58\x63\x4f\x6d', '\x77\x36\x4d\x4e\x66\x63\x4f\x63\x5a\x53\x70\x46\x77\x72\x37\x43\x6b\x54\x4e\x59', '\x77\x35\x7a\x44\x68\x4d\x4b\x6e', '\x38\x4a\x65\x46\x74\x63\x4f\x66\x35\x6f\x6d\x44\x35\x59\x75\x53\x36\x4b\x32\x57\x35\x59\x79\x39\x77\x37\x33\x43\x74\x63\x4b\x4f\x77\x37\x55\x43\x77\x72\x42\x35\x35\x59\x4f\x62\x37\x37\x2b\x47\x63\x4d\x4f\x72\x4e\x58\x76\x44\x76\x30\x62\x76\x76\x34\x7a\x76\x76\x61\x73\x3d', '\x63\x69\x68\x6c', '\x4c\x63\x4f\x78\x63\x51\x3d\x3d', '\x34\x70\x71\x71\x37\x37\x69\x54\x61\x65\x61\x55\x76\x75\x61\x7a\x6b\x2b\x61\x68\x69\x4f\x61\x30\x6b\x65\x57\x4c\x74\x2b\x57\x4d\x73\x75\x65\x58\x6d\x65\x65\x5a\x70\x67\x50\x43\x70\x31\x76\x43\x67\x73\x4b\x4a\x77\x35\x52\x38\x35\x34\x36\x38\x35\x61\x4f\x37\x37\x37\x32\x30', '\x77\x36\x62\x44\x75\x73\x4b\x68\x45\x4d\x4b\x59', '\x54\x38\x4f\x77\x77\x34\x54\x44\x71\x79\x67\x3d', '\x4b\x33\x44\x44\x75\x6c\x73\x6d', '\x53\x73\x4b\x47\x42\x4d\x4f\x4b\x77\x6f\x30\x3d', '\x77\x34\x30\x4d\x61\x67\x3d\x3d', '\x77\x70\x62\x43\x6a\x73\x4b\x49', '\x34\x70\x6d\x44\x37\x37\x6d\x4e\x77\x36\x4c\x6f\x72\x35\x7a\x6c\x6a\x5a\x74\x51\x48\x73\x4f\x6d\x77\x37\x76\x43\x6d\x6c\x41\x37\x36\x59\x61\x6c\x35\x37\x79\x6b\x35\x61\x57\x4e\x36\x4c\x65\x64\x37\x37\x32\x35', '\x77\x35\x66\x44\x72\x38\x4b\x69\x62\x48\x42\x50\x4b\x51\x3d\x3d', '\x62\x73\x4f\x48\x77\x35\x4e\x66\x77\x35\x76\x44\x74\x79\x6b\x4b\x45\x77\x33\x44\x70\x6c\x33\x43\x6c\x4d\x4f\x59\x77\x6f\x73\x32\x77\x70\x37\x44\x73\x78\x6e\x43\x6e\x43\x7a\x43\x74\x73\x4b\x76\x58\x79\x72\x44\x6a\x4d\x4b\x30', '\x4d\x38\x4f\x48\x54\x38\x4b\x77\x77\x35\x62\x43\x67\x6a\x45\x4f\x77\x34\x33\x43\x67\x56\x4a\x43\x62\x67\x3d\x3d', '\x62\x6b\x48\x44\x6f\x73\x4b\x52\x4c\x51\x3d\x3d', '\x77\x34\x70\x34\x4b\x46\x2f\x44\x70\x41\x3d\x3d', '\x77\x72\x78\x75\x4b\x4d\x4f\x6b\x77\x71\x58\x43\x75\x77\x3d\x3d', '\x77\x72\x58\x43\x69\x63\x4b\x41\x61\x63\x4b\x64', '\x77\x72\x6a\x44\x72\x53\x31\x34\x62\x67\x3d\x3d', '\x77\x72\x54\x43\x76\x4d\x4f\x51\x61\x6b\x34\x4c', '\x77\x34\x73\x47\x4a\x6d\x6f\x78', '\x77\x35\x56\x2f\x4b\x30\x54\x44\x6c\x67\x3d\x3d', '\x77\x70\x6e\x43\x67\x4d\x4f\x76\x64\x32\x77\x3d', '\x4e\x63\x4f\x4e\x77\x6f\x6e\x44\x70\x38\x4f\x5a', '\x51\x63\x4b\x48\x47\x73\x4f\x48\x77\x71\x63\x3d', '\x52\x41\x44\x43\x6a\x7a\x6f\x2f\x77\x34\x7a\x43\x6e\x38\x4b\x30\x77\x70\x6a\x43\x6a\x38\x4f\x53\x49\x63\x4b\x4e\x4c\x63\x4b\x43\x77\x71\x41\x67', '\x77\x34\x4a\x43\x41\x41\x64\x52\x47\x38\x4f\x4c\x42\x73\x4b\x6f\x77\x34\x6c\x65\x64\x55\x46\x70', '\x77\x34\x62\x44\x72\x44\x46\x49', '\x77\x36\x66\x44\x74\x47\x38\x3d', '\x65\x38\x4f\x46\x77\x34\x72\x44\x75\x67\x37\x44\x6b\x65\x6d\x46\x76\x65\x65\x2f\x73\x75\x69\x74\x67\x75\x57\x4e\x6b\x75\x2b\x39\x6c\x73\x4f\x37\x4d\x45\x48\x44\x6d\x47\x4c\x44\x68\x33\x6b\x68\x42\x69\x66\x44\x6c\x67\x6c\x73\x77\x72\x6f\x52\x4a\x73\x4f\x41', '\x57\x63\x4f\x4b\x77\x71\x67\x3d', '\x34\x70\x75\x74\x37\x37\x71\x6c\x77\x70\x4c\x44\x73\x6a\x4c\x43\x69\x58\x72\x44\x6a\x38\x4b\x5a\x36\x59\x65\x4a\x35\x37\x79\x69\x35\x36\x53\x65\x35\x35\x57\x38\x36\x49\x53\x32\x35\x70\x2b\x61\x37\x37\x79\x50\x36\x49\x61\x74\x35\x70\x79\x6c\x35\x59\x43\x69\x35\x71\x79\x58\x36\x4c\x36\x41\x36\x4b\x4f\x7a', '\x77\x70\x67\x4e\x77\x72\x52\x79', '\x34\x70\x71\x39\x37\x37\x71\x31\x77\x6f\x58\x6f\x68\x6f\x48\x6d\x6e\x61\x62\x6c\x76\x34\x66\x6c\x75\x71\x72\x6c\x74\x59\x50\x6e\x75\x70\x33\x6d\x72\x5a\x6a\x6f\x76\x72\x76\x6f\x6f\x36\x45\x3d', '\x35\x71\x4f\x67\x35\x72\x53\x6f\x35\x59\x75\x51\x36\x49\x61\x73\x35\x70\x2b\x55\x35\x62\x2b\x46\x35\x59\x61\x34\x35\x70\x2b\x4f\x35\x62\x79\x55\x35\x5a\x4f\x74', '\x38\x4a\x65\x43\x74\x4d\x4f\x66\x34\x34\x47\x44\x44\x38\x4f\x43\x77\x70\x50\x43\x74\x38\x4b\x45\x77\x34\x48\x70\x68\x34\x44\x6e\x76\x4b\x62\x6d\x6a\x36\x54\x6c\x6a\x49\x37\x6a\x67\x37\x62\x44\x68\x47\x58\x76\x75\x70\x54\x69\x67\x71\x51\x2b\x36\x59\x65\x55\x35\x37\x32\x62\x35\x5a\x2b\x31\x35\x5a\x79\x78\x37\x37\x79\x4e\x45\x6b\x4c\x44\x6f\x4d\x4f\x4a\x77\x72\x37\x43\x6c\x31\x41\x68\x63\x4d\x4b\x35\x77\x70\x50\x43\x70\x73\x4f\x6c\x77\x36\x66\x44\x72\x73\x4f\x4a\x43\x4d\x4f\x32\x4f\x63\x4f\x46\x77\x72\x52\x6a\x66\x6c\x68\x4f\x77\x71\x63\x45\x77\x34\x64\x77\x77\x37\x2f\x43\x74\x58\x41\x6b\x77\x72\x33\x44\x6c\x73\x4b\x79\x77\x34\x7a\x43\x6c\x38\x4b\x31\x63\x75\x2b\x36\x6d\x75\x4b\x44\x6c\x63\x4b\x69\x36\x4b\x2b\x4e\x36\x5a\x71\x4f\x36\x5a\x4b\x55\x35\x6f\x79\x4b\x37\x37\x79\x52\x56\x79\x54\x44\x73\x73\x4b\x4e\x77\x70\x77\x70\x65\x63\x4b\x78\x41\x63\x4f\x2f\x77\x71\x72\x43\x67\x69\x44\x44\x73\x73\x4b\x42\x77\x70\x50\x43\x69\x38\x4f\x79\x77\x34\x6f\x6f\x77\x36\x70\x72\x62\x68\x6c\x50\x77\x72\x66\x44\x71\x63\x4f\x58\x4b\x73\x4f\x67\x45\x63\x4f\x4f\x61\x4d\x4f\x6c\x77\x34\x76\x44\x70\x63\x4b\x75\x77\x35\x42\x79\x62\x44\x76\x44\x6f\x73\x4f\x75\x51\x6b\x6f\x31\x77\x71\x42\x4f\x77\x72\x44\x44\x68\x69\x49\x42\x77\x70\x67\x47\x77\x37\x51\x51\x66\x42\x4d\x74\x77\x35\x37\x43\x68\x73\x4f\x2f\x50\x4d\x4f\x78\x77\x36\x62\x43\x6e\x38\x4f\x4a\x77\x35\x58\x43\x72\x38\x4b\x73\x58\x42\x2f\x44\x75\x51\x49\x37\x42\x6c\x4a\x55\x38\x4a\x36\x6a\x71\x38\x4f\x57\x34\x34\x4f\x61\x35\x4c\x2b\x78\x35\x35\x57\x68\x36\x4b\x2b\x4f\x35\x70\x69\x47\x34\x34\x47\x57\x4a\x63\x4b\x51\x37\x37\x71\x6b\x34\x6f\x4b\x46\x61\x4f\x61\x31\x6c\x65\x57\x4c\x6a\x75\x69\x74\x73\x65\x6d\x59\x70\x2b\x6d\x52\x75\x65\x61\x4e\x6c\x65\x57\x4c\x73\x52\x45\x67\x44\x31\x76\x44\x71\x52\x4e\x41\x77\x35\x37\x76\x75\x59\x66\x69\x67\x72\x55\x73\x35\x5a\x4b\x4b\x35\x35\x57\x49\x54\x78\x4c\x6f\x68\x72\x62\x6d\x6e\x4c\x58\x6c\x76\x4c\x50\x6c\x68\x4b\x74\x51\x42\x75\x57\x36\x74\x4f\x53\x38\x70\x2b\x57\x74\x73\x75\x69\x76\x76\x65\x65\x39\x73\x54\x77\x33\x34\x70\x69\x45\x37\x37\x6d\x43\x66\x2b\x4f\x43\x67\x2b\x61\x79\x6c\x75\x61\x47\x68\x2b\x53\x37\x6f\x65\x6d\x67\x75\x4f\x4f\x42\x6d\x63\x4b\x4c\x77\x70\x56\x31\x35\x62\x2b\x41\x35\x59\x65\x4e\x35\x35\x65\x6e\x35\x4c\x6d\x69\x36\x5a\x6d\x74\x35\x71\x79\x57\x36\x5a\x32\x33\x35\x72\x47\x54\x35\x5a\x53\x79\x35\x59\x36\x38\x36\x49\x53\x4d\x35\x70\x36\x41\x44\x41\x30\x64\x35\x4c\x6d\x61\x35\x4c\x79\x6c\x35\x61\x32\x54\x35\x4c\x6d\x66\x35\x4c\x2b\x78\x36\x61\x71\x55\x37\x37\x32\x4f\x36\x4b\x79\x6c\x35\x59\x71\x79\x35\x4c\x36\x57\x35\x70\x47\x52\x35\x6f\x75\x54\x35\x72\x75\x51\x35\x35\x65\x4b\x47\x47\x52\x79\x35\x62\x6d\x55\x36\x4b\x2b\x69\x4b\x38\x4b\x77\x64\x38\x4b\x65\x35\x62\x43\x6b\x35\x70\x61\x30\x35\x59\x65\x53\x35\x59\x75\x38\x36\x5a\x6d\x68\x37\x37\x2b\x6d\x36\x59\x47\x6a\x35\x59\x53\x73\x35\x4c\x6d\x4b\x35\x62\x79\x76\x36\x4b\x65\x4a\x36\x5a\x53\x7a\x36\x61\x4b\x56\x63\x73\x4b\x5a\x38\x4a\x47\x36\x6d\x52\x33\x6d\x68\x59\x37\x6f\x73\x5a\x66\x6e\x6b\x71\x58\x6f\x70\x5a\x54\x6b\x75\x62\x4c\x6d\x6c\x71\x7a\x6d\x6a\x34\x44\x76\x76\x5a\x38\x3d', '\x4f\x79\x70\x77\x77\x36\x6f\x30\x77\x72\x31\x71\x77\x37\x4c\x44\x71\x63\x4f\x49\x77\x35\x49\x54\x77\x35\x55\x3d', '\x65\x4d\x4b\x69\x77\x70\x58\x44\x73\x38\x4b\x38'];
+if (typeof $rocket !== "undefined") {
+  function getBoxJSValue(_0x2e827e) {
+    try {
+      {
+        if (typeof $persistentStore !== "undefined" && typeof $persistentStore.read === "function") {
+          const _0x5cf54c = $persistentStore.read(_0x2e827e);
+          console.log("🔍 成功读取 BoxJS 值（$persistentStore）：" + _0x2e827e + " = " + _0x5cf54c);
+          return _0x5cf54c;
+        } else if (typeof $prefs !== "undefined" && typeof $prefs.valueForKey === "function") {
+          {
+            const _0xca4144 = $prefs.valueForKey(_0x2e827e);
+            console.log("🔍 成功读取 BoxJS 值（$prefs）：" + _0x2e827e + " = " + _0xca4144);
+            return _0xca4144;
+          }
+        } else {
+          console.log("⚠️ 无法检测到可用的 BoxJS 环境！");
+        }
+      }
+    } catch (_0x4f3ab7) {
+      {
+        console.log("⚠️ 读取 BoxJS 配置失败：" + _0x4f3ab7.message);
+      }
+    }
+    return null;
+  }
+  const scriptSwitch = getBoxJSValue("ddm.app_switch");
+  const isScriptEnabled = scriptSwitch === "true" || scriptSwitch === true;
+  console.log("BoxJS 配置读取：ddm.app_switch = " + scriptSwitch);
+  if (!isScriptEnabled) {
+    console.log("⛔️ BoxJS 配置禁用脚本，脚本停止运行");
+    $notification.post("⚠️ 脚本异常已终止运行", "检测到脚本开关未开启", "📌 【Boxjs 配置指南】\n1️⃣ 配置地址： https://github.com/chavyleung/scripts\n2️⃣ 订阅链接： https://raw.githubusercontent.com/chxm1023/Script_X/main/ddm1023.boxjs.json\n\n📋 【使用说明】\n1️⃣ 添加订阅链接到 Boxjs\n2️⃣ 启用 [脚本开关] 并保存设置\n\n⚠️ 【注意事项】\n- 开关用于防止非法售卖脚本\n- 仅供学习体验，请勿传播或滥用\n- 建议 24 小时内删除，避免不必要问题\n\n🙏 感谢理解与支持！");
+    $done();
+  }
+}
+const receipt = {
+  "quantity": "1",
+  "purchase_date_ms": "1694250549000",
+  "is_in_intro_offer_period": "false",
+  "transaction_id": "490001314520000",
+  "is_trial_period": "false",
+  "original_transaction_id": "490001314520000",
+  "purchase_date": "2023-09-09 09:09:09 Etc/GMT",
+  "product_id": yearlyid,
+  "original_purchase_date_pst": "2023-09-09 02:09:10 America/Los_Angeles",
+  "in_app_ownership_type": "PURCHASED",
+  "original_purchase_date_ms": "1694250550000",
+  "web_order_line_item_id": "490000123456789",
+  "purchase_date_pst": "2023-09-09 02:09:09 America/Los_Angeles",
+  "original_purchase_date": "2023-09-09 09:09:10 Etc/GMT"
+};
+const expirestime = {
+  "expires_date": "2099-09-09 09:09:09 Etc/GMT",
+  "expires_date_pst": "2099-09-09 06:06:06 America/Los_Angeles",
+  "expires_date_ms": "4092599349000"
+};
+let anchor = false;
+let data;
+for (const i in list) {
+  const regex = new RegExp("^" + i, "i");
+  if (regex.test(ua) || regex.test(bundle_id)) {
+    const {
+      cm,
+      hx,
+      id,
+      ids,
+      latest,
+      version
+    } = list[i];
+    const receiptdata = Object.assign({}, receipt, {
+      "product_id": id
+    });
+    switch (cm) {
+      case "timea":
+        data = [Object.assign({}, receiptdata, expirestime)];
+        break;
+      case "timeb":
+        data = [receiptdata];
+        break;
+      case "timec":
+        data = [];
+        break;
+      case "timed":
+        data = [Object.assign({}, receiptdata, expirestime, {
+          "product_id": ids
+        }), Object.assign({}, receiptdata, expirestime, {
+          "product_id": id
+        })];
+        break;
+    }
+    if (hx.includes("hxpda")) {
+      ddm.receipt.in_app = data;
+      ddm.latest_receipt_info = data;
+      ddm.pending_renewal_info = [{
+        "product_id": id,
+        "original_transaction_id": "490001314520000",
+        "auto_renew_product_id": id,
+        "auto_renew_status": "1"
+      }];
+      ddm.latest_receipt = latest;
+    } else if (hx.includes("hxpdb")) {
+      ddm.receipt.in_app = data;
+    } else if (hx.includes("hxpdc")) {
+      const xreceipt = {
+        "expires_date_formatted": "2099-09-09 09:09:09 Etc/GMT",
+        "expires_date": "4092599349000",
+        "expires_date_formatted_pst": "2099-09-09 06:06:06 America/Los_Angeles",
+        "product_id": id
+      };
+      ddm.receipt = Object.assign({}, ddm.receipt, xreceipt);
+      ddm.latest_receipt_info = Object.assign({}, ddm.receipt, xreceipt);
+      ddm.status = 0;
+      ddm.auto_renew_status = 1;
+      ddm.auto_renew_product_id = id;
+      delete ddm.latest_expired_receipt_info;
+      delete ddm.expiration_intent;
+    }
+    if (version && version.trim() !== "") {
+      ddm.receipt.original_application_version = version;
+    }
+    anchor = true;
+    console.log("恭喜您，已操作成功🎉🎉🎉\n叮当猫の分享频道: https://t.me/ddm1023");
+    break;
+  }
+}
+if (!anchor) {
+  data = [Object.assign({}, receipt, expirestime)];
+  ddm.receipt.in_app = data;
+  ddm.latest_receipt_info = data;
+  ddm.pending_renewal_info = [{
+    "product_id": yearlyid,
+    "original_transaction_id": "490001314520000",
+    "auto_renew_product_id": yearlyid,
+    "auto_renew_status": "1"
+  }];
+  ddm.latest_receipt = "ddm1023";
+  console.log("很遗憾未能识别出UA或bundle_id\n但已使用备用方案🎉🎉🎉\n叮当猫の分享频道: https://t.me/ddm1023");
+}
+$done({
+  "body": JSON.stringify(ddm)
+});
+encode_version = "jsjiami.com.v5";
+const ddm = JSON.parse($response.body);
+const ua = $request.headers["User-Agent"] || $request.headers["user-agent"];
+const bundle_id = ddm.receipt.bundle_id || ddm.receipt.Bundle_Id;
+const yearid = `${bundle_id}.year`;
+const yearlyid = `${bundle_id}.yearly`;
+const yearlysubscription = `${bundle_id}.yearlysubscription`;
+const lifetimeid = `${bundle_id}.lifetime`;
+const list = {
+  "PhotosPK": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "indie.davidwang.PicPicks.membership.lifetime"
+  },
+  "WatchWallpaper": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "indie.davidwang.WatchWallpaper.yearsubscriptegold"
+  },
+  "com.beauty.MeiTui": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "vip_member_v3_365day"
+  },
+  "ChmReader": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "EpubReader_ProVersion"
+  },
+  "MediaConvert": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "MediaConverter_ProVersion"
+  },
+  "FDSunAlly": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.freenotes.sunally.lifetime"
+  },
+  "Period": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.hanchongzan.time.pro"
+  },
+  "com.sixiaobo.MusCut": {
+    cm: "timeb",
+    hx: "hxpdb",
+    id: "com.purecollage.pro"
+  },
+  "FlashTransportMaster": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.flashtransport.fightenegery.yearly.base",
+    latest: "ddm1023"
+  },
+  "com.ideack.ASR": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "ASR_Permanent_Plan",
+    latest: "ddm1023"
+  },
+  "Presets": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.chromatech.chroma.yearlyAutoRenewable",
+    latest: "ddm1023"
+  },
+  "GoodTask": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.hahainteractive.goodtask3.pro",
+    latest: "ddm1023"
+  },
+  "com.hanchongzan.loverlist": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.hanchongzan.loverlist.01",
+    latest: "ddm1023"
+  },
+  "com.hanchongzan.period": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.hanchongzan.period.girl",
+    latest: "ddm1023"
+  },
+  "com.hanchongzan.book": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.hanchongzan.book.vip",
+    latest: "ddm1023"
+  },
+  "SoundLab": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "8001",
+    latest: "ddm1023"
+  },
+  "ECGANALYZER": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.wms.hrv.yearlyfamilysharing",
+    latest: "ddm1023"
+  },
+  "com.RuoG.Pixiu": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.RuoG.Pixiu.VIPYear",
+    latest: "ddm1023"
+  },
+  "com.ideack.BusinessCard": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "BusinessCardVipPerpetual",
+    latest: "ddm1023"
+  },
+  "com.ideack.MagicAudio": {
+    cm: "timeb",
+    hx: "hxpdb",
+    id: "MagicAudioPermanent",
+    latest: "ddm1023"
+  },
+  "DuChuangZhe": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "org.zrey.du.main",
+    latest: "ddm1023"
+  },
+  "PhotoWhite": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "org.zrey.photowhite.flash_lifetime",
+    latest: "ddm1023"
+  },
+  "FETreeVideoChange": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.dj.videototext.forever",
+    latest: "ddm1023"
+  },
+  "%E5%B0%8F%E5%B0%8F%E7%9B%B8%E6%9C%BA%E5%A4%A7%E5%B8%88": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.ai.merge.forever.vip",
+    latest: "ddm1023"
+  },
+  "FoodIdentificationTool": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "20002",
+    latest: "ddm1023"
+  },
+  "com.qingcheng.seal.Seal": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.qingcheng.seal.Seal.premium.forever",
+    latest: "ddm1023"
+  },
+  "com.geekapp.VoiceTranslation": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "VoiceTranslatorPerpetual",
+    latest: "ddm1023"
+  },
+  "com.idealityapp.VideoEditing": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "MagicVideo_Vip_Permanent",
+    latest: "ddm1023"
+  },
+  "YinzhangMaster": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.xiaoqi.seal.forever",
+    latest: "ddm1023"
+  },
+  "com.cuilingshi.flipclock": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "FlipClockProVersion",
+    latest: "ddm1023"
+  },
+  "com.maine.aifill": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.maine.aifill.unlimited",
+    latest: "ddm1023"
+  },
+  "DeviceFinder": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.wonderfind.lifetime",
+    latest: "ddm1023"
+  },
+  "Graphionica": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "premium_year",
+    latest: "ddm1023"
+  },
+  "AIAssistant": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "AIchat_1w_7.99_trial",
+    latest: "ddm1023"
+  },
+  "MonitorPlus": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.unhonin.MonitorPlus.proversion",
+    latest: "ddm1023"
+  },
+  "MessageHold": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.messagehold.forever",
+    latest: "ddm1023"
+  },
+  "co.vulcanlabs": {
+    cm: "timea",
+    hx: "hxpda",
+    id: lifetimeid,
+    latest: "ddm1023"
+  },
+  "Guitar%20Gravitas": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "GuitarGravitasChordsScalesArpeggiosLessons",
+    latest: "ddm1023"
+  },
+  "com.eleven.chatgpt": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.chatgpt.yearly",
+    latest: "ddm1023"
+  },
+  "com.casttv.remotetv": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "liftetime2",
+    latest: "ddm1023"
+  },
+  "WallpaperWidget": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.widget.theme.yearly.3dayfree",
+    latest: "ddm1023"
+  },
+  "ProREC": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "ProAudioCamera_Annual",
+    latest: "ddm1023"
+  },
+  "TypeOn%20Keyboard": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.hanchongzan.book.vip",
+    latest: "ddm1023"
+  },
+  "PhotoCollagePro": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "PHOTABLE_PREMIUM",
+    latest: "ddm1023"
+  },
+  "com.alphamobiletech.bodyApp": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "Bodyapp_Forever",
+    latest: "ddm1023"
+  },
+  "com.alphamobiletech.facey": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "Facey_Forever",
+    latest: "ddm1023"
+  },
+  "Packet": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.aaaalab.nepacket.iap.full",
+    latest: "ddm1023"
+  },
+  "AllMyBatteries": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "AllMyBatteries_Ultimate",
+    latest: "ddm1023"
+  },
+  "VDIT": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "me.imgbase.videoday.profeaturesLifetime",
+    latest: "ddm1023"
+  },
+  "CodeSnippet": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "it.beatcode.codesnippetpro.annualSubscription",
+    latest: "ddm1023"
+  },
+  "darkWeb": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "dforce_unlock_all_functions",
+    latest: "ddm1023"
+  },
+  "BookReader": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.reader.1year",
+    latest: "ddm1023"
+  },
+  "BeatStation": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "BS_Pro_Yearly",
+    latest: "ddm1023"
+  },
+  "FastPlayer": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "VideoPlayer_ProVersion",
+    latest: "ddm1023"
+  },
+  "SimpleNotation": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.xinlin.notation.once",
+    latest: "ddm1023"
+  },
+  "ChordMaster": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.chordMaster.once",
+    latest: "ddm1023"
+  },
+  "Xfuse": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.xfuse.ProVision",
+    latest: "ddm1023"
+  },
+  "com.BertonYc.ScannerOCR": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "Scanner_Subscibe_Permanent",
+    latest: "ddm1023"
+  },
+  "HRV": {
+    hx: "hxpdc",
+    id: "com.stress.test.record.yearly",
+    latest: "ddm1023"
+  },
+  "iVCam": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "ivcam.full",
+    latest: "ddm1023"
+  },
+  "RBrowser": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.mm.RBroswer.product11",
+    latest: "ddm1023"
+  },
+  "Filterra": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.filterra.wtonetimepurchase",
+    latest: "ddm1023"
+  },
+  "MOLDIV": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.jellybus.Moldiv.IAP.PRO7999",
+    latest: "ddm1023"
+  },
+  "PICSPLAY": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.jellybus.PicsPlay2.IAP.PRO5999",
+    latest: "ddm1023"
+  },
+  "Rookie": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.jellybus.Rookie.IAP.PRO5999",
+    latest: "ddm1023"
+  },
+  "MoneyWiz": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.moneywiz.personalfinance.1year",
+    latest: "ddm1023"
+  },
+  "qxzs": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "yongjiu",
+    latest: "ddm1023"
+  },
+  "Overdrop": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.weather.overdrop.forever",
+    latest: "ddm1023"
+  },
+  "Boom": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.globaldelight.iBoom.LifetimeDiscountPack",
+    latest: "ddm1023"
+  },
+  "PDFReaderPro%20Free": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.pdfreaderpro.free.member.all_access_pack_permanent_license.001",
+    latest: "ddm1023"
+  },
+  "VideoHelper": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "vip_service",
+    latest: "ddm1023"
+  },
+  "Digital%20Planner": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.softwings.DigitalPlanner.1year",
+    latest: "ddm1023"
+  },
+  "SuperMandarin": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "pth_vip_year",
+    latest: "ddm1023"
+  },
+  "SuperQuestion": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "qtzs_vip_year",
+    latest: "ddm1023"
+  },
+  "SuperElves": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.SuperElves.Answer.Forever",
+    latest: "ddm1023"
+  },
+  "SuperDriving": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "jiakao_vip_forever",
+    latest: "ddm1023"
+  },
+  "Pollykann": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "vip.forever.pollykann",
+    latest: "ddm1023"
+  },
+  "JCCalendar": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.sjc.calendar.vip.lifelong",
+    latest: "ddm1023"
+  },
+  "com.yanxia.ChsMedical": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "VIPUser",
+    latest: "ddm1023"
+  },
+  "SuperPointer": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.SuperPointer.Location.Forever",
+    latest: "ddm1023"
+  },
+  "SnakeReader": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.lyran.snakescanner.premium18",
+    latest: "ddm1023"
+  },
+  "FourthPPT": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.FourthPPT.Mobile.Forever",
+    latest: "ddm1023"
+  },
+  "OneExtractor": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.OneExtractor.Video.Forever",
+    latest: "ddm1023"
+  },
+  "com.Colin.Colors": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.colin.colors.annualVIP",
+    latest: "ddm1023"
+  },
+  "PhotosSorter": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "sorter.pro.ipa",
+    latest: "ddm1023"
+  },
+  "intolive": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "me.imgbase.intolive.proSubYearly",
+    latest: "ddm1023"
+  },
+  "MyAlbum": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.colin.myalbum.isUpgradeVip",
+    latest: "ddm1023"
+  },
+  "VideoEditor": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.god.videohand.alwaysowner",
+    latest: "ddm1023"
+  },
+  "PhotoMovie": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.mediaeditor.photomovie.year",
+    latest: "ddm1023"
+  },
+  "ShotOn": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.colin.shoton.forevervip",
+    latest: "ddm1023"
+  },
+  "PhimCiaj": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.jiancent.calligraphymaster.lifetime",
+    latest: "ddm1023"
+  },
+  "TimeCut": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.floatcamellia.hfrslowmotion.forevervip",
+    latest: "ddm1023"
+  },
+  "com.floatcamellia.motiok": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.floatcamellia.motiok.vipforever",
+    latest: "ddm1023"
+  },
+  "POPOLockScreenWidgetable": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.widget.fightenegery.yearly",
+    latest: "ddm1023"
+  },
+  "GreetingScanner": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.alphaplus.greetingscaner.w.b",
+    latest: "ddm1023"
+  },
+  "FancyCamPlus": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.alphaplus.fancycam.year.198",
+    latest: "ddm1023"
+  },
+  "Again": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.owen.again.profession",
+    latest: "ddm1023"
+  },
+  "remotelg": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.gqp.remotelg.lifetime",
+    latest: "ddm1023"
+  },
+  "Notebook": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.zoho.notebook.ios.personal.yearly",
+    latest: "ddm1023"
+  },
+  "com.damon.dubbing": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.damon.dubbing.vip12",
+    latest: "ddm1023"
+  },
+  "ZHUBEN": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.xiaoyu.yue",
+    latest: "ddm1023"
+  },
+  "XIAOTangHomeParadise": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.yuee.mo2",
+    latest: "ddm1023"
+  },
+  "film": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "pro_auto_subscribe_year_ovs",
+    latest: "ddm1023"
+  },
+  "Muza": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.appmuza.premium_year",
+    latest: "ddm1023"
+  },
+  "StandbyWidget": {
+    cm: "timed",
+    hx: "hxpda",
+    id: "com.standby.idream.year.68",
+    ids: "standbyus.nonconsume.missingyou",
+    latest: "ddm1023"
+  },
+  "Mango6Minute": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "576170870",
+    latest: "ddm1023"
+  },
+  "Photo%20Cutout": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.icepine.allyear",
+    latest: "ddm1023"
+  },
+  "cleanPhone": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.clean.year",
+    latest: "ddm1023"
+  },
+  "ppt": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.palmmob.pptios.yearly",
+    latest: "ddm1023"
+  },
+  "WasteCat": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "dev.sanjin.WasteCat.PermanentVip",
+    latest: "ddm1023"
+  },
+  "MeowTalk": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "meowtalk.month.basic.autorenewable.subscription",
+    latest: "ddm1023"
+  },
+  "habitdot": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "habitdots_pro_forever",
+    latest: "ddm1023"
+  },
+  "stretchworkout": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.abishkking.premiumYearStretch",
+    latest: "ddm1023"
+  },
+  "Planist": {
+    cm: "timed",
+    hx: "hxpda",
+    id: "org.zrey.planist.main",
+    ids: "org.zrey.planist.lifetime",
+    latest: "ddm1023"
+  },
+  "com.uzstudio.avenuecast.ios": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "1001",
+    latest: "ddm1023"
+  },
+  "CongZhenBaZi": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "vip_forever_78",
+    latest: "ddm1023"
+  },
+  "CongZhenQiMen": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "cn.congzhen.CongZhenQiMen.yearlyplan",
+    latest: "ddm1023"
+  },
+  "ProFit": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.maxty.gofitness.yearlyplan",
+    latest: "ddm1023"
+  },
+  "FitnessBodybuildingVGFIT": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.vgfit.fitnessvip.yearly",
+    latest: "ddm1023"
+  },
+  "Water%20Reminder": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.vgfit.premiumtracker.year",
+    latest: "ddm1023"
+  },
+  "%E7%91%9C%E4%BC%BD": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.vgfit.yoga.yearly",
+    latest: "ddm1023"
+  },
+  "GPSMaker": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "theodolite_vip_year",
+    latest: "ddm1023"
+  },
+  "wrongbook": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.palmmob.wrongbookios.yearly",
+    latest: "ddm1023"
+  },
+  "excel": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.gamawh.excelerios.yearly",
+    latest: "ddm1023"
+  },
+  "Future%20Baby": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.nilu.faceseer.yearly",
+    latest: "ddm1023"
+  },
+  "Smoke": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "smoke19870727",
+    latest: "ddm1023"
+  },
+  "AppAlarmIOS": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "alarm.me.vip.year.tier1",
+    latest: "ddm1023"
+  },
+  "Tinglee": {
+    cm: "timea",
+    hx: "hxpdb",
+    id: "vip.forever.tinglee",
+    latest: "ddm1023"
+  },
+  "NoteKeys": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "notekeys_access_weekly",
+    latest: "ddm1023"
+  },
+  "SheetMusicPro": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "sheetmusicpro.yearwithtrial",
+    latest: "ddm1023"
+  },
+  "ProtractorEdge": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "ProtracatorEdge.PremiumAccess",
+    latest: "ddm1023"
+  },
+  "Piano%20Plus": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "kn_access_weekly",
+    latest: "ddm1023"
+  },
+  "Notation%20Pad": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "np_access_weekly",
+    latest: "ddm1023"
+  },
+  "Guitar%20Notation": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "gn_access_weekly",
+    latest: "ddm1023"
+  },
+  "Piano%20Fantasy": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.lotuz.PianoFantasy.weekwithtrail",
+    latest: "ddm1023"
+  },
+  "Piano%20Rush": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.lotuz.PianoPro.weekwithtrail",
+    latest: "ddm1023"
+  },
+  "com.richads.saucyart": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.richads.saucyart.sub.quarterly_29.99",
+    latest: "ddm1023"
+  },
+  "SurveyorPro": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.celiangyuan.SurveyorPro.OneYear",
+    latest: "ddm1023"
+  },
+  "com.ydatong.dingdone": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.ydatong.dingdone.vip.forever",
+    latest: "ddm1023"
+  },
+  "Dial": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "2104",
+    latest: "ddm1023"
+  },
+  "qxwp%20copy": {
+    cm: "timed",
+    hx: "hxpda",
+    id: "com.chowjoe.wp2free.year.pro",
+    ids: "com.chowjoe.wp2free.coin.70",
+    latest: "ddm1023"
+  },
+  "LingLongShouZ": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "zhenwushouzhangQuarterlyPlus",
+    latest: "ddm1023"
+  },
+  "MediaEditor": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "alwaysowner",
+    latest: "ddm1023"
+  },
+  "UniversTranslate": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.univers.translator.tool.year",
+    latest: "ddm1023"
+  },
+  "com.gostraight.smallAccountBook": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "ForeverVIPPayment",
+    latest: "ddm1023"
+  },
+  "ZJTBiaoGe": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "zhangjt.biaoge.monthvip",
+    latest: "ddm1023"
+  },
+  "MiniMouse": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "minimouse_vip_1year",
+    latest: "ddm1023"
+  },
+  "Paste%20Keyboard": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.keyboard.1yetr",
+    latest: "ddm1023"
+  },
+  "EWA": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.ewa.renewable.subscription.year8",
+    latest: "ddm1023"
+  },
+  "BuBuSZ": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "quaVersion",
+    latest: "ddm1023"
+  },
+  "CapyMood": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.paha.CapyMood.year",
+    latest: "ddm1023"
+  },
+  "xyz.iofree.lifenotes": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "xyz.iofree.lifelog.pro.yearly",
+    latest: "ddm1023"
+  },
+  "com.icandiapps.nightsky": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.icandiapps.ns4.annual",
+    latest: "ddm1023"
+  },
+  "Wallpapers": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "wallpaperworld.subscription.yearly.12.notrial",
+    latest: "ddm1023"
+  },
+  "com.yumiteam.Kuki.ID": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.yumiteam.Kuki.ID.2",
+    latest: "ddm1023"
+  },
+  "com.quangtm193.picpro": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.quangtm193.picpro1year",
+    latest: "ddm1023"
+  },
+  "Storybeat": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "yearly_1",
+    latest: "ddm1023"
+  },
+  "SmartGym": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.smartgymapp.smartgym.premiumuserworkoutsyearly",
+    latest: "ddm1023"
+  },
+  "Ptime": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.subscribe.pro.year",
+    latest: "ddm1023"
+  },
+  "Prookie": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "prookie.month.withtrial.0615",
+    latest: "ddm1023"
+  },
+  "BodyTune": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "Bodypro1",
+    latest: "ddm1023"
+  },
+  "killer.sudoku.free.brain.puzzle": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "ks.i.iap.premium",
+    latest: "ddm1023"
+  },
+  "sudoku.puzzle.free.game.brain": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "sudoku.i.sub.vvip.p1y",
+    latest: "ddm1023"
+  },
+  "One%20Markdown": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "10012",
+    latest: "ddm1023"
+  },
+  "MWeb%20iOS": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "10001",
+    latest: "ddm1023"
+  },
+  "NYMF": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.nymf.app.premium_year",
+    latest: "ddm1023"
+  },
+  "com.lockwidt.cn": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.lockwidt.cn.member",
+    latest: "ddm1023"
+  },
+  "Utsuki": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "KameePro",
+    latest: "ddm1023"
+  },
+  "Processing": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "wtf.riedel.processing.lifetime",
+    latest: "ddm1023"
+  },
+  "one%20sec": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "wtf.riedel.one_sec.pro.annual.individual",
+    latest: "ddm1023"
+  },
+  "com.skysoft.pencilsketch": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.skysoft.pencilsketch.subscription.yearly",
+    latest: "ddm1023"
+  },
+  "com.instagridpost.rsigp": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.GridPost.oneyearplus",
+    latest: "ddm1023"
+  },
+  "com.skysoft.picsqueen": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.skysoft.picsqueen.subscription.yearly",
+    latest: "ddm1023"
+  },
+  "com.skysoft.removalfree": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.skysoft.removalfree.discount.unlimitedaccess",
+    latest: "ddm1023"
+  },
+  "com.skysoft.facecartoon": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.skysoft.facecartoon.subscription.yearly",
+    latest: "ddm1023"
+  },
+  "Jennie%20AI": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.skysoft.text2img.vip.yearly",
+    latest: "ddm1023"
+  },
+  "MGhostLens": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.ghostlens.premium1month",
+    latest: "ddm1023"
+  },
+  "Luminous": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.spacemushrooms.weekly",
+    latest: "ddm1023"
+  },
+  "RitmoVideo": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.zhk.hidebox.yearly",
+    latest: "ddm1023"
+  },
+  "PerfectImage": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "Perfect_Image_VIP_Yearly",
+    latest: "ddm1023"
+  },
+  "moment": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "PYJMoment2",
+    latest: "ddm1023"
+  },
+  "Planner%20Plus": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.btgs.plannerfree.yearly",
+    latest: "ddm1023"
+  },
+  "HiddenBox": {
+    cm: "timec",
+    hx: "hxpdb",
+    version: "1"
+  },
+  "Synthesizer": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.qingxiu.synthesizer.mon",
+    latest: "ddm1023"
+  },
+  "ContractMaster": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.qingxiu.contracts.monthly",
+    latest: "ddm1023"
+  },
+  "MyDiary": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "diary.yearly.vip.1029",
+    latest: "ddm1023"
+  },
+  "Translator": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "trans_sub_week",
+    latest: "ddm1023"
+  },
+  "ToDoList": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "todolist.subscription.yearly",
+    latest: "ddm1023"
+  },
+  "Idea": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "top.ideaapp.ideaiOS.membership.oneyear",
+    latest: "ddm1023"
+  },
+  "ZeroTuImg": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "ZeroTuImgPlus",
+    latest: "ddm1023"
+  },
+  "com.traveltao.ExchangeAssistant": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "lxbyplus",
+    latest: "ddm1023"
+  },
+  "ServerKit": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.serverkit.subscription.year.a",
+    latest: "ddm1023"
+  },
+  "RawPlus": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.dynamicappdesign.rawplus.yearlysubscription",
+    latest: "ddm1023"
+  },
+  "OrderGenerator": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "oder_pay_forever",
+    latest: "ddm1023"
+  },
+  "GenerateAllOrdersTool": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "Order_Vip_010",
+    latest: "ddm1023"
+  },
+  "MoMoShouZhang": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "shunchangshouzhangQuarterlyPlus",
+    latest: "ddm1023"
+  },
+  "Mindkit": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "mindkit_permanently",
+    latest: "ddm1023"
+  },
+  "DailySpending": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.xxtstudio.dailyspending.year",
+    latest: "ddm1023"
+  },
+  "Miary": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "lifetime_sub",
+    latest: "ddm1023"
+  },
+  "Noted": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.digitalworkroom.noted.plus.lifetime",
+    latest: "ddm1023"
+  },
+  "BingQiTools": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "bingqi_e2",
+    latest: "ddm1023"
+  },
+  "AnyDown": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.xiaoqi.down.forever",
+    latest: "ddm1023"
+  },
+  "Reader": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.xiaoqi.reader.forever",
+    latest: "ddm1023"
+  },
+  "com.bestmusicvideo.formmaster": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.form.1yearvip",
+    latest: "ddm1023"
+  },
+  "ExcelSpreadSheetsWPS": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.turbocms.SimpleSpreadSheet.viponeyear",
+    latest: "ddm1023"
+  },
+  "XinQingRiJi": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "zhiwenshouzhangQuarterlyPlus",
+    latest: "ddm1023"
+  },
+  "Nutrilio": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "net.nutrilio.one_year_plus",
+    latest: "ddm1023"
+  },
+  "AIHeader": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.ai.avatar.maker.month.3dayfree",
+    latest: "ddm1023"
+  },
+  "MoodTracker": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "co.vulcanlabs.moodtracker.lifetime2",
+    latest: "ddm1023"
+  },
+  "com.dandelion.Routine": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "membership",
+    latest: "ddm1023"
+  },
+  "YSBrowser": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.ys.pro",
+    latest: "ddm1023"
+  },
+  "org.zrey.metion": {
+    cm: "timed",
+    hx: "hxpda",
+    id: "org.zrey.metion.pro",
+    ids: "org.zrey.metion.main",
+    latest: "ddm1023"
+  },
+  "ZenJournal": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "zen_pro",
+    latest: "ddm1023"
+  },
+  "%E5%80%92%E6%94%BE%E6%8C%91%E6%88%98": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.abighead.ReverseChallenge.iap.pro.year",
+    latest: "ddm1023"
+  },
+  "com.visualmidi.app.perfectpiano.Perfect-Piano": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "auto_renew_monthly_subscription",
+    latest: "ddm1023"
+  },
+  "Straw": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.1year.eyedropper",
+    latest: "ddm1023"
+  },
+  "vibee": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.vibee.year.bigchampagne",
+    latest: "ddm1023"
+  },
+  "Lister": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.productlab.lister.yearly",
+    latest: "ddm1023"
+  },
+  "DrumPads": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.gismart.drumpads.pro_lifetime_30",
+    latest: "ddm1023"
+  },
+  "com.photoslab.ai.writerassistant": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.photoslab.ai.writerassistant.year",
+    latest: "ddm1023"
+  },
+  "WaterMaskCamera": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.camera.watermark.yearly.3dayfree",
+    latest: "ddm1023"
+  },
+  "ColorPaint": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "coloring.app.singingfish.year",
+    latest: "ddm1023"
+  },
+  "SymbolKeyboard": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "fronts.keyboard.singingfish.one",
+    latest: "ddm1023"
+  },
+  "com.SingingFish.SudokuGame": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.singingfish.sudokugame.year",
+    latest: "ddm1023"
+  },
+  "com.kuaijiezhilingdashi.appname": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.othermaster.yearlyvip",
+    latest: "ddm1023"
+  },
+  "LogInput": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.logcg.loginput",
+    latest: "ddm1023"
+  },
+  "HandNote": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "permanent_membership",
+    latest: "ddm1023"
+  },
+  "Kilonotes": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "kipa_kilonotes_quarter_subscription",
+    latest: "ddm1023"
+  },
+  "YiJianKouTu": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "XiChaoYiJianKouTuPlus",
+    latest: "ddm1023"
+  },
+  "FileArtifact": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.shengzhou.fileartifact.permanent",
+    latest: "ddm1023"
+  },
+  "Wext": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.lmf.wext.life",
+    latest: "ddm1023"
+  },
+  "ColorCapture": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "10001",
+    latest: "ddm1023"
+  },
+  "xTerminal": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "xterminal.pro2",
+    latest: "ddm1023"
+  },
+  "Fotoz": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.kiddy.fotoz.ipa.pro",
+    latest: "ddm1023"
+  },
+  "TheLastFilm": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "Filmroll_Pro_1Year",
+    latest: "ddm1023"
+  },
+  "Motivation": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.monkeytaps.motivation.premium.year3",
+    latest: "ddm1023"
+  },
+  "io.sumi.GridDiary2": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "io.sumi.GridDiary.pro.annually",
+    latest: "ddm1023"
+  },
+  "Subscriptions": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.touchbits.subscriptions.iap.pro.yearly",
+    latest: "ddm1023"
+  },
+  "com.leapfitness.fasting": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.leapfitness.fasting.oneyear1",
+    latest: "ddm1023"
+  },
+  "WidgetBox": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "widgetlab001",
+    latest: "ddm1023"
+  },
+  "LifeTracker": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.dk.lifetracker.yearplan",
+    latest: "ddm1023"
+  },
+  "imgplay": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "me.imgbase.imgplay.subscriptionYearly",
+    latest: "ddm1023"
+  },
+  "WaterMinder": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "waterminder.premiumYearly",
+    latest: "ddm1023"
+  },
+  "HashPhotos": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.kobaltlab.HashPhotos.iap.allinone.free",
+    latest: "ddm1023"
+  },
+  "FileBrowser": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.qingcheng.filex.pro.yearly",
+    latest: "ddm1023"
+  },
+  "SilProject": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.sm.Alina.Pro",
+    latest: "ddm1023"
+  },
+  "com.chenxi.shanniankapian": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.chenxi.shannian.superNian",
+    latest: "ddm1023"
+  },
+  "com.risingcabbage.pro.camera": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.risingcabbage.pro.camera.yearlysubscription",
+    latest: "ddm1023"
+  },
+  "co.bazaart.patternator": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "Patternator_Lock_Screen_Monthly",
+    latest: "ddm1023"
+  },
+  "%E5%BD%95%E9%9F%B3%E4%B8%93%E4%B8%9A%E7%89%88": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.winat.recording.pro.yearly",
+    latest: "ddm1023"
+  },
+  "cn.linfei.SimpleRecorder": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "cn.linfei.SimpleRecorder.Plus",
+    latest: "ddm1023"
+  },
+  "com.maliquankai.appdesign": {
+    cm: "timec",
+    hx: "hxpdb",
+    version: "1.5.8"
+  },
+  "PictureScanner": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "om.picturescanner.tool.year",
+    latest: "ddm1023"
+  },
+  "BestColor": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.bestColor.tool.month",
+    latest: "ddm1023"
+  },
+  "com.decibel.tool": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "decibel98free3",
+    latest: "ddm1023"
+  },
+  "MeasurementTools": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "mesurementyearvip",
+    latest: "ddm1023"
+  },
+  "TinyPNGTool": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.tinypngtool.tool.weekvip",
+    latest: "ddm1023"
+  },
+  "IconChange": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "iconeryearvip",
+    latest: "ddm1023"
+  },
+  "life.journal.diary": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "life.journal.diary.lifetime",
+    latest: "ddm1023"
+  },
+  "com.floatcamellia.motionninja": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.floatcamellia.motionninja.yearlyvip",
+    latest: "ddm1023"
+  },
+  "com.iuuapp.audiomaker": {
+    cm: "timed",
+    hx: "hxpda",
+    id: "com.iuuapp.audiomaker.cloud.year",
+    ids: "com.iuuapp.audiomaker.removeads",
+    latest: "ddm1023"
+  },
+  "com.biggerlens.photoretouch": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.photoretouch.SVIP",
+    latest: "ddm1023"
+  },
+  "com.macpaw.iosgemini": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.macpaw.iosgemini.month.trial",
+    latest: "ddm1023"
+  },
+  "com.mematom.ios": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "MMYear",
+    latest: "ddm1023"
+  },
+  "com.LuoWei.aDiary": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.LuoWei.aDiary.yearly0",
+    latest: "ddm1023"
+  },
+  "com.zerone.hidesktop": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.zerone.hidesktop.forever",
+    latest: "ddm1023"
+  },
+  "MagicWidget": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "cf__forever_0_4.7.1",
+    latest: "ddm1023"
+  },
+  "com.tasmanic.capture": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "CTPCAPTUREYEARLY",
+    latest: "ddm1023"
+  },
+  "com.readdle.CalendarsLite": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.readdle.CalendarsLite.subscription.year20trial7",
+    latest: "ddm1023"
+  },
+  "com.readdle.ReaddleDocsIPad": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.readdle.ReaddleDocsIPad.subscription.month10_allusers",
+    latest: "ddm1023"
+  },
+  "com.1ps.lovetalk": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.1ps.lovetalk.normal.weekly",
+    latest: "ddm1023"
+  },
+  "tech.miidii.MDClock": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "tech.miidii.MDClock.pro",
+    latest: "ddm1023"
+  },
+  "com.floatcamellia.prettyup": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.floatcamellia.prettyup.onetimepurchase",
+    latest: "ddm1023"
+  },
+  "com.zijayrate.analogcam": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.zijayrate.analogcam.vipforever10",
+    latest: "ddm1023"
+  },
+  "WeeklyNote": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "org.zrey.weeklynote.lifetime",
+    latest: "ddm1023"
+  },
+  "DoMemo": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "org.zrey.fastnote.lifetime",
+    latest: "ddm1023"
+  },
+  "CostMemo": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "org.zrey.money.lifetime",
+    latest: "ddm1023"
+  },
+  "iTimely": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "org.zrey.iTimely.lifetime",
+    latest: "ddm1023"
+  },
+  "net.daylio.Daylio": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "net.daylio.one_year_pro.offer_initial",
+    latest: "ddm1023"
+  },
+  "com.yengshine.webrecorder": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.yengshine.webrecorder.yearly",
+    latest: "ddm1023"
+  },
+  "org.skydomain.foodcamera": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "org.skydomain.foodcamera.yearly",
+    latest: "ddm1023"
+  },
+  "com.yengshine.proccd": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.yengshine.proccd.yearly",
+    latest: "ddm1023"
+  },
+  "com.palmmob.pdfios": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.palmmob.pdfios.168",
+    latest: "ddm1023"
+  },
+  "com.palmmob.scanner2ios": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.palmmob.scanner2ios.396",
+    latest: "ddm1023"
+  },
+  "com.palmmob.officeios": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.palmmob.officeios.188",
+    latest: "ddm1023"
+  },
+  "com.palmmob.recorder": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.palmmob.recorder.198",
+    latest: "ddm1023"
+  },
+  "com.7color.newclean": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.cleaner.salesyear",
+    latest: "ddm1023"
+  },
+  "Habbit": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "HabitUpYearly",
+    latest: "ddm1023"
+  },
+  "com.dbmeterpro.dB-Meter-Free": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.dbmeterpro.premiumModeSubscriptionWithTrial",
+    latest: "ddm1023"
+  },
+  "com.vstudio.newpuzzle": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.vstudio.newpuzzle.yearlyVipFreetrail.15_99",
+    latest: "ddm1023"
+  },
+  "com.jianili.Booka": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.jianili.Booka.pro.yearly",
+    latest: "ddm1023"
+  },
+  "com.ziheng.OneBox": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.ziheng.OneBox",
+    latest: "ddm1023"
+  },
+  "ChickAlarmClock": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.ChickFocus.ChickFocus.yearly_2023_promo",
+    latest: "ddm1023"
+  },
+  "MyWorks": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.MyWorks.Handwritten.Year",
+    latest: "ddm1023"
+  },
+  "Instant%20Saver": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.pocket.compress.yearly",
+    latest: "ddm1023"
+  },
+  "SaveTik": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.pocket.compress.yearly",
+    latest: "ddm1023"
+  },
+  "%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E5%99%A8": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.mobislet.files.yearly",
+    latest: "ddm1023"
+  },
+  "ZIP%E5%8E%8B%E7%BC%A9%E8%A7%A3%E5%8E%8B%E7%BC%A9%E5%B7%A5%E5%85%B7": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.mobislet.zipfile.yearly",
+    latest: "ddm1023"
+  },
+  "TPTeleprompter": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.pocket.compress.yearly",
+    latest: "ddm1023"
+  },
+  "com.pocket.photo": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.pocket.photo.yearly",
+    latest: "ddm1023"
+  },
+  "com.pocket.watermark": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.pocket.watermark.yearly",
+    latest: "ddm1023"
+  },
+  "com.pocket.compress": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.pocket.compress.yearly",
+    latest: "ddm1023"
+  },
+  "com.pocket.format": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.pocket.format.yearly",
+    latest: "ddm1023"
+  },
+  "com.CalculatorForiPad.InternetRocks": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "co.airapps.calculator.year",
+    latest: "ddm1023"
+  },
+  "solutions.wzp": {
+    cm: "timea",
+    hx: "hxpda",
+    id: yearlysubscription,
+    latest: "ddm1023"
+  },
+  "co.airapps": {
+    cm: "timea",
+    hx: "hxpda",
+    id: yearid,
+    latest: "ddm1023"
+  },
+  "com.internet-rocks": {
+    cm: "timea",
+    hx: "hxpda",
+    id: yearid,
+    latest: "ddm1023"
+  },
+  "SuperWidget": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.focoslive",
+    latest: "ddm1023"
+  },
+  "Picsew": {
+    cm: "timeb",
+    hx: "hxpdb",
+    id: "com.sugarmo.ScrollClip.pro"
+  },
+  "vpn": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "yearautorenew",
+    latest: "ddm1023"
+  },
+  "TT": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.55panda.hicalculator.year_sub",
+    latest: "ddm1023"
+  },
+  "Focos": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.focos.1w_t4_1w",
+    latest: "ddm1023"
+  },
+  "ProKnockOut": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "com.knockout.SVIP.50off",
+    latest: "ddm1023"
+  },
+  "com.teadoku.flashnote": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "pro_ios_ipad_mac",
+    latest: "ddm1023"
+  },
+  "com.tapuniverse.texteditor": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.tapuniverse.texteditor.w",
+    latest: "ddm1023"
+  }
+};
+__ENCODE_VERSION_LINE__;
