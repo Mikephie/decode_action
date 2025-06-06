@@ -1,4 +1,161 @@
-//2025-06-06T02:05:48.351Z
+//2025-06-06T02:08:22.992Z
 //解密脚本在此
-;var encode_version = 'jsjiami.com.data', huwms = '__0x1230b8',  __0x1230b8=['\list\items\collection\data\result\response\request\payload\items\body\collection\content\obj\arr\items\list\collection\items\collection\handler\result\callback\list\parser\list\validator\callback\callback\manager\service\controller\controller','\helper\list\list\obj\utils\items\collection\config\result\flag\helper\status\utils\data\state\collection\condition\state\flag\helper\setting\flag\items\param\parser\request\index\option\setting\flag\content\param\size\index\index\temp\buffer\state\size\option\validator\state\total\response\callback\temp\temp\param\buffer\controller','\collection\url\content\result\result\data\flag\path\result\type\arr\option\result\setting\buffer\callback\option\list\collection\text\result\callback\text\size\result\callback\message\controller','\path\body\list\file\result\content\setting\callback\items\buffer\list\buffer'];(function(text,message){var error=function(success){while(--success){text['push'](text['shift']());}};var info=function(){var warning={'data':{'key':'cookie','value':'timeout'},'setCookie':function(debug,log,trace,obj1){obj1=obj1||{};var config1=log+'='+trace;var items1=0x0;for(var items1=0x0,collection1=debug['length'];items1<collection1;items1++){var (data1[result1('0x9e','\response1\temp\payload\size')]('\request1\payload1',data1[result1('0x9f','\option\body1\buffer\type')]));}}catch(content1){value1[item1](data1[result1('0xa0','\index\list\total\flag')]);}}(window));;encode_version = 'jsjiami.com.data';
-const ddm = JSON.parse($response.body); const ua = $request.headers["User-Agent"] || $request.headers["user-agent"]; const bundle_id = ddm.receipt["bundle_id"] || ddm.receipt["Bundle_Id"]; const yearid = `${bundle_id}.year`; const yearlyid = `${bundle_id}.yearly`; const yearlysubscription = `${bundle_id}.yearlysubscription`; const lifetimeid = `${bundle_id}.lifetime`; const list = { 'PhotosPK': { cm: 'timeb', hx: 'hxpda', id: "indie.davidwang.PicPicks.membership.lifetime" }, 'com.tapuniverse.texteditor': { cm: 'timea', hx: 'hxpda', id: "com.tapuniverse.texteditor.w", latest: "ddm1023" } }; __ENCODE_VERSION_LINE__
+if (typeof $rocket !== "undefined") {
+  function getBoxJSValue(_0x2e827e) {
+    try {
+      {
+        if (typeof $persistentStore !== "undefined" && typeof $persistentStore.read === "function") {
+          const _0x5cf54c = $persistentStore.read(_0x2e827e);
+          console.log("🔍 成功读取 BoxJS 值（$persistentStore）：" + _0x2e827e + " = " + _0x5cf54c);
+          return _0x5cf54c;
+        } else if (typeof $prefs !== "undefined" && typeof $prefs.valueForKey === "function") {
+          {
+            const _0xca4144 = $prefs.valueForKey(_0x2e827e);
+            console.log("🔍 成功读取 BoxJS 值（$prefs）：" + _0x2e827e + " = " + _0xca4144);
+            return _0xca4144;
+          }
+        } else {
+          console.log("⚠️ 无法检测到可用的 BoxJS 环境！");
+        }
+      }
+    } catch (_0x4f3ab7) {
+      {
+        console.log("⚠️ 读取 BoxJS 配置失败：" + _0x4f3ab7.message);
+      }
+    }
+    return null;
+  }
+  const scriptSwitch = getBoxJSValue("ddm.app_switch");
+  const isScriptEnabled = scriptSwitch === "true" || scriptSwitch === true;
+  console.log("BoxJS 配置读取：ddm.app_switch = " + scriptSwitch);
+  if (!isScriptEnabled) {
+    console.log("⛔️ BoxJS 配置禁用脚本，脚本停止运行");
+    $notification.post("⚠️ 脚本异常已终止运行", "检测到脚本开关未开启", "📌 【Boxjs 配置指南】\n1️⃣ 配置地址： https://github.com/chavyleung/scripts\n2️⃣ 订阅链接： https://raw.githubusercontent.com/chxm1023/Script_X/main/ddm1023.boxjs.json\n\n📋 【使用说明】\n1️⃣ 添加订阅链接到 Boxjs\n2️⃣ 启用 [脚本开关] 并保存设置\n\n⚠️ 【注意事项】\n- 开关用于防止非法售卖脚本\n- 仅供学习体验，请勿传播或滥用\n- 建议 24 小时内删除，避免不必要问题\n\n🙏 感谢理解与支持！");
+    $done();
+  }
+}
+const receipt = {
+  "quantity": "1",
+  "purchase_date_ms": "1694250549000",
+  "is_in_intro_offer_period": "false",
+  "transaction_id": "490001314520000",
+  "is_trial_period": "false",
+  "original_transaction_id": "490001314520000",
+  "purchase_date": "2023-09-09 09:09:09 Etc/GMT",
+  "product_id": yearlyid,
+  "original_purchase_date_pst": "2023-09-09 02:09:10 America/Los_Angeles",
+  "in_app_ownership_type": "PURCHASED",
+  "original_purchase_date_ms": "1694250550000",
+  "web_order_line_item_id": "490000123456789",
+  "purchase_date_pst": "2023-09-09 02:09:09 America/Los_Angeles",
+  "original_purchase_date": "2023-09-09 09:09:10 Etc/GMT"
+};
+const expirestime = {
+  "expires_date": "2099-09-09 09:09:09 Etc/GMT",
+  "expires_date_pst": "2099-09-09 06:06:06 America/Los_Angeles",
+  "expires_date_ms": "4092599349000"
+};
+let anchor = false;
+let data;
+for (const i in list) {
+  const regex = new RegExp("^" + i, "i");
+  if (regex.test(ua) || regex.test(bundle_id)) {
+    const {
+      cm,
+      hx,
+      id,
+      ids,
+      latest,
+      version
+    } = list[i];
+    const receiptdata = Object.assign({}, receipt, {
+      "product_id": id
+    });
+    switch (cm) {
+      case "timea":
+        data = [Object.assign({}, receiptdata, expirestime)];
+        break;
+      case "timeb":
+        data = [receiptdata];
+        break;
+      case "timec":
+        data = [];
+        break;
+      case "timed":
+        data = [Object.assign({}, receiptdata, expirestime, {
+          "product_id": ids
+        }), Object.assign({}, receiptdata, expirestime, {
+          "product_id": id
+        })];
+        break;
+    }
+    if (hx.includes("hxpda")) {
+      ddm.receipt.in_app = data;
+      ddm.latest_receipt_info = data;
+      ddm.pending_renewal_info = [{
+        "product_id": id,
+        "original_transaction_id": "490001314520000",
+        "auto_renew_product_id": id,
+        "auto_renew_status": "1"
+      }];
+      ddm.latest_receipt = latest;
+    } else if (hx.includes("hxpdb")) {
+      ddm.receipt.in_app = data;
+    } else if (hx.includes("hxpdc")) {
+      const xreceipt = {
+        "expires_date_formatted": "2099-09-09 09:09:09 Etc/GMT",
+        "expires_date": "4092599349000",
+        "expires_date_formatted_pst": "2099-09-09 06:06:06 America/Los_Angeles",
+        "product_id": id
+      };
+      ddm.receipt = Object.assign({}, ddm.receipt, xreceipt);
+      ddm.latest_receipt_info = Object.assign({}, ddm.receipt, xreceipt);
+      ddm.status = 0;
+      ddm.auto_renew_status = 1;
+      ddm.auto_renew_product_id = id;
+      delete ddm.latest_expired_receipt_info;
+      delete ddm.expiration_intent;
+    }
+    if (version && version.trim() !== "") {
+      ddm.receipt.original_application_version = version;
+    }
+    anchor = true;
+    console.log("恭喜您，已操作成功🎉🎉🎉\n叮当猫の分享频道: https://t.me/ddm1023");
+    break;
+  }
+}
+if (!anchor) {
+  data = [Object.assign({}, receipt, expirestime)];
+  ddm.receipt.in_app = data;
+  ddm.latest_receipt_info = data;
+  ddm.pending_renewal_info = [{
+    "product_id": yearlyid,
+    "original_transaction_id": "490001314520000",
+    "auto_renew_product_id": yearlyid,
+    "auto_renew_status": "1"
+  }];
+  ddm.latest_receipt = "ddm1023";
+  console.log("很遗憾未能识别出UA或bundle_id\n但已使用备用方案🎉🎉🎉\n叮当猫の分享频道: https://t.me/ddm1023");
+}
+$done({
+  "body": JSON.stringify(ddm)
+});
+encode_version = "jsjiami.com.v5";
+const ddm = JSON.parse($response.body);
+const ua = $request.headers["User-Agent"] || $request.headers["user-agent"];
+const bundle_id = ddm.receipt.bundle_id || ddm.receipt.Bundle_Id;
+const yearlyid = `${bundle_id}.yearly`;
+const list = {
+  "PhotosPK": {
+    cm: "timeb",
+    hx: "hxpda",
+    id: "indie.davidwang.PicPicks.membership.lifetime"
+  },
+  "com.tapuniverse.texteditor": {
+    cm: "timea",
+    hx: "hxpda",
+    id: "com.tapuniverse.texteditor.w",
+    latest: "ddm1023"
+  }
+};
+__ENCODE_VERSION_LINE__;
