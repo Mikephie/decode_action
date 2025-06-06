@@ -1584,6 +1584,28 @@ function checkIfMixedContent(input) {
 function preprocessCiphertext(input) {
     addLog('执行智能预处理...', 'info');
 
+    // 优先：直接字符串定位jsjiami边界
+    const jsjiamiStart = input.indexOf(';var encode_version');
+    if (jsjiamiStart !== -1) {
+        const fromStart = input.substring(jsjiamiStart);
+        const jsjiamiEnd = fromStart.indexOf(";encode_version = 'jsjiami.com.v5';");
+        
+        if (jsjiamiEnd !== -1) {
+            const extracted = fromStart.substring(0, jsjiamiEnd + ";encode_version = 'jsjiami.com.v5';".length);
+            addLog('直接提取jsjiami完整代码块', 'success');
+            return extracted;
+        }
+        
+        // 尝试其他引号格式
+        const jsjiamiEnd2 = fromStart.indexOf(';encode_version = "jsjiami.com.v5";');
+        if (jsjiamiEnd2 !== -1) {
+            const extracted = fromStart.substring(0, jsjiamiEnd2 + ';encode_version = "jsjiami.com.v5";'.length);
+            addLog('直接提取jsjiami完整代码块', 'success');
+            return extracted;
+        }
+    }
+
+    // 如果直接定位失败，再用正则
     let processed = input
         .replace(/\/\/.*$/gm, '')
         .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -1593,16 +1615,6 @@ function preprocessCiphertext(input) {
         .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
 
     const patterns = [
-        {
-            name: 'jsjiami混淆',
-            pattern: /var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*,.*?['"`]((?:\\u[0-9a-fA-F]{4})+)['"`]/s,
-            extract: match => match[0]
-        },
-        {
-            name: 'jsjiami完整块',
-            pattern: /;var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`][\s\S]*?;encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*;/,
-            extract: match => match[0]
-        },
         {
             name: 'eval包装的jsjiami',
             pattern: /eval\s*\(\s*(['"`])(.*?jsjiami\.com\.v\d+.*?)\1\s*\)/s,
