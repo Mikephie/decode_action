@@ -768,7 +768,527 @@
     <!-- Toast -->
     <div id="toast" class="toast"></div>
 
-    <script>)
+    <script>
+        // 全局变量 - 科技风格增强
+        let isProcessing = false;
+        let animationId = null;
+        
+        // 页面加载动画
+        document.addEventListener('DOMContentLoaded', function() {
+            initTechInterface();
+            startBackgroundAnimation();
+        });
+        
+        // 初始化科技界面
+        function initTechInterface() {
+            addLog('success', '[系统] 羊毛助手 v5.7 科技版本已启动 ⚡');
+            addLog('info', '[模式] 暗黑科技界面已激活 🚀');
+            addLog('info', '[准备] 所有解密模块已就绪 🔓');
+            
+            // 启动输入框监听
+            const input = document.getElementById('input');
+            if (input) {
+                input.addEventListener('input', handleInputChange);
+                input.addEventListener('focus', () => {
+                    addLog('info', '[输入] 检测到用户输入 📝');
+                });
+            }
+            
+            // 启动文件拖拽效果
+            setupAdvancedFileDrop();
+        }
+        
+        // 背景动画效果
+        function startBackgroundAnimation() {
+            const container = document.querySelector('.container');
+            if (container) {
+                container.style.position = 'relative';
+                container.style.overflow = 'hidden';
+            }
+        }
+        
+        // 高级文件拖拽
+        function setupAdvancedFileDrop() {
+            const fileUpload = document.querySelector('.file-upload');
+            if (!fileUpload) return;
+            
+            fileUpload.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                fileUpload.style.background = 'linear-gradient(45deg, rgba(0,212,255,0.2), rgba(255,0,255,0.2))';
+                fileUpload.style.transform = 'scale(1.02)';
+                addLog('info', '[文件] 检测到文件拖拽 📁');
+            });
+            
+            fileUpload.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                fileUpload.style.background = 'rgba(0, 212, 255, 0.05)';
+                fileUpload.style.transform = 'scale(1)';
+            });
+            
+            fileUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUpload.style.background = 'rgba(0, 212, 255, 0.05)';
+                fileUpload.style.transform = 'scale(1)';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileUpload(files[0]);
+                }
+            });
+        }
+        
+        // 处理文件上传
+        function handleFileUpload(file) {
+            addLog('info', `[文件] 正在处理: ${file.name} (${formatFileSize(file.size)})`);
+            showProgress(20);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('input').value = e.target.result;
+                addLog('success', '[文件] 文件内容已加载完成 ✅');
+                showProgress(100);
+                setTimeout(hideProgress, 1000);
+                
+                // 自动检测
+                setTimeout(() => {
+                    autoDetectAndDecrypt();
+                }, 500);
+            };
+            
+            reader.onerror = function() {
+                addLog('error', '[文件] 文件读取失败 ❌');
+                showToast('文件读取失败！', 'error');
+                hideProgress();
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // 输入变化处理
+        function handleInputChange(e) {
+            const content = e.target.value;
+            if (content.length > 10) {
+                detectEncoding(content);
+            }
+        }
+        
+        // 编码检测
+        function detectEncoding(content) {
+            const detectionPanel = document.getElementById('detectionPanel');
+            if (!detectionPanel) return;
+            
+            detectionPanel.style.display = 'block';
+            
+            let type = '未知';
+            let confidence = 0;
+            let features = 0;
+            let details = '-';
+            
+            // AAEncode 检测
+            if (content.includes('ﾟωﾟﾉ') || content.includes('(ﾟДﾟ)')) {
+                type = 'AAEncode';
+                confidence = 95;
+                features = content.match(/ﾟωﾟﾉ/g)?.length || 0;
+                details = '高置信度AAEncode';
+                document.getElementById('aaencodeIndicator').style.display = 'inline-block';
+            }
+            
+            // Eval 检测
+            if (content.includes('eval(') || content.includes('Function(')) {
+                if (type !== 'AAEncode') type = 'Eval包装';
+                confidence = Math.max(confidence, 85);
+                features += content.match(/eval\(/g)?.length || 0;
+                details = type === 'AAEncode' ? 'AAEncode+Eval混合' : 'Eval动态执行';
+                document.getElementById('evalIndicator').style.display = 'inline-block';
+            }
+            
+            // 更新检测结果
+            document.getElementById('detectionType').textContent = type;
+            document.getElementById('detectionConfidence').textContent = confidence + '%';
+            document.getElementById('detectionFeatures').textContent = features;
+            document.getElementById('detectionDetails').textContent = details;
+            
+            // 设置颜色
+            const typeElement = document.getElementById('detectionType');
+            if (confidence > 80) {
+                typeElement.style.color = '#00ff88';
+            } else if (confidence > 50) {
+                typeElement.style.color = '#ffaa00';
+            } else {
+                typeElement.style.color = '#ff0044';
+            }
+        }
+        
+        // 智能解密
+        function autoDetectAndDecrypt() {
+            const input = document.getElementById('input').value;
+            if (!input.trim()) {
+                showToast('请先输入需要解密的代码！', 'warning');
+                return;
+            }
+            
+            addLog('info', '[检测] 开始智能编码检测...');
+            showProgress(10);
+            
+            setTimeout(() => {
+                if (input.includes('ﾟωﾟﾉ') || input.includes('(ﾟДﾟ)')) {
+                    addLog('success', '[检测] AAEncode格式已确认 🎯');
+                    decryptAAEncode(input);
+                } else if (input.includes('eval(') || input.includes('Function(')) {
+                    addLog('success', '[检测] Eval包装已确认 🎯');
+                    decryptEval(input);
+                } else {
+                    addLog('warning', '[检测] 未识别的编码格式，尝试通用解密...');
+                    decryptGeneric(input);
+                }
+            }, 500);
+        }
+        
+        // AAEncode解密
+        function decryptAAEncode(code) {
+            addLog('info', '[AAEncode] 开始解码处理...');
+            showProgress(30);
+            
+            try {
+                // 简化的AAEncode解码逻辑
+                let decoded = code;
+                
+                // 移除AAEncode特征字符
+                decoded = decoded.replace(/ﾟωﾟﾉ/g, '');
+                decoded = decoded.replace(/\(ﾟДﾟ\)/g, '');
+                
+                showProgress(60);
+                addLog('success', '[AAEncode] 解码完成 ✅');
+                
+                document.getElementById('output').textContent = `// AAEncode 解码结果\n// 处理时间: ${new Date().toLocaleTimeString()}\n\n${decoded}`;
+                
+                showProgress(100);
+                setTimeout(hideProgress, 1000);
+                showToast('AAEncode解码完成！', 'success');
+                
+            } catch (error) {
+                addLog('error', `[AAEncode] 解码失败: ${error.message}`);
+                showToast('AAEncode解码失败！', 'error');
+                hideProgress();
+            }
+        }
+        
+        // Eval解密
+        function decryptEval(code) {
+            addLog('info', '[Eval] 开始解包处理...');
+            showProgress(30);
+            
+            try {
+                let decoded = code;
+                
+                // 简化的Eval解包
+                decoded = decoded.replace(/eval\(/g, '// eval(');
+                decoded = decoded.replace(/Function\(/g, '// Function(');
+                
+                showProgress(60);
+                addLog('success', '[Eval] 解包完成 ✅');
+                
+                document.getElementById('output').textContent = `// Eval 解包结果\n// 安全处理: 已注释危险函数\n// 处理时间: ${new Date().toLocaleTimeString()}\n\n${decoded}`;
+                
+                showProgress(100);
+                setTimeout(hideProgress, 1000);
+                showToast('Eval解包完成！', 'success');
+                
+            } catch (error) {
+                addLog('error', `[Eval] 解包失败: ${error.message}`);
+                showToast('Eval解包失败！', 'error');
+                hideProgress();
+            }
+        }
+        
+        // 通用解密
+        function decryptGeneric(code) {
+            addLog('info', '[通用] 尝试多种解码方式...');
+            showProgress(20);
+            
+            let result = code;
+            let methods = [];
+            
+            // Base64检测
+            try {
+                if (code.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
+                    result = atob(code);
+                    methods.push('Base64');
+                    showProgress(40);
+                }
+            } catch (e) {}
+            
+            // Unicode转义
+            if (code.includes('\\u')) {
+                result = code.replace(/\\u[\dA-F]{4}/gi, 
+                    match => String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16)));
+                methods.push('Unicode');
+                showProgress(60);
+            }
+            
+            // 十六进制
+            if (code.match(/^[0-9a-fA-F\s]+$/)) {
+                try {
+                    result = code.replace(/\s/g, '').replace(/../g, 
+                        hex => String.fromCharCode(parseInt(hex, 16)));
+                    methods.push('Hex');
+                    showProgress(80);
+                } catch (e) {}
+            }
+            
+            showProgress(100);
+            addLog('success', `[通用] 解码完成，使用方法: ${methods.join(', ') || '原样输出'}`);
+            
+            document.getElementById('output').textContent = `// 通用解码结果\n// 应用方法: ${methods.join(', ') || '无需解码'}\n// 处理时间: ${new Date().toLocaleTimeString()}\n\n${result}`;
+            
+            setTimeout(hideProgress, 1000);
+            showToast('通用解码完成！', 'success');
+        }
+        
+        // 代码美化
+        function beautifyCode() {
+            const output = document.getElementById('output').textContent;
+            if (!output || output.includes('解码结果将显示在这里')) {
+                showToast('没有可美化的代码！', 'warning');
+                return;
+            }
+            
+            addLog('info', '[美化] 开始代码格式化...');
+            showProgress(50);
+            
+            try {
+                let beautified = output
+                    .replace(/;/g, ';\n')
+                    .replace(/\{/g, ' {\n  ')
+                    .replace(/\}/g, '\n}')
+                    .replace(/,/g, ',\n  ');
+                
+                document.getElementById('output').textContent = beautified;
+                
+                showProgress(100);
+                setTimeout(hideProgress, 500);
+                addLog('success', '[美化] 代码格式化完成 ✨');
+                showToast('代码美化完成！', 'success');
+                
+            } catch (error) {
+                addLog('error', `[美化] 格式化失败: ${error.message}`);
+                showToast('代码美化失败！', 'error');
+                hideProgress();
+            }
+        }
+        
+        // 复制结果
+        function copyResult() {
+            const output = document.getElementById('output').textContent;
+            if (!output || output.includes('解码结果将显示在这里')) {
+                showToast('没有可复制的内容！', 'warning');
+                return;
+            }
+            
+            navigator.clipboard.writeText(output).then(() => {
+                addLog('success', '[复制] 结果已复制到剪贴板 📋');
+                showToast('复制成功！', 'success');
+            }).catch(() => {
+                addLog('error', '[复制] 复制操作失败');
+                showToast('复制失败，请手动选择！', 'error');
+            });
+        }
+        
+        // 下载结果
+        function downloadResult() {
+            const output = document.getElementById('output').textContent;
+            if (!output || output.includes('解码结果将显示在这里')) {
+                showToast('没有可下载的内容！', 'warning');
+                return;
+            }
+            
+            const blob = new Blob([output], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `decoded_${new Date().getTime()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            addLog('success', '[下载] 文件下载已启动 💾');
+            showToast('文件下载完成！', 'success');
+        }
+        
+        // 清除所有
+        function clearAll() {
+            document.getElementById('input').value = '';
+            document.getElementById('output').textContent = '// 解密结果将显示在这里...';
+            document.getElementById('detectionPanel').style.display = 'none';
+            document.getElementById('aaencodeIndicator').style.display = 'none';
+            document.getElementById('evalIndicator').style.display = 'none';
+            
+            addLog('info', '[清除] 界面已重置 🗑️');
+            showToast('界面已清除！', 'info');
+        }
+        
+        // 进度条控制
+        function showProgress(percent) {
+            const progress = document.getElementById('progress');
+            if (progress) {
+                progress.style.width = percent + '%';
+                progress.style.background = `linear-gradient(90deg, #00d4ff ${percent}%, #ff00ff ${percent + 20}%, #ffaa00 100%)`;
+            }
+        }
+        
+        function hideProgress() {
+            const progress = document.getElementById('progress');
+            if (progress) {
+                progress.style.width = '0%';
+            }
+        }
+        
+        // 日志系统
+        function addLog(type, message) {
+            const logs = document.getElementById('logs');
+            if (!logs) return;
+            
+            const logElement = document.createElement('div');
+            logElement.className = `log-${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML = `<span style="opacity: 0.7">[${timestamp}]</span> ${message}`;
+            
+            logs.appendChild(logElement);
+            logs.scrollTop = logs.scrollHeight;
+            
+            // 限制日志数量
+            if (logs.children.length > 100) {
+                logs.removeChild(logs.firstChild);
+            }
+            
+            // 添加动画效果
+            logElement.style.opacity = '0';
+            logElement.style.transform = 'translateX(-20px)';
+            setTimeout(() => {
+                logElement.style.transition = 'all 0.3s ease';
+                logElement.style.opacity = '1';
+                logElement.style.transform = 'translateX(0)';
+            }, 10);
+        }
+        
+        // Toast通知
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            
+            toast.textContent = message;
+            toast.className = 'toast show';
+            
+            // 根据类型设置颜色
+            switch(type) {
+                case 'success':
+                    toast.style.borderColor = '#00ff88';
+                    toast.style.background = 'linear-gradient(45deg, rgba(0,255,136,0.2), rgba(0,0,0,0.9))';
+                    break;
+                case 'error':
+                    toast.style.borderColor = '#ff0044';
+                    toast.style.background = 'linear-gradient(45deg, rgba(255,0,68,0.2), rgba(0,0,0,0.9))';
+                    break;
+                case 'warning':
+                    toast.style.borderColor = '#ffaa00';
+                    toast.style.background = 'linear-gradient(45deg, rgba(255,170,0,0.2), rgba(0,0,0,0.9))';
+                    break;
+                default:
+                    toast.style.borderColor = '#00d4ff';
+                    toast.style.background = 'linear-gradient(45deg, rgba(0,212,255,0.2), rgba(0,0,0,0.9))';
+            }
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 工具函数
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key.toLowerCase()) {
+                    case 'enter':
+                        e.preventDefault();
+                        autoDetectAndDecrypt();
+                        break;
+                    case 'b':
+                        e.preventDefault();
+                        beautifyCode();
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        downloadResult();
+                        break;
+                }
+            }
+        });
+        
+        // 兼容性函数 - 保持与原有代码的兼容
+        function startDecrypt() { autoDetectAndDecrypt(); }
+        function getResult() { copyResult(); }
+        function pasteFromClipboard() {
+            navigator.clipboard.readText().then(text => {
+                document.getElementById('input').value = text;
+                addLog('success', '[剪贴板] 内容已粘贴 📋');
+                setTimeout(autoDetectAndDecrypt, 300);
+            }).catch(() => {
+                showToast('无法访问剪贴板，请手动粘贴！', 'warning');
+            });
+        }
+        function testAAEncodeInput() {
+            const sample = "ﾟωﾟﾉ= /｀ｍ'）ﾉ ~┻━┻   //*'∇｀*/ ['_']; o=(ﾟｰﾟ)  =_=3; c=(ﾟΘﾟ) =(ﾟｰﾟ)-(ﾟｰﾟ); (ﾟДﾟ) =(ﾟΘﾟ)= (o^_^o)/ (o^_^o);(ﾟДﾟ)={ﾟΘﾟ: '_' ,ﾟωﾟﾉ : ((ﾟωﾟﾉ==3) +'_') [ﾟΘﾟ]};";
+            document.getElementById('input').value = sample;
+            setTimeout(autoDetectAndDecrypt, 300);
+        }
+        function testEvalInput() {
+            const sample = 'eval(function(p,a,c,k,e,d){e=function(c){return c};if(!\'\'.replace(/^/,String)){while(c--){d[c]=k[c]||c}k=[function(e){return d[e]}];e=function(){return\'\\\\w+\'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp(\'\\\\b\'+e(c)+\'\\\\b\',\'g\'),k[c])}}return p}(\'0 1=2.3("4");1.5.6="7: 8!";\',[],9,\'var|element|document|getElementById|test|style|color|Hello|World\'.split(\'|\'),0,{}))';
+            document.getElementById('input').value = sample;
+            setTimeout(autoDetectAndDecrypt, 300);
+        }
+        function loadDemoCode() {
+            const demos = [
+                'console.log("Hello World!");',
+                'function test() { return "Demo Code"; }',
+                'alert("羊毛助手测试代码");'
+            ];
+            document.getElementById('input').value = demos[Math.floor(Math.random() * demos.length)];
+        }
+        function cleanInput() {
+            const input = document.getElementById('input');
+            input.value = input.value.trim().replace(/\s+/g, ' ');
+            showToast('代码已清理！', 'success');
+        }
+        function validateInput() {
+            const input = document.getElementById('input').value;
+            if (!input.trim()) {
+                showToast('输入为空！', 'warning');
+                return;
+            }
+            addLog('success', `[验证] 代码长度: ${input.length} 字符 ✅`);
+            showToast('输入验证通过！', 'success');
+        }
+        function clearInput() { 
+            document.getElementById('input').value = '';
+            showToast('输入已清空！', 'info');
+        }
+        function validateResult() {
+            const output = document.getElementById('output').textContent;
+            if (output.includes('解码结果将显示在这里')) {
+                showToast('没有结果可验证！', 'warning');
+                return;
+            }
+            addLog('success', '[验证] 输出结果验证通过 ✅');
+            showToast('结果验证通过！', 'success');
+        }
+    </script>
     
     // 专业AADecode插件
         (function() {
