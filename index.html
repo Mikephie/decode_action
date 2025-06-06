@@ -1594,8 +1594,20 @@ function preprocessCiphertext(input) {
     const patterns = [
         {
             name: 'jsjiami混淆',
-            pattern: /var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*,.*?['"`]((?:\\u[0-9a-fA-F]{4})+)['"`]/s,
-            extract: match => match[0]
+            // 改进：更精确地匹配完整的 jsjiami 代码块
+            pattern: /;?\s*var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`][\s\S]*?(?:;(?:\s*\n|$)|$)/m,
+            extract: match => {
+                let extracted = match[0].trim();
+                // 确保以分号开头
+                if (!extracted.startsWith(';')) {
+                    extracted = ';' + extracted;
+                }
+                // 确保以分号结尾
+                if (!extracted.endsWith(';')) {
+                    extracted = extracted + ';';
+                }
+                return extracted;
+            }
         },
         {
             name: 'eval包装的jsjiami',
