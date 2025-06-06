@@ -1455,7 +1455,7 @@ function loadRemoteFile(url) {
            }
        }
        
-       // 智能清理输入 - 精简优化版
+       // 智能清理输入 - 彻底简化版
 function cleanInput() {
     const inputEl = document.getElementById('input');
     const input = inputEl.value.trim();
@@ -1467,39 +1467,25 @@ function cleanInput() {
 
     addLog('开始智能清理代码...', 'info');
 
-    // 保护 encode_version 行
-    let encodeLine = '';
-    let workingInput = input.replace(/^[\s;]*var\s+encode_version\s*=.*$/m, match => {
-        encodeLine = match.startsWith(';') ? match : ';' + match.trim();
-        return '__ENCODE_VERSION_PLACEHOLDER__';
-    });
-
     // 尝试智能提取密文
-    const extracted = extractCiphertext(workingInput);
+    const extracted = extractCiphertext(input);
     if (extracted && extracted.length > 50 && extracted.length < input.length * 0.9) {
-        // 还原 encode_version
-        const finalResult = encodeLine ? encodeLine + '\n' + extracted : extracted;
-        inputEl.value = finalResult;
+        inputEl.value = extracted;
         showToast('🎯 智能提取密文完成');
-        addLog(`提取: ${input.length} → ${finalResult.length} 字符`, 'success');
+        addLog(`提取: ${input.length} → ${extracted.length} 字符`, 'success');
         return;
     }
 
     // 基础清理
-    let cleaned = workingInput
-        .replace(/\/\/.*$/gm, '')                    // 单行注释
+    let cleaned = input
         .replace(/\/\*[\s\S]*?\*\//g, '')           // 多行注释
+        .replace(/\/\/.*$/gm, '')                    // 单行注释
         .replace(/<!--[\s\S]*?-->/g, '')            // HTML注释
         .replace(/^\s*console\.(log|warn|error)\s*\([^)]*\)\s*;?\s*$/gm, '') // console语句
         .replace(/^\s*alert\s*\([^)]*\)\s*;?\s*$/gm, '') // alert语句
         .replace(/^\s*[\r\n]+/gm, '')               // 空行
         .replace(/\s+/g, ' ')                       // 多余空白
         .trim();
-
-    // 还原 encode_version
-    if (encodeLine) {
-        cleaned = cleaned.replace('__ENCODE_VERSION_PLACEHOLDER__', encodeLine);
-    }
 
     // 更新结果
     if (cleaned === input) {
@@ -1512,74 +1498,60 @@ function cleanInput() {
     }
 }
 
-// 智能提取密文
+// 智能提取密文 - 简化版
 function extractCiphertext(input) {
-    // 提取模式（按优先级排序，更严格的匹配）
-    const patterns = [
-        // jsjiami 混淆 - 直接匹配从开头到结尾的完整代码块
-        {
-            name: 'jsjiami',
-            extract: (text) => {
-                const startIndex = text.indexOf(';var encode_version');
-                if (startIndex === -1) return null;
-                
-                const fromStart = text.substring(startIndex);
-                const endPattern = /;encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*;/;
-                const endMatch = fromStart.match(endPattern);
-                
-                if (endMatch) {
-                    const endIndex = fromStart.indexOf(endMatch[0]) + endMatch[0].length;
-                    return fromStart.substring(0, endIndex);
-                }
-                return null;
-            }
-        },
-        
-        // eval 包装的 jsjiami
-        /eval\s*\(\s*(['"`])(.*?jsjiami\.com\.v\d+.*?)\1\s*\)/s,
-        
-        // 标准 eval 包装 - 必须是长字符串
-        /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s,
-        
-        // Function 构造器 - 必须是长字符串
-        /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s,
-        
-        // AAEncode - 特殊字符模式
-        /(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s,
-        
-        // 纯Unicode转义序列 - 至少50个连续的\u序列
-        /((?:\\u[0-9a-fA-F]{4}){50,})/,
-        
-        // 纯十六进制转义序列 - 至少50个连续的\x序列
-        /((?:\\x[0-9a-fA-F]{2}){50,})/,
-        
-        // Base64 模式 - 更严格，必须是独立的长字符串
-        /^([A-Za-z0-9+/]{200,}={0,2})$/m
-    ];
+    // 1. jsjiami 混淆 - 直接字符串搜索
+    const jsjiamiStart = input.indexOf(';var encode_version');
+    if (jsjiamiStart !== -1) {
+        const fromStart = input.substring(jsjiamiStart);
+        const jsjiamiEnd = fromStart.lastIndexOf(";encode_version = 'jsjiami.com.v5';");
+        if (jsjiamiEnd !== -1) {
+            const extracted = fromStart.substring(0, jsjiamiEnd + ";encode_version = 'jsjiami.com.v5';".length);
+            addLog('提取到 jsjiami 混淆代码', 'success');
+            return extracted;
+        }
+    }
 
-    for (let i = 0; i < patterns.length; i++) {
-        const pattern = patterns[i];
-        
-        // jsjiami 特殊处理
-        if (pattern.name === 'jsjiami') {
-            const extracted = pattern.extract(input);
-            if (extracted && extracted.length > 100) {
-                addLog('提取到 jsjiami 混淆代码', 'success');
-                return extracted;
-            }
-            continue;
-        }
-        
-        // 正则模式处理
-        const match = input.match(pattern);
-        if (match) {
-            const extracted = match[match.length - 1] || match[1];
-            if (extracted && extracted.length > 100) {
-                const formatNames = ['jsjiami-eval', 'eval包装', 'Function构造', 'AAEncode', 'Unicode序列', '十六进制序列', 'Base64'];
-                addLog(`提取到 ${formatNames[i - 1] || '未知'} 格式`, 'success');
-                return extracted;
-            }
-        }
+    // 2. eval 包装
+    const evalMatch = input.match(/eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s);
+    if (evalMatch) {
+        addLog('提取到 eval 包装代码', 'success');
+        return evalMatch[2];
+    }
+
+    // 3. Function 构造器
+    const funcMatch = input.match(/(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s);
+    if (funcMatch) {
+        addLog('提取到 Function 构造器代码', 'success');
+        return funcMatch[2];
+    }
+
+    // 4. AAEncode
+    const aaMatch = input.match(/(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s);
+    if (aaMatch) {
+        addLog('提取到 AAEncode 代码', 'success');
+        return aaMatch[1];
+    }
+
+    // 5. 纯Unicode序列
+    const unicodeMatch = input.match(/((?:\\u[0-9a-fA-F]{4}){50,})/);
+    if (unicodeMatch) {
+        addLog('提取到 Unicode 转义序列', 'success');
+        return unicodeMatch[1];
+    }
+
+    // 6. 纯十六进制序列
+    const hexMatch = input.match(/((?:\\x[0-9a-fA-F]{2}){50,})/);
+    if (hexMatch) {
+        addLog('提取到十六进制转义序列', 'success');
+        return hexMatch[1];
+    }
+
+    // 7. Base64 (严格模式)
+    const base64Match = input.match(/^([A-Za-z0-9+/]{200,}={0,2})$/m);
+    if (base64Match) {
+        addLog('提取到 Base64 编码', 'success');
+        return base64Match[1];
     }
 
     return null;
