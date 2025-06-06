@@ -1455,7 +1455,7 @@ function loadRemoteFile(url) {
            }
        }
        
-       // 智能清理输入 - 完整修复版
+       // 智能清理输入 - 优化版（修复 ;var encode_version 丢失）
 function cleanInput() {
     const inputEl = document.getElementById('input');
     const input = inputEl.value.trim();
@@ -1480,10 +1480,20 @@ function cleanInput() {
 
     addLog('开始智能清理代码...', 'info');
 
+    // ✅ 保护 encode_version 整行
+    let encodeLine = '';
+    let protectedInput = input.replace(/^[\s;]*var\s+encode_version\s*=.*$/m, match => {
+        encodeLine = match.trimStart().startsWith(';') ? match : ';' + match.trimStart();
+        return '__ENCODE_VERSION_LINE__';
+    });
+
     // 智能预处理
-    let processed = preprocessCiphertext(input);
+    let processed = preprocessCiphertext(protectedInput);
 
     if (processed.length < input.length * 0.8 && processed.length > 50) {
+        if (encodeLine && !processed.includes('encode_version')) {
+            processed = encodeLine + '\n' + processed;
+        }
         inputEl.value = processed;
         showToast('🎯 智能提取密文完成');
         addLog(`智能提取: 从${input.length}字符中提取${processed.length}字符`, 'success');
@@ -1496,7 +1506,7 @@ function cleanInput() {
     }
 
     // === 基础清理
-    let cleaned = input
+    let cleaned = protectedInput
         .replace(/\/\/.*$/gm, '')
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/<!--[\s\S]*?-->/g, '')
@@ -1509,6 +1519,11 @@ function cleanInput() {
         .replace(/^\s+/gm, '')
         .replace(/\s+/g, ' ')
         .trim();
+
+    // ✅ 还原 encode_version 行
+    if (encodeLine) {
+        cleaned = cleaned.replace('__ENCODE_VERSION_LINE__', encodeLine);
+    }
 
     if (cleaned.length === input.length) {
         showToast('🔍 未发现需要清理的内容');
@@ -1564,7 +1579,6 @@ function checkIfMixedContent(input) {
     return false;
 }
 
-<<<<<<< main
 // 智能预处理混合密文
 function preprocessCiphertext(input) {
     addLog('执行智能预处理...', 'info');
@@ -1576,38 +1590,12 @@ function preprocessCiphertext(input) {
         .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
         .replace(/^\s*\/\/解密脚本.*$/gm, '')
         .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
-=======
-// 智能预处理混合密文 - 修复版
-function preprocessCiphertext(input) {
-    addLog('执行智能预处理...', 'info');
->>>>>>> origin/main
 
-    // 优先尝试直接提取密文模式，避免清理破坏结构
     const patterns = [
         {
             name: 'jsjiami混淆',
-<<<<<<< main
-            // 修复：更精确地匹配jsjiami代码块，避免匹配到前面的普通代码
-            pattern: /;?\s*var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`][\s\S]*?__0x\w+\s*=\s*\[[^\]]+\]\s*;?/,
-=======
-            // 更精确的模式：匹配从 var encode_version 开始到数组结束的完整代码
-            pattern: /;?\s*var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`][\s\S]*?__0x\w+\s*=\s*\[[^\]]*\](?:\s*;)?/,
->>>>>>> origin/main
-            extract: match => {
-                let extracted = match[0].trim();
-                // 确保以分号开头
-                if (!extracted.startsWith(';')) {
-                    extracted = ';' + extracted;
-                }
-<<<<<<< main
-=======
-                // 如果没有以分号结尾，添加分号
-                if (!extracted.endsWith(';')) {
-                    extracted = extracted + ';';
-                }
->>>>>>> origin/main
-                return extracted;
-            }
+            pattern: /var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*,.*?['"`]((?:\\u[0-9a-fA-F]{4})+)['"`]/s,
+            extract: match => match[0]
         },
         {
             name: 'eval包装的jsjiami',
@@ -1631,14 +1619,8 @@ function preprocessCiphertext(input) {
         }
     ];
 
-<<<<<<< main
     for (const pattern of patterns) {
         const matches = processed.match(pattern.pattern);
-=======
-    // 先尝试从原始输入中提取（不做任何清理）
-    for (const pattern of patterns) {
-        const matches = input.match(pattern.pattern);
->>>>>>> origin/main
         if (matches) {
             const extracted = pattern.extract(matches);
             if (extracted && extracted.length > 50) {
@@ -1648,51 +1630,14 @@ function preprocessCiphertext(input) {
         }
     }
 
-    // 如果直接提取失败，才进行基础清理后再尝试
-    let processed = input
-        .replace(/\/\/.*$/gm, '')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/<!--[\s\S]*?-->/g, '')
-        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
-        .replace(/^\s*\/\/解密脚本.*$/gm, '')
-        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
-
-    // 再次尝试提取
-    for (const pattern of patterns) {
-        const matches = processed.match(pattern.pattern);
-        if (matches) {
-            const extracted = pattern.extract(matches);
-            if (extracted && extracted.length > 50) {
-                addLog(`清理后智能提取${pattern.name}格式密文`, 'success');
-                return extracted;
-            }
-        }
-    }
-
-    // 如果还是没有匹配到，返回基础清理结果
     return processed
         .replace(/^\s*\/\/\s*(原始|原文|明文).*$/gm, '')
-        .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
-        .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
+        .replace(/^\s*console\.log\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
+        .replace(/^\s*alert\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
         .replace(/^\s*[\r\n]/gm, '')
         .replace(/^\s+/gm, '')
         .replace(/\s+/g, ' ')
         .trim();
-}
-
-// 为了更好地处理你的特定案例，可以添加一个专门的测试函数
-function testJsjiamiExtraction() {
-    const testInput = `  'com.teadoku.flashnote': { cm: 'timea', hx: 'hxpda', id: "pro_ios_ipad_mac", latest: "ddm1023" },  //AnkiNote
-  'com.tapuniverse.texteditor': { cm: 'timea', hx: 'hxpda', id: "com.tapuniverse.texteditor.w", latest: "ddm1023" }  //TextEditor
-};
-
-;var encode_version = 'jsjiami.com.v5', huwms = '__0x1230b8',  __0x1230b8=['\\x4b\\x73\\x4f\\x36\\x77\\x34\\x6e\\x43\\x73\\x4d\\x4f\\x70\\x57\\x31\\x73\\x63\\x52\\x73\\x4f\\x4e\\x77\\x35\\x56\\x66\\x56\\x7a\\x44\\x44\\x74\\x67\\x3d\\x3d','\\x59\\x63\\x4b\\x57\\x47\\x73\\x4f\\x78\\x77\\x6f\\x59\\x3d'];`;
-
-    console.log('测试提取 jsjiami 密文：');
-    const result = preprocessCiphertext(testInput);
-    console.log('提取结果：', result);
-    console.log('结果长度：', result.length);
-    console.log('是否只包含 jsjiami 代码：', !result.includes('com.teadoku.flashnote'));
 }
 
 // 验证输入质量
