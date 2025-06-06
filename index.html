@@ -1498,62 +1498,48 @@ function cleanInput() {
     }
 }
 
-// 智能提取密文 - 简化版本
+// 智能提取密文 - 安全版本
 function extractCiphertext(input) {
-    // 1. jsjiami 混淆 - 简单但可靠的方法
-    const jsjiamiStart = input.indexOf(';var encode_version');
-    if (jsjiamiStart !== -1) {
-        const fromStart = input.substring(jsjiamiStart);
-        
-        // 使用正则表达式一次性匹配整个jsjiami块
-        const jsjiamiPattern = /^;var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`][\s\S]*?encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*;/;
-        const match = fromStart.match(jsjiamiPattern);
-        
-        if (match) {
-            addLog(`提取到 jsjiami 混淆代码 (${match[0].length}字符)`, 'success');
-            return match[0];
-        }
-        
-        addLog('jsjiami 完整匹配失败，尝试其他方法', 'warn');
-    }
-
-    // 2. eval 包装
-    const evalMatch = input.match(/eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s);
+    // 暂时禁用jsjiami自动提取，避免性能问题
+    // TODO: 需要更好的算法来处理超长jsjiami
+    
+    // 1. eval 包装
+    const evalMatch = input.match(/eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,200}?)\1\s*\)/);
     if (evalMatch) {
         addLog('提取到 eval 包装代码', 'success');
         return evalMatch[2];
     }
 
-    // 3. Function 构造器
-    const funcMatch = input.match(/(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s);
+    // 2. Function 构造器
+    const funcMatch = input.match(/(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,200}?)\1\s*\)/);
     if (funcMatch) {
         addLog('提取到 Function 构造器代码', 'success');
         return funcMatch[2];
     }
 
-    // 4. AAEncode
-    const aaMatch = input.match(/(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s);
+    // 3. AAEncode
+    const aaMatch = input.match(/(ﾟωﾟﾉ[\s\S]{100,500}?ﾟΘﾟ)/);
     if (aaMatch) {
         addLog('提取到 AAEncode 代码', 'success');
         return aaMatch[1];
     }
 
-    // 5. 纯Unicode序列
-    const unicodeMatch = input.match(/((?:\\u[0-9a-fA-F]{4}){50,})/);
+    // 4. 纯Unicode序列
+    const unicodeMatch = input.match(/((?:\\u[0-9a-fA-F]{4}){50,100})/);
     if (unicodeMatch) {
         addLog('提取到 Unicode 转义序列', 'success');
         return unicodeMatch[1];
     }
 
-    // 6. 纯十六进制序列
-    const hexMatch = input.match(/((?:\\x[0-9a-fA-F]{2}){50,})/);
+    // 5. 纯十六进制序列
+    const hexMatch = input.match(/((?:\\x[0-9a-fA-F]{2}){50,100})/);
     if (hexMatch) {
         addLog('提取到十六进制转义序列', 'success');
         return hexMatch[1];
     }
 
-    // 7. Base64 (严格模式)
-    const base64Match = input.match(/^([A-Za-z0-9+/]{200,}={0,2})$/m);
+    // 6. Base64 (限制长度)
+    const base64Match = input.match(/^([A-Za-z0-9+/]{200,1000}={0,2})$/m);
     if (base64Match) {
         addLog('提取到 Base64 编码', 'success');
         return base64Match[1];
