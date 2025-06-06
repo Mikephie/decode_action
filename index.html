@@ -1516,8 +1516,8 @@ function cleanInput() {
 function extractCiphertext(input) {
     // 提取模式（按优先级排序）
     const patterns = [
-        // jsjiami 混淆 - 修复正则
-        /;?\s*var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*[,;]\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^'"`\\]|\\.)*?)\1/s,
+        // jsjiami 混淆 - 完整格式捕获 (必须包含开头的分号)
+        /;var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*,\s*\w+\s*=\s*['"`][^'"`]*['"`]\s*,\s*\w+\s*=\s*\[[^\]]*\].*?(?=;|\n|$)/s,
         
         // eval 包装的 jsjiami
         /eval\s*\(\s*(['"`])(.*?jsjiami\.com\.v\d+.*?)\1\s*\)/s,
