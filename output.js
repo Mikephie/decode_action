@@ -1,4 +1,4 @@
-//2025-06-06T08:19:09.791Z
+//2025-06-06T08:22:12.026Z
 //解密脚本在此
 if (typeof $rocket !== "undefined") {
   function getBoxJSValue(_0x2e827e) {
@@ -141,21 +141,3 @@ $done({
   "body": JSON.stringify(ddm)
 });
 encode_version = "jsjiami.com.v5";
-const ddm = JSON.parse($response.body);
-const ua = $request.headers["User-Agent"] || $request.headers["user-agent"];
-const bundle_id = ddm.receipt.bundle_id || ddm.receipt.Bundle_Id;
-const yearlyid = `${bundle_id}.yearly`;
-const list = {
-  "PhotosPK": {
-    cm: "timeb",
-    hx: "hxpda",
-    id: "indie.davidwang.PicPicks.membership.lifetime"
-  },
-  "com.tapuniverse.texteditor": {
-    cm: "timea",
-    hx: "hxpda",
-    id: "com.tapuniverse.texteditor.w",
-    latest: "ddm1023"
-  }
-};
-__ENCODE_VERSION_LINE__;
