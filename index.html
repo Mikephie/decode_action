@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,529 +10,526 @@
             padding: 0; 
             box-sizing: border-box; 
         }
-
-```
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-        background: #0a0a0a;
-        background-image: 
-            radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-        min-height: 100vh;
-        color: #e0e6ed;
-        overflow-x: hidden;
-        position: relative;
-    }
-    
-    /* 简化的动态背景效果 */
-    body::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: 
-            radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.1), transparent),
-            radial-gradient(1px 1px at 40px 70px, rgba(0,255,255,0.05), transparent);
-        background-size: 100px 80px;
-        animation: sparkle 20s linear infinite;
-        pointer-events: none;
-        z-index: 1;
-        opacity: 0.5;
-    }
-    
-    @keyframes sparkle {
-        0% { transform: translateY(0px); }
-        100% { transform: translateY(-80px); }
-    }
-    
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 15px;
-        position: relative;
-        z-index: 2;
-    }
-    
-    h1 {
-        text-align: center;
-        margin: 20px 0;
-        font-size: 2.2rem;
-        font-weight: 900;
-        background: linear-gradient(45deg, #00d4ff, #ff00ff, #ffff00, #00ff88);
-        background-size: 300% 300%;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        animation: gradientShift 4s ease-in-out infinite;
-        padding: 20px;
-        border-radius: 20px;
-        backdrop-filter: blur(10px);
-        background-color: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.1);
-        position: sticky;
-        top: 10px;
-        z-index: 100;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-    
-    @keyframes gradientShift {
-        0%, 100% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-    }
-    
-    .version {
-        background: linear-gradient(45deg, #ff006e, #8338ec);
-        padding: 6px 16px;
-        border-radius: 25px;
-        font-size: 0.8rem;
-        margin-left: 15px;
-        font-weight: 700;
-        color: white;
-        display: inline-block;
-        animation: pulse 3s infinite;
-    }
-    
-    .encoding-indicators {
-        display: flex;
-        gap: 12px;
-        margin-left: 15px;
-        margin-top: 10px;
-    }
-    
-    .encoding-indicator {
-        padding: 8px 16px;
-        border-radius: 25px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        display: none;
-        animation: neonPulse 2s infinite;
-    }
-    
-    .aaencode-indicator {
-        background: linear-gradient(45deg, #ff9500, #ffb347);
-        color: #000;
-    }
-    
-    .eval-indicator {
-        background: linear-gradient(45deg, #ff073a, #c3073f);
-        color: #fff;
-    }
-    
-    .encoding-indicator.show {
-        display: inline-block;
-    }
-    
-    @keyframes neonPulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.8; transform: scale(1.05); }
-    }
-    
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.8; }
-    }
-    
-    .features-banner {
-        background: linear-gradient(45deg, #ff6b35, #f7931e);
-        color: #000;
-        padding: 15px;
-        border-radius: 15px;
-        margin-bottom: 25px;
-        text-align: center;
-        font-size: 1rem;
-        font-weight: 600;
-        animation: bannerGlow 4s ease-in-out infinite;
-    }
-    
-    @keyframes bannerGlow {
-        0%, 100% { box-shadow: 0 8px 32px rgba(255, 107, 53, 0.4); }
-        50% { box-shadow: 0 12px 40px rgba(255, 107, 53, 0.6); }
-    }
-    
-    .section {
-        background: rgba(255,255,255,0.05);
-        border-radius: 20px;
-        padding: 25px;
-        margin: 20px 0;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.1);
-        box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .section:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-        border-color: rgba(0, 212, 255, 0.3);
-    }
-    
-    .section-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        background: linear-gradient(45deg, #00d4ff, #ff00ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        margin-bottom: 20px;
-    }
-    
-    label {
-        display: block;
-        margin-bottom: 10px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: #00d4ff;
-        text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
-    }
-    
-    input, textarea, select {
-        width: 100%;
-        padding: 15px;
-        border: 2px solid rgba(255,255,255,0.2);
-        border-radius: 12px;
-        background: rgba(0,0,0,0.6);
-        color: #ffffff;
-        font-size: 14px;
-        font-family: inherit;
-        transition: all 0.3s ease;
-    }
-    
-    input:focus, textarea:focus, select:focus {
-        outline: none;
-        border-color: #00d4ff;
-        background: rgba(0,0,0,0.8);
-        box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
-    }
-    
-    input::placeholder, textarea::placeholder {
-        color: rgba(255,255,255,0.5);
-    }
-    
-    textarea {
-        height: 200px;
-        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-        resize: vertical;
-        line-height: 1.6;
-    }
-    
-    .file-upload {
-        border: 3px dashed rgba(0, 212, 255, 0.4);
-        border-radius: 20px;
-        padding: 40px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-bottom: 20px;
-        background: rgba(0, 212, 255, 0.05);
-    }
-    
-    .file-upload:hover, .file-upload.dragover {
-        border-color: #00d4ff;
-        background: rgba(0, 212, 255, 0.1);
-        transform: translateY(-3px);
-    }
-    
-    .file-upload-icon {
-        font-size: 3rem;
-        margin-bottom: 15px;
-        background: linear-gradient(45deg, #00d4ff, #ff00ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    .detection-panel {
-        background: rgba(0,0,0,0.6);
-        border: 2px solid rgba(0, 212, 255, 0.3);
-        border-radius: 15px;
-        padding: 20px;
-        margin: 20px 0;
-    }
-    
-    .detection-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 12px;
-        margin-top: 15px;
-    }
-    
-    .detection-item {
-        background: rgba(255,255,255,0.1);
-        padding: 15px;
-        border-radius: 12px;
-        text-align: center;
-        border: 1px solid rgba(255,255,255,0.1);
-        transition: all 0.3s ease;
-    }
-    
-    .detection-item:hover {
-        transform: translateY(-2px);
-    }
-    
-    .detection-value {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #00ff88;
-        text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-    }
-    
-    .detection-label {
-        font-size: 0.8rem;
-        opacity: 0.8;
-        margin-top: 5px;
-    }
-    
-    .file-options {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 12px;
-        margin: 20px 0;
-    }
-    
-    .file-option {
-        padding: 16px;
-        background: rgba(255,255,255,0.08);
-        border: 2px solid rgba(255,255,255,0.1);
-        border-radius: 15px;
-        cursor: pointer;
-        text-align: center;
-        font-size: 0.85rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    
-    .file-option:hover {
-        background: rgba(255,255,255,0.15);
-        transform: translateY(-2px);
-    }
-    
-    .file-option.aaencode {
-        background: rgba(255,149,0,0.2);
-        border-color: rgba(255,149,0,0.4);
-    }
-    
-    .file-option.eval {
-        background: rgba(255,7,58,0.2);
-        border-color: rgba(255,7,58,0.4);
-    }
-    
-    .buttons {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 15px;
-        margin: 25px 0;
-        position: sticky;
-        bottom: 15px;
-        background: rgba(26, 26, 46, 0.95);
-        backdrop-filter: blur(10px);
-        padding: 20px;
-        border-radius: 20px;
-        border: 2px solid rgba(255,255,255,0.1);
-        z-index: 100;
-    }
-    
-    button {
-        padding: 16px;
-        border: none;
-        border-radius: 15px;
-        font-weight: 700;
-        cursor: pointer;
-        font-size: 0.8rem;
-        color: #fff;
-        transition: all 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        font-family: inherit;
-    }
-    
-    .btn-blue { 
-        background: linear-gradient(45deg, #0066ff, #004ccc);
-    }
-    .btn-green { 
-        background: linear-gradient(45deg, #00ff88, #00cc6a);
-    }
-    .btn-yellow { 
-        background: linear-gradient(45deg, #ffaa00, #cc8800);
-    }
-    .btn-purple { 
-        background: linear-gradient(45deg, #aa00ff, #8800cc);
-    }
-    .btn-red { 
-        background: linear-gradient(45deg, #ff0044, #cc0036);
-    }
-    
-    button:hover {
-        transform: translateY(-3px) scale(1.05);
-    }
-    
-    .btn-icon {
-        font-size: 1.4rem;
-    }
-    
-    .btn-text {
-        font-size: 0.7rem;
-    }
-    
-    .progress-bar {
-        width: 100%;
-        height: 8px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 4px;
-        margin: 20px 0;
-        overflow: hidden;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #00d4ff, #00ff88, #ffaa00);
-        width: 0%;
-        transition: width 0.5s ease;
-    }
-    
-    .output {
-        background: #1a1a1a;
-        border: 2px solid rgba(0, 212, 255, 0.3);
-        border-radius: 15px;
-        padding: 20px;
-        min-height: 200px;
-        max-height: 400px;
-        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-        font-size: 13px;
-        line-height: 1.6;
-        overflow-y: auto;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        color: #e0e6ed;
-    }
-    
-    .logs {
-        background: rgba(0,0,0,0.8);
-        border: 2px solid rgba(255,255,255,0.1);
-        border-radius: 15px;
-        padding: 20px;
-        height: 150px;
-        overflow-y: auto;
-        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-        font-size: 12px;
-    }
-    
-    .log-success { color: #00ff88; }
-    .log-error { color: #ff0044; }
-    .log-warning { color: #ffaa00; }
-    .log-info { color: #00d4ff; }
-    
-    .toast {
-        position: fixed;
-        top: 30px;
-        right: 30px;
-        background: rgba(0,0,0,0.9);
-        color: white;
-        padding: 20px 25px;
-        border-radius: 15px;
-        transform: translateX(400px);
-        transition: transform 0.3s ease;
-        z-index: 1000;
-        max-width: 300px;
-        font-size: 0.9rem;
-        backdrop-filter: blur(10px);
-        border: 2px solid rgba(0, 212, 255, 0.3);
-    }
-    
-    .toast.show {
-        transform: translateX(0);
-    }
-    
-    .note {
-        background: rgba(0, 212, 255, 0.1);
-        border: 2px solid rgba(0, 212, 255, 0.3);
-        border-radius: 15px;
-        padding: 16px;
-        font-size: 0.85rem;
-        line-height: 1.6;
-        margin-top: 15px;
-    }
-    
-    .hidden {
-        display: none !important;
-    }
-    
-    /* 滚动条 */
-    ::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: rgba(0,0,0,0.3);
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: linear-gradient(45deg, #00d4ff, #ff00ff);
-        border-radius: 4px;
-    }
-    
-    /* 移动端适配 */
-    @media (max-width: 768px) {
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #0a0a0a;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            min-height: 100vh;
+            color: #e0e6ed;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 简化的动态背景效果 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.1), transparent),
+                radial-gradient(1px 1px at 40px 70px, rgba(0,255,255,0.05), transparent);
+            background-size: 100px 80px;
+            animation: sparkle 20s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.5;
+        }
+        
+        @keyframes sparkle {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-80px); }
+        }
+        
         .container {
-            padding: 12px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px;
+            position: relative;
+            z-index: 2;
         }
         
         h1 {
-            font-size: 1.8rem;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 2.2rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00d4ff, #ff00ff, #ffff00, #00ff88);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 4s ease-in-out infinite;
+            padding: 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .version {
+            background: linear-gradient(45deg, #ff006e, #8338ec);
+            padding: 6px 16px;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            margin-left: 15px;
+            font-weight: 700;
+            color: white;
+            display: inline-block;
+            animation: pulse 3s infinite;
+        }
+        
+        .encoding-indicators {
+            display: flex;
+            gap: 12px;
+            margin-left: 15px;
+            margin-top: 10px;
+        }
+        
+        .encoding-indicator {
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: none;
+            animation: neonPulse 2s infinite;
+        }
+        
+        .aaencode-indicator {
+            background: linear-gradient(45deg, #ff9500, #ffb347);
+            color: #000;
+        }
+        
+        .eval-indicator {
+            background: linear-gradient(45deg, #ff073a, #c3073f);
+            color: #fff;
+        }
+        
+        .encoding-indicator.show {
+            display: inline-block;
+        }
+        
+        @keyframes neonPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .features-banner {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: #000;
             padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            animation: bannerGlow 4s ease-in-out infinite;
         }
         
-        .form-row {
-            grid-template-columns: 1fr;
-        }
-        
-        .buttons {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            margin: 0;
-            border-radius: 0;
-            border-top: 2px solid rgba(0, 212, 255, 0.3);
-        }
-        
-        body {
-            padding-bottom: 100px;
+        @keyframes bannerGlow {
+            0%, 100% { box-shadow: 0 8px 32px rgba(255, 107, 53, 0.4); }
+            50% { box-shadow: 0 12px 40px rgba(255, 107, 53, 0.6); }
         }
         
         .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #00d4ff;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            background: rgba(0,0,0,0.6);
+            color: #ffffff;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #00d4ff;
+            background: rgba(0,0,0,0.8);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        
+        textarea {
+            height: 200px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        
+        .file-upload {
+            border: 3px dashed rgba(0, 212, 255, 0.4);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            background: rgba(0, 212, 255, 0.05);
+        }
+        
+        .file-upload:hover, .file-upload.dragover {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateY(-3px);
+        }
+        
+        .file-upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .detection-panel {
+            background: rgba(0,0,0,0.6);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
             padding: 20px;
-            margin: 15px 0;
+            margin: 20px 0;
         }
         
         .detection-grid {
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .detection-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .detection-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .detection-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+        
+        .detection-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 5px;
         }
         
         .file-options {
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
         }
-    }
-</style>
-```
-
+        
+        .file-option {
+            padding: 16px;
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .file-option:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .file-option.aaencode {
+            background: rgba(255,149,0,0.2);
+            border-color: rgba(255,149,0,0.4);
+        }
+        
+        .file-option.eval {
+            background: rgba(255,7,58,0.2);
+            border-color: rgba(255,7,58,0.4);
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+            position: sticky;
+            bottom: 15px;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            z-index: 100;
+        }
+        
+        button {
+            padding: 16px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #fff;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+        
+        .btn-blue { 
+            background: linear-gradient(45deg, #0066ff, #004ccc);
+        }
+        .btn-green { 
+            background: linear-gradient(45deg, #00ff88, #00cc6a);
+        }
+        .btn-yellow { 
+            background: linear-gradient(45deg, #ffaa00, #cc8800);
+        }
+        .btn-purple { 
+            background: linear-gradient(45deg, #aa00ff, #8800cc);
+        }
+        .btn-red { 
+            background: linear-gradient(45deg, #ff0044, #cc0036);
+        }
+        
+        button:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+        
+        .btn-icon {
+            font-size: 1.4rem;
+        }
+        
+        .btn-text {
+            font-size: 0.7rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #00ff88, #ffaa00);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .output {
+            background: #1a1a1a;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 200px;
+            max-height: 400px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #e0e6ed;
+        }
+        
+        .logs {
+            background: rgba(0,0,0,0.8);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            height: 150px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .log-success { color: #00ff88; }
+        .log-error { color: #ff0044; }
+        .log-warning { color: #ffaa00; }
+        .log-info { color: #00d4ff; }
+        
+        .toast {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 15px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 300px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .note {
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            padding: 16px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            margin-top: 15px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            border-radius: 4px;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+                padding: 15px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .buttons {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin: 0;
+                border-radius: 0;
+                border-top: 2px solid rgba(0, 212, 255, 0.3);
+            }
+            
+            body {
+                padding-bottom: 100px;
+            }
+            
+            .section {
+                padding: 20px;
+                margin: 15px 0;
+            }
+            
+            .detection-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
+            
+            .file-options {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -545,778 +541,507 @@
                 <div class="encoding-indicator eval-indicator">Eval Detected</div>
             </div>
         </h1>
-
-```
-    <div class="features-banner">
-        🚀 Advanced Code Analysis • Real-time Decoding • Multi-format Support • AI-Powered Detection 🚀
-    </div>
-    
-    <div class="section">
-        <div class="section-title">
-            🔍 INPUT ANALYZER
+        
+        <div class="features-banner">
+            🚀 Advanced Code Analysis • Real-time Decoding • Multi-format Support • AI-Powered Detection 🚀
         </div>
-        <div class="form-row">
-            <div>
-                <label for="input">Code Input</label>
-                <textarea id="input" placeholder="Paste your encoded code here..."></textarea>
+        
+        <div class="section">
+            <div class="section-title">
+                🔍 INPUT ANALYZER
             </div>
-            <div>
-                <label for="method">Decode Method</label>
-                <select id="method">
-                    <option value="auto">🤖 Auto Detect</option>
-                    <option value="aaencode">📊 AAEncode</option>
-                    <option value="eval">⚡ Eval</option>
-                    <option value="unicode">🔤 Unicode</option>
-                    <option value="base64">🔐 Base64</option>
-                </select>
+            <div class="form-row">
+                <div>
+                    <label for="input">Code Input</label>
+                    <textarea id="input" placeholder="Paste your encoded code here..."></textarea>
+                </div>
+                <div>
+                    <label for="method">Decode Method</label>
+                    <select id="method">
+                        <option value="auto">🤖 Auto Detect</option>
+                        <option value="aaencode">📊 AAEncode</option>
+                        <option value="eval">⚡ Eval</option>
+                        <option value="unicode">🔤 Unicode</option>
+                        <option value="base64">🔐 Base64</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                <div class="file-upload-icon">📁</div>
+                <div>Click to upload file or drag & drop</div>
+                <input type="file" id="fileInput" style="display:none" accept=".js,.txt,.html">
+            </div>
+            
+            <div class="detection-panel">
+                <div class="section-title">🎯 Detection Results</div>
+                <div class="detection-grid">
+                    <div class="detection-item">
+                        <div class="detection-value">98%</div>
+                        <div class="detection-label">Confidence</div>
+                    </div>
+                    <div class="detection-item">
+                        <div class="detection-value">AAEncode</div>
+                        <div class="detection-label">Method</div>
+                    </div>
+                    <div class="detection-item">
+                        <div class="detection-value">2.5KB</div>
+                        <div class="detection-label">Size</div>
+                    </div>
+                    <div class="detection-item">
+                        <div class="detection-value">Safe</div>
+                        <div class="detection-label">Status</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="file-options">
+                <div class="file-option aaencode">
+                    <div>🔥 AAEncode</div>
+                    <div style="font-size: 0.7rem; opacity: 0.8;">Advanced</div>
+                </div>
+                <div class="file-option eval">
+                    <div>⚡ Eval Decode</div>
+                    <div style="font-size: 0.7rem; opacity: 0.8;">Dynamic</div>
+                </div>
+                <div class="file-option">
+                    <div>🔤 Unicode</div>
+                    <div style="font-size: 0.7rem; opacity: 0.8;">Standard</div>
+                </div>
+                <div class="file-option">
+                    <div>🔐 Base64</div>
+                    <div style="font-size: 0.7rem; opacity: 0.8;">Basic</div>
+                </div>
+            </div>
+            
+            <div class="note">
+                💡 <strong>Pro Tip:</strong> Use auto-detect for best results. The AI will analyze patterns and choose the optimal decoding method.
             </div>
         </div>
         
-        <div class="file-upload" onclick="document.getElementById('fileInput').click()">
-            <div class="file-upload-icon">📁</div>
-            <div>Click to upload file or drag & drop</div>
-            <input type="file" id="fileInput" style="display:none" accept=".js,.txt,.html">
+        <div class="buttons">
+            <button class="btn-blue" onclick="decode()">
+                <div class="btn-icon">🚀</div>
+                <div class="btn-text">DECODE</div>
+            </button>
+            <button class="btn-green" onclick="beautify()">
+                <div class="btn-icon">✨</div>
+                <div class="btn-text">BEAUTIFY</div>
+            </button>
+            <button class="btn-yellow" onclick="analyze()">
+                <div class="btn-icon">🔍</div>
+                <div class="btn-text">ANALYZE</div>
+            </button>
+            <button class="btn-purple" onclick="copy()">
+                <div class="btn-icon">📋</div>
+                <div class="btn-text">COPY</div>
+            </button>
+            <button class="btn-red" onclick="clear()">
+                <div class="btn-icon">🗑️</div>
+                <div class="btn-text">CLEAR</div>
+            </button>
         </div>
         
-        <div class="detection-panel">
-            <div class="section-title">🎯 Detection Results</div>
-            <div class="detection-grid">
-                <div class="detection-item">
-                    <div class="detection-value">98%</div>
-                    <div class="detection-label">Confidence</div>
-                </div>
-                <div class="detection-item">
-                    <div class="detection-value">AAEncode</div>
-                    <div class="detection-label">Method</div>
-                </div>
-                <div class="detection-item">
-                    <div class="detection-value">2.5KB</div>
-                    <div class="detection-label">Size</div>
-                </div>
-                <div class="detection-item">
-                    <div class="detection-value">Safe</div>
-                    <div class="detection-label">Status</div>
-                </div>
-            </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
         </div>
         
-        <div class="file-options">
-            <div class="file-option aaencode">
-                <div>🔥 AAEncode</div>
-                <div style="font-size: 0.7rem; opacity: 0.8;">Advanced</div>
+        <div class="section">
+            <div class="section-title">
+                📊 OUTPUT TERMINAL
             </div>
-            <div class="file-option eval">
-                <div>⚡ Eval Decode</div>
-                <div style="font-size: 0.7rem; opacity: 0.8;">Dynamic</div>
-            </div>
-            <div class="file-option">
-                <div>🔤 Unicode</div>
-                <div style="font-size: 0.7rem; opacity: 0.8;">Standard</div>
-            </div>
-            <div class="file-option">
-                <div>🔐 Base64</div>
-                <div style="font-size: 0.7rem; opacity: 0.8;">Basic</div>
-            </div>
-        </div>
-        
-        <div class="note">
-            💡 <strong>Pro Tip:</strong> Use auto-detect for best results. The AI will analyze patterns and choose the optimal decoding method.
-        </div>
-    </div>
-    
-    <div class="buttons">
-        <button class="btn-blue" onclick="decode()">
-            <div class="btn-icon">🚀</div>
-            <div class="btn-text">DECODE</div>
-        </button>
-        <button class="btn-green" onclick="beautify()">
-            <div class="btn-icon">✨</div>
-            <div class="btn-text">BEAUTIFY</div>
-        </button>
-        <button class="btn-yellow" onclick="analyze()">
-            <div class="btn-icon">🔍</div>
-            <div class="btn-text">ANALYZE</div>
-        </button>
-        <button class="btn-purple" onclick="copy()">
-            <div class="btn-icon">📋</div>
-            <div class="btn-text">COPY</div>
-        </button>
-        <button class="btn-red" onclick="clear()">
-            <div class="btn-icon">🗑️</div>
-            <div class="btn-text">CLEAR</div>
-        </button>
-    </div>
-    
-    <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
-    </div>
-    
-    <div class="section">
-        <div class="section-title">
-            📊 OUTPUT TERMINAL
-        </div>
-        <div class="output" id="output">// Decoded output will appear here...
-```
-
+            <div class="output" id="output">// Decoded output will appear here...
 // Ready for analysis ⚡</div>
-</div>
-
-```
-    <div class="section">
-        <div class="section-title">
-            📝 SYSTEM LOGS
         </div>
-        <div class="logs" id="logs">
-            <div class="log-info">[SYSTEM] Tech Decoder v4.0 initialized ⚡</div>
-            <div class="log-success">[STATUS] All systems operational 🟢</div>
-            <div class="log-info">[READY] Waiting for input...</div>
+        
+        <div class="section">
+            <div class="section-title">
+                📝 SYSTEM LOGS
+            </div>
+            <div class="logs" id="logs">
+                <div class="log-info">[SYSTEM] Tech Decoder v4.0 initialized ⚡</div>
+                <div class="log-success">[STATUS] All systems operational 🟢</div>
+                <div class="log-info">[READY] Waiting for input...</div>
+            </div>
         </div>
     </div>
-</div>
-
-<div class="toast" id="toast">
-    Operation completed successfully! ✨
-</div>
-
-<script>
-    // 功能函数
-    function decode() {
-        const input = document.getElementById('input').value;
-        if (!input.trim()) {
-            showToast('Please enter some code to decode! 📝');
-            return;
-        }
-        
-        showProgress();
-        addLog('info', '[DECODE] Starting decode process...');
-        
-        setTimeout(() => {
-            const output = document.getElementById('output');
-            output.textContent = '// Decoded successfully!\n' + input + '\n\n// Process completed ✅';
-            addLog('success', '[DECODE] Process completed successfully!');
-            showToast('Decode completed! ⚡');
-            hideProgress();
-        }, 1500);
-    }
     
-    function beautify() {
-        const input = document.getElementById('input').value;
-        if (!input.trim()) {
-            showToast('Please enter some code to beautify! ✨');
-            return;
-        }
-        
-        showProgress();
-        addLog('info', '[BEAUTIFY] Formatting code...');
-        
-        setTimeout(() => {
-            const output = document.getElementById('output');
-            output.textContent = '// Code beautified!\n' + input.split('').join(' ') + '\n\n// Formatting completed ✨';
-            addLog('success', '[BEAUTIFY] Code formatted successfully!');
-            showToast('Code beautified! ✨');
-            hideProgress();
-        }, 1000);
-    }
+    <div class="toast" id="toast">
+        Operation completed successfully! ✨
+    </div>
     
-    function analyze() {
-        showProgress();
-        addLog('info', '[ANALYZE] Running security analysis...');
-        
-        setTimeout(() => {
-            addLog('warning', '[ANALYZE] Potentially obfuscated code detected');
-            addLog('success', '[ANALYZE] Analysis complete!');
-            showToast('Analysis completed! 🔍');
-            hideProgress();
-        }, 2000);
-    }
-    
-    function copy() {
-        const output = document.getElementById('output');
-        navigator.clipboard.writeText(output.textContent).then(() => {
-            addLog('success', '[COPY] Content copied to clipboard!');
-            showToast('Copied to clipboard! 📋');
-        }).catch(() => {
-            addLog('error', '[COPY] Failed to copy content');
-            showToast('Copy failed! Please try again.');
-        });
-    }
-    
-    function clear() {
-        document.getElementById('input').value = '';
-        document.getElementById('output').textContent = '// Output cleared\n// Ready for new input ⚡';
-        addLog('info', '[CLEAR] Interface cleared');
-        showToast('Interface cleared! 🗑️');
-    }
-    
-    function showProgress() {
-        const progressFill = document.getElementById('progressFill');
-        progressFill.style.width = '100%';
-    }
-    
-    function hideProgress() {
-        const progressFill = document.getElementById('progressFill');
-        setTimeout(() => {
-            progressFill.style.width = '0%';
-        }, 300);
-    }
-    
-    function addLog(type, message) {
-        const logs = document.getElementById('logs');
-        const logElement = document.createElement('div');
-        logElement.className = `log-${type}`;
-        const timestamp = new Date().toLocaleTimeString();
-        logElement.textContent = `[${timestamp}] ${message}`;
-        logs.appendChild(logElement);
-        logs.scrollTop = logs.scrollHeight;
-        
-        // 限制日志数量
-        if (logs.children.length > 50) {
-            logs.removeChild(logs.firstChild);
-        }
-    }
-    
-    function showToast(message) {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.classList.add('show');
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
-    }
-    
-    // 文件上传功能
-    const fileUpload = document.querySelector('.file-upload');
-    const fileInput = document.getElementById('fileInput');
-    
-    fileUpload.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        fileUpload.classList.add('dragover');
-    });
-    
-    fileUpload.addEventListener('dragleave', () => {
-        fileUpload.classList.remove('dragover');
-    });
-    
-    fileUpload.addEventListener('drop', (e) => {
-        e.preventDefault();
-        fileUpload.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleFile(files[0]);
-        }
-    });
-    
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleFile(e.target.files[0]);
-        }
-    });
-    
-    function handleFile(file) {
-        addLog('info', `[FILE] Loading: ${file.name}`);
-        showToast(`File loaded: ${file.name} 📁`);
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            document.getElementById('input').value = e.target.result;
-            addLog('success', `[FILE] Content loaded successfully`);
-        };
-        reader.readAsText(file);
-    }
-    
-    // 键盘快捷键
-    document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey || e.metaKey) {
-            switch(e.key.toLowerCase()) {
-                case 'enter':
-                    e.preventDefault();
-                    decode();
-                    break;
-                case 'b':
-                    e.preventDefault();
-                    beautify();
-                    break;
-                case 'r':
-                    e.preventDefault();
-                    analyze();
-                    break;
-            }
-        }
-    });
-    
-    // 初始化
-    document.addEventListener('DOMContentLoaded', () => {
-        addLog('success', '[INIT] Interface loaded successfully!');
-        addLog('info', '[SHORTCUTS] Ctrl+Enter: Decode | Ctrl+B: Beautify | Ctrl+R: Analyze');
-    });
-    
-    // 输入框实时反馈
-    document.getElementById('input').addEventListener('input', (e) => {
-        const value = e.target.value;
-        const length = value.length;
-        
-        // 更新检测结果
-        updateDetectionResults(value);
-        
-        // 显示编码指示器
-        updateEncodingIndicators(value);
-    });
-    
-    function updateDetectionResults(code) {
-        const detectionItems = document.querySelectorAll('.detection-item');
-        
-        if (code.length > 0) {
-            // 模拟检测逻辑
-            const confidence = Math.min(95, 60 + (code.length / 100) * 30);
-            const size = formatBytes(new Blob([code]).size);
-            
-            let method = 'Unknown';
-            let status = 'Safe';
-            
-            if (code.includes('eval(') || code.includes('Function(')) {
-                method = 'Eval';
-                status = 'Warning';
-            } else if (code.match(/[^\x00-\x7F]/)) {
-                method = 'Unicode';
-            } else if (code.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
-                method = 'Base64';
-            } else if (code.includes('ﾟωﾟﾉ') || code.includes('(ﾟДﾟ)')) {
-                method = 'AAEncode';
+    <script>
+        // 功能函数
+        function decode() {
+            const input = document.getElementById('input').value;
+            if (!input.trim()) {
+                showToast('Please enter some code to decode! 📝');
+                return;
             }
             
-            // 更新显示值
-            detectionItems[0].querySelector('.detection-value').textContent = Math.round(confidence) + '%';
-            detectionItems[1].querySelector('.detection-value').textContent = method;
-            detectionItems[2].querySelector('.detection-value').textContent = size;
-            detectionItems[3].querySelector('.detection-value').textContent = status;
+            showProgress();
+            addLog('info', '[DECODE] Starting decode process...');
             
-            // 更新状态颜色
-            const statusElement = detectionItems[3].querySelector('.detection-value');
-            statusElement.style.color = status === 'Safe' ? '#00ff88' : '#ffaa00';
-        }
-    }
-    
-    function updateEncodingIndicators(code) {
-        const aaencodeIndicator = document.querySelector('.aaencode-indicator');
-        const evalIndicator = document.querySelector('.eval-indicator');
-        
-        // 检测 AAEncode
-        if (code.includes('ﾟωﾟﾉ') || code.includes('(ﾟДﾟ)')) {
-            aaencodeIndicator.classList.add('show');
-        } else {
-            aaencodeIndicator.classList.remove('show');
-        }
-        
-        // 检测 Eval
-        if (code.includes('eval(') || code.includes('Function(')) {
-            evalIndicator.classList.add('show');
-        } else {
-            evalIndicator.classList.remove('show');
-        }
-    }
-    
-    function formatBytes(bytes) {
-        if (bytes === 0) return '0B';
-        const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + sizes[i];
-    }
-    
-    // 文件选项点击事件
-    document.querySelectorAll('.file-option').forEach(option => {
-        option.addEventListener('click', () => {
-            const method = option.textContent.toLowerCase();
-            addLog('info', `[METHOD] Selected: ${method}`);
-            
-            // 更新选择框
-            const select = document.getElementById('method');
-            if (method.includes('aaencode')) {
-                select.value = 'aaencode';
-            } else if (method.includes('eval')) {
-                select.value = 'eval';
-            } else if (method.includes('unicode')) {
-                select.value = 'unicode';
-            } else if (method.includes('base64')) {
-                select.value = 'base64';
-            }
-            
-            showToast(`Method selected: ${method} 🎯`);
-        });
-    });
-    
-    // 方法选择变化事件
-    document.getElementById('method').addEventListener('change', (e) => {
-        const method = e.target.value;
-        addLog('info', `[METHOD] Changed to: ${method}`);
-        
-        // 高亮对应的选项
-        document.querySelectorAll('.file-option').forEach(option => {
-            option.style.transform = 'scale(1)';
-            option.style.borderColor = 'rgba(255,255,255,0.1)';
-        });
-        
-        const targetOption = document.querySelector(`.file-option.${method}`);
-        if (targetOption) {
-            targetOption.style.transform = 'scale(1.05)';
-            targetOption.style.borderColor = '#00d4ff';
-        }
-    });
-    
-    // 页面可见性变化时的处理
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            addLog('info', '[SYSTEM] Page hidden');
-        } else {
-            addLog('info', '[SYSTEM] Page visible');
-        }
-    });
-    
-    // 错误处理
-    window.addEventListener('error', (e) => {
-        addLog('error', `[ERROR] ${e.message}`);
-        showToast('An error occurred! Check logs for details.');
-    });
-    
-    // 性能监控
-    if ('performance' in window) {
-        window.addEventListener('load', () => {
             setTimeout(() => {
-                const loadTime = performance.now();
-                addLog('success', `[PERF] Page loaded in ${Math.round(loadTime)}ms`);
-            }, 100);
-        });
-    }
-    
-    // 主题切换功能（预留）
-    function toggleTheme() {
-        // 可以在这里添加主题切换逻辑
-        addLog('info', '[THEME] Theme toggle requested');
-        showToast('Theme switching coming soon! 🎨');
-    }
-    
-    // 导出功能
-    function exportResults() {
-        const output = document.getElementById('output').textContent;
-        const blob = new Blob([output], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'decoded_output.txt';
-        a.click();
-        URL.revokeObjectURL(url);
-        
-        addLog('success', '[EXPORT] Results exported');
-        showToast('Results exported! 💾');
-    }
-    
-    // 添加右键菜单功能
-    document.addEventListener('contextmenu', (e) => {
-        if (e.target.closest('.output') || e.target.closest('#input')) {
-            // 允许在输入输出区域使用右键菜单
-            return;
+                const output = document.getElementById('output');
+                output.textContent = '// Decoded successfully!\n' + input + '\n\n// Process completed ✅';
+                addLog('success', '[DECODE] Process completed successfully!');
+                showToast('Decode completed! ⚡');
+                hideProgress();
+            }, 1500);
         }
-        e.preventDefault();
-    });
-    
-    // 添加选择所有文本功能
-    function selectAllOutput() {
-        const output = document.getElementById('output');
-        const range = document.createRange();
-        range.selectNodeContents(output);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-        showToast('Output text selected! 📝');
-    }
-    
-    // 双击输出区域选择全部文本
-    document.getElementById('output').addEventListener('dblclick', selectAllOutput);
-    
-    // 添加统计信息更新
-    function updateStats() {
-        const input = document.getElementById('input').value;
-        const lines = input.split('\n').length;
-        const chars = input.length;
-        const words = input.trim() ? input.trim().split(/\s+/).length : 0;
         
-        addLog('info', `[STATS] Lines: ${lines}, Words: ${words}, Chars: ${chars}`);
-    }
-    
-    // 定期更新统计（可选）
-    setInterval(() => {
-        const input = document.getElementById('input').value;
-        if (input.length > 0) {
-            updateStats();
+        function beautify() {
+            const input = document.getElementById('input').value;
+            if (!input.trim()) {
+                showToast('Please enter some code to beautify! ✨');
+                return;
+            }
+            
+            showProgress();
+            addLog('info', '[BEAUTIFY] Formatting code...');
+            
+            setTimeout(() => {
+                const output = document.getElementById('output');
+                output.textContent = '// Code beautified!\n' + input.split('').join(' ') + '\n\n// Formatting completed ✨';
+                addLog('success', '[BEAUTIFY] Code formatted successfully!');
+                showToast('Code beautified! ✨');
+                hideProgress();
+            }, 1000);
         }
-    }, 10000); // 每10秒更新一次
-</style>
-</head>
-<body>
-    <div class="container">
-        <h1 class="floating">
-            ⚡ TECH DECODER ⚡
-            <span class="version">v4.0</span>
-            <div class="encoding-indicators">
-                <div class="encoding-indicator aaencode-indicator">AAEncode</div>
-                <div class="encoding-indicator eval-indicator">Eval Detected</div>
-            </div>
-        </h1>
-
-```
-    <div class="features-banner data-flow">
-        🚀 Advanced Code Analysis • Real-time Decoding • Multi-format Support • AI-Powered Detection 🚀
-    </div>
-    
-    <div class="section glow-border">
-        <div class="section-title">
-            🔍 INPUT ANALYZER
-        </div>
-        <div class="form-row">
-            <div>
-                <label for="input" class="neon-text">Code Input</label>
-                <textarea id="input" placeholder="Paste your encoded code here..."></textarea>
-            </div>
-            <div>
-                <label for="method" class="neon-text">Decode Method</label>
-                <select id="method">
-                    <option value="auto">🤖 Auto Detect</option>
-                    <option value="aaencode">📊 AAEncode</option>
-                    <option value="eval">⚡ Eval</option>
-                    <option value="unicode">🔤 Unicode</option>
-                    <option value="base64">🔐 Base64</option>
-                </select>
-            </div>
-        </div>
         
-        <div class="file-upload grid-bg" onclick="document.getElementById('fileInput').click()">
-            <div class="file-upload-icon">📁</div>
-            <div>Click to upload file or drag & drop</div>
-            <input type="file" id="fileInput" style="display:none" accept=".js,.txt,.html">
-        </div>
-        
-        <div class="detection-panel">
-            <div class="section-title">🎯 Detection Results</div>
-            <div class="detection-grid">
-                <div class="detection-item">
-                    <div class="detection-value neon-text">98%</div>
-                    <div class="detection-label">Confidence</div>
-                </div>
-                <div class="detection-item">
-                    <div class="detection-value neon-text">AAEncode</div>
-                    <div class="detection-label">Method</div>
-                </div>
-                <div class="detection-item">
-                    <div class="detection-value neon-text">2.5KB</div>
-                    <div class="detection-label">Size</div>
-                </div>
-                <div class="detection-item">
-                    <div class="detection-value neon-text">Safe</div>
-                    <div class="detection-label">Status</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="file-options">
-            <div class="file-option aaencode">
-                <div>🔥 AAEncode</div>
-                <div style="font-size: 0.7rem; opacity: 0.8;">Advanced</div>
-            </div>
-            <div class="file-option eval">
-                <div>⚡ Eval Decode</div>
-                <div style="font-size: 0.7rem; opacity: 0.8;">Dynamic</div>
-            </div>
-            <div class="file-option">
-                <div>🔤 Unicode</div>
-                <div style="font-size: 0.7rem; opacity: 0.8;">Standard</div>
-            </div>
-            <div class="file-option">
-                <div>🔐 Base64</div>
-                <div style="font-size: 0.7rem; opacity: 0.8;">Basic</div>
-            </div>
-        </div>
-        
-        <div class="note">
-            💡 <strong>Pro Tip:</strong> Use auto-detect for best results. The AI will analyze patterns and choose the optimal decoding method.
-        </div>
-    </div>
-    
-    <div class="buttons">
-        <button class="btn-blue glow-border" onclick="decode()">
-            <div class="btn-icon">🚀</div>
-            <div class="btn-text">Decode</div>
-        </button>
-        <button class="btn-green glow-border" onclick="beautify()">
-            <div class="btn-icon">✨</div>
-            <div class="btn-text">Beautify</div>
-        </button>
-        <button class="btn-yellow glow-border" onclick="analyze()">
-            <div class="btn-icon">🔍</div>
-            <div class="btn-text">Analyze</div>
-        </button>
-        <button class="btn-purple glow-border" onclick="copy()">
-            <div class="btn-icon">📋</div>
-            <div class="btn-text">Copy</div>
-        </button>
-        <button class="btn-red glow-border" onclick="clear()">
-            <div class="btn-icon">🗑️</div>
-            <div class="btn-text">Clear</div>
-        </button>
-    </div>
-    
-    <div class="progress-bar">
-        <div class="progress-fill" style="width: 0%"></div>
-    </div>
-    
-    <div class="section glow-border">
-        <div class="section-title">
-            📊 OUTPUT TERMINAL
-        </div>
-        <div class="output" id="output">// Decoded output will appear here...
-```
-
-// Ready for analysis ⚡</div>
-</div>
-
-```
-    <div class="section glow-border">
-        <div class="section-title">
-            📝 SYSTEM LOGS
-        </div>
-        <div class="logs" id="logs">
-            <div class="log-info">[SYSTEM] Tech Decoder v4.0 initialized ⚡</div>
-            <div class="log-success">[STATUS] All systems operational 🟢</div>
-            <div class="log-info">[READY] Waiting for input...</div>
-        </div>
-    </div>
-</div>
-
-<div class="toast" id="toast">
-    Operation completed successfully! ✨
-</div>
-
-<script>
-    // 添加交互功能
-    function decode() {
-        showProgress();
-        addLog('info', '[DECODE] Starting decode process...');
-        setTimeout(() => {
-            addLog('success', '[DECODE] Process completed successfully!');
-            showToast('Decode completed! ⚡');
-            hideProgress();
-        }, 2000);
-    }
-    
-    function beautify() {
-        showProgress();
-        addLog('info', '[BEAUTIFY] Formatting code...');
-        setTimeout(() => {
-            addLog('success', '[BEAUTIFY] Code formatted successfully!');
-            showToast('Code beautified! ✨');
-            hideProgress();
-        }, 1500);
-    }
-    
-    function analyze() {
-        showProgress();
-        addLog('info', '[ANALYZE] Running security analysis...');
-        setTimeout(() => {
-            addLog('warning', '[ANALYZE] Potentially obfuscated code detected');
-            addLog('success', '[ANALYZE] Analysis complete!');
-            showToast('Analysis completed! 🔍');
-            hideProgress();
-        }, 3000);
-    }
-    
-    function copy() {
-        addLog('success', '[COPY] Content copied to clipboard!');
-        showToast('Copied to clipboard! 📋');
-    }
-    
-    function clear() {
-        document.getElementById('input').value = '';
-        document.getElementById('output').textContent = '// Output cleared\n// Ready for new input ⚡';
-        addLog('info', '[CLEAR] Interface cleared');
-        showToast('Interface cleared! 🗑️');
-    }
-    
-    function showProgress() {
-        const progressFill = document.querySelector('.progress-fill');
-        progressFill.style.width = '100%';
-    }
-    
-    function hideProgress() {
-        const progressFill = document.querySelector('.progress-fill');
-        setTimeout(() => {
-            progressFill.style.width = '0%';
-        }, 500);
-    }
-    
-    function addLog(type, message) {
-        const logs = document.getElementById('logs');
-        const logElement = document.createElement('div');
-        logElement.className = `log-${type}`;
-        logElement.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        logs.appendChild(logElement);
-        logs.scrollTop = logs.scrollHeight;
-    }
-    
-    function showToast(message) {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.classList.add('show');
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
-    }
-    
-    // 文件拖拽功能
-    const fileUpload = document.querySelector('.file-upload');
-    
-    fileUpload.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        fileUpload.classList.add('dragover');
-    });
-    
-    fileUpload.addEventListener('dragleave', () => {
-        fileUpload.classList.remove('dragover');
-    });
-    
-    fileUpload.addEventListener('drop', (e) => {
-        e.preventDefault();
-        fileUpload.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            addLog('info', `[FILE] Loaded: ${files[0].name}`);
-            showToast(`File loaded: ${files[0].name} 📁`);
+        function analyze() {
+            showProgress();
+            addLog('info', '[ANALYZE] Running security analysis...');
+            
+            setTimeout(() => {
+                addLog('warning', '[ANALYZE] Potentially obfuscated code detected');
+                addLog('success', '[ANALYZE] Analysis complete!');
+                showToast('Analysis completed! 🔍');
+                hideProgress();
+            }, 2000);
         }
-    });
-    
-    // 键盘快捷键
-    document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey || e.metaKey) {
-            switch(e.key) {
-                case 'Enter':
-                    e.preventDefault();
-                    decode();
-                    break;
-                case 'b':
-                    e.preventDefault();
-                    beautify();
-                    break;
-                case 'r':
-                    e.preventDefault();
-                    analyze();
-                    break;
+        
+        function copy() {
+            const output = document.getElementById('output');
+            navigator.clipboard.writeText(output.textContent).then(() => {
+                addLog('success', '[COPY] Content copied to clipboard!');
+                showToast('Copied to clipboard! 📋');
+            }).catch(() => {
+                addLog('error', '[COPY] Failed to copy content');
+                showToast('Copy failed! Please try again.');
+            });
+        }
+        
+        function clear() {
+            document.getElementById('input').value = '';
+            document.getElementById('output').textContent = '// Output cleared\n// Ready for new input ⚡';
+            addLog('info', '[CLEAR] Interface cleared');
+            showToast('Interface cleared! 🗑️');
+        }
+        
+        function showProgress() {
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = '100%';
+        }
+        
+        function hideProgress() {
+            const progressFill = document.getElementById('progressFill');
+            setTimeout(() => {
+                progressFill.style.width = '0%';
+            }, 300);
+        }
+        
+        function addLog(type, message) {
+            const logs = document.getElementById('logs');
+            const logElement = document.createElement('div');
+            logElement.className = `log-${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent = `[${timestamp}] ${message}`;
+            logs.appendChild(logElement);
+            logs.scrollTop = logs.scrollHeight;
+            
+            // 限制日志数量
+            if (logs.children.length > 50) {
+                logs.removeChild(logs.firstChild);
             }
         }
-    });
-    
-    // 初始化动画
-    document.addEventListener('DOMContentLoaded', () => {
-        addLog('success', '[INIT] Interface loaded successfully!');
-        addLog('info', '[SHORTCUTS] Ctrl+Enter: Decode | Ctrl+B: Beautify | Ctrl+R: Analyze');
-    });
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 文件上传功能
+        const fileUpload = document.querySelector('.file-upload');
+        const fileInput = document.getElementById('fileInput');
+        
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('dragover');
+        });
+        
+        fileUpload.addEventListener('dragleave', () => {
+            fileUpload.classList.remove('dragover');
+        });
+        
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            addLog('info', `[FILE] Loading: ${file.name}`);
+            showToast(`File loaded: ${file.name} 📁`);
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('input').value = e.target.result;
+                addLog('success', `[FILE] Content loaded successfully`);
+            };
+            reader.readAsText(file);
+        }
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key.toLowerCase()) {
+                    case 'enter':
+                        e.preventDefault();
+                        decode();
+                        break;
+                    case 'b':
+                        e.preventDefault();
+                        beautify();
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        analyze();
+                        break;
+                }
+            }
+        });
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            addLog('success', '[INIT] Interface loaded successfully!');
+            addLog('info', '[SHORTCUTS] Ctrl+Enter: Decode | Ctrl+B: Beautify | Ctrl+R: Analyze');
+        });
+        
+        // 输入框实时反馈
+        document.getElementById('input').addEventListener('input', (e) => {
+            const value = e.target.value;
+            const length = value.length;
+            
+            // 更新检测结果
+            updateDetectionResults(value);
+            
+            // 显示编码指示器
+            updateEncodingIndicators(value);
+        });
+        
+        function updateDetectionResults(code) {
+            const detectionItems = document.querySelectorAll('.detection-item');
+            
+            if (code.length > 0) {
+                // 模拟检测逻辑
+                const confidence = Math.min(95, 60 + (code.length / 100) * 30);
+                const size = formatBytes(new Blob([code]).size);
+                
+                let method = 'Unknown';
+                let status = 'Safe';
+                
+                if (code.includes('eval(') || code.includes('Function(')) {
+                    method = 'Eval';
+                    status = 'Warning';
+                } else if (code.match(/[^\x00-\x7F]/)) {
+                    method = 'Unicode';
+                } else if (code.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
+                    method = 'Base64';
+                } else if (code.includes('ﾟωﾟﾉ') || code.includes('(ﾟДﾟ)')) {
+                    method = 'AAEncode';
+                }
+                
+                // 更新显示值
+                detectionItems[0].querySelector('.detection-value').textContent = Math.round(confidence) + '%';
+                detectionItems[1].querySelector('.detection-value').textContent = method;
+                detectionItems[2].querySelector('.detection-value').textContent = size;
+                detectionItems[3].querySelector('.detection-value').textContent = status;
+                
+                // 更新状态颜色
+                const statusElement = detectionItems[3].querySelector('.detection-value');
+                statusElement.style.color = status === 'Safe' ? '#00ff88' : '#ffaa00';
+            }
+        }
+        
+        function updateEncodingIndicators(code) {
+            const aaencodeIndicator = document.querySelector('.aaencode-indicator');
+            const evalIndicator = document.querySelector('.eval-indicator');
+            
+            // 检测 AAEncode
+            if (code.includes('ﾟωﾟﾉ') || code.includes('(ﾟДﾟ)')) {
+                aaencodeIndicator.classList.add('show');
+            } else {
+                aaencodeIndicator.classList.remove('show');
+            }
+            
+            // 检测 Eval
+            if (code.includes('eval(') || code.includes('Function(')) {
+                evalIndicator.classList.add('show');
+            } else {
+                evalIndicator.classList.remove('show');
+            }
+        }
+        
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + sizes[i];
+        }
+        
+        // 文件选项点击事件
+        document.querySelectorAll('.file-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const method = option.textContent.toLowerCase();
+                addLog('info', `[METHOD] Selected: ${method}`);
+                
+                // 更新选择框
+                const select = document.getElementById('method');
+                if (method.includes('aaencode')) {
+                    select.value = 'aaencode';
+                } else if (method.includes('eval')) {
+                    select.value = 'eval';
+                } else if (method.includes('unicode')) {
+                    select.value = 'unicode';
+                } else if (method.includes('base64')) {
+                    select.value = 'base64';
+                }
+                
+                showToast(`Method selected: ${method} 🎯`);
+            });
+        });
+        
+        // 方法选择变化事件
+        document.getElementById('method').addEventListener('change', (e) => {
+            const method = e.target.value;
+            addLog('info', `[METHOD] Changed to: ${method}`);
+            
+            // 高亮对应的选项
+            document.querySelectorAll('.file-option').forEach(option => {
+                option.style.transform = 'scale(1)';
+                option.style.borderColor = 'rgba(255,255,255,0.1)';
+            });
+            
+            const targetOption = document.querySelector(`.file-option.${method}`);
+            if (targetOption) {
+                targetOption.style.transform = 'scale(1.05)';
+                targetOption.style.borderColor = '#00d4ff';
+            }
+        });
+        
+        // 页面可见性变化时的处理
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                addLog('info', '[SYSTEM] Page hidden');
+            } else {
+                addLog('info', '[SYSTEM] Page visible');
+            }
+        });
+        
+        // 错误处理
+        window.addEventListener('error', (e) => {
+            addLog('error', `[ERROR] ${e.message}`);
+            showToast('An error occurred! Check logs for details.');
+        });
+        
+        // 性能监控
+        if ('performance' in window) {
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    const loadTime = performance.now();
+                    addLog('success', `[PERF] Page loaded in ${Math.round(loadTime)}ms`);
+                }, 100);
+            });
+        }
+        
+        // 主题切换功能（预留）
+        function toggleTheme() {
+            // 可以在这里添加主题切换逻辑
+            addLog('info', '[THEME] Theme toggle requested');
+            showToast('Theme switching coming soon! 🎨');
+        }
+        
+        // 导出功能
+        function exportResults() {
+            const output = document.getElementById('output').textContent;
+            const blob = new Blob([output], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'decoded_output.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            addLog('success', '[EXPORT] Results exported');
+            showToast('Results exported! 💾');
+        }
+        
+        // 添加右键菜单功能
+        document.addEventListener('contextmenu', (e) => {
+            if (e.target.closest('.output') || e.target.closest('#input')) {
+                // 允许在输入输出区域使用右键菜单
+                return;
+            }
+            e.preventDefault();
+        });
+        
+        // 添加选择所有文本功能
+        function selectAllOutput() {
+            const output = document.getElementById('output');
+            const range = document.createRange();
+            range.selectNodeContents(output);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            showToast('Output text selected! 📝');
+        }
+        
+        // 双击输出区域选择全部文本
+        document.getElementById('output').addEventListener('dblclick', selectAllOutput);
+        
+        // 添加统计信息更新
+        function updateStats() {
+            const input = document.getElementById('input').value;
+            const lines = input.split('\n').length;
+            const chars = input.length;
+            const words = input.trim() ? input.trim().split(/\s+/).length : 0;
+            
+            addLog('info', `[STATS] Lines: ${lines}, Words: ${words}, Chars: ${chars}`);
+        }
+        
+        // 定期更新统计（可选）
+        setInterval(() => {
+            const input = document.getElementById('input').value;
+            if (input.length > 0) {
+                updateStats();
+            }
+        }, 10000); // 每10秒更新一次
 </style>
 </head>
 <body>
