@@ -1496,17 +1496,32 @@ function cleanInput() {
     const patterns = [
         {
             name: 'eval包装',
-            pattern: /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/,
+            pattern: /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s,
             extract: match => match[2]
         },
         {
             name: 'Function构造器',
-            pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/,
+            pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s,
             extract: match => match[2]
         },
         {
             name: 'AAEncode',
             pattern: /(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s,
+            extract: match => match[1]
+        },
+        {
+            name: 'AADecode',
+            pattern: /(゜ω゜ﾉ.*?ﾟΘﾟ.*?)/s,
+            extract: match => match[1]
+        },
+        {
+            name: '十六进制转义',
+            pattern: /((?:\\x[0-9a-fA-F]{2}){50,})/,
+            extract: match => match[1]
+        },
+        {
+            name: 'Base64编码',
+            pattern: /^([A-Za-z0-9+/]{200,}={0,2})$/m,
             extract: match => match[1]
         }
     ];
