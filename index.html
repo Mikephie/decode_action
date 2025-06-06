@@ -671,23 +671,183 @@
     </div>
     
     <script>
-        // 功能函数
+        // 全局变量
+        let isProcessing = false;
+        
+        // 等待DOM加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            initializeApp();
+        });
+        
+        function initializeApp() {
+            try {
+                // 初始化所有事件监听器
+                setupEventListeners();
+                
+                // 添加初始日志
+                addLog('success', '[INIT] Tech Decoder v4.0 initialized ⚡');
+                addLog('info', '[SHORTCUTS] Ctrl+Enter: Decode | Ctrl+B: Beautify | Ctrl+R: Analyze');
+                addLog('success', '[READY] All systems operational 🟢');
+                
+                console.log('App initialized successfully');
+            } catch (error) {
+                console.error('Initialization error:', error);
+                addLog('error', '[ERROR] Initialization failed: ' + error.message);
+            }
+        }
+        
+        function setupEventListeners() {
+            // 按钮事件
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                const text = button.querySelector('.btn-text')?.textContent?.toLowerCase();
+                if (text) {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        console.log('Button clicked:', text);
+                        handleButtonClick(text);
+                    });
+                }
+            });
+            
+            // 输入框事件
+            const inputElement = document.getElementById('input');
+            if (inputElement) {
+                inputElement.addEventListener('input', function(e) {
+                    handleInputChange(e.target.value);
+                });
+                
+                inputElement.addEventListener('focus', function() {
+                    addLog('info', '[INPUT] Text area focused');
+                });
+            }
+            
+            // 文件上传事件
+            setupFileUpload();
+            
+            // 文件选项事件
+            setupFileOptions();
+            
+            // 方法选择事件
+            const methodSelect = document.getElementById('method');
+            if (methodSelect) {
+                methodSelect.addEventListener('change', function(e) {
+                    handleMethodChange(e.target.value);
+                });
+            }
+            
+            // 键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key.toLowerCase()) {
+                        case 'enter':
+                            e.preventDefault();
+                            handleButtonClick('decode');
+                            break;
+                        case 'b':
+                            e.preventDefault();
+                            handleButtonClick('beautify');
+                            break;
+                        case 'r':
+                            e.preventDefault();
+                            handleButtonClick('analyze');
+                            break;
+                    }
+                }
+            });
+            
+            // 输出区域双击选择
+            const outputElement = document.getElementById('output');
+            if (outputElement) {
+                outputElement.addEventListener('dblclick', function() {
+                    selectAllOutput();
+                });
+            }
+        }
+        
+        function handleButtonClick(action) {
+            if (isProcessing) {
+                showToast('Please wait for current operation to complete! ⏳');
+                return;
+            }
+            
+            console.log('Handling action:', action);
+            addLog('info', `[ACTION] ${action.toUpperCase()} requested`);
+            
+            switch(action) {
+                case 'decode':
+                    decode();
+                    break;
+                case 'beautify':
+                    beautify();
+                    break;
+                case 'analyze':
+                    analyze();
+                    break;
+                case 'copy':
+                    copy();
+                    break;
+                case 'clear':
+                    clear();
+                    break;
+                default:
+                    addLog('warning', `[ACTION] Unknown action: ${action}`);
+            }
+        }
+        
         function decode() {
             const input = document.getElementById('input').value;
             if (!input.trim()) {
                 showToast('Please enter some code to decode! 📝');
+                addLog('warning', '[DECODE] No input provided');
                 return;
             }
             
+            isProcessing = true;
             showProgress();
             addLog('info', '[DECODE] Starting decode process...');
             
             setTimeout(() => {
-                const output = document.getElementById('output');
-                output.textContent = '// Decoded successfully!\n' + input + '\n\n// Process completed ✅';
-                addLog('success', '[DECODE] Process completed successfully!');
-                showToast('Decode completed! ⚡');
-                hideProgress();
+                try {
+                    const output = document.getElementById('output');
+                    const method = document.getElementById('method').value;
+                    
+                    let result = '';
+                    
+                    // 简单的解码逻辑
+                    switch(method) {
+                        case 'base64':
+                            try {
+                                result = '// Base64 Decoded:\n' + atob(input);
+                            } catch(e) {
+                                result = '// Base64 decode failed: Invalid input\n' + input;
+                            }
+                            break;
+                        case 'unicode':
+                            result = '// Unicode processed:\n' + input.replace(/\\u[\dA-F]{4}/gi, 
+                                match => String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16)));
+                            break;
+                        case 'eval':
+                            result = '// Eval code detected (execution blocked for security):\n' + input;
+                            break;
+                        case 'aaencode':
+                            result = '// AAEncode detected:\n' + input + '\n\n// Manual decode required';
+                            break;
+                        default:
+                            result = '// Auto-detected format:\n' + input + '\n\n// Processing completed ✅';
+                    }
+                    
+                    output.textContent = result;
+                    addLog('success', '[DECODE] Process completed successfully!');
+                    showToast('Decode completed! ⚡');
+                } catch(error) {
+                    addLog('error', '[DECODE] Error: ' + error.message);
+                    showToast('Decode failed! Check logs for details.');
+                } finally {
+                    isProcessing = false;
+                    hideProgress();
+                }
             }, 1500);
         }
         
@@ -695,215 +855,277 @@
             const input = document.getElementById('input').value;
             if (!input.trim()) {
                 showToast('Please enter some code to beautify! ✨');
+                addLog('warning', '[BEAUTIFY] No input provided');
                 return;
             }
             
+            isProcessing = true;
             showProgress();
             addLog('info', '[BEAUTIFY] Formatting code...');
             
             setTimeout(() => {
-                const output = document.getElementById('output');
-                output.textContent = '// Code beautified!\n' + input.split('').join(' ') + '\n\n// Formatting completed ✨';
-                addLog('success', '[BEAUTIFY] Code formatted successfully!');
-                showToast('Code beautified! ✨');
-                hideProgress();
+                try {
+                    const output = document.getElementById('output');
+                    // 简单的美化逻辑
+                    let beautified = input
+                        .replace(/;/g, ';\n')
+                        .replace(/\{/g, '{\n  ')
+                        .replace(/\}/g, '\n}')
+                        .replace(/,/g, ',\n  ');
+                    
+                    output.textContent = '// Code beautified:\n\n' + beautified + '\n\n// Formatting completed ✨';
+                    addLog('success', '[BEAUTIFY] Code formatted successfully!');
+                    showToast('Code beautified! ✨');
+                } catch(error) {
+                    addLog('error', '[BEAUTIFY] Error: ' + error.message);
+                    showToast('Beautify failed! Check logs for details.');
+                } finally {
+                    isProcessing = false;
+                    hideProgress();
+                }
             }, 1000);
         }
         
         function analyze() {
+            isProcessing = true;
             showProgress();
             addLog('info', '[ANALYZE] Running security analysis...');
             
             setTimeout(() => {
-                addLog('warning', '[ANALYZE] Potentially obfuscated code detected');
-                addLog('success', '[ANALYZE] Analysis complete!');
-                showToast('Analysis completed! 🔍');
-                hideProgress();
+                try {
+                    const input = document.getElementById('input').value;
+                    const output = document.getElementById('output');
+                    
+                    let analysis = '// Security Analysis Report:\n\n';
+                    
+                    // 安全检查
+                    const risks = [];
+                    if (input.includes('eval(')) risks.push('- Eval function detected');
+                    if (input.includes('document.write')) risks.push('- Document.write detected');
+                    if (input.includes('innerHTML')) risks.push('- innerHTML usage detected');
+                    if (input.match(/http[s]?:\/\//)) risks.push('- External URLs detected');
+                    
+                    if (risks.length > 0) {
+                        analysis += 'POTENTIAL RISKS:\n' + risks.join('\n') + '\n\n';
+                        addLog('warning', '[ANALYZE] Security risks detected');
+                    } else {
+                        analysis += 'STATUS: No obvious security risks detected ✅\n\n';
+                    }
+                    
+                    analysis += `STATISTICS:\n`;
+                    analysis += `- Characters: ${input.length}\n`;
+                    analysis += `- Lines: ${input.split('\n').length}\n`;
+                    analysis += `- Words: ${input.trim() ? input.trim().split(/\s+/).length : 0}\n\n`;
+                    analysis += '// Analysis completed 🔍';
+                    
+                    output.textContent = analysis;
+                    addLog('success', '[ANALYZE] Analysis complete!');
+                    showToast('Analysis completed! 🔍');
+                } catch(error) {
+                    addLog('error', '[ANALYZE] Error: ' + error.message);
+                    showToast('Analysis failed! Check logs for details.');
+                } finally {
+                    isProcessing = false;
+                    hideProgress();
+                }
             }, 2000);
         }
         
         function copy() {
-            const output = document.getElementById('output');
-            navigator.clipboard.writeText(output.textContent).then(() => {
+            try {
+                const output = document.getElementById('output');
+                const text = output.textContent;
+                
+                if (!text || text.trim() === '') {
+                    showToast('Nothing to copy! 📝');
+                    addLog('warning', '[COPY] No content to copy');
+                    return;
+                }
+                
+                // 使用现代API
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        addLog('success', '[COPY] Content copied to clipboard!');
+                        showToast('Copied to clipboard! 📋');
+                    }).catch(() => {
+                        fallbackCopy(text);
+                    });
+                } else {
+                    fallbackCopy(text);
+                }
+            } catch(error) {
+                addLog('error', '[COPY] Error: ' + error.message);
+                showToast('Copy failed! Please try again.');
+            }
+        }
+        
+        function fallbackCopy(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
                 addLog('success', '[COPY] Content copied to clipboard!');
                 showToast('Copied to clipboard! 📋');
-            }).catch(() => {
-                addLog('error', '[COPY] Failed to copy content');
-                showToast('Copy failed! Please try again.');
-            });
+            } catch(err) {
+                addLog('error', '[COPY] Fallback copy failed');
+                showToast('Copy failed! Please manually select and copy.');
+            }
+            
+            document.body.removeChild(textArea);
         }
         
         function clear() {
-            document.getElementById('input').value = '';
-            document.getElementById('output').textContent = '// Output cleared\n// Ready for new input ⚡';
-            addLog('info', '[CLEAR] Interface cleared');
-            showToast('Interface cleared! 🗑️');
+            try {
+                document.getElementById('input').value = '';
+                document.getElementById('output').textContent = '// Output cleared\n// Ready for new input ⚡';
+                
+                // 重置检测结果
+                const detectionItems = document.querySelectorAll('.detection-item');
+                detectionItems[0].querySelector('.detection-value').textContent = '0%';
+                detectionItems[1].querySelector('.detection-value').textContent = 'Unknown';
+                detectionItems[2].querySelector('.detection-value').textContent = '0B';
+                detectionItems[3].querySelector('.detection-value').textContent = 'Ready';
+                
+                // 隐藏指示器
+                document.querySelectorAll('.encoding-indicator').forEach(indicator => {
+                    indicator.classList.remove('show');
+                });
+                
+                addLog('info', '[CLEAR] Interface cleared');
+                showToast('Interface cleared! 🗑️');
+            } catch(error) {
+                addLog('error', '[CLEAR] Error: ' + error.message);
+            }
         }
         
         function showProgress() {
             const progressFill = document.getElementById('progressFill');
-            progressFill.style.width = '100%';
+            if (progressFill) {
+                progressFill.style.width = '100%';
+            }
         }
         
         function hideProgress() {
             const progressFill = document.getElementById('progressFill');
-            setTimeout(() => {
-                progressFill.style.width = '0%';
-            }, 300);
+            if (progressFill) {
+                setTimeout(() => {
+                    progressFill.style.width = '0%';
+                }, 300);
+            }
         }
         
         function addLog(type, message) {
-            const logs = document.getElementById('logs');
-            const logElement = document.createElement('div');
-            logElement.className = `log-${type}`;
-            const timestamp = new Date().toLocaleTimeString();
-            logElement.textContent = `[${timestamp}] ${message}`;
-            logs.appendChild(logElement);
-            logs.scrollTop = logs.scrollHeight;
-            
-            // 限制日志数量
-            if (logs.children.length > 50) {
-                logs.removeChild(logs.firstChild);
+            try {
+                const logs = document.getElementById('logs');
+                if (!logs) return;
+                
+                const logElement = document.createElement('div');
+                logElement.className = `log-${type}`;
+                const timestamp = new Date().toLocaleTimeString();
+                logElement.textContent = `[${timestamp}] ${message}`;
+                logs.appendChild(logElement);
+                logs.scrollTop = logs.scrollHeight;
+                
+                // 限制日志数量
+                if (logs.children.length > 50) {
+                    logs.removeChild(logs.firstChild);
+                }
+                
+                console.log(`[${type.toUpperCase()}] ${message}`);
+            } catch(error) {
+                console.error('Log error:', error);
             }
         }
         
         function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            try {
+                const toast = document.getElementById('toast');
+                if (!toast) return;
+                
+                toast.textContent = message;
+                toast.classList.add('show');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+                
+                console.log('Toast:', message);
+            } catch(error) {
+                console.error('Toast error:', error);
+            }
         }
         
-        // 文件上传功能
-        const fileUpload = document.querySelector('.file-upload');
-        const fileInput = document.getElementById('fileInput');
-        
-        fileUpload.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileUpload.classList.add('dragover');
-        });
-        
-        fileUpload.addEventListener('dragleave', () => {
-            fileUpload.classList.remove('dragover');
-        });
-        
-        fileUpload.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileUpload.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                handleFile(files[0]);
+        function handleInputChange(value) {
+            try {
+                updateDetectionResults(value);
+                updateEncodingIndicators(value);
+            } catch(error) {
+                console.error('Input change error:', error);
             }
-        });
-        
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFile(e.target.files[0]);
-            }
-        });
-        
-        function handleFile(file) {
-            addLog('info', `[FILE] Loading: ${file.name}`);
-            showToast(`File loaded: ${file.name} 📁`);
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById('input').value = e.target.result;
-                addLog('success', `[FILE] Content loaded successfully`);
-            };
-            reader.readAsText(file);
         }
-        
-        // 键盘快捷键
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                switch(e.key.toLowerCase()) {
-                    case 'enter':
-                        e.preventDefault();
-                        decode();
-                        break;
-                    case 'b':
-                        e.preventDefault();
-                        beautify();
-                        break;
-                    case 'r':
-                        e.preventDefault();
-                        analyze();
-                        break;
-                }
-            }
-        });
-        
-        // 初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            addLog('success', '[INIT] Interface loaded successfully!');
-            addLog('info', '[SHORTCUTS] Ctrl+Enter: Decode | Ctrl+B: Beautify | Ctrl+R: Analyze');
-        });
-        
-        // 输入框实时反馈
-        document.getElementById('input').addEventListener('input', (e) => {
-            const value = e.target.value;
-            const length = value.length;
-            
-            // 更新检测结果
-            updateDetectionResults(value);
-            
-            // 显示编码指示器
-            updateEncodingIndicators(value);
-        });
         
         function updateDetectionResults(code) {
-            const detectionItems = document.querySelectorAll('.detection-item');
-            
-            if (code.length > 0) {
-                // 模拟检测逻辑
-                const confidence = Math.min(95, 60 + (code.length / 100) * 30);
-                const size = formatBytes(new Blob([code]).size);
+            try {
+                const detectionItems = document.querySelectorAll('.detection-item');
+                if (detectionItems.length < 4) return;
                 
-                let method = 'Unknown';
-                let status = 'Safe';
-                
-                if (code.includes('eval(') || code.includes('Function(')) {
-                    method = 'Eval';
-                    status = 'Warning';
-                } else if (code.match(/[^\x00-\x7F]/)) {
-                    method = 'Unicode';
-                } else if (code.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
-                    method = 'Base64';
-                } else if (code.includes('ﾟωﾟﾉ') || code.includes('(ﾟДﾟ)')) {
-                    method = 'AAEncode';
+                if (code.length > 0) {
+                    const confidence = Math.min(95, 60 + (code.length / 100) * 30);
+                    const size = formatBytes(new Blob([code]).size);
+                    
+                    let method = 'Text';
+                    let status = 'Safe';
+                    
+                    if (code.includes('eval(') || code.includes('Function(')) {
+                        method = 'Eval';
+                        status = 'Warning';
+                    } else if (code.match(/[^\x00-\x7F]/)) {
+                        method = 'Unicode';
+                    } else if (code.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
+                        method = 'Base64';
+                    } else if (code.includes('ﾟωﾟﾉ') || code.includes('(ﾟДﾟ)')) {
+                        method = 'AAEncode';
+                        status = 'Encoded';
+                    }
+                    
+                    detectionItems[0].querySelector('.detection-value').textContent = Math.round(confidence) + '%';
+                    detectionItems[1].querySelector('.detection-value').textContent = method;
+                    detectionItems[2].querySelector('.detection-value').textContent = size;
+                    detectionItems[3].querySelector('.detection-value').textContent = status;
+                    
+                    const statusElement = detectionItems[3].querySelector('.detection-value');
+                    statusElement.style.color = status === 'Safe' ? '#00ff88' : (status === 'Warning' ? '#ffaa00' : '#00d4ff');
                 }
-                
-                // 更新显示值
-                detectionItems[0].querySelector('.detection-value').textContent = Math.round(confidence) + '%';
-                detectionItems[1].querySelector('.detection-value').textContent = method;
-                detectionItems[2].querySelector('.detection-value').textContent = size;
-                detectionItems[3].querySelector('.detection-value').textContent = status;
-                
-                // 更新状态颜色
-                const statusElement = detectionItems[3].querySelector('.detection-value');
-                statusElement.style.color = status === 'Safe' ? '#00ff88' : '#ffaa00';
+            } catch(error) {
+                console.error('Detection update error:', error);
             }
         }
         
         function updateEncodingIndicators(code) {
-            const aaencodeIndicator = document.querySelector('.aaencode-indicator');
-            const evalIndicator = document.querySelector('.eval-indicator');
-            
-            // 检测 AAEncode
-            if (code.includes('ﾟωﾟﾉ') || code.includes('(ﾟДﾟ)')) {
-                aaencodeIndicator.classList.add('show');
-            } else {
-                aaencodeIndicator.classList.remove('show');
-            }
-            
-            // 检测 Eval
-            if (code.includes('eval(') || code.includes('Function(')) {
-                evalIndicator.classList.add('show');
-            } else {
-                evalIndicator.classList.remove('show');
+            try {
+                const aaencodeIndicator = document.querySelector('.aaencode-indicator');
+                const evalIndicator = document.querySelector('.eval-indicator');
+                
+                if (aaencodeIndicator) {
+                    if (code.includes('ﾟωﾟﾉ') || code.includes('(ﾟДﾟ)')) {
+                        aaencodeIndicator.classList.add('show');
+                    } else {
+                        aaencodeIndicator.classList.remove('show');
+                    }
+                }
+                
+                if (evalIndicator) {
+                    if (code.includes('eval(') || code.includes('Function(')) {
+                        evalIndicator.classList.add('show');
+                    } else {
+                        evalIndicator.classList.remove('show');
+                    }
+                }
+            } catch(error) {
+                console.error('Indicator update error:', error);
             }
         }
         
@@ -915,133 +1137,145 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + sizes[i];
         }
         
-        // 文件选项点击事件
-        document.querySelectorAll('.file-option').forEach(option => {
-            option.addEventListener('click', () => {
-                const method = option.textContent.toLowerCase();
-                addLog('info', `[METHOD] Selected: ${method}`);
+        function setupFileUpload() {
+            try {
+                const fileUpload = document.querySelector('.file-upload');
+                const fileInput = document.getElementById('fileInput');
                 
-                // 更新选择框
-                const select = document.getElementById('method');
-                if (method.includes('aaencode')) {
-                    select.value = 'aaencode';
-                } else if (method.includes('eval')) {
-                    select.value = 'eval';
-                } else if (method.includes('unicode')) {
-                    select.value = 'unicode';
-                } else if (method.includes('base64')) {
-                    select.value = 'base64';
+                if (!fileUpload || !fileInput) return;
+                
+                fileUpload.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    fileUpload.classList.add('dragover');
+                });
+                
+                fileUpload.addEventListener('dragleave', function() {
+                    fileUpload.classList.remove('dragover');
+                });
+                
+                fileUpload.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    fileUpload.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        handleFile(files[0]);
+                    }
+                });
+                
+                fileInput.addEventListener('change', function(e) {
+                    if (e.target.files.length > 0) {
+                        handleFile(e.target.files[0]);
+                    }
+                });
+            } catch(error) {
+                console.error('File upload setup error:', error);
+            }
+        }
+        
+        function setupFileOptions() {
+            try {
+                const fileOptions = document.querySelectorAll('.file-option');
+                fileOptions.forEach(option => {
+                    option.addEventListener('click', function() {
+                        const text = option.textContent.toLowerCase();
+                        addLog('info', `[METHOD] Selected: ${text}`);
+                        
+                        const select = document.getElementById('method');
+                        if (select) {
+                            if (text.includes('aaencode')) {
+                                select.value = 'aaencode';
+                            } else if (text.includes('eval')) {
+                                select.value = 'eval';
+                            } else if (text.includes('unicode')) {
+                                select.value = 'unicode';
+                            } else if (text.includes('base64')) {
+                                select.value = 'base64';
+                            }
+                        }
+                        
+                        showToast(`Method selected: ${text} 🎯`);
+                    });
+                });
+            } catch(error) {
+                console.error('File options setup error:', error);
+            }
+        }
+        
+        function handleFile(file) {
+            try {
+                addLog('info', `[FILE] Loading: ${file.name}`);
+                showToast(`File loaded: ${file.name} 📁`);
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const input = document.getElementById('input');
+                    if (input) {
+                        input.value = e.target.result;
+                        handleInputChange(e.target.result);
+                        addLog('success', '[FILE] Content loaded successfully');
+                    }
+                };
+                reader.onerror = function() {
+                    addLog('error', '[FILE] Failed to read file');
+                    showToast('Failed to read file! 📁');
+                };
+                reader.readAsText(file);
+            } catch(error) {
+                addLog('error', '[FILE] Error: ' + error.message);
+                showToast('File handling error!');
+            }
+        }
+        
+        function handleMethodChange(method) {
+            try {
+                addLog('info', `[METHOD] Changed to: ${method}`);
+                
+                // 高亮对应的选项
+                const fileOptions = document.querySelectorAll('.file-option');
+                fileOptions.forEach(option => {
+                    option.style.transform = 'scale(1)';
+                    option.style.borderColor = 'rgba(255,255,255,0.1)';
+                });
+                
+                const targetOption = document.querySelector(`.file-option.${method}`);
+                if (targetOption) {
+                    targetOption.style.transform = 'scale(1.05)';
+                    targetOption.style.borderColor = '#00d4ff';
                 }
+            } catch(error) {
+                console.error('Method change error:', error);
+            }
+        }
+        
+        function selectAllOutput() {
+            try {
+                const output = document.getElementById('output');
+                if (!output) return;
                 
-                showToast(`Method selected: ${method} 🎯`);
-            });
-        });
-        
-        // 方法选择变化事件
-        document.getElementById('method').addEventListener('change', (e) => {
-            const method = e.target.value;
-            addLog('info', `[METHOD] Changed to: ${method}`);
-            
-            // 高亮对应的选项
-            document.querySelectorAll('.file-option').forEach(option => {
-                option.style.transform = 'scale(1)';
-                option.style.borderColor = 'rgba(255,255,255,0.1)';
-            });
-            
-            const targetOption = document.querySelector(`.file-option.${method}`);
-            if (targetOption) {
-                targetOption.style.transform = 'scale(1.05)';
-                targetOption.style.borderColor = '#00d4ff';
+                const range = document.createRange();
+                range.selectNodeContents(output);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                showToast('Output text selected! 📝');
+            } catch(error) {
+                console.error('Select all error:', error);
             }
-        });
-        
-        // 页面可见性变化时的处理
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                addLog('info', '[SYSTEM] Page hidden');
-            } else {
-                addLog('info', '[SYSTEM] Page visible');
-            }
-        });
+        }
         
         // 错误处理
-        window.addEventListener('error', (e) => {
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
             addLog('error', `[ERROR] ${e.message}`);
-            showToast('An error occurred! Check logs for details.');
         });
         
-        // 性能监控
-        if ('performance' in window) {
-            window.addEventListener('load', () => {
-                setTimeout(() => {
-                    const loadTime = performance.now();
-                    addLog('success', `[PERF] Page loaded in ${Math.round(loadTime)}ms`);
-                }, 100);
-            });
-        }
-        
-        // 主题切换功能（预留）
-        function toggleTheme() {
-            // 可以在这里添加主题切换逻辑
-            addLog('info', '[THEME] Theme toggle requested');
-            showToast('Theme switching coming soon! 🎨');
-        }
-        
-        // 导出功能
-        function exportResults() {
-            const output = document.getElementById('output').textContent;
-            const blob = new Blob([output], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'decoded_output.txt';
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            addLog('success', '[EXPORT] Results exported');
-            showToast('Results exported! 💾');
-        }
-        
-        // 添加右键菜单功能
-        document.addEventListener('contextmenu', (e) => {
-            if (e.target.closest('.output') || e.target.closest('#input')) {
-                // 允许在输入输出区域使用右键菜单
-                return;
-            }
-            e.preventDefault();
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled promise rejection:', e.reason);
+            addLog('error', `[PROMISE] ${e.reason}`);
         });
         
-        // 添加选择所有文本功能
-        function selectAllOutput() {
-            const output = document.getElementById('output');
-            const range = document.createRange();
-            range.selectNodeContents(output);
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-            showToast('Output text selected! 📝');
-        }
-        
-        // 双击输出区域选择全部文本
-        document.getElementById('output').addEventListener('dblclick', selectAllOutput);
-        
-        // 添加统计信息更新
-        function updateStats() {
-            const input = document.getElementById('input').value;
-            const lines = input.split('\n').length;
-            const chars = input.length;
-            const words = input.trim() ? input.trim().split(/\s+/).length : 0;
-            
-            addLog('info', `[STATS] Lines: ${lines}, Words: ${words}, Chars: ${chars}`);
-        }
-        
-        // 定期更新统计（可选）
-        setInterval(() => {
-            const input = document.getElementById('input').value;
-            if (input.length > 0) {
-                updateStats();
-            }
-        }, 10000); // 每10秒更新一次
+        // 调试信息
+        console.log('Script loaded successfully');
 </style>
 </head>
 <body>
