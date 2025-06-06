@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Dark Theme</title>
+    <title>科技解码器</title>
     <style>
         * { 
             margin: 0; 
@@ -24,7 +24,6 @@
             position: relative;
         }
         
-        /* 简化的动态背景效果 */
         body::before {
             content: '';
             position: fixed;
@@ -105,7 +104,6 @@
             padding: 6px 16px;
             border-radius: 25px;
             font-size: 0.8rem;
-            margin-left: 15px;
             font-weight: 700;
             color: white;
             display: inline-block;
@@ -115,8 +113,6 @@
         .encoding-indicators {
             display: flex;
             gap: 12px;
-            margin-left: 15px;
-            margin-top: 10px;
         }
         
         .encoding-indicator {
@@ -501,7 +497,6 @@
             display: none !important;
         }
         
-        /* 滚动条 */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -594,152 +589,143 @@
 <body>
     <div class="container">
         <h1>
-            羊毛助手 
-            <span class="version">v6.0</span>
-            <div class="encoding-indicators">
-                <span id="aaencodeIndicator" class="encoding-indicator aaencode-indicator">AAEncode已检测</span>
-                <span id="evalIndicator" class="encoding-indicator eval-indicator">Eval已检测</span>
+            <div class="title-main">⚡ 科技解码器 ⚡</div>
+            <div class="title-sub">
+                <span class="version">v4.0</span>
+                <div class="encoding-indicators">
+                    <div class="encoding-indicator aaencode-indicator">AAEncode</div>
+                    <div class="encoding-indicator eval-indicator">检测到Eval</div>
+                </div>
             </div>
         </h1>
         
         <div class="features-banner">
-            🎯 v6.0增强版：专业AADecode+Eval解包插件 | 支持头部注释保留 | 智能多重检测 | 一键本地解密
+            🚀 高级代码分析 • 实时解码 • 多格式支持 • AI智能检测 🚀
         </div>
         
-        <!-- GitHub 配置 -->
         <div class="section">
-            <div class="section-title">⚙️ GitHub 配置（可选）</div>
+            <div class="section-title">
+                🔍 输入分析器
+            </div>
             <div class="form-row">
                 <div>
-                    <label>GitHub Token</label>
-                    <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxx">
+                    <label for="input">代码输入</label>
+                    <textarea id="input" placeholder="在此粘贴您的编码代码..."></textarea>
                 </div>
                 <div>
-                    <label>仓库地址</label>
-                    <input type="text" id="repo" placeholder="username/repo">
+                    <label for="method">解码方法</label>
+                    <select id="method">
+                        <option value="auto">🤖 自动检测</option>
+                        <option value="aaencode">📊 AAEncode</option>
+                        <option value="eval">⚡ Eval</option>
+                        <option value="unicode">🔤 Unicode</option>
+                        <option value="base64">🔐 Base64</option>
+                    </select>
                 </div>
             </div>
+            
+            <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                <div class="file-upload-icon">📁</div>
+                <div>点击上传文件或拖拽到此处</div>
+                <input type="file" id="fileInput" style="display:none" accept=".js,.txt,.html">
+            </div>
+            
+            <div class="detection-panel">
+                <div class="section-title">🎯 检测结果</div>
+                <div class="detection-grid">
+                    <div class="detection-item">
+                        <div class="detection-value">98%</div>
+                        <div class="detection-label">置信度</div>
+                    </div>
+                    <div class="detection-item">
+                        <div class="detection-value">AAEncode</div>
+                        <div class="detection-label">方法</div>
+                    </div>
+                    <div class="detection-item">
+                        <div class="detection-value">2.5KB</div>
+                        <div class="detection-label">大小</div>
+                    </div>
+                    <div class="detection-item">
+                        <div class="detection-value">安全</div>
+                        <div class="detection-label">状态</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="file-options">
+                <div class="file-option aaencode">
+                    <div>🔥 AAEncode</div>
+                    <div style="font-size: 0.7rem; opacity: 0.8;">高级</div>
+                </div>
+                <div class="file-option eval">
+                    <div>⚡ Eval解码</div>
+                    <div style="font-size: 0.7rem; opacity: 0.8;">动态</div>
+                </div>
+                <div class="file-option">
+                    <div>🔤 Unicode</div>
+                    <div style="font-size: 0.7rem; opacity: 0.8;">标准</div>
+                </div>
+                <div class="file-option">
+                    <div>🔐 Base64</div>
+                    <div style="font-size: 0.7rem; opacity: 0.8;">基础</div>
+                </div>
+            </div>
+            
             <div class="note">
-                <strong>💡 说明：</strong>AAEncode和Eval代码可直接本地解密，无需GitHub配置。GitHub配置仅用于其他复杂混淆代码的云端解密。
+                💡 <strong>专业提示：</strong> 使用自动检测可获得最佳效果。AI将分析模式并选择最优的解码方法。
             </div>
         </div>
         
-        <!-- 文件输入区域 - 5个固定按钮 -->
-<div class="card">
-    <h3>📁 文件输入</h3>
-    
-    <div class="file-upload" onclick="document.getElementById('fileInput').click()" 
-         ondragover="handleDragOver(event)" 
-         ondragleave="handleDragLeave(event)" 
-         ondrop="handleDrop(event)">
-        <div class="file-upload-icon">📄</div>
-        <div class="file-upload-text">点击选择文件或拖拽文件到此处</div>
-        <div class="file-upload-hint">支持 .js .txt .json 等文本文件</div>
-    </div>
-    
-    <input type="file" id="fileInput" accept=".js,.txt,.json">
-    
-    <!-- 固定5按钮布局 -->
-    <div style="display: flex; gap: 6px; margin-top: 20px;">
-        <button onclick="document.getElementById('fileInput').click()" 
-                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #2196f3, #21cbf3); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-            📁<br><span style="font-size: 10px;">选择文件</span>
-        </button>
-        <button onclick="showRemoteUrlDialog()" 
-        style="flex: 1; min-width: 0; background: linear-gradient(135deg, #f44336, #e57373); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-            🌐<br><span style="font-size: 10px;">远程加载</span>
-        </button>
-        <button onclick="pasteFromClipboard()" 
-                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #4caf50, #66bb6a); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-            📋<br><span style="font-size: 10px;">粘贴板</span>
-        </button>
-        <button onclick="cleanInput()" 
-                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #ff9800, #ffb74d); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-            🧹<br><span style="font-size: 10px;">清理代码</span>
-        </button>
-        <button onclick="clearInput()" 
-                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #9c27b0, #ba68c8); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
-            🗑<br><span style="font-size: 10px;">clearInput</span>
-        </button>
-    </div>
-</div>
-        
-        <!-- 检测面板 -->
-        <div id="detectionPanel" class="detection-panel" style="display: none;">
-            <div class="section-title">🔍 编码格式检测结果</div>
-            <div class="detection-grid">
-                <div class="detection-item">
-                    <div id="detectionType" class="detection-value">未检测</div>
-                    <div class="detection-label">编码类型</div>
-                </div>
-                <div class="detection-item">
-                    <div id="detectionConfidence" class="detection-value">0%</div>
-                    <div class="detection-label">置信度</div>
-                </div>
-                <div class="detection-item">
-                    <div id="detectionFeatures" class="detection-value">0</div>
-                    <div class="detection-label">特征匹配</div>
-                </div>
-                <div class="detection-item">
-                    <div id="detectionDetails" class="detection-value">-</div>
-                    <div class="detection-label">详细信息</div>
-                </div>
-            </div>
-        </div>
-        
-<!-- 代码输入区域 - 去掉多余按钮 -->
-<div class="card">
-    <h3>✏️ 代码输入</h3>
-    <div class="input-section">
-        <textarea id="input" class="code-input" placeholder="请粘贴需要解密的JavaScript代码..." rows="10"></textarea>
-    </div>
-</div>
-        
-        <!-- 进度条 -->
-        <div class="progress-bar">
-            <div id="progress" class="progress-fill"></div>
-        </div>
-        
-        <!-- 输出结果 -->
-        <div class="section">
-            <div class="section-title">✨ 解密结果</div>
-            <div id="output" class="output">// 解密结果将显示在这里...</div>
-            </div>
-        </div>
-        
-        <!-- 执行日志 -->
-        <div class="section">
-            <div class="section-title">📋 执行日志</div>
-            <div id="logs" class="logs"></div>
-        </div>
-        
-        <!-- 控制按钮 -->
         <div class="buttons">
-            <button class="btn-blue" onclick="startDecrypt()">
-                <div class="btn-icon">🔓</div>
-                <div class="btn-text">开始解密</div>
+            <button class="btn-blue" onclick="decode()">
+                <div class="btn-icon">🚀</div>
+                <div class="btn-text">解码</div>
             </button>
-            <button class="btn-green" onclick="getResult()">
-                <div class="btn-icon">📥</div>
-                <div class="btn-text">获取结果</div>
+            <button class="btn-green" onclick="beautify()">
+                <div class="btn-icon">✨</div>
+                <div class="btn-text">美化</div>
             </button>
-            <button class="btn-yellow" onclick="copyResult()">
+            <button class="btn-yellow" onclick="analyze()">
+                <div class="btn-icon">🔍</div>
+                <div class="btn-text">分析</div>
+            </button>
+            <button class="btn-purple" onclick="copy()">
                 <div class="btn-icon">📋</div>
                 <div class="btn-text">复制</div>
             </button>
-            <button class="btn-purple" onclick="beautifyCode()">
-                <div class="btn-icon">🎨</div>
-                <div class="btn-text">代码美化</div>
-            </button>
-            <button class="btn-red" onclick="clearAll()">
-                <div class="btn-icon">🗑</div>
+            <button class="btn-red" onclick="clear()">
+                <div class="btn-icon">🗑️</div>
                 <div class="btn-text">清除</div>
             </button>
         </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">
+                📊 输出终端
+            </div>
+            <div class="output" id="output">// 解码输出将在此显示...
+// 准备分析 ⚡</div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">
+                📝 系统日志
+            </div>
+            <div class="logs" id="logs">
+                <div class="log-info">[系统] 科技解码器 v4.0 已初始化 ⚡</div>
+                <div class="log-success">[状态] 所有系统运行正常 🟢</div>
+                <div class="log-info">[就绪] 等待输入...</div>
+            </div>
+        </div>
     </div>
     
-    <!-- Toast -->
-    <div id="toast" class="toast"></div>
+    <div class="toast" id="toast">
+        操作成功完成！ ✨
+    </div>
 
     <script>
     
