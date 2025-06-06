@@ -1455,9 +1455,10 @@ function loadRemoteFile(url) {
            }
        }
        
-       // ✅ 智能清理输入 - 完整修复版
+       // 智能清理输入 - 完整修复版
 function cleanInput() {
-    const input = document.getElementById('input').value.trim();
+    const inputEl = document.getElementById('input');
+    const input = inputEl.value.trim();
     if (!input) {
         showToast('请先输入代码');
         return;
@@ -1478,10 +1479,12 @@ function cleanInput() {
     }
 
     addLog('开始智能清理代码...', 'info');
-    const processed = preprocessCiphertext(input);
+
+    // 智能预处理
+    let processed = preprocessCiphertext(input);
 
     if (processed.length < input.length * 0.8 && processed.length > 50) {
-        document.getElementById('input').value = processed;
+        inputEl.value = processed;
         showToast('🎯 智能提取密文完成');
         addLog(`智能提取: 从${input.length}字符中提取${processed.length}字符`, 'success');
 
@@ -1492,34 +1495,26 @@ function cleanInput() {
         return;
     }
 
-    // 保留 jsjiami encode_version 特征段
-    const encodePattern = /(;?\s*var\s+encode_version\s*=\s*['"]jsjiami\.com\.v\d+['"][\s\S]*?__0x\w+\s*=\s*\[.*?\];?)/;
-    let preservedBlock = '';
-    const encodeMatch = input.match(encodePattern);
-    if (encodeMatch) {
-        preservedBlock = encodeMatch[1];
-        addLog('已识别 jsjiami encode_version 段落，准备保留', 'success');
-    }
-
+    // === 基础清理
     let cleaned = input
-        .replace(encodePattern, '')  // 先移除保留段，稍后加回来
         .replace(/\/\/.*$/gm, '')
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '')
+        .replace(/^\s*\/\/\s*(原始代码|原文|明文).*$/gm, '')
         .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
         .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
-        .replace(/^\s*\/\/\s*(原文|明文|原始代码|解密结果).*$/gm, '')
+        .replace(/^\s*[\r\n]/gm, '')
+        .replace(/^\s+/gm, '')
         .replace(/\s+/g, ' ')
         .trim();
-
-    // 拼回保留段
-    if (preservedBlock) cleaned = preservedBlock + '\n\n' + cleaned;
 
     if (cleaned.length === input.length) {
         showToast('🔍 未发现需要清理的内容');
         addLog('代码已经是纯净格式', 'info');
     } else {
-        document.getElementById('input').value = cleaned;
+        inputEl.value = cleaned;
         showToast('🧹 代码清理完成');
         addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
 
@@ -1530,9 +1525,9 @@ function cleanInput() {
     }
 }
 
-// 🔍 检查是否为混合内容
+// 检查是否为混合内容
 function checkIfMixedContent(input) {
-    const indicators = [
+    const mixedContentIndicators = [
         /\/\/.*$/m,
         /\/\*[\s\S]*?\*\//,
         /<!--[\s\S]*?-->/,
@@ -1544,38 +1539,56 @@ function checkIfMixedContent(input) {
         /eval\s*\(.*?\).*eval\s*\(/s,
         /(解密脚本|混淆工具|加密工具)/
     ];
-    for (const pattern of indicators) {
-        if (pattern.test(input)) return true;
+
+    for (const indicator of mixedContentIndicators) {
+        if (indicator.test(input)) {
+            return true;
+        }
     }
 
     const lines = input.split('\n');
     if (lines.length > 10) {
         const nonCipherLines = lines.filter(line => {
-            const trimmed = line.trim();
-            return trimmed.length > 0 &&
-                !/^[A-Za-z0-9+/=\\u]+$/.test(trimmed) &&
-                !/^[0-9a-fA-F\s]+$/.test(trimmed) &&
-                !/^[\x20-\x7E]*$/.test(trimmed);
+            const trimmedLine = line.trim();
+            return trimmedLine.length > 0 &&
+                !(/^[A-Za-z0-9+/=\\u]+$/.test(trimmedLine)) &&
+                !(/^[0-9a-fA-F\s]+$/.test(trimmedLine)) &&
+                !(/^[\x20-\x7E]*$/.test(trimmedLine));
         });
-        return nonCipherLines.length > lines.length * 0.3;
+
+        if (nonCipherLines.length > lines.length * 0.3) {
+            return true;
+        }
     }
+
     return false;
 }
 
-// 🎯 智能提取密文内容
+// 智能预处理混合密文
 function preprocessCiphertext(input) {
     addLog('执行智能预处理...', 'info');
+
     let processed = input
         .replace(/\/\/.*$/gm, '')
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+        .replace(/^\s*\/\/解密脚本.*$/gm, '')
         .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
 
     const patterns = [
         {
             name: 'jsjiami混淆',
-            pattern: /var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*,.*?__0x\w+\s*=\s*\[.*?\];?/s,
-            extract: match => match[0]
+            // 修复：更精确地匹配jsjiami代码块，避免匹配到前面的普通代码
+            pattern: /;?\s*var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`][\s\S]*?__0x\w+\s*=\s*\[[^\]]+\]\s*;?/,
+            extract: match => {
+                let extracted = match[0].trim();
+                // 确保以分号开头
+                if (!extracted.startsWith(';')) {
+                    extracted = ';' + extracted;
+                }
+                return extracted;
+            }
         },
         {
             name: 'eval包装的jsjiami',
@@ -1591,24 +1604,31 @@ function preprocessCiphertext(input) {
             name: 'eval包装',
             pattern: /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
             extract: match => match[2]
+        },
+        {
+            name: 'Function构造器',
+            pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
+            extract: match => match[2]
         }
     ];
 
-    for (const p of patterns) {
-        const m = processed.match(p.pattern);
-        if (m) {
-            const result = p.extract(m);
-            if (result && result.length > 50) {
-                addLog(`智能提取${p.name}格式密文`, 'success');
-                return result;
+    for (const pattern of patterns) {
+        const matches = processed.match(pattern.pattern);
+        if (matches) {
+            const extracted = pattern.extract(matches);
+            if (extracted && extracted.length > 50) {
+                addLog(`智能提取${pattern.name}格式密文`, 'success');
+                return extracted;
             }
         }
     }
 
     return processed
-        .replace(/^\s*console\.log\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
-        .replace(/^\s*alert\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
+        .replace(/^\s*\/\/\s*(原始|原文|明文).*$/gm, '')
+        .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
+        .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
         .replace(/^\s*[\r\n]/gm, '')
+        .replace(/^\s+/gm, '')
         .replace(/\s+/g, ' ')
         .trim();
 }
