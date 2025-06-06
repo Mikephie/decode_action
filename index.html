@@ -1492,93 +1492,6 @@ function cleanInput() {
         }
     }
 
-    // 其他格式提取
-    const patterns = [
-        // 本地解密格式
-        {
-            name: 'eval包装',
-            pattern: /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s,
-            extract: match => match[2],
-            type: 'local'
-        },
-        {
-            name: 'AAEncode',
-            pattern: /(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s,
-            extract: match => match[1],
-            type: 'local'
-        },
-        {
-            name: 'AADecode',
-            pattern: /(゜ω゜ﾉ.*?ﾟΘﾟ.*?)/s,
-            extract: match => match[1],
-            type: 'local'
-        },
-        {
-            name: 'JJEncode',
-            pattern: /(\$=~\[\];.*?\(\)\(\))/s,
-            extract: match => match[1],
-            type: 'local'
-        },
-        
-        // GitHub解密格式
-        {
-            name: 'Function构造器',
-            pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s,
-            extract: match => match[2],
-            type: 'github'
-        },
-        {
-            name: 'Unicode转义',
-            pattern: /((?:\\u[0-9a-fA-F]{4}){50,})/,
-            extract: match => match[1],
-            type: 'github'
-        },
-        {
-            name: '十六进制转义',
-            pattern: /((?:\\x[0-9a-fA-F]{2}){50,})/,
-            extract: match => match[1],
-            type: 'github'
-        },
-        {
-            name: 'Base64编码',
-            pattern: /^([A-Za-z0-9+/]{200,}={0,2})$/m,
-            extract: match => match[1],
-            type: 'github'
-        },
-        {
-            name: 'Packer混淆',
-            pattern: /eval\s*\(\s*function\s*\(p,a,c,k,e,d\).*?return\s+p\}\s*\('([^']+)',(\d+),(\d+),'([^']+)'\.split\('\|'\)/s,
-            extract: match => match[0],
-            type: 'github'
-        },
-        {
-            name: 'ObfuscatorIO',
-            pattern: /var\s+_0x[a-f0-9]+\s*=\s*\[.*?\];.*?function\s+_0x[a-f0-9]+/s,
-            extract: match => match[0],
-            type: 'github'
-        }
-    ];
-
-    for (const pattern of patterns) {
-        const match = input.match(pattern.pattern);
-        if (match) {
-            const extracted = pattern.extract(match);
-            if (extracted && extracted.length > 100) {
-                inputEl.value = extracted;
-                
-                // 根据解密类型显示不同提示
-                if (pattern.type === 'local') {
-                    showToast(`🎯 提取${pattern.name}完成 (可本地解密)`);
-                    addLog(`提取 ${pattern.name}: ${input.length} → ${extracted.length} 字符 [本地解密]`, 'success');
-                } else {
-                    showToast(`🎯 提取${pattern.name}完成`);
-                    addLog(`提取 ${pattern.name}: ${input.length} → ${extracted.length} 字符 [GitHub解密]`, 'success');
-                }
-                return;
-            }
-        }
-    }
-
     // 基础清理
     let cleaned = input
         .replace(/\/\/.*$/gm, '')                    // 单行注释
@@ -1603,18 +1516,97 @@ function cleanInput() {
 
 // 检查是否为混合内容
 function checkIfMixedContent(input) {
-    return /\/\/|\/\*|<!--|[\u4e00-\u9fff]|console\.|alert\(/.test(input);
+    const mixedContentIndicators = [
+        /\/\/.*$/m,
+        /\/\*[\s\S]*?\*\//,
+        /<!--[\s\S]*?-->/,
+        /[\u4e00-\u9fff]/,
+        /(原始代码|原文|明文|解密结果|解密完成)/,
+        /<[^>]+>/,
+        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+        /(console\.log|alert|document\.write)\s*\(/,
+        /eval\s*\(.*?\).*eval\s*\(/s,
+        /(解密脚本|混淆工具|加密工具)/
+    ];
+
+    for (const indicator of mixedContentIndicators) {
+        if (indicator.test(input)) {
+            return true;
+        }
+    }
+
+    const lines = input.split('\n');
+    if (lines.length > 10) {
+        const nonCipherLines = lines.filter(line => {
+            const trimmedLine = line.trim();
+            return trimmedLine.length > 0 &&
+                !(/^[A-Za-z0-9+/=\\u]+$/.test(trimmedLine)) &&
+                !(/^[0-9a-fA-F\s]+$/.test(trimmedLine)) &&
+                !(/^[\x20-\x7E]*$/.test(trimmedLine));
+        });
+
+        if (nonCipherLines.length > lines.length * 0.3) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
-// 简化的检测函数
-function comprehensiveDetection(input) {
-    if (input.includes('jsjiami.com.v')) {
-        return { primaryType: 'jsjiami', primaryConfidence: 95 };
+// 智能预处理混合密文
+function preprocessCiphertext(input) {
+    addLog('执行智能预处理...', 'info');
+
+    let processed = input
+        .replace(/\/\/.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+        .replace(/^\s*\/\/解密脚本.*$/gm, '')
+        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
+
+    const patterns = [
+        {
+            name: 'eval包装的jsjiami',
+            pattern: /eval\s*\(\s*(['"`])(.*?jsjiami\.com\.v\d+.*?)\1\s*\)/s,
+            extract: match => match[2]
+        },
+        {
+            name: 'AAEncode混淆',
+            pattern: /(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s,
+            extract: match => match[1]
+        },
+        {
+            name: 'eval包装',
+            pattern: /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
+            extract: match => match[2]
+        },
+        {
+            name: 'Function构造器',
+            pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
+            extract: match => match[2]
+        }
+    ];
+
+    for (const pattern of patterns) {
+        const matches = processed.match(pattern.pattern);
+        if (matches) {
+            const extracted = pattern.extract(matches);
+            if (extracted && extracted.length > 50) {
+                addLog(`智能提取${pattern.name}格式密文`, 'success');
+                return extracted;
+            }
+        }
     }
-    if (input.includes('eval(')) {
-        return { primaryType: 'eval', primaryConfidence: 80 };
-    }
-    return { primaryType: 'Unknown', primaryConfidence: 0 };
+
+    return processed
+        .replace(/^\s*\/\/\s*(原始|原文|明文).*$/gm, '')
+        .replace(/^\s*console\.log\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
+        .replace(/^\s*alert\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
+        .replace(/^\s*[\r\n]/gm, '')
+        .replace(/^\s+/gm, '')
+        .replace(/\s+/g, ' ')
+        .trim();
 }
 
 // 验证输入质量
