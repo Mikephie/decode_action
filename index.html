@@ -58,7 +58,7 @@
         h1 {
             text-align: center;
             margin: 20px 0;
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 900;
             background: linear-gradient(45deg, #00d4ff, #ff00ff, #ffff00, #00ff88);
             background-size: 300% 300%;
@@ -75,6 +75,24 @@
             top: 10px;
             z-index: 100;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            line-height: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .title-main {
+            font-size: 2rem;
+        }
+        
+        .title-sub {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 1rem;
         }
         
         @keyframes gradientShift {
@@ -141,7 +159,7 @@
             border-radius: 15px;
             margin-bottom: 25px;
             text-align: center;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             animation: bannerGlow 4s ease-in-out infinite;
         }
@@ -504,8 +522,17 @@
             }
             
             h1 {
-                font-size: 1.8rem;
+                font-size: 1.5rem;
                 padding: 15px;
+            }
+            
+            .title-main {
+                font-size: 1.5rem;
+            }
+            
+            .title-sub {
+                font-size: 0.8rem;
+                gap: 8px;
             }
             
             .form-row {
@@ -520,6 +547,22 @@
                 margin: 0;
                 border-radius: 0;
                 border-top: 2px solid rgba(0, 212, 255, 0.3);
+                grid-template-columns: repeat(5, 1fr);
+                gap: 8px;
+                padding: 15px;
+            }
+            
+            button {
+                padding: 12px 8px;
+                font-size: 0.7rem;
+            }
+            
+            .btn-icon {
+                font-size: 1.2rem;
+            }
+            
+            .btn-text {
+                font-size: 0.65rem;
             }
             
             body {
@@ -532,858 +575,21 @@
             }
             
             .detection-grid {
-                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
             }
             
             .file-options {
-                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            
+            .file-option {
+                padding: 12px 8px;
+                font-size: 0.8rem;
             }
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>
-            ⚡ TECH DECODER ⚡
-            <span class="version">v4.0</span>
-            <div class="encoding-indicators">
-                <div class="encoding-indicator aaencode-indicator">AAEncode</div>
-                <div class="encoding-indicator eval-indicator">Eval Detected</div>
-            </div>
-        </h1>
-        
-        <div class="features-banner">
-            🚀 Advanced Code Analysis • Real-time Decoding • Multi-format Support • AI-Powered Detection 🚀
-        </div>
-        
-        <div class="section">
-            <div class="section-title">
-                🔍 INPUT ANALYZER
-            </div>
-            <div class="form-row">
-                <div>
-                    <label for="input">Code Input</label>
-                    <textarea id="input" placeholder="Paste your encoded code here..."></textarea>
-                </div>
-                <div>
-                    <label for="method">Decode Method</label>
-                    <select id="method">
-                        <option value="auto">🤖 Auto Detect</option>
-                        <option value="aaencode">📊 AAEncode</option>
-                        <option value="eval">⚡ Eval</option>
-                        <option value="unicode">🔤 Unicode</option>
-                        <option value="base64">🔐 Base64</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="file-upload" onclick="document.getElementById('fileInput').click()">
-                <div class="file-upload-icon">📁</div>
-                <div>Click to upload file or drag & drop</div>
-                <input type="file" id="fileInput" style="display:none" accept=".js,.txt,.html">
-            </div>
-            
-            <div class="detection-panel">
-                <div class="section-title">🎯 Detection Results</div>
-                <div class="detection-grid">
-                    <div class="detection-item">
-                        <div class="detection-value">98%</div>
-                        <div class="detection-label">Confidence</div>
-                    </div>
-                    <div class="detection-item">
-                        <div class="detection-value">AAEncode</div>
-                        <div class="detection-label">Method</div>
-                    </div>
-                    <div class="detection-item">
-                        <div class="detection-value">2.5KB</div>
-                        <div class="detection-label">Size</div>
-                    </div>
-                    <div class="detection-item">
-                        <div class="detection-value">Safe</div>
-                        <div class="detection-label">Status</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="file-options">
-                <div class="file-option aaencode">
-                    <div>🔥 AAEncode</div>
-                    <div style="font-size: 0.7rem; opacity: 0.8;">Advanced</div>
-                </div>
-                <div class="file-option eval">
-                    <div>⚡ Eval Decode</div>
-                    <div style="font-size: 0.7rem; opacity: 0.8;">Dynamic</div>
-                </div>
-                <div class="file-option">
-                    <div>🔤 Unicode</div>
-                    <div style="font-size: 0.7rem; opacity: 0.8;">Standard</div>
-                </div>
-                <div class="file-option">
-                    <div>🔐 Base64</div>
-                    <div style="font-size: 0.7rem; opacity: 0.8;">Basic</div>
-                </div>
-            </div>
-            
-            <div class="note">
-                💡 <strong>Pro Tip:</strong> Use auto-detect for best results. The AI will analyze patterns and choose the optimal decoding method.
-            </div>
-        </div>
-        
-        <div class="buttons">
-            <button class="btn-blue" onclick="decode()">
-                <div class="btn-icon">🚀</div>
-                <div class="btn-text">DECODE</div>
-            </button>
-            <button class="btn-green" onclick="beautify()">
-                <div class="btn-icon">✨</div>
-                <div class="btn-text">BEAUTIFY</div>
-            </button>
-            <button class="btn-yellow" onclick="analyze()">
-                <div class="btn-icon">🔍</div>
-                <div class="btn-text">ANALYZE</div>
-            </button>
-            <button class="btn-purple" onclick="copy()">
-                <div class="btn-icon">📋</div>
-                <div class="btn-text">COPY</div>
-            </button>
-            <button class="btn-red" onclick="clear()">
-                <div class="btn-icon">🗑️</div>
-                <div class="btn-text">CLEAR</div>
-            </button>
-        </div>
-        
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-        
-        <div class="section">
-            <div class="section-title">
-                📊 OUTPUT TERMINAL
-            </div>
-            <div class="output" id="output">// Decoded output will appear here...
-// Ready for analysis ⚡</div>
-        </div>
-        
-        <div class="section">
-            <div class="section-title">
-                📝 SYSTEM LOGS
-            </div>
-            <div class="logs" id="logs">
-                <div class="log-info">[SYSTEM] Tech Decoder v4.0 initialized ⚡</div>
-                <div class="log-success">[STATUS] All systems operational 🟢</div>
-                <div class="log-info">[READY] Waiting for input...</div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="toast" id="toast">
-        Operation completed successfully! ✨
-    </div>
-    
-    <script>
-        // 全局变量
-        let isProcessing = false;
-        
-        // 等待DOM加载完成
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing...');
-            initializeApp();
-        });
-        
-        function initializeApp() {
-            try {
-                console.log('Initializing app...');
-                
-                // 检查关键元素是否存在
-                const input = document.getElementById('input');
-                const output = document.getElementById('output');
-                const logs = document.getElementById('logs');
-                
-                console.log('Elements check:');
-                console.log('- Input:', input ? 'found' : 'missing');
-                console.log('- Output:', output ? 'found' : 'missing');
-                console.log('- Logs:', logs ? 'found' : 'missing');
-                
-                if (!input) {
-                    console.error('Critical: Input element missing!');
-                    return;
-                }
-                
-                // 强制设置输入框属性
-                input.style.background = 'rgba(0,0,0,0.6)';
-                input.style.border = '2px solid rgba(255,255,255,0.2)';
-                input.style.color = '#ffffff';
-                input.style.padding = '15px';
-                input.disabled = false;
-                input.readOnly = false;
-                
-                // 测试输入框
-                input.value = '';
-                input.placeholder = 'Ready! You can type here now...';
-                
-                console.log('Input box configured');
-                
-                // 初始化所有事件监听器
-                setupEventListeners();
-                
-                // 添加初始日志
-                addLog('success', '[INIT] Tech Decoder v4.0 initialized ⚡');
-                addLog('info', '[SHORTCUTS] Ctrl+Enter: Decode | Ctrl+B: Beautify | Ctrl+R: Analyze');
-                addLog('success', '[READY] All systems operational 🟢');
-                addLog('info', '[TEST] Try typing in the input box...');
-                
-                console.log('App initialized successfully');
-                
-                // 额外的输入框测试
-                setTimeout(() => {
-                    if (input) {
-                        input.focus();
-                        console.log('Input box focused for testing');
-                        addLog('info', '[TEST] Input box focus test completed');
-                    }
-                }, 2000);
-                
-            } catch (error) {
-                console.error('Initialization error:', error);
-                alert('Initialization failed: ' + error.message);
-            }
-        }
-        
-        function setupEventListeners() {
-            console.log('Setting up event listeners...');
-            
-            // 按钮事件 - 更直接的方式
-            const decodeBtn = document.querySelector('.btn-blue');
-            const beautifyBtn = document.querySelector('.btn-green');
-            const analyzeBtn = document.querySelector('.btn-yellow');
-            const copyBtn = document.querySelector('.btn-purple');
-            const clearBtn = document.querySelector('.btn-red');
-            
-            if (decodeBtn) {
-                decodeBtn.onclick = function(e) {
-                    e.preventDefault();
-                    console.log('Decode button clicked');
-                    decode();
-                };
-            }
-            
-            if (beautifyBtn) {
-                beautifyBtn.onclick = function(e) {
-                    e.preventDefault();
-                    console.log('Beautify button clicked');
-                    beautify();
-                };
-            }
-            
-            if (analyzeBtn) {
-                analyzeBtn.onclick = function(e) {
-                    e.preventDefault();
-                    console.log('Analyze button clicked');
-                    analyze();
-                };
-            }
-            
-            if (copyBtn) {
-                copyBtn.onclick = function(e) {
-                    e.preventDefault();
-                    console.log('Copy button clicked');
-                    copy();
-                };
-            }
-            
-            if (clearBtn) {
-                clearBtn.onclick = function(e) {
-                    e.preventDefault();
-                    console.log('Clear button clicked');
-                    clear();
-                };
-            }
-            
-            // 输入框事件 - 更直接的绑定
-            const inputElement = document.getElementById('input');
-            if (inputElement) {
-                console.log('Input element found, binding events...');
-                
-                inputElement.oninput = function(e) {
-                    console.log('Input changed:', e.target.value.length, 'characters');
-                    handleInputChange(e.target.value);
-                };
-                
-                inputElement.onfocus = function() {
-                    console.log('Input focused');
-                    addLog('info', '[INPUT] Text area focused');
-                };
-                
-                inputElement.onblur = function() {
-                    console.log('Input blurred');
-                };
-                
-                // 测试输入框是否可用
-                setTimeout(() => {
-                    inputElement.placeholder = 'Input box is ready! Type here...';
-                    console.log('Input box placeholder updated');
-                }, 1000);
-            } else {
-                console.error('Input element not found!');
-            }
-            
-            // 文件上传事件
-            setupFileUpload();
-            
-            // 文件选项事件
-            setupFileOptions();
-            
-            // 方法选择事件
-            const methodSelect = document.getElementById('method');
-            if (methodSelect) {
-                methodSelect.onchange = function(e) {
-                    console.log('Method changed to:', e.target.value);
-                    handleMethodChange(e.target.value);
-                };
-            }
-            
-            // 键盘快捷键
-            document.onkeydown = function(e) {
-                if (e.ctrlKey || e.metaKey) {
-                    switch(e.key.toLowerCase()) {
-                        case 'enter':
-                            e.preventDefault();
-                            decode();
-                            break;
-                        case 'b':
-                            e.preventDefault();
-                            beautify();
-                            break;
-                        case 'r':
-                            e.preventDefault();
-                            analyze();
-                            break;
-                    }
-                }
-            };
-            
-            // 输出区域双击选择
-            const outputElement = document.getElementById('output');
-            if (outputElement) {
-                outputElement.ondblclick = function() {
-                    selectAllOutput();
-                };
-            }
-            
-            console.log('Event listeners setup completed');
-        }
-        
-        function handleButtonClick(action) {
-            if (isProcessing) {
-                showToast('Please wait for current operation to complete! ⏳');
-                return;
-            }
-            
-            console.log('Handling action:', action);
-            addLog('info', `[ACTION] ${action.toUpperCase()} requested`);
-            
-            switch(action) {
-                case 'decode':
-                    decode();
-                    break;
-                case 'beautify':
-                    beautify();
-                    break;
-                case 'analyze':
-                    analyze();
-                    break;
-                case 'copy':
-                    copy();
-                    break;
-                case 'clear':
-                    clear();
-                    break;
-                default:
-                    addLog('warning', `[ACTION] Unknown action: ${action}`);
-            }
-        }
-        
-        function decode() {
-            const input = document.getElementById('input').value;
-            if (!input.trim()) {
-                showToast('Please enter some code to decode! 📝');
-                addLog('warning', '[DECODE] No input provided');
-                return;
-            }
-            
-            isProcessing = true;
-            showProgress();
-            addLog('info', '[DECODE] Starting decode process...');
-            
-            setTimeout(() => {
-                try {
-                    const output = document.getElementById('output');
-                    const method = document.getElementById('method').value;
-                    
-                    let result = '';
-                    
-                    // 简单的解码逻辑
-                    switch(method) {
-                        case 'base64':
-                            try {
-                                result = '// Base64 Decoded:\n' + atob(input);
-                            } catch(e) {
-                                result = '// Base64 decode failed: Invalid input\n' + input;
-                            }
-                            break;
-                        case 'unicode':
-                            result = '// Unicode processed:\n' + input.replace(/\\u[\dA-F]{4}/gi, 
-                                match => String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16)));
-                            break;
-                        case 'eval':
-                            result = '// Eval code detected (execution blocked for security):\n' + input;
-                            break;
-                        case 'aaencode':
-                            result = '// AAEncode detected:\n' + input + '\n\n// Manual decode required';
-                            break;
-                        default:
-                            result = '// Auto-detected format:\n' + input + '\n\n// Processing completed ✅';
-                    }
-                    
-                    output.textContent = result;
-                    addLog('success', '[DECODE] Process completed successfully!');
-                    showToast('Decode completed! ⚡');
-                } catch(error) {
-                    addLog('error', '[DECODE] Error: ' + error.message);
-                    showToast('Decode failed! Check logs for details.');
-                } finally {
-                    isProcessing = false;
-                    hideProgress();
-                }
-            }, 1500);
-        }
-        
-        function beautify() {
-            const input = document.getElementById('input').value;
-            if (!input.trim()) {
-                showToast('Please enter some code to beautify! ✨');
-                addLog('warning', '[BEAUTIFY] No input provided');
-                return;
-            }
-            
-            isProcessing = true;
-            showProgress();
-            addLog('info', '[BEAUTIFY] Formatting code...');
-            
-            setTimeout(() => {
-                try {
-                    const output = document.getElementById('output');
-                    // 简单的美化逻辑
-                    let beautified = input
-                        .replace(/;/g, ';\n')
-                        .replace(/\{/g, '{\n  ')
-                        .replace(/\}/g, '\n}')
-                        .replace(/,/g, ',\n  ');
-                    
-                    output.textContent = '// Code beautified:\n\n' + beautified + '\n\n// Formatting completed ✨';
-                    addLog('success', '[BEAUTIFY] Code formatted successfully!');
-                    showToast('Code beautified! ✨');
-                } catch(error) {
-                    addLog('error', '[BEAUTIFY] Error: ' + error.message);
-                    showToast('Beautify failed! Check logs for details.');
-                } finally {
-                    isProcessing = false;
-                    hideProgress();
-                }
-            }, 1000);
-        }
-        
-        function analyze() {
-            isProcessing = true;
-            showProgress();
-            addLog('info', '[ANALYZE] Running security analysis...');
-            
-            setTimeout(() => {
-                try {
-                    const input = document.getElementById('input').value;
-                    const output = document.getElementById('output');
-                    
-                    let analysis = '// Security Analysis Report:\n\n';
-                    
-                    // 安全检查
-                    const risks = [];
-                    if (input.includes('eval(')) risks.push('- Eval function detected');
-                    if (input.includes('document.write')) risks.push('- Document.write detected');
-                    if (input.includes('innerHTML')) risks.push('- innerHTML usage detected');
-                    if (input.match(/http[s]?:\/\//)) risks.push('- External URLs detected');
-                    
-                    if (risks.length > 0) {
-                        analysis += 'POTENTIAL RISKS:\n' + risks.join('\n') + '\n\n';
-                        addLog('warning', '[ANALYZE] Security risks detected');
-                    } else {
-                        analysis += 'STATUS: No obvious security risks detected ✅\n\n';
-                    }
-                    
-                    analysis += `STATISTICS:\n`;
-                    analysis += `- Characters: ${input.length}\n`;
-                    analysis += `- Lines: ${input.split('\n').length}\n`;
-                    analysis += `- Words: ${input.trim() ? input.trim().split(/\s+/).length : 0}\n\n`;
-                    analysis += '// Analysis completed 🔍';
-                    
-                    output.textContent = analysis;
-                    addLog('success', '[ANALYZE] Analysis complete!');
-                    showToast('Analysis completed! 🔍');
-                } catch(error) {
-                    addLog('error', '[ANALYZE] Error: ' + error.message);
-                    showToast('Analysis failed! Check logs for details.');
-                } finally {
-                    isProcessing = false;
-                    hideProgress();
-                }
-            }, 2000);
-        }
-        
-        function copy() {
-            try {
-                const output = document.getElementById('output');
-                const text = output.textContent;
-                
-                if (!text || text.trim() === '') {
-                    showToast('Nothing to copy! 📝');
-                    addLog('warning', '[COPY] No content to copy');
-                    return;
-                }
-                
-                // 使用现代API
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(text).then(() => {
-                        addLog('success', '[COPY] Content copied to clipboard!');
-                        showToast('Copied to clipboard! 📋');
-                    }).catch(() => {
-                        fallbackCopy(text);
-                    });
-                } else {
-                    fallbackCopy(text);
-                }
-            } catch(error) {
-                addLog('error', '[COPY] Error: ' + error.message);
-                showToast('Copy failed! Please try again.');
-            }
-        }
-        
-        function fallbackCopy(text) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            
-            try {
-                document.execCommand('copy');
-                addLog('success', '[COPY] Content copied to clipboard!');
-                showToast('Copied to clipboard! 📋');
-            } catch(err) {
-                addLog('error', '[COPY] Fallback copy failed');
-                showToast('Copy failed! Please manually select and copy.');
-            }
-            
-            document.body.removeChild(textArea);
-        }
-        
-        function clear() {
-            try {
-                document.getElementById('input').value = '';
-                document.getElementById('output').textContent = '// Output cleared\n// Ready for new input ⚡';
-                
-                // 重置检测结果
-                const detectionItems = document.querySelectorAll('.detection-item');
-                detectionItems[0].querySelector('.detection-value').textContent = '0%';
-                detectionItems[1].querySelector('.detection-value').textContent = 'Unknown';
-                detectionItems[2].querySelector('.detection-value').textContent = '0B';
-                detectionItems[3].querySelector('.detection-value').textContent = 'Ready';
-                
-                // 隐藏指示器
-                document.querySelectorAll('.encoding-indicator').forEach(indicator => {
-                    indicator.classList.remove('show');
-                });
-                
-                addLog('info', '[CLEAR] Interface cleared');
-                showToast('Interface cleared! 🗑️');
-            } catch(error) {
-                addLog('error', '[CLEAR] Error: ' + error.message);
-            }
-        }
-        
-        function showProgress() {
-            const progressFill = document.getElementById('progressFill');
-            if (progressFill) {
-                progressFill.style.width = '100%';
-            }
-        }
-        
-        function hideProgress() {
-            const progressFill = document.getElementById('progressFill');
-            if (progressFill) {
-                setTimeout(() => {
-                    progressFill.style.width = '0%';
-                }, 300);
-            }
-        }
-        
-        function addLog(type, message) {
-            try {
-                const logs = document.getElementById('logs');
-                if (!logs) return;
-                
-                const logElement = document.createElement('div');
-                logElement.className = `log-${type}`;
-                const timestamp = new Date().toLocaleTimeString();
-                logElement.textContent = `[${timestamp}] ${message}`;
-                logs.appendChild(logElement);
-                logs.scrollTop = logs.scrollHeight;
-                
-                // 限制日志数量
-                if (logs.children.length > 50) {
-                    logs.removeChild(logs.firstChild);
-                }
-                
-                console.log(`[${type.toUpperCase()}] ${message}`);
-            } catch(error) {
-                console.error('Log error:', error);
-            }
-        }
-        
-        function showToast(message) {
-            try {
-                const toast = document.getElementById('toast');
-                if (!toast) return;
-                
-                toast.textContent = message;
-                toast.classList.add('show');
-                
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
-                
-                console.log('Toast:', message);
-            } catch(error) {
-                console.error('Toast error:', error);
-            }
-        }
-        
-        function handleInputChange(value) {
-            try {
-                updateDetectionResults(value);
-                updateEncodingIndicators(value);
-            } catch(error) {
-                console.error('Input change error:', error);
-            }
-        }
-        
-        function updateDetectionResults(code) {
-            try {
-                const detectionItems = document.querySelectorAll('.detection-item');
-                if (detectionItems.length < 4) return;
-                
-                if (code.length > 0) {
-                    const confidence = Math.min(95, 60 + (code.length / 100) * 30);
-                    const size = formatBytes(new Blob([code]).size);
-                    
-                    let method = 'Text';
-                    let status = 'Safe';
-                    
-                    if (code.includes('eval(') || code.includes('Function(')) {
-                        method = 'Eval';
-                        status = 'Warning';
-                    } else if (code.match(/[^\x00-\x7F]/)) {
-                        method = 'Unicode';
-                    } else if (code.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
-                        method = 'Base64';
-                    } else if (code.includes('ﾟωﾟﾉ') || code.includes('(ﾟДﾟ)')) {
-                        method = 'AAEncode';
-                        status = 'Encoded';
-                    }
-                    
-                    detectionItems[0].querySelector('.detection-value').textContent = Math.round(confidence) + '%';
-                    detectionItems[1].querySelector('.detection-value').textContent = method;
-                    detectionItems[2].querySelector('.detection-value').textContent = size;
-                    detectionItems[3].querySelector('.detection-value').textContent = status;
-                    
-                    const statusElement = detectionItems[3].querySelector('.detection-value');
-                    statusElement.style.color = status === 'Safe' ? '#00ff88' : (status === 'Warning' ? '#ffaa00' : '#00d4ff');
-                }
-            } catch(error) {
-                console.error('Detection update error:', error);
-            }
-        }
-        
-        function updateEncodingIndicators(code) {
-            try {
-                const aaencodeIndicator = document.querySelector('.aaencode-indicator');
-                const evalIndicator = document.querySelector('.eval-indicator');
-                
-                if (aaencodeIndicator) {
-                    if (code.includes('ﾟωﾟﾉ') || code.includes('(ﾟДﾟ)')) {
-                        aaencodeIndicator.classList.add('show');
-                    } else {
-                        aaencodeIndicator.classList.remove('show');
-                    }
-                }
-                
-                if (evalIndicator) {
-                    if (code.includes('eval(') || code.includes('Function(')) {
-                        evalIndicator.classList.add('show');
-                    } else {
-                        evalIndicator.classList.remove('show');
-                    }
-                }
-            } catch(error) {
-                console.error('Indicator update error:', error);
-            }
-        }
-        
-        function formatBytes(bytes) {
-            if (bytes === 0) return '0B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + sizes[i];
-        }
-        
-        function setupFileUpload() {
-            try {
-                const fileUpload = document.querySelector('.file-upload');
-                const fileInput = document.getElementById('fileInput');
-                
-                if (!fileUpload || !fileInput) return;
-                
-                fileUpload.addEventListener('dragover', function(e) {
-                    e.preventDefault();
-                    fileUpload.classList.add('dragover');
-                });
-                
-                fileUpload.addEventListener('dragleave', function() {
-                    fileUpload.classList.remove('dragover');
-                });
-                
-                fileUpload.addEventListener('drop', function(e) {
-                    e.preventDefault();
-                    fileUpload.classList.remove('dragover');
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0) {
-                        handleFile(files[0]);
-                    }
-                });
-                
-                fileInput.addEventListener('change', function(e) {
-                    if (e.target.files.length > 0) {
-                        handleFile(e.target.files[0]);
-                    }
-                });
-            } catch(error) {
-                console.error('File upload setup error:', error);
-            }
-        }
-        
-        function setupFileOptions() {
-            try {
-                const fileOptions = document.querySelectorAll('.file-option');
-                fileOptions.forEach(option => {
-                    option.addEventListener('click', function() {
-                        const text = option.textContent.toLowerCase();
-                        addLog('info', `[METHOD] Selected: ${text}`);
-                        
-                        const select = document.getElementById('method');
-                        if (select) {
-                            if (text.includes('aaencode')) {
-                                select.value = 'aaencode';
-                            } else if (text.includes('eval')) {
-                                select.value = 'eval';
-                            } else if (text.includes('unicode')) {
-                                select.value = 'unicode';
-                            } else if (text.includes('base64')) {
-                                select.value = 'base64';
-                            }
-                        }
-                        
-                        showToast(`Method selected: ${text} 🎯`);
-                    });
-                });
-            } catch(error) {
-                console.error('File options setup error:', error);
-            }
-        }
-        
-        function handleFile(file) {
-            try {
-                addLog('info', `[FILE] Loading: ${file.name}`);
-                showToast(`File loaded: ${file.name} 📁`);
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const input = document.getElementById('input');
-                    if (input) {
-                        input.value = e.target.result;
-                        handleInputChange(e.target.result);
-                        addLog('success', '[FILE] Content loaded successfully');
-                    }
-                };
-                reader.onerror = function() {
-                    addLog('error', '[FILE] Failed to read file');
-                    showToast('Failed to read file! 📁');
-                };
-                reader.readAsText(file);
-            } catch(error) {
-                addLog('error', '[FILE] Error: ' + error.message);
-                showToast('File handling error!');
-            }
-        }
-        
-        function handleMethodChange(method) {
-            try {
-                addLog('info', `[METHOD] Changed to: ${method}`);
-                
-                // 高亮对应的选项
-                const fileOptions = document.querySelectorAll('.file-option');
-                fileOptions.forEach(option => {
-                    option.style.transform = 'scale(1)';
-                    option.style.borderColor = 'rgba(255,255,255,0.1)';
-                });
-                
-                const targetOption = document.querySelector(`.file-option.${method}`);
-                if (targetOption) {
-                    targetOption.style.transform = 'scale(1.05)';
-                    targetOption.style.borderColor = '#00d4ff';
-                }
-            } catch(error) {
-                console.error('Method change error:', error);
-            }
-        }
-        
-        function selectAllOutput() {
-            try {
-                const output = document.getElementById('output');
-                if (!output) return;
-                
-                const range = document.createRange();
-                range.selectNodeContents(output);
-                const selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
-                showToast('Output text selected! 📝');
-            } catch(error) {
-                console.error('Select all error:', error);
-            }
-        }
-        
-        // 错误处理
-        window.addEventListener('error', function(e) {
-            console.error('Global error:', e.error);
-            addLog('error', `[ERROR] ${e.message}`);
-        });
-        
-        window.addEventListener('unhandledrejection', function(e) {
-            console.error('Unhandled promise rejection:', e.reason);
-            addLog('error', `[PROMISE] ${e.reason}`);
-        });
-        
-        // 调试信息
-        console.log('Script loaded successfully');
-</style>
 </head>
 <body>
     <div class="container">
