@@ -1455,150 +1455,19 @@ function loadRemoteFile(url) {
            }
        }
        
-       // 智能清理输入 - 借鉴源码并修复缺陷
+       // 智能清理输入 - 超简化版
 function cleanInput() {
     const inputEl = document.getElementById('input');
     const input = inputEl.value.trim();
+    
     if (!input) {
         showToast('请先输入代码');
         return;
     }
 
-    const detection = comprehensiveDetection(input);
-    const isMixedContent = checkIfMixedContent(input);
-
-    if (detection.primaryType !== 'Unknown' && !isMixedContent) {
-        showToast(`⚠️ 检测到纯${detection.primaryType}格式，跳过清理以保持完整性`);
-        addLog(`${detection.primaryType}格式对完整性要求较高，建议直接解密`, 'info');
-        return;
-    }
-
-    if (detection.primaryType !== 'Unknown' && isMixedContent) {
-        showToast(`🔍 检测到混合内容中的${detection.primaryType}，开始智能提取...`);
-        addLog(`混合内容中检测到${detection.primaryType}，进行智能分离`, 'info');
-    }
-
     addLog('开始智能清理代码...', 'info');
 
-    // ✅ 保护 encode_version 整行 - 只有在不是jsjiami格式时才保护
-    let encodeLine = '';
-    let protectedInput = input;
-    
-    // 如果不是以jsjiami开头，才进行encode_version保护
-    if (!input.trim().startsWith(';var encode_version')) {
-        protectedInput = input.replace(/^[\s;]*var\s+encode_version\s*=.*$/m, match => {
-            encodeLine = match.trimStart().startsWith(';') ? match : ';' + match.trimStart();
-            return '__ENCODE_VERSION_LINE__';
-        });
-    }
-
-    // 智能预处理
-    let processed = preprocessCiphertext(protectedInput);
-
-    if (processed.length < input.length * 0.8 && processed.length > 50) {
-        // 如果提取的是完整jsjiami（已包含encode_version），直接使用
-        if (processed.includes('encode_version')) {
-            inputEl.value = processed;
-            showToast('🎯 智能提取密文完成');
-            addLog(`智能提取: 从${input.length}字符中提取${processed.length}字符`, 'success');
-            return;
-        }
-        
-        // 只有当processed不包含encode_version且有保护的encodeLine时才添加
-        if (encodeLine && !processed.includes('encode_version')) {
-            processed = encodeLine + '\n' + processed;
-        }
-        
-        inputEl.value = processed;
-        showToast('🎯 智能提取密文完成');
-        addLog(`智能提取: 从${input.length}字符中提取${processed.length}字符`, 'success');
-
-        const newDetection = comprehensiveDetection(processed);
-        if (newDetection.primaryType !== 'Unknown') {
-            addLog(`提取后检测到: ${newDetection.primaryType} (置信度: ${newDetection.primaryConfidence}%)`, 'success');
-        }
-        return;
-    }
-
-    // === 基础清理
-    let cleaned = protectedInput
-        .replace(/\/\/.*$/gm, '')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/<!--[\s\S]*?-->/g, '')
-        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
-        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '')
-        .replace(/^\s*\/\/\s*(原始代码|原文|明文).*$/gm, '')
-        .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
-        .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
-        .replace(/^\s*[\r\n]/gm, '')
-        .replace(/^\s+/gm, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-    // ✅ 还原 encode_version 行
-    if (encodeLine) {
-        cleaned = cleaned.replace('__ENCODE_VERSION_LINE__', encodeLine);
-    }
-
-    if (cleaned.length === input.length) {
-        showToast('🔍 未发现需要清理的内容');
-        addLog('代码已经是纯净格式', 'info');
-    } else {
-        inputEl.value = cleaned;
-        showToast('🧹 代码清理完成');
-        addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
-
-        const newDetection = comprehensiveDetection(cleaned);
-        if (newDetection.primaryType !== 'Unknown') {
-            addLog(`清理后检测到: ${newDetection.primaryType} (置信度: ${newDetection.primaryConfidence}%)`, 'success');
-        }
-    }
-}
-
-// 检查是否为混合内容
-function checkIfMixedContent(input) {
-    const mixedContentIndicators = [
-        /\/\/.*$/m,
-        /\/\*[\s\S]*?\*\//,
-        /<!--[\s\S]*?-->/,
-        /[\u4e00-\u9fff]/,
-        /(原始代码|原文|明文|解密结果|解密完成)/,
-        /<[^>]+>/,
-        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
-        /(console\.log|alert|document\.write)\s*\(/,
-        /eval\s*\(.*?\).*eval\s*\(/s,
-        /(解密脚本|混淆工具|加密工具)/
-    ];
-
-    for (const indicator of mixedContentIndicators) {
-        if (indicator.test(input)) {
-            return true;
-        }
-    }
-
-    const lines = input.split('\n');
-    if (lines.length > 10) {
-        const nonCipherLines = lines.filter(line => {
-            const trimmedLine = line.trim();
-            return trimmedLine.length > 0 &&
-                !(/^[A-Za-z0-9+/=\\u]+$/.test(trimmedLine)) &&
-                !(/^[0-9a-fA-F\s]+$/.test(trimmedLine)) &&
-                !(/^[\x20-\x7E]*$/.test(trimmedLine));
-        });
-
-        if (nonCipherLines.length > lines.length * 0.3) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-// 智能预处理混合密文
-function preprocessCiphertext(input) {
-    addLog('执行智能预处理...', 'info');
-
-    // 优先：直接字符串定位jsjiami边界
+    // 直接尝试提取jsjiami
     const jsjiamiStart = input.indexOf(';var encode_version');
     if (jsjiamiStart !== -1) {
         const fromStart = input.substring(jsjiamiStart);
@@ -1606,84 +1475,83 @@ function preprocessCiphertext(input) {
         
         if (jsjiamiEnd !== -1) {
             const extracted = fromStart.substring(0, jsjiamiEnd + ";encode_version = 'jsjiami.com.v5';".length);
-            addLog('直接提取jsjiami完整代码块', 'success');
-            return extracted;
+            inputEl.value = extracted;
+            showToast('🎯 提取jsjiami完成');
+            addLog(`提取: ${input.length} → ${extracted.length} 字符`, 'success');
+            return;
         }
         
-        // 尝试其他引号格式
+        // 尝试双引号版本
         const jsjiamiEnd2 = fromStart.indexOf(';encode_version = "jsjiami.com.v5";');
         if (jsjiamiEnd2 !== -1) {
             const extracted = fromStart.substring(0, jsjiamiEnd2 + ';encode_version = "jsjiami.com.v5";'.length);
-            addLog('直接提取jsjiami完整代码块', 'success');
-            return extracted;
+            inputEl.value = extracted;
+            showToast('🎯 提取jsjiami完成');
+            addLog(`提取: ${input.length} → ${extracted.length} 字符`, 'success');
+            return;
         }
     }
 
-    // 如果直接定位失败，再用正则
-    let processed = input
-        .replace(/\/\/.*$/gm, '')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/<!--[\s\S]*?-->/g, '')
-        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
-        .replace(/^\s*\/\/解密脚本.*$/gm, '')
-        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
-
+    // 其他格式提取
     const patterns = [
         {
-            name: 'eval包装的jsjiami',
-            pattern: /eval\s*\(\s*(['"`])(.*?jsjiami\.com\.v\d+.*?)\1\s*\)/s,
-            extract: match => match[2]
-        },
-        {
-            name: 'AAEncode混淆',
-            pattern: /(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s,
-            extract: match => match[1]
-        },
-        {
             name: 'eval包装',
-            pattern: /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
+            pattern: /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/,
             extract: match => match[2]
         },
         {
             name: 'Function构造器',
-            pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
+            pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/,
             extract: match => match[2]
+        },
+        {
+            name: 'AAEncode',
+            pattern: /(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s,
+            extract: match => match[1]
         }
     ];
 
     for (const pattern of patterns) {
-        const matches = processed.match(pattern.pattern);
-        if (matches) {
-            const extracted = pattern.extract(matches);
-            if (extracted && extracted.length > 50) {
-                addLog(`智能提取${pattern.name}格式密文`, 'success');
-                return extracted;
+        const match = input.match(pattern.pattern);
+        if (match) {
+            const extracted = pattern.extract(match);
+            if (extracted && extracted.length > 100) {
+                inputEl.value = extracted;
+                showToast(`🎯 提取${pattern.name}完成`);
+                addLog(`提取: ${input.length} → ${extracted.length} 字符`, 'success');
+                return;
             }
         }
     }
 
-    return processed
-        .replace(/^\s*\/\/\s*(原始|原文|明文).*$/gm, '')
-        .replace(/^\s*console\.log\s*\(.*?\)\s*;?\s*$/gm, '')
-        .replace(/^\s*alert\s*\(.*?\)\s*;?\s*$/gm, '')
-        .replace(/^\s*[\r\n]/gm, '')
-        .replace(/^\s+/gm, '')
-        .replace(/\s+/g, ' ')
+    // 基础清理
+    let cleaned = input
+        .replace(/\/\/.*$/gm, '')                    // 单行注释
+        .replace(/\/\*[\s\S]*?\*\//g, '')           // 多行注释
+        .replace(/<!--[\s\S]*?-->/g, '')            // HTML注释
+        .replace(/^\s*console\.(log|warn|error)\s*\([^)]*\)\s*;?\s*$/gm, '') // console语句
+        .replace(/^\s*alert\s*\([^)]*\)\s*;?\s*$/gm, '') // alert语句
+        .replace(/^\s*[\r\n]+/gm, '')               // 空行
+        .replace(/\s+/g, ' ')                       // 多余空白
         .trim();
+
+    // 更新结果
+    if (cleaned === input) {
+        showToast('🔍 未发现需要清理的内容');
+        addLog('代码已经是纯净格式', 'info');
+    } else {
+        inputEl.value = cleaned;
+        showToast('🧹 代码清理完成');
+        addLog(`清理: ${input.length} → ${cleaned.length} 字符`, 'success');
+    }
 }
 
-// 简化的检测函数（模拟）
-function comprehensiveDetection(input) {
-    if (input.includes('jsjiami.com.v')) {
-        return { primaryType: 'jsjiami', primaryConfidence: 95 };
-    }
-    if (input.includes('eval(')) {
-        return { primaryType: 'eval', primaryConfidence: 80 };
-    }
-    return { primaryType: 'Unknown', primaryConfidence: 0 };
+// 检查是否为混合内容
+function checkIfMixedContent(input) {
+    return /\/\/|\/\*|<!--|[\u4e00-\u9fff]|console\.|alert\(/.test(input);
 }
 
-// 简化的检测函数（模拟）
+// 简化的检测函数
 function comprehensiveDetection(input) {
     if (input.includes('jsjiami.com.v')) {
         return { primaryType: 'jsjiami', primaryConfidence: 95 };
