@@ -1494,35 +1494,68 @@ function cleanInput() {
 
     // 其他格式提取
     const patterns = [
+        // 本地解密格式
         {
             name: 'eval包装',
             pattern: /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s,
-            extract: match => match[2]
-        },
-        {
-            name: 'Function构造器',
-            pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s,
-            extract: match => match[2]
+            extract: match => match[2],
+            type: 'local'
         },
         {
             name: 'AAEncode',
             pattern: /(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s,
-            extract: match => match[1]
+            extract: match => match[1],
+            type: 'local'
         },
         {
             name: 'AADecode',
             pattern: /(゜ω゜ﾉ.*?ﾟΘﾟ.*?)/s,
-            extract: match => match[1]
+            extract: match => match[1],
+            type: 'local'
+        },
+        {
+            name: 'JJEncode',
+            pattern: /(\$=~\[\];.*?\(\)\(\))/s,
+            extract: match => match[1],
+            type: 'local'
+        },
+        
+        // GitHub解密格式
+        {
+            name: 'Function构造器',
+            pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|\\x[0-9a-fA-F]{2}|[^'"`\\]|\\.){100,}?)\1\s*\)/s,
+            extract: match => match[2],
+            type: 'github'
+        },
+        {
+            name: 'Unicode转义',
+            pattern: /((?:\\u[0-9a-fA-F]{4}){50,})/,
+            extract: match => match[1],
+            type: 'github'
         },
         {
             name: '十六进制转义',
             pattern: /((?:\\x[0-9a-fA-F]{2}){50,})/,
-            extract: match => match[1]
+            extract: match => match[1],
+            type: 'github'
         },
         {
             name: 'Base64编码',
             pattern: /^([A-Za-z0-9+/]{200,}={0,2})$/m,
-            extract: match => match[1]
+            extract: match => match[1],
+            type: 'github'
+        },
+        {
+            name: 'Packer混淆',
+            pattern: /eval\s*\(\s*function\s*\(p,a,c,k,e,d\).*?return\s+p\}\s*\('([^']+)',(\d+),(\d+),'([^']+)'\.split\('\|'\)/s,
+            extract: match => match[0],
+            type: 'github'
+        },
+        {
+            name: 'ObfuscatorIO',
+            pattern: /var\s+_0x[a-f0-9]+\s*=\s*\[.*?\];.*?function\s+_0x[a-f0-9]+/s,
+            extract: match => match[0],
+            type: 'github'
         }
     ];
 
