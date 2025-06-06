@@ -1516,8 +1516,24 @@ function cleanInput() {
 function extractCiphertext(input) {
     // 提取模式（按优先级排序，更严格的匹配）
     const patterns = [
-        // jsjiami 混淆 - 完整格式捕获 (必须包含开头的分号)
-        /;var\s+encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*,\s*\w+\s*=\s*['"`][^'"`]*['"`]\s*,\s*\w+\s*=\s*\[[^\]]*\].*?(?=;|\n|$)/s,
+        // jsjiami 混淆 - 直接匹配从开头到结尾的完整代码块
+        {
+            name: 'jsjiami',
+            extract: (text) => {
+                const startIndex = text.indexOf(';var encode_version');
+                if (startIndex === -1) return null;
+                
+                const fromStart = text.substring(startIndex);
+                const endPattern = /;encode_version\s*=\s*['"`]jsjiami\.com\.v\d+['"`]\s*;/;
+                const endMatch = fromStart.match(endPattern);
+                
+                if (endMatch) {
+                    const endIndex = fromStart.indexOf(endMatch[0]) + endMatch[0].length;
+                    return fromStart.substring(0, endIndex);
+                }
+                return null;
+            }
+        },
         
         // eval 包装的 jsjiami
         /eval\s*\(\s*(['"`])(.*?jsjiami\.com\.v\d+.*?)\1\s*\)/s,
@@ -1542,17 +1558,23 @@ function extractCiphertext(input) {
     ];
 
     for (let i = 0; i < patterns.length; i++) {
-        const match = input.match(patterns[i]);
-        if (match) {
-            // jsjiami 特殊处理
-            if (i === 0) {
+        const pattern = patterns[i];
+        
+        // jsjiami 特殊处理
+        if (pattern.name === 'jsjiami') {
+            const extracted = pattern.extract(input);
+            if (extracted && extracted.length > 100) {
                 addLog('提取到 jsjiami 混淆代码', 'success');
-                return match[0]; // 返回完整匹配
+                return extracted;
             }
-            
-            // 其他格式提取内容部分
+            continue;
+        }
+        
+        // 正则模式处理
+        const match = input.match(pattern);
+        if (match) {
             const extracted = match[match.length - 1] || match[1];
-            if (extracted && extracted.length > 100) { // 提高最小长度要求
+            if (extracted && extracted.length > 100) {
                 const formatNames = ['jsjiami-eval', 'eval包装', 'Function构造', 'AAEncode', 'Unicode序列', '十六进制序列', 'Base64'];
                 addLog(`提取到 ${formatNames[i - 1] || '未知'} 格式`, 'success');
                 return extracted;
