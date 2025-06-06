@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>羊毛助手 v5.7 - 增强版AADecode+Eval解密工具</title>
+    <title>羊毛助手 v6.0 - 增强版AADecode+Eval解密工具</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -456,7 +456,7 @@
     <div class="container">
         <h1>
             羊毛助手 
-            <span class="version">v5.7</span>
+            <span class="version">v6.0</span>
             <div class="encoding-indicators">
                 <span id="aaencodeIndicator" class="encoding-indicator aaencode-indicator">AAEncode已检测</span>
                 <span id="evalIndicator" class="encoding-indicator eval-indicator">Eval已检测</span>
@@ -464,7 +464,7 @@
         </h1>
         
         <div class="features-banner">
-            🎯 v5.7增强版：专业AADecode+Eval解包插件 | 支持头部注释保留 | 智能多重检测 | 一键本地解密
+            🎯 v6.0增强版：专业AADecode+Eval解包插件 | 支持头部注释保留 | 智能多重检测 | 一键本地解密
         </div>
         
         <!-- GitHub 配置 -->
@@ -485,36 +485,45 @@
             </div>
         </div>
         
-        <!-- 文件上传 -->
-        <div class="section">
-            <div class="section-title">📁 文件输入</div>
-            <div class="file-upload" onclick="document.getElementById('fileInput').click()">
-                <div class="file-upload-icon">📄</div>
-                <div>点击选择文件或拖拽文件到此处</div>
-                <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 5px;">
-                    支持 .js .txt .json 等文本文件
-                </div>
-            </div>
-            <input type="file" id="fileInput" class="hidden" accept=".js,.txt,.json,.md,.log,.conf,.py,.php,.html,.css">
-            
-            <div class="file-options">
-                <div class="file-option" onclick="document.getElementById('fileInput').click()">
-                    📄<br>选择文件
-                </div>
-                <div class="file-option" onclick="pasteFromClipboard()">
-                    📋<br>粘贴剪贴板
-                </div>
-                <div class="file-option aaencode" onclick="testAAEncodeInput()">
-                    🔤<br>AAEncode解密
-                </div>
-                <div class="file-option eval" onclick="testEvalInput()">
-                    🔧<br>Eval解密
-                </div>
-                <div class="file-option" onclick="loadDemoCode()">
-                    🧪<br>加载示例
-                </div>
-            </div>
-        </div>
+        <!-- 文件输入区域 - 5个固定按钮 -->
+<div class="card">
+    <h3>📁 文件输入</h3>
+    
+    <div class="file-upload" onclick="document.getElementById('fileInput').click()" 
+         ondragover="handleDragOver(event)" 
+         ondragleave="handleDragLeave(event)" 
+         ondrop="handleDrop(event)">
+        <div class="file-upload-icon">📄</div>
+        <div class="file-upload-text">点击选择文件或拖拽文件到此处</div>
+        <div class="file-upload-hint">支持 .js .txt .json 等文本文件</div>
+    </div>
+    
+    <input type="file" id="fileInput" accept=".js,.txt,.json">
+    
+    <!-- 固定5按钮布局 -->
+    <div style="display: flex; gap: 6px; margin-top: 20px;">
+        <button onclick="document.getElementById('fileInput').click()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #2196f3, #21cbf3); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            📁<br><span style="font-size: 10px;">选择文件</span>
+        </button>
+        <button onclick="showRemoteUrlDialog()" 
+        style="flex: 1; min-width: 0; background: linear-gradient(135deg, #f44336, #e57373); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            🌐<br><span style="font-size: 10px;">远程加载</span>
+        </button>
+        <button onclick="pasteFromClipboard()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #4caf50, #66bb6a); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            📋<br><span style="font-size: 10px;">粘贴板</span>
+        </button>
+        <button onclick="cleanInput()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #ff9800, #ffb74d); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            🧹<br><span style="font-size: 10px;">清理代码</span>
+        </button>
+        <button onclick="clearInput()" 
+                style="flex: 1; min-width: 0; background: linear-gradient(135deg, #9c27b0, #ba68c8); color: white; padding: 12px 4px; border-radius: 12px; border: none; font-size: 11px; font-weight: 500; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 60px; text-align: center;">
+            🗑<br><span style="font-size: 10px;">clearInput</span>
+        </button>
+    </div>
+</div>
         
         <!-- 检测面板 -->
         <div id="detectionPanel" class="detection-panel" style="display: none;">
@@ -539,40 +548,13 @@
             </div>
         </div>
         
-        <!-- 代码输入 -->
-        <div class="section">
-            <div class="section-title">📝 密文输入</div>
-            <textarea id="input" placeholder="请粘贴需要解密的密文代码...
-
-✅ v5.7 专业解密支持：
-- AAEncode格式：自动检测和解码
-- Eval包装：智能解包和递归处理
-- 保留脚本头部注释
-- 智能提取编码部分
-- 高精度解码算法
-- 完整错误处理机制
-
-💡 其他支持格式：
-- JavaScript混淆代码
-- Base64/十六进制编码
-- Unicode转义序列
-- 多层嵌套编码"></textarea>
-            
-            <div class="file-options">
-                <div class="file-option" onclick="autoDetectAndDecrypt()">
-                    🤖<br>智能解密
-                </div>
-                <div class="file-option" onclick="cleanInput()">
-                    🧹<br>清理代码
-                </div>
-                <div class="file-option" onclick="validateInput()">
-                    ✅<br>质量检查
-                </div>
-                <div class="file-option" onclick="clearInput()">
-                    🗑<br>清空
-                </div>
-            </div>
-        </div>
+<!-- 代码输入区域 - 去掉多余按钮 -->
+<div class="card">
+    <h3>✏️ 代码输入</h3>
+    <div class="input-section">
+        <textarea id="input" class="code-input" placeholder="请粘贴需要解密的JavaScript代码..." rows="10"></textarea>
+    </div>
+</div>
         
         <!-- 进度条 -->
         <div class="progress-bar">
@@ -583,20 +565,6 @@
         <div class="section">
             <div class="section-title">✨ 解密结果</div>
             <div id="output" class="output">// 解密结果将显示在这里...</div>
-            
-            <div class="file-options">
-                <div class="file-option" onclick="beautifyCode()">
-                    🎨<br>代码美化
-                </div>
-                <div class="file-option" onclick="copyResult()">
-                    📋<br>复制结果
-                </div>
-                <div class="file-option" onclick="downloadResult()">
-                    💾<br>下载文件
-                </div>
-                <div class="file-option" onclick="validateResult()">
-                    ✅<br>语法检查
-                </div>
             </div>
         </div>
         
@@ -620,9 +588,9 @@
                 <div class="btn-icon">📋</div>
                 <div class="btn-text">复制</div>
             </button>
-            <button class="btn-purple" onclick="downloadResult()">
-                <div class="btn-icon">💾</div>
-                <div class="btn-text">下载</div>
+            <button class="btn-purple" onclick="beautifyCode()">
+                <div class="btn-icon">🎨</div>
+                <div class="btn-text">代码美化</div>
             </button>
             <button class="btn-red" onclick="clearAll()">
                 <div class="btn-icon">🗑</div>
@@ -797,7 +765,7 @@
         
         // 应用配置
         const APP_CONFIG = {
-            VERSION: '5.7',
+            VERSION: '6.0',
             VERSION_NAME: '增强版AADecode+Eval解密工具',
             UPDATE_NOTES: '集成专业AADecode和Eval解包插件，支持头部注释保留和智能检测'
         };
@@ -1025,32 +993,49 @@
         }
         
         function comprehensiveDetection(input) {
-            const aaResult = detectAAEncode(input);
-            const evalResult = detectEval(input);
-            
-            let primaryType = 'Unknown';
-            let primaryConfidence = 0;
-            let primaryResult = null;
-            
-            if (aaResult.isDetected && aaResult.confidence > evalResult.confidence) {
-                primaryType = 'AAEncode';
-                primaryConfidence = aaResult.confidence;
-                primaryResult = aaResult;
-            } else if (evalResult.isDetected) {
-                primaryType = 'Eval';
-                primaryConfidence = evalResult.confidence;
-                primaryResult = evalResult;
-            }
-            
-            return {
-                primaryType,
-                primaryConfidence,
-                primaryResult,
-                aaResult,
-                evalResult,
-                hasMultipleEncodings: aaResult.isDetected && evalResult.isDetected
-            };
-        }
+    // 🆕 第一优先级：检测jsjiami
+    if (input.includes('jsjiami.com.v5') || input.includes('jsjiami.com.v6') || input.includes('jsjiami.com.v7')) {
+        return {
+            primaryType: 'jsjiami',
+            primaryConfidence: 95,
+            primaryResult: { 
+                type: 'jsjiami', 
+                confidence: 95, 
+                method: 'Unicode转义',
+                isDetected: true 
+            },
+            aaResult: { isDetected: false, confidence: 0 },
+            evalResult: { isDetected: false, confidence: 0 },
+            hasMultipleEncodings: false
+        };
+    }
+    
+    const aaResult = detectAAEncode(input);
+    const evalResult = detectEval(input);
+    
+    let primaryType = 'Unknown';
+    let primaryConfidence = 0;
+    let primaryResult = null;
+    
+    if (aaResult.isDetected && aaResult.confidence > evalResult.confidence) {
+        primaryType = 'AAEncode';
+        primaryConfidence = aaResult.confidence;
+        primaryResult = aaResult;
+    } else if (evalResult.isDetected) {
+        primaryType = 'Eval';
+        primaryConfidence = evalResult.confidence;
+        primaryResult = evalResult;
+    }
+    
+    return {
+        primaryType,
+        primaryConfidence,
+        primaryResult,
+        aaResult,
+        evalResult,
+        hasMultipleEncodings: aaResult.isDetected && evalResult.isDetected
+    };
+}
         
         function decodeAAEncode(code) {
             try {
@@ -1253,45 +1238,65 @@
         }
         
         function testEvalInput() {
-            const input = document.getElementById('input').value.trim();
-            if (!input) {
-                showToast('请先输入Eval包装的密文');
-                return;
-            }
-            
-            const detection = detectEval(input);
+    const input = document.getElementById('input').value.trim();
+    if (!input) {
+        showToast('请先输入Eval包装的密文');
+        return;
+    }
+    
+    // 🆕 优先检测jsjiami（安全版本）
+    if (input.includes('jsjiami.com.v5') || input.includes('jsjiami.com.v6') || input.includes('jsjiami.com.v7')) {
+        showToast('❌ 检测到jsjiami混淆，此工具暂不支持jsjiami解密');
+        addLog('检测到jsjiami混淆代码，建议使用专门的jsjiami解密工具', 'warning');
+        
+        // 安全调用updateDetectionPanel（如果存在的话）
+        if (typeof updateDetectionPanel === 'function') {
             updateDetectionPanel({ 
-                primaryType: detection.isDetected ? 'Eval' : 'Unknown', 
-                primaryConfidence: detection.confidence,
-                evalResult: detection 
+                primaryType: 'jsjiami', 
+                primaryConfidence: 95,
+                evalResult: { isDetected: true, confidence: 95 }
             });
-            
-            if (detection.isDetected) {
-                showToast(`🎯 检测到Eval包装！置信度: ${detection.confidence}%`);
-                addLog(`Eval检测成功: 置信度 ${detection.confidence}%, eval数量 ${detection.evalCount}, 嵌套深度 ${detection.nestedDepth}`, 'success');
-                
-                setTimeout(() => {
-                    const decodeResult = decodeEval(input);
-                    if (decodeResult.success) {
-                        displayResult(decodeResult.result);
-                        showToast('🎉 Eval解包成功！');
-                        addLog(`解密完成，使用方法: ${decodeResult.method}`, 'success');
-                        if (decodeResult.recursive) {
-                            addLog(`🔄 执行了${decodeResult.steps}步递归解密`, 'info');
-                        }
-                        if (decodeResult.warning) {
-                            addLog(`⚠️ ${decodeResult.warning}`, 'warning');
-                        }
-                    } else {
-                        showToast('❌ Eval解包失败');
-                        addLog(decodeResult.error, 'error');
-                    }
-                }, 500);
-            } else {
-                showToast(`❌ 未检测到Eval包装 (置信度: ${detection.confidence}%)`);
-                addLog(`Eval检测失败: 置信度不足 ${detection.confidence}%`, 'warning');
-            }
         }
+        return;
+    }
+    
+    const detection = detectEval(input);
+    
+    // 安全调用updateDetectionPanel
+    if (typeof updateDetectionPanel === 'function') {
+        updateDetectionPanel({ 
+            primaryType: detection.isDetected ? 'Eval' : 'Unknown', 
+            primaryConfidence: detection.confidence,
+            evalResult: detection 
+        });
+    }
+    
+    if (detection.isDetected) {
+        showToast(`🎯 检测到Eval包装！置信度: ${detection.confidence}%`);
+        addLog(`Eval检测成功: 置信度 ${detection.confidence}%, eval数量 ${detection.evalCount}, 嵌套深度 ${detection.nestedDepth}`, 'success');
+        
+        setTimeout(() => {
+            const decodeResult = decodeEval(input);
+            if (decodeResult.success) {
+                displayResult(decodeResult.result);
+                showToast('🎉 Eval解包成功！');
+                addLog(`解密完成，使用方法: ${decodeResult.method}`, 'success');
+                if (decodeResult.recursive) {
+                    addLog(`🔄 执行了${decodeResult.steps}步递归解密`, 'info');
+                }
+                if (decodeResult.warning) {
+                    addLog(`⚠️ ${decodeResult.warning}`, 'warning');
+                }
+            } else {
+                showToast('❌ Eval解包失败');
+                addLog(decodeResult.error, 'error');
+            }
+        }, 500);
+    } else {
+        showToast(`❌ 未检测到Eval包装 (置信度: ${detection.confidence}%)`);
+        addLog(`Eval检测失败: 置信度不足 ${detection.confidence}%`, 'warning');
+    }
+}
         
         function autoDetectAndDecrypt() {
             const input = document.getElementById('input').value.trim();
@@ -1392,6 +1397,40 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
            }, 500);
        }
        
+       function showRemoteUrlDialog() {
+    const url = prompt('请输入远程文件URL地址:', '');
+    if (url && url.trim()) {
+        // 自动添加协议（如果用户没有输入）
+        let finalUrl = url.trim();
+        if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+            finalUrl = 'https://' + finalUrl;
+        }
+        loadRemoteFile(finalUrl);
+    }
+}
+
+function loadRemoteFile(url) {
+    addLog('开始加载远程文件: ' + url, 'info');
+    
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('网络响应错误: ' + response.status);
+            }
+            return response.text();
+        })
+        .then(content => {
+            document.getElementById('input').value = content;
+            // detectCode(); // 删除这行
+            addLog('远程文件加载成功', 'success');
+            showToast('✅ 远程文件加载成功');
+        })
+        .catch(error => {
+            addLog('远程文件加载失败: ' + error.message, 'error');
+            showToast('❌ 远程文件加载失败: ' + error.message);
+        });
+}
+       
        async function pasteFromClipboard() {
            try {
                const text = await navigator.clipboard.readText();
@@ -1416,81 +1455,308 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
            }
        }
        
-       function cleanInput() {
-           const input = document.getElementById('input').value.trim();
-           if (!input) {
-               showToast('请先输入代码');
-               return;
-           }
-           
-           const detection = comprehensiveDetection(input);
-           if (detection.primaryType !== 'Unknown') {
-               showToast(`⚠️ 检测到${detection.primaryType}，跳过清理以保持完整性`);
-               return;
-           }
-           
-           let cleaned = input
-               .replace(/\/\/.*$/gm, '')
-               .replace(/\/\*[\s\S]*?\*\//g, '')
-               .replace(/^\s*[\r\n]/gm, '')
-               .replace(/^\s+/gm, '')
-               .trim();
-           
-           document.getElementById('input').value = cleaned;
-           showToast('🧹 代码清理完成');
-           addLog(`清理前: ${input.length} 字符，清理后: ${cleaned.length} 字符`, 'success');
-       }
-       
-       function validateInput() {
-           const input = document.getElementById('input').value.trim();
-           if (!input) {
-               showToast('请先输入代码');
-               return;
-           }
-           
-           const issues = [];
-           
-           if (input.length < 50) {
-               issues.push('代码长度过短');
-           }
-           
-           const detection = comprehensiveDetection(input);
-           if (detection.primaryType !== 'Unknown') {
-               if (detection.primaryConfidence < 80) {
-                   issues.push(`${detection.primaryType}置信度较低 (${detection.primaryConfidence}%)`);
-               }
-               
-               if (detection.primaryType === 'AAEncode' && detection.aaResult.patternMatches < 3) {
-                   issues.push('AAEncode特征模式不足');
-               }
-               
-               if (detection.primaryType === 'Eval' && detection.evalResult.evalCount < 2) {
-                   issues.push('Eval调用次数较少');
-               }
-           } else {
-               if (/[\u4e00-\u9fff]/.test(input)) {
-                   issues.push('包含中文字符');
-               }
-               if (/\/\/|\/\*|\*\//.test(input)) {
-                   issues.push('包含注释符号');
-               }
-           }
-           
-           if (issues.length === 0) {
-               showToast('✅ 代码质量良好');
-               addLog('代码质量检查通过', 'success');
-           } else {
-               showToast(`⚠️ 发现 ${issues.length} 个问题`);
-               addLog('质量问题: ' + issues.join(', '), 'warning');
-           }
-       }
-       
-       function clearInput() {
-           document.getElementById('input').value = '';
-           updateDetectionPanel({ primaryType: 'Unknown' });
-           showToast('🗑 输入已清空');
-           addLog('清空输入内容', 'info');
-       }
+       // 智能清理输入 - 超简化版
+function cleanInput() {
+    const inputEl = document.getElementById('input');
+    const input = inputEl.value.trim();
+    
+    if (!input) {
+        showToast('请先输入代码');
+        return;
+    }
+
+    addLog('开始智能清理代码...', 'info');
+
+    // 直接尝试提取jsjiami
+    const jsjiamiStart = input.indexOf(';var encode_version');
+    if (jsjiamiStart !== -1) {
+        const fromStart = input.substring(jsjiamiStart);
+        const jsjiamiEnd = fromStart.indexOf(";encode_version = 'jsjiami.com.v5';");
+        
+        if (jsjiamiEnd !== -1) {
+            const extracted = fromStart.substring(0, jsjiamiEnd + ";encode_version = 'jsjiami.com.v5';".length);
+            inputEl.value = extracted;
+            showToast('🎯 提取jsjiami完成');
+            addLog(`提取: ${input.length} → ${extracted.length} 字符`, 'success');
+            return;
+        }
+        
+        // 尝试双引号版本
+        const jsjiamiEnd2 = fromStart.indexOf(';encode_version = "jsjiami.com.v5";');
+        if (jsjiamiEnd2 !== -1) {
+            const extracted = fromStart.substring(0, jsjiamiEnd2 + ';encode_version = "jsjiami.com.v5";'.length);
+            inputEl.value = extracted;
+            showToast('🎯 提取jsjiami完成');
+            addLog(`提取: ${input.length} → ${extracted.length} 字符`, 'success');
+            return;
+        }
+    }
+
+    // 基础清理
+    let cleaned = input
+        .replace(/\/\/.*$/gm, '')                    // 单行注释
+        .replace(/\/\*[\s\S]*?\*\//g, '')           // 多行注释
+        .replace(/<!--[\s\S]*?-->/g, '')            // HTML注释
+        .replace(/^\s*console\.(log|warn|error)\s*\([^)]*\)\s*;?\s*$/gm, '') // console语句
+        .replace(/^\s*alert\s*\([^)]*\)\s*;?\s*$/gm, '') // alert语句
+        .replace(/^\s*[\r\n]+/gm, '')               // 空行
+        .replace(/\s+/g, ' ')                       // 多余空白
+        .trim();
+
+    // 更新结果
+    if (cleaned === input) {
+        showToast('🔍 未发现需要清理的内容');
+        addLog('代码已经是纯净格式', 'info');
+    } else {
+        inputEl.value = cleaned;
+        showToast('🧹 代码清理完成');
+        addLog(`清理: ${input.length} → ${cleaned.length} 字符`, 'success');
+    }
+}
+
+// 检查是否为混合内容
+function checkIfMixedContent(input) {
+    const mixedContentIndicators = [
+        /\/\/.*$/m,
+        /\/\*[\s\S]*?\*\//,
+        /<!--[\s\S]*?-->/,
+        /[\u4e00-\u9fff]/,
+        /(原始代码|原文|明文|解密结果|解密完成)/,
+        /<[^>]+>/,
+        /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+        /(console\.log|alert|document\.write)\s*\(/,
+        /eval\s*\(.*?\).*eval\s*\(/s,
+        /(解密脚本|混淆工具|加密工具)/
+    ];
+
+    for (const indicator of mixedContentIndicators) {
+        if (indicator.test(input)) {
+            return true;
+        }
+    }
+
+    const lines = input.split('\n');
+    if (lines.length > 10) {
+        const nonCipherLines = lines.filter(line => {
+            const trimmedLine = line.trim();
+            return trimmedLine.length > 0 &&
+                !(/^[A-Za-z0-9+/=\\u]+$/.test(trimmedLine)) &&
+                !(/^[0-9a-fA-F\s]+$/.test(trimmedLine)) &&
+                !(/^[\x20-\x7E]*$/.test(trimmedLine));
+        });
+
+        if (nonCipherLines.length > lines.length * 0.3) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// 智能预处理混合密文
+function preprocessCiphertext(input) {
+    addLog('执行智能预处理...', 'info');
+
+    let processed = input
+        .replace(/\/\/.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/^\s*\/\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*$/gm, '')
+        .replace(/^\s*\/\/解密脚本.*$/gm, '')
+        .replace(/^\s*\/\/.*?(解密|脚本|说明|注释|原始|混淆|结果).*$/gm, '');
+
+    const patterns = [
+        {
+            name: 'eval包装的jsjiami',
+            pattern: /eval\s*\(\s*(['"`])(.*?jsjiami\.com\.v\d+.*?)\1\s*\)/s,
+            extract: match => match[2]
+        },
+        {
+            name: 'AAEncode混淆',
+            pattern: /(ﾟωﾟﾉ.*?ﾟΘﾟ.*?)/s,
+            extract: match => match[1]
+        },
+        {
+            name: 'eval包装',
+            pattern: /eval\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
+            extract: match => match[2]
+        },
+        {
+            name: 'Function构造器',
+            pattern: /(?:new\s+)?Function\s*\(\s*(['"`])((?:\\u[0-9a-fA-F]{4}|[^"'`\\]|\\.){20,})\1\s*\)/s,
+            extract: match => match[2]
+        }
+    ];
+
+    for (const pattern of patterns) {
+        const matches = processed.match(pattern.pattern);
+        if (matches) {
+            const extracted = pattern.extract(matches);
+            if (extracted && extracted.length > 50) {
+                addLog(`智能提取${pattern.name}格式密文`, 'success');
+                return extracted;
+            }
+        }
+    }
+
+    return processed
+        .replace(/^\s*\/\/\s*(原始|原文|明文).*$/gm, '')
+        .replace(/^\s*console\.log\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
+        .replace(/^\s*alert\s*$begin:math:text$.*?$end:math:text$\s*;?\s*$/gm, '')
+        .replace(/^\s*[\r\n]/gm, '')
+        .replace(/^\s+/gm, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+// 验证输入质量
+function validateInput() {
+    const input = document.getElementById('input').value.trim();
+    if (!input) {
+        showToast('请先输入代码');
+        return;
+    }
+    
+    addLog('🔍 开始质量检查...', 'info');
+    
+    const issues = [];
+    const warnings = [];
+    const suggestions = [];
+    
+    // 基础检查
+    if (input.length < 50) {
+        issues.push('代码长度过短(<50字符)');
+        suggestions.push('确保复制了完整的代码内容');
+    }
+    
+    if (input.length > 500000) {
+        warnings.push('代码长度过长(>500KB)');
+        suggestions.push('考虑分段处理大文件');
+    }
+    
+    // 检测代码类型
+    const detection = comprehensiveDetection(input);
+    
+    if (detection.primaryType !== 'Unknown') {
+        // 已识别的密文格式
+        addLog(`🎯 检测到格式: ${detection.primaryType} (置信度: ${detection.primaryConfidence}%)`, 'info');
+        
+        if (detection.primaryConfidence < 70) {
+            warnings.push(`${detection.primaryType}置信度较低 (${detection.primaryConfidence}%)`);
+            suggestions.push('可能需要清理或格式不完整');
+        }
+        
+        // 特定格式的详细检查
+        if (detection.primaryType === 'AAEncode' && detection.aaResult.patternMatches < 3) {
+            warnings.push('AAEncode特征模式不足');
+            suggestions.push('检查是否为完整的AAEncode代码');
+        }
+        
+        if (detection.primaryType === 'Eval' && detection.evalResult.evalCount < 2) {
+            warnings.push('Eval调用次数较少');
+            suggestions.push('可能不是标准的Eval混淆');
+        }
+        
+        if (detection.primaryType === 'jsjiami') {
+            if (!input.includes('jsjiami.com.v')) {
+                warnings.push('jsjiami标识不完整');
+                suggestions.push('确保包含完整的jsjiami标识');
+            }
+        }
+        
+        // 检查多重编码
+        if (detection.hasMultipleEncodings) {
+            warnings.push('检测到多重编码');
+            suggestions.push('可能需要多次解密');
+        }
+        
+    } else {
+        // 未识别格式的清洁度检查
+        addLog('🔍 未识别的格式，进行清洁度检查', 'info');
+        
+        if (/[\u4e00-\u9fff]/.test(input)) {
+            issues.push('包含中文字符');
+            suggestions.push('使用智能清理功能移除注释');
+        }
+        
+        if (/\/\/|\/\*|\*\/|<!--/.test(input)) {
+            issues.push('包含注释符号');
+            suggestions.push('使用智能清理功能移除注释');
+        }
+        
+        if (/<[^>]+>/.test(input)) {
+            issues.push('包含HTML标签');
+            suggestions.push('提取script标签内的代码内容');
+        }
+        
+        if (/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(input)) {
+            issues.push('包含时间戳');
+            suggestions.push('移除解密脚本的时间信息');
+        }
+        
+        if (input.includes('原始代码') || input.includes('原文') || input.includes('明文')) {
+            issues.push('包含原文标识');
+            suggestions.push('移除原始代码说明部分');
+        }
+        
+        if (input.includes('解密完成') || input.includes('解密结果')) {
+            issues.push('包含解密结果标识');
+            suggestions.push('只保留密文部分');
+        }
+        
+        if (/console\.log|alert|document\.write/.test(input)) {
+            warnings.push('包含调试代码');
+            suggestions.push('移除调试输出语句');
+        }
+    }
+    
+    // 计算质量评分
+    let score = 100;
+    score -= issues.length * 25;
+    score -= warnings.length * 10;
+    score = Math.max(0, score);
+    
+    // 显示结果
+    addLog(`📊 质量评分: ${score}/100`, score >= 80 ? 'success' : score >= 60 ? 'warning' : 'error');
+    
+    if (issues.length > 0) {
+        addLog(`❌ 发现问题: ${issues.join(', ')}`, 'error');
+    }
+    
+    if (warnings.length > 0) {
+        addLog(`⚠️ 警告: ${warnings.join(', ')}`, 'warning');
+    }
+    
+    if (suggestions.length > 0) {
+        addLog(`💡 建议: ${suggestions.join('; ')}`, 'info');
+    }
+    
+    // 总结和建议
+    if (score >= 90) {
+        showToast('✅ 代码质量优秀！');
+        addLog('代码质量检查通过，可以直接解密', 'success');
+    } else if (score >= 70) {
+        showToast('👍 代码质量良好');
+        addLog('代码质量良好，建议直接解密', 'success');
+    } else if (score >= 50) {
+        showToast('⚠️ 代码质量一般');
+        addLog('建议使用智能清理功能后再解密', 'warning');
+    } else {
+        showToast('❌ 代码质量较差');
+        addLog('强烈建议先进行智能清理', 'error');
+    }
+}
+
+// 清空输入
+function clearInput() {
+    document.getElementById('input').value = '';
+    const remoteUrlElement = document.getElementById('remoteUrl');
+    if (remoteUrlElement) {
+        remoteUrlElement.value = '';
+    }
+    showToast('代码输入已清空');
+    addLog('清空代码输入内容', 'info');
+}
        
        async function startDecrypt() {
            const input = document.getElementById('input').value.trim();
@@ -1578,18 +1844,6 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                    if (decoded.length > 10) {
                        return { success: true, method: 'Base64', content: decoded };
                    }
-               } catch (e) {
-                   // 继续尝试其他方法
-               }
-           }
-           
-           // Unicode转义解密
-           if (/\\u[0-9a-fA-F]{4}/.test(input)) {
-               try {
-                   const decoded = input.replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => 
-                       String.fromCharCode(parseInt(code, 16))
-                   );
-                   return { success: true, method: 'Unicode转义', content: decoded };
                } catch (e) {
                    // 继续尝试其他方法
                }
@@ -1872,7 +2126,7 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             
             // 添加注释头部
             const timestamp = new Date().toLocaleString();
-            const header = `//解密时间: ${timestamp}\n//解密工具: 羊毛助手 v5.7\n//解密插件: eval\n\n`;
+            const header = `//解密时间: ${timestamp}\n//解密工具: 羊毛助手 v6.0\n//解密插件: eval\n\n`;
             
             // 特殊格式化处理
             formatted = formatted
