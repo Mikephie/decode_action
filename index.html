@@ -607,12 +607,7 @@
             <div class="section-title">
                 🔍 输入分析器
             </div>
-            <div class="form-row">
-                <div>
-                    <label for="input">代码输入</label>
-                    <textarea id="input" placeholder="在此粘贴您的编码代码..."></textarea>
-                </div>
-                <div>
+            
                     <label for="method">解码方法</label>
                     <select id="method">
                         <option value="auto">🤖 自动检测</option>
@@ -676,6 +671,39 @@
             </div>
         </div>
         
+<!-- 代码输入区域 - 去掉多余按钮 -->
+<div class="form-row">
+     <div class="input-section">
+        <textarea id="input" class="code-input" placeholder="请粘贴需要解密的JavaScript代码..." rows="10"></textarea>
+    </div>
+</div>
+                        
+        <!-- 进度条 -->
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <!-- 输出结果 -->
+        <div class="section">
+            <div class="section-title">📊 解密结果</div>
+            <div class="output" id="output">// 解码输出将在此显示...
+// 准备分析 ⚡</div>
+        </div>
+        
+        <!-- 执行日志 -->
+        <div class="section">
+            <div class="section-title">
+                📝 系统日志
+            </div>
+            <div class="logs" id="logs">
+                <div class="log-info">[系统] 科技解码器 v4.0 已初始化 ⚡</div>
+                <div class="log-success">[状态] 所有系统运行正常 🟢</div>
+                <div class="log-info">[就绪] 等待输入...</div>
+            </div>
+        </div>
+    </div>
+    
+        <!-- 控制按钮 -->
         <div class="buttons">
             <button class="btn-blue" onclick="decode()">
                 <div class="btn-icon">🚀</div>
@@ -698,33 +726,9 @@
                 <div class="btn-text">清除</div>
             </button>
         </div>
-        
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-        
-        <div class="section">
-            <div class="section-title">
-                📊 输出终端
-            </div>
-            <div class="output" id="output">// 解码输出将在此显示...
-// 准备分析 ⚡</div>
-        </div>
-        
-        <div class="section">
-            <div class="section-title">
-                📝 系统日志
-            </div>
-            <div class="logs" id="logs">
-                <div class="log-info">[系统] 科技解码器 v4.0 已初始化 ⚡</div>
-                <div class="log-success">[状态] 所有系统运行正常 🟢</div>
-                <div class="log-info">[就绪] 等待输入...</div>
-            </div>
-        </div>
-    </div>
     
     <div class="toast" id="toast">
-        操作成功完成！ ✨
+    操作成功完成！ ✨
     </div>
 
     <script>
