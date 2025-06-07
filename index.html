@@ -625,6 +625,7 @@
                 <input type="file" id="fileInput" style="display:none" accept=".js,.txt,.html">
             </div>
             
+            <!-- 检测面板 -->
             <div class="detection-panel">
                 <div class="section-title">🎯 检测结果</div>
                 <div class="detection-grid">
@@ -680,14 +681,14 @@
                         
         <!-- 进度条 -->
         <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
+            <div id="progress" class="progress-fill"></div>
         </div>
         
         <!-- 输出结果 -->
         <div class="section">
-            <div class="section-title">📊 解密结果</div>
-            <div class="output" id="output">// 解码输出将在此显示...
-// 准备分析 ⚡</div>
+            <div class="section-title">✨ 解密结果</div>
+            <div id="output" class="output">// 解密结果将显示在这里...</div>
+            </div>
         </div>
         
         <!-- 执行日志 -->
@@ -696,7 +697,7 @@
                 📝 系统日志
             </div>
             <div class="logs" id="logs">
-                <div class="log-info">[系统] 科技解码器 v4.0 已初始化 ⚡</div>
+                <div class="log-info">[系统] 科技解码器 v7.0 已初始化 ⚡</div>
                 <div class="log-success">[状态] 所有系统运行正常 🟢</div>
                 <div class="log-info">[就绪] 等待输入...</div>
             </div>
@@ -705,23 +706,23 @@
     
         <!-- 控制按钮 -->
         <div class="buttons">
-            <button class="btn-blue" onclick="decode()">
+            <button class="btn-blue" onclick="startDecrypt()">
                 <div class="btn-icon">🚀</div>
                 <div class="btn-text">解码</div>
             </button>
-            <button class="btn-green" onclick="beautify()">
+            <button class="btn-green" onclick="beautifyCode()">
                 <div class="btn-icon">✨</div>
                 <div class="btn-text">美化</div>
             </button>
-            <button class="btn-yellow" onclick="analyze()">
+            <button class="btn-yellow" onclick="getResult()">
                 <div class="btn-icon">🔍</div>
-                <div class="btn-text">分析</div>
+                <div class="btn-text">结果</div>
             </button>
-            <button class="btn-purple" onclick="copy()">
+            <button class="btn-purple" onclick="copyResult()">
                 <div class="btn-icon">📋</div>
                 <div class="btn-text">复制</div>
             </button>
-            <button class="btn-red" onclick="clear()">
+            <button class="btn-red" onclick="clearAll()">
                 <div class="btn-icon">🗑️</div>
                 <div class="btn-text">清除</div>
             </button>
