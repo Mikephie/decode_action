@@ -398,14 +398,11 @@
             transition: opacity 0.3s ease;
         }
         
-        /* 小按钮悬停高光效果 */
+        /* 所有按钮统一悬停高光效果 */
+        button:hover::before,
+        button:hover div:first-child,
         .file-glass-btn:hover div:first-child {
             opacity: 1 !important;
-        }
-        
-        button:hover::before,
-        button:hover div:first-child {
-            opacity: 1;
         }
         
         @keyframes glass-glow {
