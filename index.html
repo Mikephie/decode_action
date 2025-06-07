@@ -627,34 +627,6 @@
                     <option value="base64">🔐 Base64</option>
                 </select>
             </div>
-            
-            <!-- 检测面板 -->
-            <div class="detection-panel">
-                <div class="section-title">🎯 检测结果</div>
-                <div class="detection-grid">
-                    <div class="detection-item">
-                        <div class="detection-value">98%</div>
-                        <div class="detection-label">置信度</div>
-                    </div>
-                    <div class="detection-item">
-                        <div class="detection-value">AAEncode</div>
-                        <div class="detection-label">方法</div>
-                    </div>
-                    <div class="detection-item">
-                        <div class="detection-value">2.5KB</div>
-                        <div class="detection-label">大小</div>
-                    </div>
-                    <div class="detection-item">
-                        <div class="detection-value">安全</div>
-                        <div class="detection-label">状态</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="file-options">
-                <div class="file-option aaencode">
-                    <div>🔥 AAEncode</div>
-                    <div style="font-size: 0.7rem; opacity: 0.8;">高级</div>
         </div>
         
         <div class="file-upload" onclick="document.getElementById('fileInput').click()">
@@ -708,58 +680,6 @@
             💡 <strong>专业提示：</strong> 使用自动检测可获得最佳效果。AI将分析模式并选择最优的解码方法。
         </div>
     </div>
-</div>
-                        
-        <!-- 进度条 -->
-        <div class="progress-bar">
-            <div id="progress" class="progress-fill"></div>
-        </div>
-        
-        <!-- 输出结果 -->
-        <div class="section">
-            <div class="section-title">✨ 解密结果</div>
-            <div id="output" class="output">// 解密结果将显示在这里...</div>
-            </div>
-        </div>
-        
-        <!-- 执行日志 -->
-        <div class="section">
-            <div class="section-title">
-                📝 系统日志
-            </div>
-            <div class="logs" id="logs">
-                <div class="log-info">[系统] 科技解码器 v7.0 已初始化 ⚡</div>
-                <div class="log-success">[状态] 所有系统运行正常 🟢</div>
-                <div class="log-info">[就绪] 等待输入...</div>
-            </div>
-        </div>
-    </div>
-    
-        <!-- 控制按钮 -->
-        <div class="buttons">
-            <button class="btn-blue" onclick="startDecrypt()">
-                <div class="btn-icon">🚀</div>
-                <div class="btn-text">解码</div>
-            </button>
-            <button class="btn-green" onclick="beautifyCode()">
-                <div class="btn-icon">✨</div>
-                <div class="btn-text">美化</div>
-            </button>
-            <button class="btn-yellow" onclick="getResult()">
-                <div class="btn-icon">🔍</div>
-                <div class="btn-text">结果</div>
-            </button>
-            <button class="btn-purple" onclick="copyResult()">
-                <div class="btn-icon">📋</div>
-                <div class="btn-text">复制</div>
-            </button>
-            <button class="btn-red" onclick="clearAll()">
-                <div class="btn-icon">🗑️</div>
-                <div class="btn-text">清除</div>
-            </button>
-        </div>
-    
-    <div class="toast" id="toast">
     
     <div class="buttons">
         <button class="btn-blue" onclick="decode()">
