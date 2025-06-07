@@ -206,9 +206,9 @@
         }
         
         .file-upload {
-            border: 3px dashed rgba(0, 255, 255, 0.4);
-            border-radius: 20px;
-            padding: 40px;
+            border: 2px dashed rgba(0, 255, 255, 0.4);
+            border-radius: 15px;
+            padding: 25px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -223,8 +223,8 @@
         }
         
         .file-upload-icon {
-            font-size: 4rem;
-            margin-bottom: 15px;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
             opacity: 0.8;
         }
         
@@ -295,11 +295,128 @@
             font-family: 'JetBrains Mono', monospace;
         }
         
-        .btn-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
-        .btn-green { background: linear-gradient(135deg, #10b981, #059669); }
-        .btn-yellow { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .btn-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-        .btn-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .btn-blue { 
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-green { 
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-yellow { 
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-purple { 
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-red { 
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 玻璃按钮高光动画 */
+        .btn-blue::before { 
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(59, 130, 246, 0.6), transparent, rgba(0, 255, 255, 0.6), transparent);
+            background-size: 400% 400%;
+            border-radius: 17px;
+            z-index: -1;
+            animation: glass-glow 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .btn-green::before { 
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(16, 185, 129, 0.6), transparent, rgba(0, 255, 0, 0.6), transparent);
+            background-size: 400% 400%;
+            border-radius: 17px;
+            z-index: -1;
+            animation: glass-glow 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .btn-yellow::before { 
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(245, 158, 11, 0.6), transparent, rgba(255, 255, 0, 0.6), transparent);
+            background-size: 400% 400%;
+            border-radius: 17px;
+            z-index: -1;
+            animation: glass-glow 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .btn-purple::before { 
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(139, 92, 246, 0.6), transparent, rgba(255, 0, 255, 0.6), transparent);
+            background-size: 400% 400%;
+            border-radius: 17px;
+            z-index: -1;
+            animation: glass-glow 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .btn-red::before { 
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(239, 68, 68, 0.6), transparent, rgba(255, 0, 0, 0.6), transparent);
+            background-size: 400% 400%;
+            border-radius: 17px;
+            z-index: -1;
+            animation: glass-glow 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        button:hover::before,
+        button:hover div:first-child {
+            opacity: 1;
+        }
+        
+        @keyframes glass-glow {
+            0%, 100% { 
+                background-position: 0% 0%;
+            }
+            25% { 
+                background-position: 100% 0%;
+            }
+            50% { 
+                background-position: 100% 100%;
+            }
+            75% { 
+                background-position: 0% 100%;
+            }
+        }
         
         button:hover {
             transform: translateY(-3px) scale(1.05);
