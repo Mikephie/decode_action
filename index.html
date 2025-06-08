@@ -931,9 +931,6 @@
                 /eval\s*\(\s*function\s*\(\s*p\s*,\s*a\s*,\s*c\s*,\s*k\s*,\s*e\s*,\s*d\s*\)\s*\{[\s\S]*?e\s*=\s*function\s*\(\s*c\s*\)\s*\{[\s\S]*?String\.fromCharCode[\s\S]*?toString\s*\(\s*36\s*\)[\s\S]*?return\s+p[\s\S]*?\}\s*\([^)]*\.split\s*\(\s*['"`]\|['"`]\s*\)[^)]*\)\s*\)/gi
             ];
 
-            return evalPatterns.some(pattern => pattern.test(input));
-        }
-
             
             const evalMatches = evalPatterns.map(pattern => {
                 const matches = input.match(pattern);
