@@ -927,48 +927,19 @@
         }
         
         function detectEval(input) {
-    const evalPatterns = [
-        // 专门检测 Dean Edwards Packer 格式的混淆代码
-        // 匹配: eval(function(p,a,c,k,e,d){...e=function(c){...String.fromCharCode...toString(36)...return p}(...split('|')...))
-        /eval\s*\(\s*function\s*\(\s*p\s*,\s*a\s*,\s*c\s*,\s*k\s*,\s*e\s*,\s*d\s*\)\s*\{[\s\S]*?e\s*=\s*function\s*\(\s*c\s*\)\s*\{[\s\S]*?String\.fromCharCode[\s\S]*?toString\s*\(\s*36\s*\)[\s\S]*?return\s+p[\s\S]*?\}\s*\([^)]*\.split\s*\(\s*['"`]\|['"`]\s*\)[^)]*\)\s*\)/gi
-    ];
-
-    // 检查输入是否匹配任何模式
-    for (let pattern of evalPatterns) {
-        if (pattern.test(input)) {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-// 测试函数
-function testDetection() {
-    const testCases = [
-        // 您提供的混淆代码示例
-        `eval(function(p,a,c,k,e,d){e=function(c){return(c<a?"":e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)d[e(c)]=k[c]||e(c);k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1;};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p;}('4s(4l(p,a,c,k,e,d)...'.split('|'),0,{}))`,
-        
-        // 其他eval模式（现在应该不被检测）
-        `eval("alert('test')")`,
-        `window["eval"]("code")`,
-        `new Function("return 1+1")()`,
-        
-        // 正常代码（应该不被检测）
-        `function evaluate() { return true; }`,
-        `const evaluation = "test";`
-    ];
-    
-    testCases.forEach((code, index) => {
-        const isDetected = detectEval(code);
-        console.log(`Test case ${index + 1}: ${isDetected ? 'DETECTED' : 'CLEAN'}`);
-        console.log(`Code snippet: ${code.substring(0, 100)}...`);
-        console.log('---');
-    });
-}
-
-// 导出函数
-// testDetection(); // 取消注释以运行测试
+            const evalPatterns = [
+                /eval\s*\(/gi, 
+                /eval\s+\(/gi, 
+                /window\s*\[\s*['"]eval['"]\s*\]/gi,
+                /this\s*\[\s*['"]eval['"]\s*\]/gi, 
+                /Function\s*\(/gi,
+                /setTimeout\s*\(\s*['"`]/gi,
+                /setInterval\s*\(\s*['"`]/gi,
+                /new\s+Function\s*\(/gi,
+                /\[\s*['"]eval['"]\s*\]/gi,
+                /window\[['"]eval['"]\]/gi,
+                /eval\w*\s*\(/gi
+            ];
             
             const evalMatches = evalPatterns.map(pattern => {
                 const matches = input.match(pattern);
