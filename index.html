@@ -435,20 +435,32 @@
         }
         
         .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 4px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #10b981, #00ffff);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 4px;
+    margin: 20px 0;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(255, 69, 0, 0.6);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff4500, #ff6b35, #ffff00, #ff1493, #ff69b4);
+    width: 0%;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 20px rgba(255, 165, 0, 0.8);
+    animation: flicker 1s ease-in-out infinite alternate;
+}
+
+@keyframes flicker {
+    from {
+        box-shadow: 0 0 20px rgba(255, 165, 0, 0.8);
+    }
+    to {
+        box-shadow: 0 0 30px rgba(255, 69, 0, 1);
+    }
+}
         
         .output, .logs {
             background: rgba(0, 0, 0, 0.8);
