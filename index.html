@@ -795,98 +795,109 @@
             console.log("专业AADecode插件已加载");
         })();
 
-        /**
-         * Eval解包工具包装器 - 将Eval解包工具转换为浏览器可用版本
-         */
-        // 创建自执行函数来隔离作用域
-        (function() {
-          // 模拟Node.js环境
-          const module = { exports: {} };
-          const exports = module.exports;
-          
-          // 以下粘贴原始eval-decoder.js插件代码
-          // ====== 开始: 原始eval-decoder.js代码 ======
-          
-          /**
-           * 解包eval加密的代码
-           * @param {string} code - 要解包的代码
-           * @returns {string|null} - 解包后的代码或null（解包失败时）
-           */
-          function plugin(code) {
-            try {
-              // 如果不包含eval，直接返回null
-              if (!code.includes('eval(') && !code.includes('eval (')) {
-                return null;
-              }
-              
-              // 替换eval为一个捕获函数
-              let modifiedCode = code.replace(/eval\s*\(/g, '(function(x) { return x; })(');
-              
-              // 尝试执行修改后的代码获取eval的参数
-              try {
-                // 创建一个执行环境
-                const env = {
-                  window: {},
-                  document: {},
-                  navigator: { userAgent: "Mozilla/5.0" },
-                  location: {}
-                };
-                
-                // 执行代码
-                const result = Function('window', 'document', 'navigator', 'location',
-                                      `return ${modifiedCode}`)(
-                                      env.window, env.document, env.navigator, env.location);
-                
-                // 如果结果是字符串且包含eval，递归解包
-                if (typeof result === 'string') {
-                  if (result.includes('eval(')) {
-                    return plugin(result);
-                  }
-                  return result;
-                }
-                
-                return String(result);
-              } catch (err) {
-                console.log("执行替换eval的方法失败，尝试直接替换方法");
-                
-                // 尝试直接替换eval
-                try {
-                  modifiedCode = code.replace(/eval\s*\(/g, '(');
-                  return modifiedCode;
-                } catch (replaceErr) {
-                  console.error("直接替换eval方法也失败:", replaceErr);
-                  return null;
-                }
-              }
-            } catch (error) {
-              console.error("Eval解包发生错误:", error);
-              return null;
-            }
-          }
-          
-          // 导出插件接口
-          exports.plugin = function(code) {
-            return plugin(code);
-          };
-          
-          // ====== 结束: 原始eval-decoder.js代码 ======
-          
-          // 将插件注册到全局解密插件库
-          window.DecodePlugins = window.DecodePlugins || {};
-          window.DecodePlugins.eval = {
-            detect: function(code) {
-              // 检测是否包含eval调用
-              return code.includes('eval(') || code.includes('eval (');
-            },
-            plugin: function(code) {
-              // 使用原始模块的功能
-              return module.exports.plugin(code);
-            }
-          };
-          
-          console.log("Eval解包插件已加载");
-        })();
-        
+        // ====== 开始: 安全版 eval-decoder（纯解析，不执行整段） ======
+(function () {
+  const module = { exports: {} };
+  const exports = module.exports;
+
+  // 1) Dean Edwards Packer 静态解包
+  function tryUnpackPacker(code) {
+    const m = code.match(
+      /eval\s*\(\s*function\s*\(\s*p\s*,\s*a\s*,\s*c\s*,\s*k\s*,\s*e\s*,\s*d\s*\)\s*\{[\s\S]*?\}\s*\(\s*(['"`])([\s\S]*?)\1\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(['"`])([\s\S]*?)\5\.split\(\s*['"`]\|['"`]\s*\)\s*,/i
+    );
+    if (!m) return null;
+
+    const payload = m[2];                // p
+    const a = parseInt(m[3], 10);        // a
+    const c = parseInt(m[4], 10);        // c
+    const k = m[6].split('|');           // k[]
+
+    // 将 a 进制的“单词索引”替换为 k[i]
+    const baseMap = {};
+    for (let i = 0; i < k.length; i++) baseMap[i.toString(a)] = k[i] || i.toString(a);
+
+    const unpacked = payload.replace(/\b\w+\b/g, (w) => {
+      return Object.prototype.hasOwnProperty.call(baseMap, w) ? baseMap[w] : w;
+    });
+
+    return unpacked;
+  }
+
+  // 常用反转义：\\n \\xNN \\uNNNN
+  function unescapeCommon(s) {
+    return s
+      .replace(/\\n/g, '\n')
+      .replace(/\\r/g, '\r')
+      .replace(/\\t/g, '\t')
+      .replace(/\\x([0-9a-fA-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+      .replace(/\\u([0-9a-fA-F]{4})/g, (_, u) => String.fromCharCode(parseInt(u, 16)))
+      .replace(/\\(['"`\\])/g, '$1');
+  }
+
+  // 2) 解析 eval("…") / eval('…')
+  function extractEvalString(code) {
+    const m = code.match(/eval\s*\(\s*(['"`])([\s\S]*?)\1\s*\)/);
+    if (!m) return null;
+    return unescapeCommon(m[2]);
+  }
+
+  // 3) 解析 eval(unescape('%xx...'))
+  function extractEvalUnescape(code) {
+    const m = code.match(/eval\s*\(\s*unescape\(\s*(['"`])([^'"`]+)\1\s*\)\s*\)/i);
+    if (!m) return null;
+    const pct = m[2].replace(/%([0-9a-fA-F]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16)));
+    return pct;
+  }
+
+  // 4) 主入口（递归但不执行整段）
+  function plugin(code) {
+    try {
+      // packer
+      const p = tryUnpackPacker(code);
+      if (p) {
+        if (/eval\s*\(/.test(p)) return plugin(p);
+        return p;
+      }
+
+      // eval("…")
+      const s1 = extractEvalString(code);
+      if (s1) {
+        if (/eval\s*\(/.test(s1)) return plugin(s1);
+        return s1;
+      }
+
+      // eval(unescape('%…'))
+      const s2 = extractEvalUnescape(code);
+      if (s2) {
+        if (/eval\s*\(/.test(s2)) return plugin(s2);
+        return s2;
+      }
+
+      return null;
+    } catch (e) {
+      console.error('Safe Eval 解包错误:', e);
+      return null;
+    }
+  }
+
+  exports.plugin = function (code) {
+    return plugin(code);
+  };
+
+  window.DecodePlugins = window.DecodePlugins || {};
+  window.DecodePlugins.eval = {
+    detect: function (code) {
+      return /eval\s*\(/.test(code) || /function\s*\(\s*p\s*,\s*a\s*,\s*c\s*,\s*k\s*,\s*e\s*,\s*d\s*\)\s*\{/.test(code);
+    },
+    plugin: function (code) {
+      return module.exports.plugin(code);
+    },
+  };
+
+  console.log('Eval解包插件(安全版)已加载');
+})();
+// ====== 结束: 安全版 ======
+
         // 应用配置
         const APP_CONFIG = {
             VERSION: '7.0',
@@ -1028,51 +1039,58 @@
         }
         
         function decodeEval(code) {
-            try {
-                addLog('🔧 使用专业Eval解包插件解密...', 'info');
-                
-                const result = window.DecodePlugins.eval.plugin(code);
-                
-                if (result !== null && result !== undefined && result !== code) {
-                    const resultStr = String(result);
-                    addLog('✅ 专业Eval解包成功！', 'success');
-                    
-                    const detection = comprehensiveDetection(resultStr);
-                    if (detection.primaryType !== 'Unknown' && detection.primaryConfidence > 60) {
-                        addLog('🔄 检测到嵌套编码，开始递归解密...', 'info');
-                        const recursiveResult = performDecryption(resultStr);
-                        if (recursiveResult.success) {
-                            return {
-                                success: true,
-                                method: 'Eval解包+递归解密',
-                                result: recursiveResult.result,
-                                recursive: true,
-                                steps: 2
-                            };
-                        }
-                    }
-                    
-                    return {
-                        success: true,
-                        method: '专业Eval解包插件',
-                        result: resultStr,
-                        recursive: false
-                    };
-                } else {
-                    throw new Error('Eval插件返回空结果或未改变');
-                }
-                
-            } catch (error) {
-                addLog('❌ 专业Eval解包失败: ' + error.message, 'error');
-                
-                return {
-                    success: false,
-                    method: '解密失败',
-                    result: null,
-                    error: 'Eval解包失败: ' + error.message
-                };
-            }
-        }
+  try {
+    addLog('🔧 使用安全版Eval解包...', 'info');
+
+    // 走安全版插件（只做静态提取/替换，不执行整段）
+    const result = window.DecodePlugins.eval.plugin(code);
+
+    // 1) 严格校验
+    if (typeof result !== 'string' || !result.trim()) {
+      throw new Error('未提取到有效的 eval 负载');
+    }
+    if (result === code) {
+      throw new Error('解包结果与原文一致（可能不是标准 eval 混淆）');
+    }
+
+    addLog('✅ Eval解包成功！', 'success');
+
+    // 2) 如仍有 eval，则尝试“只对负载递归一次”
+    if (/eval\s*\(/.test(result)) {
+      addLog('🔄 检测到嵌套 eval，尝试递归一次...', 'info');
+      const again = window.DecodePlugins.eval.plugin(result);
+      if (typeof again === 'string' && again && again !== result) {
+        return {
+          success: true,
+          method: 'Eval解包(安全版，递归1次)',
+          result: again,
+          recursive: true,
+          steps: 2
+        };
+      } else {
+        addLog('ℹ️ 嵌套递归未进一步产出有效结果', 'warning');
+      }
+    }
+
+    // 3) 返回首层解包结果
+    return {
+      success: true,
+      method: 'Eval解包(安全版)',
+      result,
+      recursive: false
+    };
+
+  } catch (e) {
+    addLog('❌ Eval解包失败: ' + e.message, 'error');
+    return {
+      success: false,
+      method: '解密失败',
+      result: null,
+      error: 'Eval解包失败: ' + e.message
+    };
+  }
+}
+
         
         function performDecryption(code) {
             const detection = comprehensiveDetection(code);
