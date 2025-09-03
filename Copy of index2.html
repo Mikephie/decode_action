@@ -978,6 +978,51 @@
             return 0;
         }
         
+        function comprehensiveDetection(input) {
+    // 🆕 第一优先级：检测jsjiami
+    if (input.includes('jsjiami.com.v5') || input.includes('jsjiami.com.v6') || input.includes('jsjiami.com.v7')) {
+        return {
+            primaryType: 'jsjiami',
+            primaryConfidence: 95,
+            primaryResult: { 
+                type: 'jsjiami', 
+                confidence: 95, 
+                method: 'Unicode转义',
+                isDetected: true 
+            },
+            aaResult: { isDetected: false, confidence: 0 },
+            evalResult: { isDetected: false, confidence: 0 },
+            hasMultipleEncodings: false
+        };
+    }
+    
+    const aaResult = detectAAEncode(input);
+    const evalResult = detectEval(input);
+    
+    let primaryType = 'Unknown';
+    let primaryConfidence = 0;
+    let primaryResult = null;
+    
+    if (aaResult.isDetected && aaResult.confidence > evalResult.confidence) {
+        primaryType = 'AAEncode';
+        primaryConfidence = aaResult.confidence;
+        primaryResult = aaResult;
+    } else if (evalResult.isDetected) {
+        primaryType = 'Eval';
+        primaryConfidence = evalResult.confidence;
+        primaryResult = evalResult;
+    }
+    
+    return {
+        primaryType,
+        primaryConfidence,
+        primaryResult,
+        aaResult,
+        evalResult,
+        hasMultipleEncodings: aaResult.isDetected && evalResult.isDetected
+    };
+}
+        
         function decodeAAEncode(code) {
             try {
                 addLog('🔤 使用专业AADecode插件解密...', 'info');
