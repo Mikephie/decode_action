@@ -1132,61 +1132,55 @@
         }
         
         function updateDetectionPanel(detection) {
-    const panel = document.getElementById('detectionPanel');
-    const aaIndicator = document.getElementById('aaencodeIndicator');
-    const evalIndicator = document.getElementById('evalIndicator');
-    
-    aaIndicator.classList.remove('show');
-    evalIndicator.classList.remove('show');
-    window.appData.isAAEncodeMode = false;
-    window.appData.isEvalMode = false;
-    
-    if (detection.primaryType !== 'Unknown') {
-        panel.style.display = 'block';
-        
-        // 🆕 拼接 variant
-        let typeText = detection.primaryType;
-        if (detection.primaryResult && detection.primaryResult.variant) {
-            typeText += ` (v${detection.primaryResult.variant})`;
+            const panel = document.getElementById('detectionPanel');
+            const aaIndicator = document.getElementById('aaencodeIndicator');
+            const evalIndicator = document.getElementById('evalIndicator');
+            
+            aaIndicator.classList.remove('show');
+            evalIndicator.classList.remove('show');
+            window.appData.isAAEncodeMode = false;
+            window.appData.isEvalMode = false;
+            
+            if (detection.primaryType !== 'Unknown') {
+                panel.style.display = 'block';
+                
+                document.getElementById('detectionType').textContent = detection.primaryType;
+                document.getElementById('detectionConfidence').textContent = detection.primaryConfidence + '%';
+                
+                if (detection.primaryType === 'AAEncode') {
+                    aaIndicator.classList.add('show');
+                    window.appData.isAAEncodeMode = true;
+                    document.getElementById('detectionFeatures').textContent = detection.aaResult.patternMatches + '/9';
+                    document.getElementById('detectionDetails').textContent = detection.aaResult.ratio + '%字符占比';
+                } else if (detection.primaryType === 'Eval') {
+                    evalIndicator.classList.add('show');
+                    window.appData.isEvalMode = true;
+                    document.getElementById('detectionFeatures').textContent = detection.evalResult.evalCount + '个eval';
+                    document.getElementById('detectionDetails').textContent = '嵌套深度' + detection.evalResult.nestedDepth;
+                }
+                
+                if (detection.hasMultipleEncodings) {
+                    aaIndicator.classList.add('show');
+                    evalIndicator.classList.add('show');
+                    document.getElementById('detectionDetails').textContent = '多重编码';
+                }
+                
+                const confidenceEl = document.getElementById('detectionConfidence');
+                if (detection.primaryConfidence >= 90) {
+                    confidenceEl.style.color = '#10b981';
+                } else if (detection.primaryConfidence >= 70) {
+                    confidenceEl.style.color = '#f59e0b';
+                } else {
+                    confidenceEl.style.color = '#ef4444';
+                }
+                
+                window.appData.lastDetection = detection;
+            } else {
+                panel.style.display = 'none';
+                window.appData.lastDetection = null;
+            }
         }
-        document.getElementById('detectionType').textContent = typeText;
         
-        document.getElementById('detectionConfidence').textContent = detection.primaryConfidence + '%';
-        
-        if (detection.primaryType === 'AAEncode') {
-            aaIndicator.classList.add('show');
-            window.appData.isAAEncodeMode = true;
-            document.getElementById('detectionFeatures').textContent = detection.aaResult.patternMatches + '/9';
-            document.getElementById('detectionDetails').textContent = detection.aaResult.ratio + '%字符占比';
-        } else if (detection.primaryType === 'Eval') {
-            evalIndicator.classList.add('show');
-            window.appData.isEvalMode = true;
-            document.getElementById('detectionFeatures').textContent = detection.evalResult.evalCount + '个eval';
-            document.getElementById('detectionDetails').textContent = '嵌套深度' + detection.evalResult.nestedDepth;
-        }
-        
-        if (detection.hasMultipleEncodings) {
-            aaIndicator.classList.add('show');
-            evalIndicator.classList.add('show');
-            document.getElementById('detectionDetails').textContent = '多重编码';
-        }
-        
-        const confidenceEl = document.getElementById('detectionConfidence');
-        if (detection.primaryConfidence >= 90) {
-            confidenceEl.style.color = '#10b981';
-        } else if (detection.primaryConfidence >= 70) {
-            confidenceEl.style.color = '#f59e0b';
-        } else {
-            confidenceEl.style.color = '#ef4444';
-        }
-        
-        window.appData.lastDetection = detection;
-    } else {
-        panel.style.display = 'none';
-        window.appData.lastDetection = null;
-    }
-}
-
         // 用户界面函数
         function testAAEncodeInput() {
             const input = document.getElementById('input').value.trim();
