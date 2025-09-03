@@ -1132,54 +1132,61 @@
         }
         
         function updateDetectionPanel(detection) {
-            const panel = document.getElementById('detectionPanel');
-            const aaIndicator = document.getElementById('aaencodeIndicator');
-            const evalIndicator = document.getElementById('evalIndicator');
-            
-            aaIndicator.classList.remove('show');
-            evalIndicator.classList.remove('show');
-            window.appData.isAAEncodeMode = false;
-            window.appData.isEvalMode = false;
-            
-            if (detection.primaryType !== 'Unknown') {
-                panel.style.display = 'block';
-                
-                document.getElementById('detectionType').textContent = detection.primaryType;
-                document.getElementById('detectionConfidence').textContent = detection.primaryConfidence + '%';
-                
-                if (detection.primaryType === 'AAEncode') {
-                    aaIndicator.classList.add('show');
-                    window.appData.isAAEncodeMode = true;
-                    document.getElementById('detectionFeatures').textContent = detection.aaResult.patternMatches + '/9';
-                    document.getElementById('detectionDetails').textContent = detection.aaResult.ratio + '%字符占比';
-                } else if (detection.primaryType === 'Eval') {
-                    evalIndicator.classList.add('show');
-                    window.appData.isEvalMode = true;
-                    document.getElementById('detectionFeatures').textContent = detection.evalResult.evalCount + '个eval';
-                    document.getElementById('detectionDetails').textContent = '嵌套深度' + detection.evalResult.nestedDepth;
-                }
-                
-                if (detection.hasMultipleEncodings) {
-                    aaIndicator.classList.add('show');
-                    evalIndicator.classList.add('show');
-                    document.getElementById('detectionDetails').textContent = '多重编码';
-                }
-                
-                const confidenceEl = document.getElementById('detectionConfidence');
-                if (detection.primaryConfidence >= 90) {
-                    confidenceEl.style.color = '#10b981';
-                } else if (detection.primaryConfidence >= 70) {
-                    confidenceEl.style.color = '#f59e0b';
-                } else {
-                    confidenceEl.style.color = '#ef4444';
-                }
-                
-                window.appData.lastDetection = detection;
-            } else {
-                panel.style.display = 'none';
-                window.appData.lastDetection = null;
-            }
+    const panel = document.getElementById('detectionPanel');
+    const aaIndicator = document.getElementById('aaencodeIndicator');
+    const evalIndicator = document.getElementById('evalIndicator');
+    
+    aaIndicator.classList.remove('show');
+    evalIndicator.classList.remove('show');
+    window.appData.isAAEncodeMode = false;
+    window.appData.isEvalMode = false;
+    
+    if (detection.primaryType !== 'Unknown') {
+        panel.style.display = 'block';
+        
+        // 🆕 拼接 variant
+        let typeText = detection.primaryType;
+        if (detection.primaryResult && detection.primaryResult.variant) {
+            typeText += ` (v${detection.primaryResult.variant})`;
         }
+        document.getElementById('detectionType').textContent = typeText;
+        
+        document.getElementById('detectionConfidence').textContent = detection.primaryConfidence + '%';
+        
+        if (detection.primaryType === 'AAEncode') {
+            aaIndicator.classList.add('show');
+            window.appData.isAAEncodeMode = true;
+            document.getElementById('detectionFeatures').textContent = detection.aaResult.patternMatches + '/9';
+            document.getElementById('detectionDetails').textContent = detection.aaResult.ratio + '%字符占比';
+        } else if (detection.primaryType === 'Eval') {
+            evalIndicator.classList.add('show');
+            window.appData.isEvalMode = true;
+            document.getElementById('detectionFeatures').textContent = detection.evalResult.evalCount + '个eval';
+            document.getElementById('detectionDetails').textContent = '嵌套深度' + detection.evalResult.nestedDepth;
+        }
+        
+        if (detection.hasMultipleEncodings) {
+            aaIndicator.classList.add('show');
+            evalIndicator.classList.add('show');
+            document.getElementById('detectionDetails').textContent = '多重编码';
+        }
+        
+        const confidenceEl = document.getElementById('detectionConfidence');
+        if (detection.primaryConfidence >= 90) {
+            confidenceEl.style.color = '#10b981';
+        } else if (detection.primaryConfidence >= 70) {
+            confidenceEl.style.color = '#f59e0b';
+        } else {
+            confidenceEl.style.color = '#ef4444';
+        }
+        
+        window.appData.lastDetection = detection;
+    } else {
+        panel.style.display = 'none';
+        window.appData.lastDetection = null;
+    }
+}
+
         
         // 用户界面函数
         function testAAEncodeInput() {
@@ -2450,6 +2457,168 @@ function clearInput() {
            addLog('❌ Promise错误: ' + e.reason, 'error');
            console.error('Unhandled promise rejection:', e);
        });
-   </script>
+
+/* ===== minimal real detector (drop-in) ===== */
+(function () {
+  // ——— 工具函数 ———
+  const has = (s, r) => (typeof r === 'string' ? s.includes(r) : r.test(s));
+  const m = (s, r) => { const x = s.match(r); return x ? x[1] || x[0] : null; };
+
+  // jsjiami: 典型的 encode_version 标记与末尾回写
+  function detectJsjiami(s) {
+    const mark = /jsjiami\.com\.v(5|6|7)/i;
+    const head = /\b(?:var\s+)?encode_version\s*=/i;
+    const tail = /encode_version\s*=\s*['"]jsjiami\.com\.v\d+['"]\s*;?/i;
+    const hit = mark.test(s) || (head.test(s) && tail.test(s));
+    if (!hit) return { isDetected: false, confidence: 0 };
+    const variant = (m(s, mark) || '').replace(/[^567]/g, '') || (m(s, /v(\d)/i) || 'x');
+    let c = 70;
+    if (mark.test(s)) c += 15;
+    if (head.test(s) && tail.test(s)) c += 10;
+    if (s.length > 2000) c += 3;
+    return { isDetected: true, confidence: Math.min(c, 98), variant, detail: 'encode_version + jsjiami.com' };
+  }
+
+  // sojson: 旧版注释/字样 & v7 常见构造
+  function detectSojson(s) {
+    // 常见提示/注释 & 版本字样
+    const mark = /(sojson\.v(5|6|7)|sojson版本|sojson提示|sojson是|sojson.*加密)/i;
+    // v7 常见结构：立即执行包装 + 防调试 + toString(36) 等
+    const v7sig = /(?:function\s*\(\)\s*\{\s*['"]use strict['"]\s*;)?\s*!function\([\w$,]{1,6}\)\{[\s\S]{300,}?toString\(\s*36\s*\)/;
+    // sojson 常配的反调试片段
+    const anti = /debugger;|console\.\w+\(|_0x\w{4,}\(\w+\)/;
+
+    if (!(mark.test(s) || v7sig.test(s))) return { isDetected: false, confidence: 0 };
+
+    const v = m(s, /sojson\.v(5|6|7)/i) || (v7sig.test(s) ? '7' : null) || 'x';
+    let c = 65;
+    if (mark.test(s)) c += 15;
+    if (v7sig.test(s)) c += 10;
+    if (anti.test(s)) c += 5;
+    return { isDetected: true, confidence: Math.min(c, 95), variant: v, detail: 'sojson signatures' };
+  }
+
+  // AAEncode: ﾟωﾟ/ﾟДﾟ/ﾟΘﾟ 等字符族
+  function detectAAEncode(s) {
+    const core = /(?:ﾟωﾟﾉ|ﾟДﾟ|ﾟдﾟ|ﾟΘﾟ)/;
+    if (!core.test(s)) return { isDetected: false, confidence: 0 };
+    const feats = (s.match(/[ﾟωДдΘﾉ\(\)\^_oc]/g) || []).length;
+    const ratio = feats / Math.max(1, s.length);
+    const c = Math.min(60 + Math.min(30, Math.floor(ratio * 100)), 95);
+    return { isDetected: true, confidence: c, features: feats, ratio: Math.round(ratio * 100) + '%', detail: 'AAEncode glyphs' };
+  }
+
+  // Dean Edwards Packer（eval(function(p,a,c,k,e,d){...})）
+  function detectPacker(s) {
+    const r = /eval\s*\(\s*function\s*\(\s*p\s*,\s*a\s*,\s*c\s*,\s*k\s*,\s*e\s*,\s*d\s*\)\s*\{/;
+    if (!r.test(s)) return { isDetected: false, confidence: 0 };
+    let c = 85;
+    if (/String\.fromCharCode|toString\(\s*36\s*\)/.test(s)) c += 5;
+    return { isDetected: true, confidence: Math.min(c, 95), detail: 'packer pattern' };
+  }
+
+  // JSFuck: 仅由 []()+! 组成的大段代码
+  function detectJSFuck(s) {
+    const body = s.replace(/\s+/g, '');
+    if (!body) return { isDetected: false, confidence: 0 };
+    const jsfuck = /^[\[\]\(\)\!\+<>={}]*$/.test(body) && body.length > 80;
+    return jsfuck ? { isDetected: true, confidence: 92, detail: '[]()+! only' } : { isDetected: false, confidence: 0 };
+  }
+
+  // JJEncode: 以 _$ / $___ 等符号变量为核心，形如 $$+_+$ 组合
+  function detectJJEncode(s) {
+    const sym = /(^|\b)var\s+[_$]{2,}[A-Za-z0-9_$]*\s*=\s*.*?;/;
+    const patt = /\$\$|\+_|\$_|\$__|___\$|_\$\$|__\$/;
+    if (!(sym.test(s) || patt.test(s))) return { isDetected: false, confidence: 0 };
+    let c = 70;
+    if (sym.test(s)) c += 10;
+    if ((s.match(patt) || []).length > 8) c += 10;
+    return { isDetected: true, confidence: Math.min(c, 92), detail: 'JJ symbols' };
+  }
+
+  // JS-Obfuscator（常见 _0x 开头数组 + toString(16) 访问器）
+  function detectObfuscator(s) {
+    const arr = /var\s+_0x[a-f0-9]{4,}\s*=\s*\[/i;
+    const acc = /\[_0x[a-f0-9]{4,}\([a-z0-9_]+\)\]/i;
+    if (!(arr.test(s) || acc.test(s))) return { isDetected: false, confidence: 0 };
+    let c = 70;
+    if (arr.test(s)) c += 10;
+    if (acc.test(s)) c += 10;
+    if (/function\s*\(_0x[a-f0-9]{4,}\)\s*\{/.test(s)) c += 2;
+    return { isDetected: true, confidence: Math.min(c, 93), detail: '_0x*** string array' };
+  }
+
+  // ——— 主函数：综合判定 ———
+  function comprehensiveDetectionPatched(input) {
+    const s = (input || '').trim();
+    if (!s) return { primaryType: 'Unknown', primaryConfidence: 0 };
+
+    // 明确优先级：jsjiami > sojson > 其它
+    const jj   = detectJsjiami(s);
+    if (jj.isDetected) {
+      return {
+        primaryType: 'jsjiami',
+        primaryConfidence: jj.confidence,
+        primaryResult: jj,
+        aaResult: { isDetected: false, confidence: 0 },
+        evalResult: { isDetected: false, confidence: 0 },
+        hasMultipleEncodings: false
+      };
+    }
+
+    const sj   = detectSojson(s);
+    if (sj.isDetected) {
+      return {
+        primaryType: 'sojson',
+        primaryConfidence: sj.confidence,
+        primaryResult: sj,
+        aaResult: { isDetected: false, confidence: 0 },
+        evalResult: { isDetected: false, confidence: 0 },
+        hasMultipleEncodings: false
+      };
+    }
+
+    const aa   = detectAAEncode(s);
+    const pk   = detectPacker(s);
+    const jf   = detectJSFuck(s);
+    const jjc  = detectJJEncode(s);
+    const obf  = detectObfuscator(s);
+
+    const candidates = [
+      aa.isDetected && { t: 'AAEncode',         c: aa.confidence, meta: aa },
+      pk.isDetected && { t: 'Eval(Packer)',     c: pk.confidence, meta: pk },
+      jf.isDetected && { t: 'JSFuck',           c: jf.confidence, meta: jf },
+      jjc.isDetected && { t: 'JJEncode',        c: jjc.confidence, meta: jjc },
+      obf.isDetected && { t: 'Obfuscator',      c: obf.confidence, meta: obf },
+    ].filter(Boolean).sort((a, b) => b.c - a.c);
+
+    if (!candidates.length) {
+      return {
+        primaryType: 'Unknown',
+        primaryConfidence: 0,
+        aaResult: aa,
+        evalResult: { isDetected: pk.isDetected, confidence: pk.confidence },
+        hasMultipleEncodings: false
+      };
+    }
+
+    const top = candidates[0];
+    const hasMulti = candidates.length > 1;
+
+    return {
+      primaryType: top.t,
+      primaryConfidence: top.c,
+      primaryResult: top.meta,
+      aaResult: aa,
+      evalResult: { isDetected: pk.isDetected, confidence: pk.confidence },
+      hasMultipleEncodings: hasMulti
+    };
+  }
+
+  // 覆盖全局函数（务必在最后一个脚本）
+  window.comprehensiveDetection = comprehensiveDetectionPatched;
+  console.log('[detect-patch] real detector active');
+})();
+</script>
 </body>
 </html>
