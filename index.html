@@ -2450,7 +2450,21 @@ function clearInput() {
            addLog('❌ Promise错误: ' + e.reason, 'error');
            console.error('Unhandled promise rejection:', e);
        });
-   </script>
-   <script src="./detect_patch.js"></script>
+   <script>
+(function () {
+  // 用一个显眼的返回，确认是否覆盖了原函数
+  window.comprehensiveDetection = function () {
+    return {
+      primaryType: '__PATCH_TEST__',
+      primaryConfidence: 88,
+      primaryResult: { variant: 'vX' },
+      aaResult: { isDetected: false, confidence: 0 },
+      evalResult: { isDetected: false, confidence: 0 },
+      hasMultipleEncodings: false
+    };
+  };
+  console.log('[patch-smoke] applied at', new Date().toISOString());
+})();
+</script>
 </body>
 </html>
