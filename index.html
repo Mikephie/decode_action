@@ -978,6 +978,51 @@
             return 0;
         }
         
+        function comprehensiveDetection(input) {
+    // 🆕 第一优先级：检测jsjiami
+    if (input.includes('jsjiami.com.v5') || input.includes('jsjiami.com.v6') || input.includes('jsjiami.com.v7')) {
+        return {
+            primaryType: 'jsjiami',
+            primaryConfidence: 95,
+            primaryResult: { 
+                type: 'jsjiami', 
+                confidence: 95, 
+                method: 'Unicode转义',
+                isDetected: true 
+            },
+            aaResult: { isDetected: false, confidence: 0 },
+            evalResult: { isDetected: false, confidence: 0 },
+            hasMultipleEncodings: false
+        };
+    }
+    
+    const aaResult = detectAAEncode(input);
+    const evalResult = detectEval(input);
+    
+    let primaryType = 'Unknown';
+    let primaryConfidence = 0;
+    let primaryResult = null;
+    
+    if (aaResult.isDetected && aaResult.confidence > evalResult.confidence) {
+        primaryType = 'AAEncode';
+        primaryConfidence = aaResult.confidence;
+        primaryResult = aaResult;
+    } else if (evalResult.isDetected) {
+        primaryType = 'Eval';
+        primaryConfidence = evalResult.confidence;
+        primaryResult = evalResult;
+    }
+    
+    return {
+        primaryType,
+        primaryConfidence,
+        primaryResult,
+        aaResult,
+        evalResult,
+        hasMultipleEncodings: aaResult.isDetected && evalResult.isDetected
+    };
+}
+        
         function decodeAAEncode(code) {
             try {
                 addLog('🔤 使用专业AADecode插件解密...', 'info');
@@ -1074,6 +1119,18 @@
             }
         }
         
+        function performDecryption(code) {
+            const detection = comprehensiveDetection(code);
+            
+            if (detection.primaryType === 'AAEncode') {
+                return decodeAAEncode(code);
+            } else if (detection.primaryType === 'Eval') {
+                return decodeEval(code);
+            } else {
+                return tryOtherDecryptMethods(code);
+            }
+        }
+        
         function updateDetectionPanel(detection) {
     const panel = document.getElementById('detectionPanel');
     const aaIndicator = document.getElementById('aaencodeIndicator');
@@ -1132,61 +1189,105 @@
         
         // 用户界面函数
         function testAAEncodeInput() {
-  const input = document.getElementById('input').value.trim();
-  if (!input) { showToast('请先输入内容'); return; }
-
-  const detection = comprehensiveDetection(input);
-  updateDetectionPanel(detection);
-
-  if (detection.primaryType === 'AAEncode') {
-    showToast(`🎯 检测到AAEncode (${detection.primaryConfidence}%)`);
-    addLog(`AAEncode检测成功: 置信度 ${detection.primaryConfidence}%`, 'success');
-
-    const r = decodeAAEncode(input);
-    if (r.success) {
-      displayResult(r.result);
-      showToast('🎉 AAEncode解密成功！');
-      addLog(`解密完成，使用方法: ${r.method}`, 'success');
-    } else {
-      showToast('❌ AAEncode解密失败');
-      addLog(r.error, 'error');
+            const input = document.getElementById('input').value.trim();
+            if (!input) {
+                showToast('请先输入AAEncode密文');
+                return;
+            }
+            
+            const detection = detectAAEncode(input);
+            updateDetectionPanel({ 
+                primaryType: detection.isDetected ? 'AAEncode' : 'Unknown', 
+                primaryConfidence: detection.confidence,
+                aaResult: detection 
+            });
+            
+            if (detection.isDetected) {
+                showToast(`🎯 检测到AAEncode格式！置信度: ${detection.confidence}%`);
+                addLog(`AAEncode检测成功: 置信度 ${detection.confidence}%, 特征匹配 ${detection.patternMatches}/9`, 'success');
+                
+                setTimeout(() => {
+                    const decodeResult = decodeAAEncode(input);
+                    if (decodeResult.success) {
+                        displayResult(decodeResult.result);
+                        showToast('🎉 AAEncode解密成功！');
+                        addLog(`解密完成，使用方法: ${decodeResult.method}`, 'success');
+                        if (decodeResult.preservedHeader) {
+                            addLog('✨ 已保留脚本头部注释', 'info');
+                        }
+                        if (decodeResult.warning) {
+                            addLog(`⚠️ ${decodeResult.warning}`, 'warning');
+                        }
+                    } else {
+                        showToast('❌ AAEncode解密失败');
+                        addLog(decodeResult.error, 'error');
+                    }
+                }, 500);
+            } else {
+                showToast(`❌ 未检测到AAEncode格式 (置信度: ${detection.confidence}%)`);
+                addLog(`AAEncode检测失败: 置信度不足 ${detection.confidence}%`, 'warning');
+            }
+        }
+        
+        function testEvalInput() {
+    const input = document.getElementById('input').value.trim();
+    if (!input) {
+        showToast('请先输入Eval包装的密文');
+        return;
     }
-  } else if (detection.primaryType === 'jsjiami' || detection.primaryType === 'sojson') {
-    showToast(`⚠️ 检测到 ${detection.primaryType}${detection.primaryResult?.variant ? ' (v'+detection.primaryResult.variant+')' : ''}，此工具不解密该类。`);
-    addLog(`检测到 ${detection.primaryType}，建议用专门工具处理。`, 'warning');
-  } else {
-    showToast('❌ 未检测到AAEncode');
-    addLog('AAEncode检测失败或类型不匹配', 'warning');
-  }
-}
-
-function testEvalInput() {
-  const input = document.getElementById('input').value.trim();
-  if (!input) { showToast('请先输入内容'); return; }
-
-  const detection = comprehensiveDetection(input);
-  updateDetectionPanel(detection);
-
-  if (detection.primaryType === 'Eval(Packer)') {
-    showToast(`🎯 检测到Eval/Packer (${detection.primaryConfidence}%)`);
-    addLog(`Eval检测成功: 置信度 ${detection.primaryConfidence}%`, 'success');
-
-    const r = decodeEval(input);
-    if (r.success) {
-      displayResult(r.result);
-      showToast('🎉 Eval解包成功！');
-      addLog(`解密完成，使用方法: ${r.method}`, 'success');
-    } else {
-      showToast('❌ Eval解包失败');
-      addLog(r.error, 'error');
+    
+    // 🆕 优先检测jsjiami（安全版本）
+    if (input.includes('jsjiami.com.v5') || input.includes('jsjiami.com.v6') || input.includes('jsjiami.com.v7')) {
+        showToast('❌ 检测到jsjiami混淆，此工具暂不支持jsjiami解密');
+        addLog('检测到jsjiami混淆代码，建议使用专门的jsjiami解密工具', 'warning');
+        
+        // 安全调用updateDetectionPanel（如果存在的话）
+        if (typeof updateDetectionPanel === 'function') {
+            updateDetectionPanel({ 
+                primaryType: 'jsjiami', 
+                primaryConfidence: 95,
+                evalResult: { isDetected: true, confidence: 95 }
+            });
+        }
+        return;
     }
-  } else if (detection.primaryType === 'jsjiami' || detection.primaryType === 'sojson') {
-    showToast(`⚠️ 检测到 ${detection.primaryType}${detection.primaryResult?.variant ? ' (v'+detection.primaryResult.variant+')' : ''}，此工具不解密该类。`);
-    addLog(`检测到 ${detection.primaryType}，建议用专门工具处理。`, 'warning');
-  } else {
-    showToast('❌ 未检测到Eval/Packer');
-    addLog('Eval检测失败或类型不匹配', 'warning');
-  }
+    
+    const detection = detectEval(input);
+    
+    // 安全调用updateDetectionPanel
+    if (typeof updateDetectionPanel === 'function') {
+        updateDetectionPanel({ 
+            primaryType: detection.isDetected ? 'Eval' : 'Unknown', 
+            primaryConfidence: detection.confidence,
+            evalResult: detection 
+        });
+    }
+    
+    if (detection.isDetected) {
+        showToast(`🎯 检测到Eval包装！置信度: ${detection.confidence}%`);
+        addLog(`Eval检测成功: 置信度 ${detection.confidence}%, eval数量 ${detection.evalCount}, 嵌套深度 ${detection.nestedDepth}`, 'success');
+        
+        setTimeout(() => {
+            const decodeResult = decodeEval(input);
+            if (decodeResult.success) {
+                displayResult(decodeResult.result);
+                showToast('🎉 Eval解包成功！');
+                addLog(`解密完成，使用方法: ${decodeResult.method}`, 'success');
+                if (decodeResult.recursive) {
+                    addLog(`🔄 执行了${decodeResult.steps}步递归解密`, 'info');
+                }
+                if (decodeResult.warning) {
+                    addLog(`⚠️ ${decodeResult.warning}`, 'warning');
+                }
+            } else {
+                showToast('❌ Eval解包失败');
+                addLog(decodeResult.error, 'error');
+            }
+        }, 500);
+    } else {
+        showToast(`❌ 未检测到Eval包装 (置信度: ${detection.confidence}%)`);
+        addLog(`Eval检测失败: 置信度不足 ${detection.confidence}%`, 'warning');
+    }
 }
         
         function autoDetectAndDecrypt() {
