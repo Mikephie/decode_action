@@ -2311,41 +2311,71 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
 
             function beautifyJavaScript(code) {
-                // 不改动标识符/字符串/逗号位置等，只做换行与缩进
-                let s = String(code).replace(/\r\n?/g, "\n");
+                // 移除多余的空格和换行
+                let beautified = code.replace(/\s+/g, " ").trim();
 
-                // 在这些符号后尝试补换行（保守处理）
-                s = s.replace(/;/g, ";\n").replace(/\{/g, "{\n").replace(/\}/g, "\n}\n");
+                // 在分号、大括号后添加换行
+                beautified = beautified.replace(/;/g, ";\n");
+                beautified = beautified.replace(/\{/g, "{\n");
+                beautified = beautified.replace(/\}/g, "\n}\n");
+                beautified = beautified.replace(/,\s*(?=[a-zA-Z_$\[])/g, ",\n");
 
-                // 多余空行压缩到最多两行
-                s = s.replace(/\n{3,}/g, "\n\n");
+                // 修复常见的格式问题
+                beautified = beautified.replace(/\n\s*\n/g, "\n"); // 移除空行
+                beautified = beautified.replace(/;\s*\n\s*\}/g, ";\n}"); // 修复分号后的括号
 
-                // 简单缩进：按花括号层级缩进（2 空格）
-                const lines = s.split("\n");
-                const out = [];
-                let lvl = 0;
+                const lines = beautified.split("\n");
+                const result = [];
+                let indentLevel = 0;
+                const indent = "  "; // 2个空格缩进
 
-                for (let raw of lines) {
-                    let line = raw.replace(/[ \t]+$/, ""); // 去尾随空格
-                    const trimmed = line.trimStart();
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line) continue;
 
-                    // 以 } 开头的行先回退一级缩进
-                    if (/^\}/.test(trimmed)) {
-                        lvl = Math.max(0, lvl - 1);
-                        line = " ".repeat(lvl * 2) + trimmed;
-                    } else {
-                        line = " ".repeat(lvl * 2) + trimmed;
+                    // 检查是否需要减少缩进
+                    if (line.includes("}") && !line.includes("{")) {
+                        indentLevel = Math.max(0, indentLevel - 1);
                     }
 
-                    out.push(line);
+                    // 添加缩进
+                    let indentedLine = indent.repeat(indentLevel) + line;
 
-                    // 更新层级
-                    const openCount = (trimmed.match(/\{/g) || []).length;
-                    const closeCount = (trimmed.match(/\}/g) || []).length;
-                    lvl = Math.max(0, lvl + openCount - closeCount);
+                    // 特殊处理对象属性
+                    if (line.match(/^[a-zA-Z_$][a-zA-Z0-9_$]*\s*:/)) {
+                        // 这是对象属性，保持额外缩进
+                        if (indentLevel > 0) {
+                            indentedLine = indent.repeat(indentLevel) + line;
+                        }
+                    }
+
+                    result.push(indentedLine);
+
+                    // 检查是否需要增加缩进
+                    if (line.includes("{") && !line.includes("}")) {
+                        indentLevel++;
+                    } else if (line.includes("=") && line.includes("{") && !line.includes("}")) {
+                        indentLevel++;
+                    }
                 }
 
-                return out.join("\n").replace(/\n{3,}/g, "\n\n");
+                // 最终格式化处理
+                let formatted = result.join("\n");
+
+                // 添加注释头部
+                const timestamp = new Date().toLocaleString();
+                const header = `//解密时间: ${timestamp}\n//解密工具: 科技解码器 v7.0\n//解密插件: eval\n\n`;
+
+                // 特殊格式化处理
+                formatted = formatted
+                    .replace(/(\w+)\s*=\s*\{/g, "$1 = {") // 标准化对象赋值
+                    .replace(/\{\s*\n\s*\}/g, "{}") // 空对象单行
+                    .replace(/\[\s*\n\s*\]/g, "[]") // 空数组单行
+                    .replace(/,\s*\]/g, ",\n]") // 数组结尾格式化
+                    .replace(/\{\s*([^}]{1,50})\s*\}/g, "{ $1 }") // 短对象单行
+                    .replace(/\n{3,}/g, "\n\n"); // 限制连续空行
+
+                return header + formatted;
             }
 
             function beautifyCode() {
@@ -2645,7 +2675,7 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
 
             /* ===== minimal real detector (drop-in) ===== */
             (function () {
-                // ------ 工具函数 ------
+                // ——— 工具函数 ———
                 const has = (s, r) => (typeof r === "string" ? s.includes(r) : r.test(s));
                 const m = (s, r) => {
                     const x = s.match(r);
@@ -2736,7 +2766,7 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                     return { isDetected: true, confidence: Math.min(c, 93), detail: "_0x*** string array" };
                 }
 
-                // ------ 主函数：综合判定 ------
+                // ——— 主函数：综合判定 ———
                 function comprehensiveDetectionPatched(input) {
                     const s = (input || "").trim();
                     if (!s) return { primaryType: "Unknown", primaryConfidence: 0 };
