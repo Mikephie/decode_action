@@ -1,3 +1,4 @@
+// 专业AADecode插件
             (function () {
                 const module = { exports: {} };
 
@@ -240,7 +241,8 @@
                 return 0;
             }
 
-            function comprehensiveDetection(input) {
+            function comprehensiveDetection(inputDecoded || input) {
+                // 🆕 第一优先级：检测jsjiami
                 if (input.includes("jsjiami.com.v5") || input.includes("jsjiami.com.v6") || input.includes("jsjiami.com.v7")) {
                     return {
                         primaryType: "jsjiami",
@@ -448,8 +450,11 @@
 
             // 用户界面函数
             function testAAEncodeInput() {
-    showToast("示例代码已移除");
-}
+                const input = document.getElementById("input").value.trim();
+                if (!input) {
+                    showToast("请先输入AAEncode密文");
+                    return;
+                }
 
                 const detection = detectAAEncode(input);
                 updateDetectionPanel({
@@ -486,9 +491,13 @@
             }
 
             function testEvalInput() {
-    showToast("示例代码已移除");
-}
+                const input = document.getElementById("input").value.trim();
+                if (!input) {
+                    showToast("请先输入Eval包装的密文");
+                    return;
+                }
 
+                // 🆕 优先检测jsjiami（安全版本）
                 if (input.includes("jsjiami.com.v5") || input.includes("jsjiami.com.v6") || input.includes("jsjiami.com.v7")) {
                     showToast("❌ 检测到jsjiami混淆，此工具暂不支持jsjiami解密");
                     addLog("检测到jsjiami混淆代码，建议使用专门的jsjiami解密工具", "warning");
@@ -543,7 +552,7 @@
             }
 
             function autoDetectAndDecrypt() {
-                const input = getInputValue();
+                const input = document.getElementById("input").value.trim();
                 if (!input) {
                     showToast("请先输入需要解密的代码");
                     return;
@@ -551,7 +560,8 @@
 
                 addLog("🤖 开始智能检测...", "info");
 
-                const detection = detectAndUpdate(input);
+                const detection = comprehensiveDetection(inputDecoded || input);
+                updateDetectionPanel(detection);
 
                 if (detection.primaryType !== "Unknown") {
                     addLog(`🎯 检测到${detection.primaryType}格式 (置信度: ${detection.primaryConfidence}%)`, "success");
@@ -588,27 +598,42 @@
             }
 
             function loadDemoCode() {
-    showToast("示例代码已移除");
-}; (ﾟДﾟ) [ﾟΘﾟ] =((ﾟωﾟﾉ==3) +'_') [c^_^o];(ﾟДﾟ) ['c'] = ((ﾟДﾟ)+'_') [ (ﾟｰﾟ)+(ﾟｰﾟ)-(ﾟΘﾟ) ];(ﾟДﾟ) ['o'] = ((ﾟДﾟ)+'_') [ﾟΘﾟ];(ﾟoﾟ)=(ﾟДﾟ) ['c']+(ﾟДﾟ) ['o']+(ﾟωﾟﾉ +'_')[ﾟΘﾟ]+ ((ﾟωﾟﾉ==3) +'_') [ﾟｰﾟ] + ((ﾟДﾟ) +'_') [(ﾟｰﾟ)+(ﾟｰﾟ)]+ ((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+((ﾟｰﾟ==3) +'_') [(ﾟｰﾟ) - (ﾟΘﾟ)]+(ﾟДﾟ) ['c']+((ﾟДﾟ)+'_') [(ﾟｰﾟ)+(ﾟｰﾟ)]+ (ﾟДﾟ) ['o']+((ﾟｰﾟ==3) +'_') [ﾟΘﾟ];(ﾟДﾟ) ['_'] = (o^_^o) [ﾟoﾟ] [ﾟoﾟ];(ﾟεﾟ)=((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+ (ﾟДﾟ) .ﾟДﾟﾉ+((ﾟДﾟ)+'_') [(ﾟｰﾟ) + (ﾟｰﾟ)]+((ﾟｰﾟ==3) +'_') [o^_^o -ﾟΘﾟ]+((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+ (ﾟωﾟﾉ +'_') [ﾟΘﾟ]; (ﾟｰﾟ)+=(ﾟΘﾟ); (ﾟДﾟ)[ﾟεﾟ]='\\\\'; (ﾟДﾟ).ﾟΘﾟﾉ=(ﾟДﾟ+ ﾟｰﾟ)[o^_^o -(ﾟΘﾟ)];(oﾟｰﾟo)=(ﾟωﾟﾉ +'_')[c^_^o];(ﾟДﾟ) [ﾟoﾟ]='\"';(ﾟДﾟ) ['_'] ( (ﾟДﾟ) ['_'] (ﾟεﾟ+(ﾟДﾟ)[ﾟoﾟ]+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ (ﾟΘﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((o^_^o) +(o^_^o))+ ((o^_^o) - (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((o^_^o) +(o^_^o))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+((ﾟｰﾟ) + (ﾟΘﾟ))+ (c^_^o)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟｰﾟ)+ ((o^_^o) - (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟΘﾟ)+ (c^_^o)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ ((ﾟｰﾟ) + (o^_^o))+ (ﾟДﾟ)[ﾟεﾟ]+((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟｰﾟ)+ (c^_^o)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟｰﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟoﾟ]) (ﾟΘﾟ)) ('_');`;
+                const demoTypes = ["aaencode", "eval", "mixed"];
+                const selectedType = demoTypes[Math.floor(Math.random() * demoTypes.length)];
+
+                let demoCode = "";
+
+                if (selectedType === "aaencode") {
+                    demoCode = `// AAEncode演示代码
+// 作者: 演示用户
+// 时间: 2024-01-01
+// 说明: 这段注释将被保留
+
+ﾟωﾟﾉ= /｀ｍ'）ﾉ ~┻━┻   //*'∇｀*/ ['_']; o=(ﾟｰﾟ)  =_=3; c=(ﾟΘﾟ) =(ﾟｰﾟ)-(ﾟｰﾟ); (ﾟДﾟ) =(ﾟΘﾟ)= (o^_^o)/ (o^_^o);(ﾟДﾟ)={ﾟΘﾟ: '_' ,ﾟωﾟﾉ : ((ﾟωﾟﾉ==3) +'_') [ﾟΘﾟ] ,ﾟｰﾟﾉ :(ﾟωﾟﾉ+ '_')[o^_^o -(ﾟΘﾟ)] ,ﾟДﾟﾉ:((ﾟｰﾟ==3) +'_')[ﾟｰﾟ] }; (ﾟДﾟ) [ﾟΘﾟ] =((ﾟωﾟﾉ==3) +'_') [c^_^o];(ﾟДﾟ) ['c'] = ((ﾟДﾟ)+'_') [ (ﾟｰﾟ)+(ﾟｰﾟ)-(ﾟΘﾟ) ];(ﾟДﾟ) ['o'] = ((ﾟДﾟ)+'_') [ﾟΘﾟ];(ﾟoﾟ)=(ﾟДﾟ) ['c']+(ﾟДﾟ) ['o']+(ﾟωﾟﾉ +'_')[ﾟΘﾟ]+ ((ﾟωﾟﾉ==3) +'_') [ﾟｰﾟ] + ((ﾟДﾟ) +'_') [(ﾟｰﾟ)+(ﾟｰﾟ)]+ ((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+((ﾟｰﾟ==3) +'_') [(ﾟｰﾟ) - (ﾟΘﾟ)]+(ﾟДﾟ) ['c']+((ﾟДﾟ)+'_') [(ﾟｰﾟ)+(ﾟｰﾟ)]+ (ﾟДﾟ) ['o']+((ﾟｰﾟ==3) +'_') [ﾟΘﾟ];(ﾟДﾟ) ['_'] = (o^_^o) [ﾟoﾟ] [ﾟoﾟ];(ﾟεﾟ)=((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+ (ﾟДﾟ) .ﾟДﾟﾉ+((ﾟДﾟ)+'_') [(ﾟｰﾟ) + (ﾟｰﾟ)]+((ﾟｰﾟ==3) +'_') [o^_^o -ﾟΘﾟ]+((ﾟｰﾟ==3) +'_') [ﾟΘﾟ]+ (ﾟωﾟﾉ +'_') [ﾟΘﾟ]; (ﾟｰﾟ)+=(ﾟΘﾟ); (ﾟДﾟ)[ﾟεﾟ]='\\\\'; (ﾟДﾟ).ﾟΘﾟﾉ=(ﾟДﾟ+ ﾟｰﾟ)[o^_^o -(ﾟΘﾟ)];(oﾟｰﾟo)=(ﾟωﾟﾉ +'_')[c^_^o];(ﾟДﾟ) [ﾟoﾟ]='\"';(ﾟДﾟ) ['_'] ( (ﾟДﾟ) ['_'] (ﾟεﾟ+(ﾟДﾟ)[ﾟoﾟ]+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ (ﾟΘﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((o^_^o) +(o^_^o))+ ((o^_^o) - (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((o^_^o) +(o^_^o))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+((ﾟｰﾟ) + (ﾟΘﾟ))+ (c^_^o)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟｰﾟ)+ ((o^_^o) - (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟΘﾟ)+ (c^_^o)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ ((ﾟｰﾟ) + (o^_^o))+ (ﾟДﾟ)[ﾟεﾟ]+((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟｰﾟ)+ (c^_^o)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟΘﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+ (ﾟｰﾟ)+ (ﾟｰﾟ)+ (ﾟДﾟ)[ﾟεﾟ]+(ﾟｰﾟ)+ ((ﾟｰﾟ) + (ﾟΘﾟ))+ (ﾟДﾟ)[ﾟoﾟ]) (ﾟΘﾟ)) ('_');`;
                 } else if (selectedType === "eval") {
                     demoCode = `// Eval包装演示代码
+// 这是一个简单的eval包装示例
 
 eval(function(p,a,c,k,e,d){e=function(c){return c};if(!''.replace(/^/,String)){while(c--){d[c]=k[c]||c}k=[function(e){return d[e]}];e=function(){return'\\\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\\\b'+e(c)+'\\\\b','g'),k[c])}}return p}('0("1 2!");',3,3,'console|Hello|World'.split('|'),0,{}))
 
+// 更复杂的嵌套eval示例
 eval("eval(\\"console.log('这是嵌套的eval');\\")");
 
 // 带有字符串编码的eval
 eval(unescape('%63%6f%6e%73%6f%6c%65%2e%6c%6f%67%28%22%48%65%6c%6c%6f%20%57%6f%72%6c%64%22%29%3b'));`;
                 } else {
                     demoCode = `// 混合编码演示 - 既有AAEncode又有Eval
+// 请注意：这只是演示，实际可能更复杂
 
 // 第一层：Eval包装
 eval(function(){
+    // 第二层：可能是AAEncode
     var code = "ﾟωﾟﾉ= /｀ｍ'）ﾉ ~┻━┻   //*'∇｀*/";
     console.log("混合编码演示");
     return "alert('解密成功!');";
 }());
 
+// 另一个复杂示例
 eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                 }
 
@@ -617,7 +642,8 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                 addLog(`加载${selectedType}演示代码`, "info");
 
                 setTimeout(() => {
-                    const detection = detectAndUpdate(demoCode);
+                    const detection = comprehensiveDetection(demoCode);
+                    updateDetectionPanel(detection);
                     if (detection.primaryType !== "Unknown") {
                         showToast(`🎯 自动检测: ${detection.primaryType}格式 (${detection.primaryConfidence}%置信度)`);
                     }
@@ -667,7 +693,8 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                         addLog("从剪贴板粘贴内容", "success");
 
                         setTimeout(() => {
-                            const detection = detectAndUpdate(text);
+                            const detection = comprehensiveDetection(text);
+                            updateDetectionPanel(detection);
                             if (detection.primaryType !== "Unknown") {
                                 showToast(`🎯 检测到${detection.primaryType}！置信度: ${detection.primaryConfidence}%`);
                             }
@@ -862,7 +889,7 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
 
             // 验证输入质量
             function validateInput() {
-                const input = getInputValue();
+                const input = document.getElementById("input").value.trim();
                 if (!input) {
                     showToast("请先输入代码");
                     return;
@@ -886,7 +913,7 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                 }
 
                 // 检测代码类型
-                const detection = comprehensiveDetection(input);
+                const detection = comprehensiveDetection(inputDecoded || input);
 
                 if (detection.primaryType !== "Unknown") {
                     // 已识别的密文格式
@@ -1009,7 +1036,7 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
 
             async function startDecrypt() {
-                const input = getInputValue();
+                const input = document.getElementById("input").value.trim();
 
                 if (!input) {
                     showToast("请先输入需要解密的代码");
@@ -1021,7 +1048,8 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
                     displayResult("");
                     setProgress(0);
 
-                    const detection = detectAndUpdate(input);
+                    const detection = comprehensiveDetection(inputDecoded || input);
+                    updateDetectionPanel(detection);
 
                     if (detection.primaryType !== "Unknown") {
                         addLog(`🎯 检测到${detection.primaryType} (置信度: ${detection.primaryConfidence}%)`, "info");
@@ -1391,10 +1419,10 @@ eval("var x = 'ﾟДﾟ'; console.log('检测到特殊字符');");`;
             }
 
             function beautifyCode() {
-                let content = getOutputContent();
+                const output = document.getElementById("output");
+                let content = output.innerHTML.includes("<span") ? stripHTMLTags(output.innerHTML) : output.textContent;
 
-                if(!assertHasResult(content)) return;
-if (!content || content.includes("解密结果将显示在这里")) {
+                if (!content || content.includes("解密结果将显示在这里")) {
                     showToast("请先获取解密结果");
                     return;
                 }
@@ -1417,36 +1445,15 @@ if (!content || content.includes("解密结果将显示在这里")) {
             }
 
             
-// === helper: unified output content getter (no behavior change) ===
-function getOutputContent() {
-    const output = document.getElementById("output");
-    if (!output) return "";
-    if (output.innerHTML.includes("<span")) {
-        return stripHTMLTags(output.innerHTML);
-    }
-    return output.textContent || output.innerText || "";
-}
-
-// === helpers (safe, no behavior change) ===
-function getInputValue() {
-    const el = document.getElementById("input");
-    return (el && typeof el.value === "string") ? el.value.trim() : "";
-}
-
-function detectAndUpdate(input) {
-    const d = comprehensiveDetection(input);
-    if (typeof updateDetectionPanel === "function") {
-        updateDetectionPanel(d);
-    }
-    return d;
-}
-
-function assertHasResult(content) {
-    if (!content || content.includes("解密结果将显示在这里")) {
-        showToast("请先获取解密结果");
-        return false;
-    }
-    return true;
+// === HTML entity auto-decoder (safe, no behavior change for normal text) ===
+function decodeHtmlEntities(s){
+  try{
+    if(!s || typeof s !== "string") return s||"";
+    if(!/[&][a-zA-Z#0-9]+;/.test(s)) return s;
+    const ta = document.createElement("textarea");
+    ta.innerHTML = s;
+    return ta.value;
+  }catch(e){ return s; }
 }
 function stripHTMLTags(html) {
                 const div = document.createElement("div");
@@ -1455,10 +1462,16 @@ function stripHTMLTags(html) {
             }
 
             function copyResult() {
-                let content = getOutputContent();
+                const output = document.getElementById("output");
+                let content;
 
-                if(!assertHasResult(content)) return;
-if (!content || content.includes("解密结果将显示在这里")) {
+                if (output.innerHTML.includes("<span")) {
+                    content = stripHTMLTags(output.innerHTML);
+                } else {
+                    content = output.textContent || output.innerText;
+                }
+
+                if (!content || content.includes("解密结果将显示在这里")) {
                     showToast("❌ 没有可复制的内容");
                     return;
                 }
@@ -1492,10 +1505,16 @@ if (!content || content.includes("解密结果将显示在这里")) {
             }
 
             function downloadResult() {
-                let content = getOutputContent();
+                const output = document.getElementById("output");
+                let content;
 
-                if(!assertHasResult(content)) return;
-if (!content || content.includes("解密结果将显示在这里")) {
+                if (output.innerHTML.includes("<span")) {
+                    content = stripHTMLTags(output.innerHTML);
+                } else {
+                    content = output.textContent || output.innerText;
+                }
+
+                if (!content || content.includes("解密结果将显示在这里")) {
                     showToast("❌ 没有可下载的内容");
                     return;
                 }
@@ -1532,10 +1551,10 @@ if (!content || content.includes("解密结果将显示在这里")) {
             }
 
             function validateResult() {
-                let content = getOutputContent();
+                const output = document.getElementById("output");
+                let content = output.innerHTML.includes("<span") ? stripHTMLTags(output.innerHTML) : output.textContent;
 
-                if(!assertHasResult(content)) return;
-if (!content || content.includes("解密结果将显示在这里")) {
+                if (!content || content.includes("解密结果将显示在这里")) {
                     showToast("请先获取解密结果");
                     return;
                 }
@@ -1601,7 +1620,8 @@ if (!content || content.includes("解密结果将显示在这里")) {
                         addLog(`文件加载成功 (${content.length} 字符)`, "success");
 
                         setTimeout(() => {
-                            const detection = detectAndUpdate(content);
+                            const detection = comprehensiveDetection(content);
+                            updateDetectionPanel(detection);
                             if (detection.primaryType !== "Unknown") {
                                 showToast(`🎯 检测到${detection.primaryType}文件！置信度: ${detection.primaryConfidence}%`);
                             }
@@ -1665,7 +1685,8 @@ if (!content || content.includes("解密结果将显示在这里")) {
                 document.getElementById("input").addEventListener("input", function () {
                     const input = this.value.trim();
                     if (input.length > 50) {
-                        const detection = detectAndUpdate(input);
+                        const detection = comprehensiveDetection(inputDecoded || input);
+                        updateDetectionPanel(detection);
                     } else {
                         updateDetectionPanel({ primaryType: "Unknown" });
                     }
@@ -1712,6 +1733,7 @@ if (!content || content.includes("解密结果将显示在这里")) {
                     return x ? x[1] || x[0] : null;
                 };
 
+                // jsjiami: 典型的 encode_version 标记与末尾回写
                 function detectJsjiami(s) {
                     const mark = /jsjiami\.com\.v(5|6|7)/i;
                     const head = /\b(?:var\s+)?encode_version\s*=/i;
@@ -1726,11 +1748,13 @@ if (!content || content.includes("解密结果将显示在这里")) {
                     return { isDetected: true, confidence: Math.min(c, 98), variant, detail: "encode_version + jsjiami.com" };
                 }
 
+                // sojson: 旧版注释/字样 & v7 常见构造
                 function detectSojson(s) {
                     // 常见提示/注释 & 版本字样
                     const mark = /(sojson\.v(5|6|7)|sojson版本|sojson提示|sojson是|sojson.*加密)/i;
                     // v7 常见结构：立即执行包装 + 防调试 + toString(36) 等
                     const v7sig = /(?:function\s*\(\)\s*\{\s*['"]use strict['"]\s*;)?\s*!function\([\w$,]{1,6}\)\{[\s\S]{300,}?toString\(\s*36\s*\)/;
+                    // sojson 常配的反调试片段
                     const anti = /debugger;|console\.\w+\(|_0x\w{4,}\(\w+\)/;
 
                     if (!(mark.test(s) || v7sig.test(s))) return { isDetected: false, confidence: 0 };
@@ -1743,6 +1767,7 @@ if (!content || content.includes("解密结果将显示在这里")) {
                     return { isDetected: true, confidence: Math.min(c, 95), variant: v, detail: "sojson signatures" };
                 }
 
+                // AAEncode: ﾟωﾟ/ﾟДﾟ/ﾟΘﾟ 等字符族
                 function detectAAEncode(s) {
                     const core = /(?:ﾟωﾟﾉ|ﾟДﾟ|ﾟдﾟ|ﾟΘﾟ)/;
                     if (!core.test(s)) return { isDetected: false, confidence: 0 };
@@ -1761,6 +1786,7 @@ if (!content || content.includes("解密结果将显示在这里")) {
                     return { isDetected: true, confidence: Math.min(c, 95), detail: "packer pattern" };
                 }
 
+                // JSFuck: 仅由 []()+! 组成的大段代码
                 function detectJSFuck(s) {
                     const body = s.replace(/\s+/g, "");
                     if (!body) return { isDetected: false, confidence: 0 };
@@ -1796,6 +1822,7 @@ if (!content || content.includes("解密结果将显示在这里")) {
                     const s = (input || "").trim();
                     if (!s) return { primaryType: "Unknown", primaryConfidence: 0 };
 
+                    // 明确优先级：jsjiami > sojson > 其它
                     const jj = detectJsjiami(s);
                     if (jj.isDetected) {
                         return {
