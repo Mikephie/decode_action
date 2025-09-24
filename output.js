@@ -1,6 +1,6 @@
-//2025-09-24T12:38:55.168Z
+//2025-09-24T12:39:22.167Z
 //解密脚本在此
-const version = 'V1.0.9';
+const version = 'V1.0';
 var _0xodH = 'jsjiami.com.v7';
 const _0xc3dd0a = _0x1e61;
 if (function (_0x297b99, _0x23f2e1, _0x6df70d, _0x3c23f, _0x377ebd, _0x2c90c8, _0x4be525) {
